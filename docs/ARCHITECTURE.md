@@ -1,6 +1,6 @@
 # Arquitectura
 
-Balance está diseñado para funcionar sin una cuenta ni red. React Native y Expo Router proporcionan la interfaz; SQLite guarda los datos en el dispositivo.
+Dophamine está diseñado para funcionar sin una cuenta ni red. React Native y Expo Router proporcionan la interfaz; SQLite guarda los datos en el dispositivo.
 
 ```text
 app/                    rutas y composición de pantallas
