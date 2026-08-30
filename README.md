@@ -1,4 +1,4 @@
-# Balance
+# Dophamine
 
 Aplicación móvil offline-first para registrar entrenamiento, biometría, ingesta y bienestar personal.
 
