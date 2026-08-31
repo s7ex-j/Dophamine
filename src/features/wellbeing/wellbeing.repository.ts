@@ -13,3 +13,9 @@ export async function getLatestMood(): Promise<number | null> {
   return row?.mood ?? null;
 }
 
+export type WellbeingEntry = { id: string; date: string; mood: number; note: string };
+export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
+  const db = await getDatabase();
+  return db.getAllAsync<WellbeingEntry>("SELECT id, date, mood, note FROM wellbeing_entries ORDER BY created_at DESC LIMIT 7");
+}
+
