@@ -22,7 +22,14 @@ export const AppTheme = {
     input: { minHeight: 44, borderWidth: 1, borderColor: "#DCE3DD", borderRadius: 6, paddingHorizontal: 12, paddingVertical: 9, color: "#16231D", fontSize: 16, backgroundColor: "#FFFFFF" },
     inputGroup: { gap: 6 },
     button: { minHeight: 44, borderRadius: 6, alignItems: "center", justifyContent: "center", paddingHorizontal: 16, backgroundColor: "#167B5B" },
-    buttonSecondary: { backgroundColor: "#DCF3E8" }, buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, buttonTextSecondary: { color: "#12563F" }
+    buttonSecondary: { backgroundColor: "#DCF3E8" }, buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, buttonTextSecondary: { color: "#12563F" },
+    segmented: { flexDirection: "row", gap: 6 }, segment: { flex: 1, minHeight: 40, borderWidth: 1, borderColor: "#DCE3DD", borderRadius: 6, alignItems: "center", justifyContent: "center" },
+    segmentActive: { backgroundColor: "#167B5B", borderColor: "#167B5B" }, segmentText: { color: "#66736B", fontWeight: "700" }, segmentTextActive: { color: "#FFFFFF" },
+    listRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#DCE3DD", gap: 12 },
+    listText: { flex: 1, gap: 2 }, listTitle: { color: "#16231D", fontWeight: "700", fontSize: 14 }, listDetail: { color: "#66736B", fontSize: 13 }, listValue: { color: "#167B5B", fontWeight: "700", fontSize: 15 },
+    choiceWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, choice: { minHeight: 38, borderWidth: 1, borderColor: "#DCE3DD", borderRadius: 6, paddingHorizontal: 12, justifyContent: "center" }, choiceActive: { backgroundColor: "#DCF3E8", borderColor: "#167B5B" }, choiceText: { color: "#66736B", fontWeight: "600" }, choiceTextActive: { color: "#12563F" }
+    ,chart: { height: 152, justifyContent: "flex-end", borderBottomWidth: 1, borderBottomColor: "#DCE3DD", paddingTop: 12 }, chartBars: { flex: 1, flexDirection: "row", gap: 4, alignItems: "flex-end" }, chartColumn: { flex: 1, height: "100%", justifyContent: "flex-end" }, chartBar: { backgroundColor: "#167B5B", borderRadius: 3, minHeight: 4 }, chartLabels: { flexDirection: "row", justifyContent: "space-between" },
+    intakeBars: { gap: 9 }, intakeRow: { flexDirection: "row", alignItems: "center", gap: 8 }, intakeLabel: { width: 38, fontSize: 12, color: "#66736B" }, intakeTrack: { flex: 1, height: 10, backgroundColor: "#DCF3E8", overflow: "hidden", borderRadius: 5 }, intakeFill: { height: "100%", backgroundColor: "#167B5B", borderRadius: 5 }, intakeValue: { width: 42, textAlign: "right", fontSize: 12, color: "#33433A", fontWeight: "700" }
   })
 };
 
