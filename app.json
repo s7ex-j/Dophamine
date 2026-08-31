@@ -12,10 +12,21 @@
       "expo-asset",
       "expo-font"
     ],
-    "experiments": { "typedRoutes": true },
-    "web": { "output": "static", "bundler": "metro" },
-    "android": { "package": "com.s7ex.dophamine", "versionCode": 1 },
-    "ios": { "bundleIdentifier": "com.s7ex.dophamine", "buildNumber": "1" }
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/Dophamine"
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro"
+    },
+    "android": {
+      "package": "com.s7ex.dophamine",
+      "versionCode": 1
+    },
+    "ios": {
+      "bundleIdentifier": "com.s7ex.dophamine",
+      "buildNumber": "1"
+    }
   }
 }
-
