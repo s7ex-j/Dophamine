@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Dophamine",
+    "slug": "dophamine",
+    "scheme": "dophamine",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-asset",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/Dophamine"
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro"
+    },
+    "android": {
+      "package": "com.s7ex.dophamine",
+      "versionCode": 1
+    },
+    "ios": {
+      "bundleIdentifier": "com.s7ex.dophamine",
+      "buildNumber": "1"
+    }
+  }
+}
