@@ -8,7 +8,7 @@
 **Dophamine** es una aplicacion offline-first para sostener un plan personal de nutricion y entrenamiento sin convertir cada dia en una hoja de calculo. Parte de tus datos, registra los totales que importan y transforma peso e ingesta en una recomendacion semanal pequena, visible y explicable.
 
 **Web:** [s7ex-j.github.io/Dophamine](https://s7ex-j.github.io/Dophamine/)  
-**Version actual:** `0.2.0`  
+**Version actual:** `0.3.0`  
 **Autor y creador:** [Jharol Vilca Ramos](https://github.com/s7ex-j)
 
 ## Por que existe
@@ -25,9 +25,15 @@ No pretende diagnosticar ni sustituir a un nutricionista. Es una herramienta de 
 ## Funciones actuales
 
 - **Onboarding nutricional:** estima BMR con Mifflin-St Jeor, aplica actividad y objetivo, y genera una meta inicial de calorias y macros.
-- **Registro diario compacto:** peso, calorias, proteina, carbohidratos, grasas, entrenamiento, cardio y bienestar.
-- **Dashboard de adherencia:** objetivos del dia, progreso de macros y acciones pendientes en una sola vista.
-- **Analisis de senal:** tendencia de peso suavizada y barras de adherencia de los ultimos siete dias.
+- **Registro diario compacto:** peso, calorias y macros con precarga del ultimo registro para reducir friccion.
+- **Dashboard de adherencia:** energia, progreso de cada macro, TDEE, estado de animo y marcas diarias en una sola vista.
+- **Tracker mensual de habitos:** plan nutricional, proteina, movimiento, sueno y chequeo personal, marcables por dia.
+- **Revisión semanal explicable:** distingue entre estimación en construcción, actualizando o en pausa según la calidad del registro; propone ajustes pequeños que siempre requieren aceptación.
+- **Rutinas configurables:** variantes full body, torso/pierna, empuje/tirón y cadena posterior; días, ejercicios, series, repeticiones y RIR editables.
+- **Generación de entrenamiento local:** crea una propuesta según objetivo, tiempo por sesión y acceso a gimnasio, casa o equipo limitado.
+- **Registro y progresión de fuerza:** guarda carga, repeticiones y RIR de las series de trabajo; la siguiente sesión ofrece una sugerencia de progresión basada en esa evidencia.
+- **Bienestar con contexto:** animo, energia, estres, horas de sueno y nota privada, con pulso de tendencias recientes.
+- **Analisis de senal:** tendencia de peso suavizada, ingesta de siete dias, adherencia a la meta y promedios de macros.
 - **TDEE explicable:** con 14 dias de datos y al menos 10 dias de ingesta valida, estima el gasto desde ingesta promedio y cambio de tendencia.
 - **Biblioteca de ejercicios:** catalogo inicial sin medios de terceros redistribuidos.
 - **Privacidad local:** sin cuentas ni telemetria; SQLite en Android/iOS y `localStorage` en la web.
@@ -72,7 +78,7 @@ Los datos de la web se almacenan en el navegador y no se comparten con la base S
 app/                 Rutas y pantallas de Expo Router
 src/components/      Componentes visuales reutilizables
 src/db/              Repositorios SQLite nativo y adaptador web
-src/features/        Dominio: perfil, biometria, TDEE, ejercicios y bienestar
+src/features/        Dominio: perfil, biometria, TDEE, habitos, rutinas y bienestar
 docs/                Arquitectura, privacidad y publicacion
 .github/workflows/   Verificacion de tipos y despliegue de GitHub Pages
 ```
@@ -98,7 +104,7 @@ Las contribuciones son bienvenidas: correcciones, accesibilidad, pruebas, datos 
 
 ## Hoja de ruta
 
-- Edicion de series, cargas y rutinas de entrenamiento.
+- Bloques de periodización y descargas configurables.
 - Plantillas de comidas e importacion manual de alimentos.
 - Graficos interactivos y exportacion de datos.
 - Sincronizacion cifrada opcional, siempre sin convertir una cuenta en requisito.
