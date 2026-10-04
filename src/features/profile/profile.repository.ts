@@ -11,4 +11,3 @@ export async function saveNutritionProfile(profile: NutritionProfile) {
   const db = await getDatabase();
   await db.runAsync("INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP", key, JSON.stringify(profile));
 }
-

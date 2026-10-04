@@ -2,6 +2,7 @@
 node_modules/
 .npm-cache/
 .expo-home/
+work/
 
 # Expo
 .expo/

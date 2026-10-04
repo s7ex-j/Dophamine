@@ -6,12 +6,12 @@ export type BiometricsInput = Pick<DailyBiometrics, "weightKg" | "caloriesIn" | 
 const today = () => new Date().toISOString().slice(0, 10);
 const id = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-export async function saveDailyBiometrics(input: BiometricsInput) {
+export async function saveDailyBiometrics(input: BiometricsInput, date = today()) {
   const db = await getDatabase();
   await db.runAsync(`INSERT INTO daily_biometrics (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g)
     VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(date) DO UPDATE SET weight_kg = excluded.weight_kg,
     calories_in = excluded.calories_in, protein_g = excluded.protein_g, carbs_g = excluded.carbs_g, fats_g = excluded.fats_g, updated_at = CURRENT_TIMESTAMP`,
-    id(), today(), input.weightKg, input.caloriesIn, input.proteinG, input.carbsG, input.fatsG);
+    id(), date, input.weightKg, input.caloriesIn, input.proteinG, input.carbsG, input.fatsG);
 }
 
 export async function getLatestBiometrics(): Promise<DailyBiometrics | null> {
@@ -29,4 +29,3 @@ export async function getBiometricsWindow(days: number): Promise<DailyBiometrics
 export async function getRecentBiometrics(): Promise<DailyBiometrics[]> {
   return getBiometricsWindow(7);
 }
-

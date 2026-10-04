@@ -15,4 +15,3 @@ labels: bug
 
 - Plataforma:
 - Versión de la app:
-
