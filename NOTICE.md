@@ -10,4 +10,3 @@ https://github.com/hasaneyldrm/exercises-dataset
 Exercise images and GIFs from that project are not included in Dophamine.
 Those media assets are attributed to Gym Visual and require a separate license
 before redistribution. See https://gymvisual.com/ for licensing information.
-
