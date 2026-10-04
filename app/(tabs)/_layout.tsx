@@ -17,8 +17,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="biometrics" options={{ title: "Progreso", tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="training" options={{ title: "Entreno", tabBarIcon: ({ color, size }) => <Ionicons name="barbell-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="analysis" options={{ title: "Análisis", tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} /> }} />
+      <Tabs.Screen name="habits" options={{ title: "Hábitos", tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} /> }} />
       <Tabs.Screen name="wellbeing" options={{ title: "Bienestar", tabBarIcon: ({ color, size }) => <Ionicons name="heart-outline" size={size} color={color} /> }} />
     </Tabs>
   );
 }
-
