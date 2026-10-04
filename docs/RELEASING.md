@@ -21,4 +21,3 @@ Developer y distribución mediante TestFlight/App Store.
 
 No publiques una build de producción hasta validar la política de privacidad y el
 comportamiento del algoritmo con datos reales.
-
