@@ -49,5 +49,5 @@ export function normalizeRoutine(value: unknown): Routine {
   if (!value || typeof value !== "object") return fallback;
   const candidate = value as Partial<Routine> & { exercises?: Array<string | ExercisePlan> };
   if (!candidate.name || !Array.isArray(candidate.exercises)) return fallback;
-  return { ...fallback, ...candidate, variant: candidate.variant ?? "custom", gymProfile: candidate.gymProfile ?? "full_gym", trainingGoal: candidate.trainingGoal ?? "hypertrophy", sessionMinutes: candidate.sessionMinutes ?? 50, days: candidate.days ?? fallback.days, exercises: candidate.exercises.map((exercise) => typeof exercise === "string" ? { name: exercise, sets: 3, reps: "8–12", rir: 2 } : { sets: 3, reps: "8–12", rir: 2, ...exercise }) };
+  return { ...fallback, ...candidate, variant: candidate.variant ?? "custom", gymProfile: candidate.gymProfile ?? "full_gym", trainingGoal: candidate.trainingGoal ?? "hypertrophy", sessionMinutes: candidate.sessionMinutes ?? 50, days: candidate.days ?? fallback.days, exercises: candidate.exercises.map((exercise) => typeof exercise === "string" ? { name: exercise, sets: 3, reps: "8–12", rir: 2 } : { ...exercise, sets: exercise.sets ?? 3, reps: exercise.reps ?? "8–12", rir: exercise.rir ?? 2 }) };
 }
