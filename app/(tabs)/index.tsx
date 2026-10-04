@@ -1,85 +1,39 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
-import { Button, Card, ChoiceControl, Input, ListRow, Metric, Screen } from "@/src/components/ui";
+import { Button, Card, ChoiceControl, Input, ListRow, Metric, ProgressBar, Screen } from "@/src/components/ui";
 import { AppTheme } from "@/src/theme";
-import { buildNutritionProfile, activityLabels, goalLabels, type ActivityLevel, type Goal, type Sex } from "@/src/features/profile/profile";
+import { buildNutritionProfile, activityLabels, goalLabels, withCalorieTarget, type ActivityLevel, type Goal, type Sex } from "@/src/features/profile/profile";
 import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { saveDailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
+import { DEFAULT_HABITS, dateKey } from "@/src/features/habits/habits";
+import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
 
 export default function DashboardScreen() {
-  const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
-  const [editingPlan, setEditingPlan] = useState(false);
-  const [age, setAge] = useState("");
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [sex, setSex] = useState<Sex>("male");
-  const [activity, setActivity] = useState<ActivityLevel>("moderate");
-  const [goal, setGoal] = useState<Goal>("gain");
-  const load = useCallback(() => { getDashboardSnapshot().then(setSnapshot); }, []);
-  useEffect(load, [load]);
-  useFocusEffect(load);
-
-  const openPlan = () => {
-    const profile = snapshot?.profile;
-    setAge(profile ? String(profile.age) : "");
-    setHeight(profile ? String(profile.heightCm) : "");
-    setWeight(snapshot?.weightKg ? String(snapshot.weightKg) : "");
-    setSex(profile?.sex ?? "male"); setActivity(profile?.activity ?? "moderate"); setGoal(profile?.goal ?? "gain");
-    setEditingPlan(true);
-  };
-  const savePlan = async () => {
-    const values = { age: Number(age), heightCm: Number(height), weightKg: Number(weight) };
-    if (!Number.isInteger(values.age) || values.age < 13 || values.age > 100 || values.heightCm < 120 || values.heightCm > 230 || values.weightKg <= 30 || values.weightKg > 300) {
-      return Alert.alert("Revisa tus datos", "Introduce edad, altura y peso dentro de rangos razonables.");
-    }
-    await saveNutritionProfile(buildNutritionProfile({ ...values, sex, activity, goal }));
-    if (snapshot?.weightKg === null) await saveDailyBiometrics({ weightKg: values.weightKg, caloriesIn: 0, proteinG: 0, carbsG: 0, fatsG: 0 });
-    setEditingPlan(false); load();
-  };
-
+  const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null); const [entries, setEntries] = useState<HabitEntry[]>([]); const [editingPlan, setEditingPlan] = useState(false);
+  const [nutritionView, setNutritionView] = useState<"consumed" | "remaining">("consumed");
+  const [age, setAge] = useState(""); const [height, setHeight] = useState(""); const [weight, setWeight] = useState(""); const [sex, setSex] = useState<Sex>("male"); const [activity, setActivity] = useState<ActivityLevel>("moderate"); const [goal, setGoal] = useState<Goal>("gain");
+  const load = useCallback(() => { Promise.all([getDashboardSnapshot(), getHabitEntries(DEFAULT_HABITS, 31)]).then(([nextSnapshot, nextEntries]) => { setSnapshot(nextSnapshot); setEntries(nextEntries); }); }, []);
+  useEffect(load, [load]); useFocusEffect(load);
+  const openPlan = () => { const profile = snapshot?.profile; setAge(profile ? String(profile.age) : ""); setHeight(profile ? String(profile.heightCm) : ""); setWeight(snapshot?.weightKg ? String(snapshot.weightKg) : ""); setSex(profile?.sex ?? "male"); setActivity(profile?.activity ?? "moderate"); setGoal(profile?.goal ?? "gain"); setEditingPlan(true); };
+  const savePlan = async () => { const values = { age: Number(age), heightCm: Number(height), weightKg: Number(weight) }; if (!Number.isInteger(values.age) || values.age < 13 || values.age > 100 || values.heightCm < 120 || values.heightCm > 230 || values.weightKg <= 30 || values.weightKg > 300) return Alert.alert("Revisa tus datos", "Introduce edad, altura y peso dentro de rangos razonables."); await saveNutritionProfile(buildNutritionProfile({ ...values, sex, activity, goal })); if (snapshot?.weightKg === null) await saveDailyBiometrics({ weightKg: values.weightKg, caloriesIn: 0, proteinG: 0, carbsG: 0, fatsG: 0 }); setEditingPlan(false); load(); };
+  const todayHabit = (habitId: string) => entries.find((entry) => entry.id === habitId && entry.date === dateKey())?.completed ?? false;
+  const toggleToday = async (habitId: string) => { await toggleHabit(habitId); load(); };
+  const applyCheckIn = async () => { if (!snapshot?.profile || !snapshot.checkIn?.suggestedCalories) return; await saveNutritionProfile(withCalorieTarget(snapshot.profile, snapshot.checkIn.suggestedCalories)); load(); Alert.alert("Objetivo actualizado", `Tu nuevo objetivo diario es ${snapshot.checkIn.suggestedCalories} kcal.`); };
+  const todayScore = useMemo(() => DEFAULT_HABITS.filter((habit) => todayHabit(habit.id)).length, [entries]);
   if (!snapshot) return <Screen />;
-  if (!snapshot.profile || editingPlan) return <Screen><ScrollView contentContainerStyle={AppTheme.content}>
-    <Text style={AppTheme.eyebrow}>CONFIGURACIÓN INICIAL</Text><Text style={AppTheme.title}>Construyamos tu plan.</Text>
-    <Card title="Datos de referencia">
-      <Input label="Edad" value={age} onChangeText={setAge} keyboardType="number-pad" />
-      <Input label="Altura (cm)" value={height} onChangeText={setHeight} keyboardType="number-pad" />
-      <Input label="Peso actual (kg)" value={weight} onChangeText={setWeight} keyboardType="decimal-pad" />
-      <Text style={AppTheme.label}>Sexo biológico</Text><ChoiceControl value={sex} onChange={setSex} options={[{ value: "male", label: "Hombre" }, { value: "female", label: "Mujer" }]} />
-    </Card>
-    <Card title="Tu contexto"><Text style={AppTheme.label}>Actividad habitual</Text><ChoiceControl value={activity} onChange={setActivity} options={(Object.keys(activityLabels) as ActivityLevel[]).map((value) => ({ value, label: activityLabels[value] }))} /><Text style={AppTheme.label}>Objetivo</Text><ChoiceControl value={goal} onChange={setGoal} options={(Object.keys(goalLabels) as Goal[]).map((value) => ({ value, label: goalLabels[value] }))} /><Button title="Crear mi plan" onPress={savePlan} /></Card>
-    <Text style={AppTheme.hint}>El plan inicial es una estimación. Dophamine lo contrastará con tu peso e ingesta registrados para afinarlo.</Text>
+  if (!snapshot.profile || editingPlan) return <Screen><ScrollView contentContainerStyle={AppTheme.content}><Text style={AppTheme.eyebrow}>CONFIGURACIÓN INICIAL</Text><Text style={AppTheme.title}>Construyamos tu plan.</Text><Card title="Datos de referencia"><Input label="Edad" value={age} onChangeText={setAge} keyboardType="number-pad" /><Input label="Altura (cm)" value={height} onChangeText={setHeight} keyboardType="number-pad" /><Input label="Peso actual (kg)" value={weight} onChangeText={setWeight} keyboardType="decimal-pad" /><Text style={AppTheme.label}>Sexo biológico</Text><ChoiceControl value={sex} onChange={setSex} options={[{ value: "male", label: "Hombre" }, { value: "female", label: "Mujer" }]} /></Card><Card title="Tu contexto"><Text style={AppTheme.label}>Actividad habitual</Text><ChoiceControl value={activity} onChange={setActivity} options={(Object.keys(activityLabels) as ActivityLevel[]).map((value) => ({ value, label: activityLabels[value] }))} /><Text style={AppTheme.label}>Objetivo</Text><ChoiceControl value={goal} onChange={setGoal} options={(Object.keys(goalLabels) as Goal[]).map((value) => ({ value, label: goalLabels[value] }))} /><Button title="Crear mi plan" onPress={savePlan} /></Card></ScrollView></Screen>;
+  const profile = snapshot.profile; const calories = snapshot.caloriesIn ?? 0; const protein = snapshot.proteinG ?? 0; const calorieProgress = (calories / profile.calorieTarget) * 100; const proteinProgress = (protein / profile.proteinTarget) * 100;
+  const macroValue = (current: number, target: number) => nutritionView === "consumed" ? current : Math.max(0, target - current);
+  return <Screen><ScrollView contentContainerStyle={AppTheme.content}>
+    <Text style={AppTheme.eyebrow}>{goalLabels[profile.goal].toUpperCase()} · CONTROL DIARIO</Text><Text style={AppTheme.title}>Tu día, con contexto.</Text>
+    <Card title="Energía de hoy"><ChoiceControl value={nutritionView} onChange={setNutritionView} options={[{ value: "consumed", label: "Consumido" }, { value: "remaining", label: "Restante" }]} /><View style={AppTheme.energyTop}><View><Text style={AppTheme.energyNumber}>{nutritionView === "consumed" ? calories : Math.max(0, profile.calorieTarget - calories)}</Text><Text style={AppTheme.hint}>{nutritionView === "consumed" ? `de ${profile.calorieTarget} kcal` : "kcal restantes"}</Text></View><View style={AppTheme.scoreBadge}><Text style={AppTheme.scoreNumber}>{todayScore}/5</Text><Text style={AppTheme.scoreLabel}>hábitos</Text></View></View><ProgressBar value={calorieProgress} color={calorieProgress > 110 ? AppTheme.colors.coral : AppTheme.colors.blue} /><Text style={AppTheme.hint}>{calories ? `${Math.abs(profile.calorieTarget - calories)} kcal ${calories <= profile.calorieTarget ? "por completar" : "por encima de la meta"}` : "Registra tus datos de hoy para activar el análisis."}</Text></Card>
+    <View style={AppTheme.metricGrid}><Metric label="Peso" value={snapshot.weightKg ? `${snapshot.weightKg} kg` : "--"} /><Metric label="Proteína" value={`${protein} g`} /><Metric label="TDEE" value={snapshot.tdee ? `${snapshot.tdee}` : "--"} /><Metric label="Ánimo" value={snapshot.mood ? `${snapshot.mood}/5` : "--"} /></View>
+    {snapshot.checkIn ? <Card title="Revisión semanal"><View style={AppTheme.checkInTop}><View style={[AppTheme.statusPill, snapshot.checkIn.status === "updating" ? AppTheme.statusUpdating : snapshot.checkIn.status === "holding" ? AppTheme.statusHolding : AppTheme.statusBuilding]}><Text style={AppTheme.statusPillText}>{snapshot.checkIn.status === "updating" ? "Actualizando" : snapshot.checkIn.status === "holding" ? "En pausa" : "Construyendo"}</Text></View><Text style={AppTheme.hint}>{snapshot.analysis.nutritionDaysLast7}/7 ingestas · {snapshot.analysis.weightDaysLast7}/7 pesajes</Text></View><Text style={AppTheme.body}>{snapshot.checkIn.message}</Text>{snapshot.checkIn.ready && snapshot.checkIn.delta && Math.abs(snapshot.checkIn.delta) >= 25 ? <Button title={`Aplicar ${snapshot.checkIn.suggestedCalories} kcal`} onPress={applyCheckIn} /> : null}</Card> : null}
+    <Card title="Semana en una mirada">{snapshot.recentRecords.length ? <View style={AppTheme.weeklyBars}>{snapshot.recentRecords.map((record) => <View key={record.id} style={AppTheme.weeklyBarColumn}><View style={AppTheme.weeklyBarTrack}><View style={[AppTheme.weeklyBarFill, { height: `${Math.min(100, (record.caloriesIn / profile.calorieTarget) * 100)}%`, backgroundColor: record.caloriesIn > profile.calorieTarget * 1.1 ? AppTheme.colors.coral : AppTheme.colors.blue }]} /></View><Text style={AppTheme.weeklyBarLabel}>{record.date.slice(8)}</Text></View>)}</View> : <Text style={AppTheme.body}>Tu energía diaria aparecerá aquí al guardar registros.</Text>}<Text style={AppTheme.hint}>Cada columna compara las calorías registradas con tu objetivo del día.</Text></Card>
+    <Card title="Adherencia de hoy"><View style={AppTheme.habitQuickRow}>{DEFAULT_HABITS.map((habit) => <Pressable key={habit.id} onPress={() => toggleToday(habit.id)} style={[AppTheme.habitQuick, todayHabit(habit.id) && { backgroundColor: habit.color, borderColor: habit.color }]}><Text style={[AppTheme.habitQuickText, todayHabit(habit.id) && { color: "#FFFFFF" }]}>{habit.shortLabel}</Text></Pressable>)}</View><Text style={AppTheme.hint}>Marca lo que ya hiciste. El historial mensual vive en Hábitos.</Text></Card>
+    <Card title="Macros y recuperación"><ListRow title="Proteína" detail={`${macroValue(protein, profile.proteinTarget)} g ${nutritionView === "consumed" ? "consumidos" : "restantes"}`} value={`${Math.round(proteinProgress)}%`} /><ProgressBar value={proteinProgress} color={AppTheme.colors.coral} /><ListRow title="Carbohidratos" detail={`${macroValue(snapshot.carbsG ?? 0, profile.carbsTarget)} g ${nutritionView === "consumed" ? "consumidos" : "restantes"}`} value={`${Math.round(((snapshot.carbsG ?? 0) / profile.carbsTarget) * 100)}%`} /><ProgressBar value={((snapshot.carbsG ?? 0) / profile.carbsTarget) * 100} color={AppTheme.colors.amber} /><ListRow title="Grasas" detail={`${macroValue(snapshot.fatsG ?? 0, profile.fatsTarget)} g ${nutritionView === "consumed" ? "consumidas" : "restantes"}`} value={`${Math.round(((snapshot.fatsG ?? 0) / profile.fatsTarget) * 100)}%`} /><ProgressBar value={((snapshot.fatsG ?? 0) / profile.fatsTarget) * 100} color={AppTheme.colors.accent} /></Card>
+    <Card title="Plan y tendencia"><ListRow title="TDEE observado" detail={snapshot.tdee ? "Se ajusta con tu historial de peso e ingesta" : "Se activará al reunir registros suficientes"} value={snapshot.tdee ? `${snapshot.tdee} kcal` : "En espera"} /><ListRow title="Objetivo actual" detail={`${profile.proteinTarget} g proteína · ${profile.carbsTarget} g carbohidratos · ${profile.fatsTarget} g grasas`} value={`${profile.calorieTarget} kcal`} /><Button title="Editar plan" onPress={openPlan} variant="secondary" /></Card>
   </ScrollView></Screen>;
-
-  const { profile } = snapshot;
-  const calorieRemaining = profile.calorieTarget - (snapshot.caloriesIn ?? 0);
-  const proteinRemaining = profile.proteinTarget - (snapshot.proteinG ?? 0);
-
-  return (
-    <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>{goalLabels[profile.goal].toUpperCase()}</Text>
-        <Text style={AppTheme.title}>Tu día, en orden.</Text>
-        <View style={AppTheme.metricGrid}>
-          <Metric label="Peso" value={snapshot?.weightKg ? `${snapshot.weightKg} kg` : "--"} />
-          <Metric label="Calorías" value={`${snapshot.caloriesIn ?? 0} / ${profile.calorieTarget}`} />
-          <Metric label="Proteína" value={`${snapshot.proteinG ?? 0} / ${profile.proteinTarget} g`} />
-          <Metric label="Estado" value={snapshot?.mood ? `${snapshot.mood}/5` : "--"} />
-        </View>
-        <Card title="Checklist de hoy">
-          <ListRow title="Calorías" detail={calorieRemaining >= 0 ? `Te faltan ${calorieRemaining} kcal para tu objetivo` : `Vas ${Math.abs(calorieRemaining)} kcal por encima`} value={snapshot.caloriesIn === null ? "Pendiente" : "Registrado"} />
-          <ListRow title="Proteína" detail={proteinRemaining > 0 ? `Te faltan ${proteinRemaining} g` : "Mínimo alcanzado"} value={snapshot.proteinG === null ? "Pendiente" : "Registrado"} />
-          <ListRow title="Entrenamiento" detail="Registra la rutina cuando la completes" value="Opcional" />
-          <ListRow title="Bienestar" detail="Un chequeo breve también cuenta" value={snapshot.mood ? "Hecho" : "Pendiente"} />
-        </Card>
-        <Card title="Tu plan"><ListRow title="Objetivo diario" detail={`${profile.proteinTarget} g proteína · ${profile.carbsTarget} g carbohidratos · ${profile.fatsTarget} g grasas`} value={`${profile.calorieTarget} kcal`} /><ListRow title="TDEE observado" detail={snapshot.tdee ? "Basado en tendencia de peso e ingesta" : "Disponible tras 14 registros"} value={snapshot.tdee ? `${snapshot.tdee} kcal` : "--"} /><Button title="Editar plan" onPress={openPlan} variant="secondary" /></Card>
-        <Card title="Privacidad">
-          <Text style={AppTheme.body}>Esta primera versión funciona sin cuenta y conserva los datos en este dispositivo.</Text>
-        </Card>
-      </ScrollView>
-    </Screen>
-  );
 }
-
