@@ -15,7 +15,7 @@ export type NutritionProfile = {
 };
 
 const activityFactors: Record<ActivityLevel, number> = { low: 1.2, light: 1.375, moderate: 1.55, high: 1.725 };
-const goalAdjustments: Record<Goal, number> = { gain: 250, maintain: 0, lose: -350 };
+export const goalAdjustments: Record<Goal, number> = { gain: 250, maintain: 0, lose: -350 };
 
 export function buildNutritionProfile(input: Omit<NutritionProfile, "calorieTarget" | "proteinTarget" | "carbsTarget" | "fatsTarget"> & { weightKg: number }): NutritionProfile {
   const bmr = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + (input.sex === "male" ? 5 : -161);
@@ -26,6 +26,10 @@ export function buildNutritionProfile(input: Omit<NutritionProfile, "calorieTarg
   return { ...input, calorieTarget, proteinTarget, carbsTarget, fatsTarget };
 }
 
+export function withCalorieTarget(profile: NutritionProfile, calorieTarget: number): NutritionProfile {
+  const target = Math.max(1200, Math.round(calorieTarget));
+  return { ...profile, calorieTarget: target, carbsTarget: Math.max(0, Math.round((target - profile.proteinTarget * 4 - profile.fatsTarget * 9) / 4)) };
+}
+
 export const goalLabels: Record<Goal, string> = { gain: "Volumen", maintain: "Mantenimiento", lose: "Definición" };
 export const activityLabels: Record<ActivityLevel, string> = { low: "Baja", light: "Ligera", moderate: "Moderada", high: "Alta" };
-
