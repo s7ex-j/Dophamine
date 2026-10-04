@@ -35,4 +35,3 @@ export const POSTERIOR_CHAIN_EXERCISES: Exercise[] = [
     instructions: ["Elige un ritmo que permita conversar con frases cortas.", "Mantén un esfuerzo estable durante la sesión.", "Reduce el ritmo gradualmente al terminar."]
   }
 ];
-
