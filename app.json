@@ -14,7 +14,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "baseUrl": "/Dophamine"
+      "baseUrl": "/Dophamine/app"
     },
     "web": { "output": "static", "bundler": "metro" },
     "android": { "package": "com.s7ex.dophamine", "versionCode": 1 },
