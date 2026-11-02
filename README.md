@@ -7,7 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/s7ex-j/Dophamine?display_name=tag&label=release)](https://github.com/s7ex-j/Dophamine/releases/latest)
 [![License](https://img.shields.io/github/license/s7ex-j/Dophamine)](LICENSE)
 
-**[Abrir Dophamine en la web](https://s7ex-j.github.io/Dophamine/)** · **[Ver release v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
+**[Abrir la app web](https://s7ex-j.github.io/Dophamine/app/)** · **[Sitio del proyecto](https://s7ex-j.github.io/Dophamine/)** · **[Ver release v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
 
 Dophamine es un proyecto open source, offline-first, pensado para quienes quieren entender su plan sin convertir cada comida o entrenamiento en una hoja de calculo. Crea una referencia inicial, registra los totales que importan y recibe una lectura semanal pequena, explicable y bajo tu control.
 
@@ -59,6 +59,7 @@ git clone https://github.com/s7ex-j/Dophamine.git
 Set-Location Dophamine
 npm ci
 npm run typecheck
+npm test
 npm run web
 ```
 
@@ -70,6 +71,14 @@ npm run android
 npm run ios
 ```
 
+Sitio del proyecto (landing en `web/`, hecha con Vite, Tailwind y [shadcn/ui](https://github.com/shadcn-ui/ui)):
+
+```powershell
+Set-Location web
+npm ci
+npm run dev
+```
+
 La web guarda datos en el navegador. Esos registros no se sincronizan automaticamente con la base SQLite de una instalacion movil.
 
 ## Arquitectura
@@ -78,16 +87,18 @@ La web guarda datos en el navegador. Esos registros no se sincronizan automatica
 app/                 Rutas y pantallas de Expo Router
 src/components/      Componentes visuales reutilizables
 src/db/              SQLite nativo y adaptador localStorage para web
-src/features/        Dominio: perfil, biometria, TDEE, habitos, rutinas y bienestar
+src/features/        Dominio: perfil, biometria, TDEE, habitos, rutinas y bienestar (con tests *.test.ts)
+web/                 Sitio del proyecto: Vite + React + Tailwind + shadcn/ui
 docs/                Arquitectura, privacidad, contribucion y releases
-.github/workflows/   Typecheck y despliegue continuo a GitHub Pages
+.github/workflows/   Typecheck, tests y despliegue continuo a GitHub Pages
 ```
 
 La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). El detalle matematico, limites y criterios de datos del TDEE tambien vive alli.
 
 ## Calidad y releases
 
-- Cada push a `main` ejecuta `npm run typecheck` y publica la version web con GitHub Pages.
+- Cada push y pull request ejecuta `npm run typecheck`, los tests de dominio (`npm test`, Vitest: perfil nutricional, TDEE, revision semanal y habitos) y compila el sitio.
+- Cada push a `main` publica en GitHub Pages el sitio en `/Dophamine/` y la app en `/Dophamine/app/`; los enlaces antiguos redirigen a la app.
 - El release actual es [v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0).
 - La preparacion de APK/AAB y tiendas esta documentada en [docs/RELEASING.md](docs/RELEASING.md).
 - Consulta [CHANGELOG.md](CHANGELOG.md) para el historial de cambios.

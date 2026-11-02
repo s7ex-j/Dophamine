@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dophamine — nutrición, entreno y bienestar sin hojas de cálculo</title>
+    <meta
+      name="description"
+      content="App open source y offline-first que convierte tus totales diarios de nutrición, entrenamiento y bienestar en una revisión semanal clara. Sin cuentas ni telemetría."
+    />
+    <meta property="og:title" content="Dophamine" />
+    <meta
+      property="og:description"
+      content="Registra totales diarios y recibe una revisión semanal explicable. Offline-first, sin cuentas ni telemetría."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#167B5B" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      try {
+        const saved = localStorage.getItem("dophamine-theme")
+        const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches
+        if (dark) document.documentElement.classList.add("dark")
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
