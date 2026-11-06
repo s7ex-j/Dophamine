@@ -7,6 +7,8 @@
 [![Release](https://img.shields.io/github/v/release/s7ex-j/Dophamine?display_name=tag&label=release)](https://github.com/s7ex-j/Dophamine/releases/latest)
 [![License](https://img.shields.io/github/license/s7ex-j/Dophamine)](LICENSE)
 
+<sub>**Español** · [English](README.en.md)</sub>
+
 **[Abrir la app web](https://s7ex-j.github.io/Dophamine/app/)** · **[Sitio del proyecto](https://s7ex-j.github.io/Dophamine/)** · **[Ver release v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
 
 Dophamine es un proyecto open source, offline-first, pensado para quienes quieren entender su plan sin convertir cada comida o entrenamiento en una hoja de calculo. Crea una referencia inicial, registra los totales que importan y recibe una lectura semanal pequena, explicable y bajo tu control.
