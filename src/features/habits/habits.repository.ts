@@ -24,9 +24,12 @@ export async function toggleHabit(habitId: string, date = dateKey()) {
 
 export async function getHabitEntries(habits: Habit[], days: number): Promise<HabitEntry[]> {
   const db = await getDatabase();
+  // El corte se calcula con el reloj local, igual que la clave de cada día (date('now') de SQLite es UTC).
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days + 1);
   const rows = await db.getAllAsync<{ habit_id: string; date: string; completed: number }>(
-    "SELECT habit_id, date, completed FROM habit_entries WHERE date >= date('now', ?) ORDER BY date",
-    `-${days - 1} days`,
+    "SELECT habit_id, date, completed FROM habit_entries WHERE date >= ? ORDER BY date",
+    dateKey(cutoff),
   );
   return rows
     .filter((row) => habits.some((habit) => habit.id === row.habit_id))

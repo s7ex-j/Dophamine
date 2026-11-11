@@ -9,7 +9,7 @@
 
 <sub>[Español](README.md) · **English**</sub>
 
-**[Open the web app](https://s7ex-j.github.io/Dophamine/app/)** · **[Project site](https://s7ex-j.github.io/Dophamine/)** · **[See release v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0)** · **[Read the architecture](docs/ARCHITECTURE.md)**
+**[Open the web app](https://s7ex-j.github.io/Dophamine/app/)** · **[Project site](https://s7ex-j.github.io/Dophamine/)** · **[See the latest release](https://github.com/s7ex-j/Dophamine/releases/latest)** · **[Read the architecture](docs/ARCHITECTURE.md)**
 
 Dophamine is an open source, offline-first project for people who want to understand their plan without turning every meal or workout into a spreadsheet. Set up an initial baseline, log the totals that matter and get a small, explainable weekly reading that stays under your control.
 
@@ -29,7 +29,7 @@ Set up your plan -> Log weight and daily totals -> Check the trend -> Decide in 
 
 The main screen is not a wall of numbers: it shows available energy, the day's habits, the full week and the next action that unlocks more information. Logging gaps are shown honestly; Dophamine does not invent precision when data is still missing.
 
-## What v0.3.0 includes
+## What it includes
 
 - **Daily decision dashboard.** Energy consumed/remaining, goal, macros, consistency and an actionable next step from the first screen.
 - **Initial nutrition plan.** Estimates BMR with Mifflin-St Jeor, applies activity and goal, and proposes reference calories and macronutrients.
@@ -103,7 +103,7 @@ The separation between interface, domain and persistence is explained in [docs/A
 
 - Every push and pull request runs `npm run typecheck`, the domain tests (`npm test`, Vitest: nutrition profile, TDEE, weekly review and habits) and builds the site.
 - Every push to `main` publishes the site at `/Dophamine/` and the app at `/Dophamine/app/` on GitHub Pages; old links redirect to the app.
-- The current release is [v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0).
+- The code is at version 0.4.0; changes are in [CHANGELOG.md](CHANGELOG.md) and published versions under [Releases](https://github.com/s7ex-j/Dophamine/releases).
 - APK/AAB and store preparation is documented in [docs/RELEASING.md](docs/RELEASING.md).
 - See [CHANGELOG.md](CHANGELOG.md) for the change history.
 

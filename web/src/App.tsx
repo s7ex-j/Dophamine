@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 
 const APP_URL = `${import.meta.env.BASE_URL}app/`
 const REPO_URL = "https://github.com/s7ex-j/Dophamine"
-const RELEASE_URL = `${REPO_URL}/releases/tag/v0.3.0`
+const RELEASE_URL = `${REPO_URL}/releases/latest`
 
 const steps = [
   {
@@ -356,7 +356,7 @@ function Hero() {
             className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <span className="size-2 rounded-full bg-primary" />
-            Versión 0.3.0, de código abierto
+            Versión 0.4.0, de código abierto
           </a>
           <h1 className="mt-6 text-[clamp(2.9rem,9.6vw,6rem)] font-extrabold leading-[0.93] tracking-[-0.035em] text-balance">
             Un pesaje no dice nada. La tendencia sí.

@@ -1,5 +1,27 @@
 # Arquitectura de Dophamine
 
+## Mapa del repositorio
+
+```
+app/                    rutas (expo-router). Cada pantalla compone secciones; no calcula.
+  (tabs)/index.tsx        Hoy          analysis.tsx   Análisis
+  (tabs)/biometrics.tsx   Registro     training.tsx   Entreno
+  (tabs)/habits.tsx       Hábitos      wellbeing.tsx  Bienestar
+src/features/<dominio>/
+  <dominio>.ts            reglas puras, con su .test.ts al lado
+  <dominio>.repository.ts       lectura y escritura en SQLite (Android, iOS)
+  <dominio>.repository.web.ts   lo mismo sobre localStorage (web)
+  *Sections.tsx, *Card.tsx      piezas de interfaz de ese dominio
+src/db/                 conexión SQLite y almacén web (única capa que conoce la persistencia)
+src/lib/dates.ts        clave de día local (AAAA-MM-DD)
+src/components/         piezas de interfaz compartidas
+src/theme.ts            colores, espaciado y tipografía
+web/                    página de presentación (Vite + React + Tailwind), independiente de la app
+```
+
+Se publica todo junto en GitHub Pages: la página de presentación en `/Dophamine/` y la app en
+`/Dophamine/app/` (`.github/workflows/deploy-web.yml`).
+
 ## Capas
 
 `app/` contiene rutas y composicion de pantallas. `src/features/` contiene las reglas de cada dominio. `src/db/` es la unica capa que conoce el mecanismo de persistencia. Esa separacion permite que la misma aplicacion funcione en web y movil sin mezclar `localStorage`, SQLite y logica visual.
@@ -46,6 +68,7 @@ La sugerencia de progresion se basa en el ultimo registro del mismo ejercicio: a
 
 - Un archivo `algo.web.ts` reemplaza a `algo.ts` en la version web; ambos exponen las mismas funciones.
 - Los calculos que alimentan un grafico viven en el dominio (por ejemplo `tdee/trendChart.ts`) y la pantalla solo dibuja. Asi se pueden probar sin interfaz.
+- El dia de un registro es siempre el del reloj del dispositivo: se obtiene con `localDateKey()` (`src/lib/dates.ts`). No se usa `toISOString()` ni `date('now')` de SQLite para eso, porque ambos devuelven el dia en UTC.
 - El formato lo decide Prettier (`npm run format`); CI falla si un archivo no esta formateado.
 
 ## Limites actuales

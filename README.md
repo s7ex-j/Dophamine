@@ -9,7 +9,7 @@
 
 <sub>**Español** · [English](README.en.md)</sub>
 
-**[Abrir la app web](https://s7ex-j.github.io/Dophamine/app/)** · **[Sitio del proyecto](https://s7ex-j.github.io/Dophamine/)** · **[Ver release v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
+**[Abrir la app web](https://s7ex-j.github.io/Dophamine/app/)** · **[Sitio del proyecto](https://s7ex-j.github.io/Dophamine/)** · **[Ver la última versión](https://github.com/s7ex-j/Dophamine/releases/latest)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
 
 Dophamine es un proyecto open source, offline-first, pensado para quienes quieren entender su plan sin convertir cada comida o entrenamiento en una hoja de calculo. Crea una referencia inicial, registra los totales que importan y recibe una lectura semanal pequena, explicable y bajo tu control.
 
@@ -27,7 +27,7 @@ Configura tu plan -> Registra peso y totales diarios -> Mira la tendencia -> Dec
 
 La pantalla principal no es un muro de numeros: presenta la energia disponible, los habitos del dia, la semana completa y la siguiente accion que desbloquea mas informacion. Los huecos de registro se muestran con honestidad; Dophamine no fabrica precision cuando todavia faltan datos.
 
-## Que incluye v0.3.0
+## Que incluye
 
 - **Dashboard de decision diaria.** Energia consumida/restante, objetivo, macros, consistencia y un siguiente paso accionable desde la primera pantalla.
 - **Plan nutricional inicial.** Estima BMR con Mifflin-St Jeor, aplica actividad y objetivo, y propone calorias y macronutrientes de referencia.
@@ -101,13 +101,15 @@ La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARC
 
 - Cada push y pull request ejecuta `npm run typecheck`, los tests de dominio (`npm test`, Vitest: perfil nutricional, TDEE, revision semanal y habitos) y compila el sitio.
 - Cada push a `main` publica en GitHub Pages el sitio en `/Dophamine/` y la app en `/Dophamine/app/`; los enlaces antiguos redirigen a la app.
-- El release actual es [v0.3.0](https://github.com/s7ex-j/Dophamine/releases/tag/v0.3.0).
+- La versión del código es 0.4.0; los cambios están en [CHANGELOG.md](CHANGELOG.md) y las versiones publicadas en [Releases](https://github.com/s7ex-j/Dophamine/releases).
 - La preparacion de APK/AAB y tiendas esta documentada en [docs/RELEASING.md](docs/RELEASING.md).
 - Consulta [CHANGELOG.md](CHANGELOG.md) para el historial de cambios.
 
 ## Alcance y hoja de ruta
 
 Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. El modelo actual registra **totales diarios**, no alimentos individuales. Por eso una base global de alimentos, plantillas de comidas e importacion manual pertenecen a la siguiente etapa, junto con el respaldo en la app movil (en la web ya se puede descargar y restaurar un archivo), bloques de periodizacion y sincronizacion cifrada opcional.
+
+El orden de lo que falta, con quién hace cada paso y cómo se comprueba, está en [docs/HOJA_DE_RUTA.md](docs/HOJA_DE_RUTA.md).
 
 ## Datos de ejercicios, privacidad y licencia
 

@@ -1,0 +1,58 @@
+# CLAUDE.md — Dophamine
+
+App de seguimiento personal (peso, energía, hábitos, entrenamiento, bienestar) sin cuentas ni servidor.
+Expo 52 + React Native 0.76 + expo-router; web con react-native-web. Repo público de Jharol (`s7ex-j`).
+
+## Qué hacer al empezar
+
+1. `docs/HOJA_DE_RUTA.md` → toma el primer paso marcado `C` que no esté hecho.
+2. `npm ci && npm run typecheck && npm test && npm run format:check` (todo en verde antes de tocar nada).
+3. Al terminar un paso: actualiza la hoja de ruta y `CHANGELOG.md` en el mismo commit.
+
+## Mapa
+
+| Necesito… | Archivo |
+|---|---|
+| Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
+| Qué sigue | `docs/HOJA_DE_RUTA.md` |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan) |
+| Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
+| Guardar y leer | `*.repository.ts` (SQLite) y `*.repository.web.ts` (localStorage) |
+| Esquema y almacén | `src/db/` |
+| Fecha de un registro | `src/lib/dates.ts` (`localDateKey`) |
+| Estilo | `src/theme.ts`, `src/components/ui.tsx` |
+| Página de presentación | `web/` (proyecto aparte: Vite, React 19, Tailwind 4) |
+| Publicar | `docs/RELEASING.md`, `.github/workflows/` |
+
+## Comandos
+
+```bash
+npm run web                       # app en el navegador
+npm run typecheck && npm test     # tipos y pruebas de dominio (vitest)
+npm run format                    # Prettier (CI falla si falta)
+npx expo export --platform web    # compila la web a dist/
+(cd web && npm ci && npm run build)   # página de presentación
+```
+
+## Reglas que no se rompen
+
+1. **Cada repositorio tiene dos versiones con las mismas funciones** (`.ts` y `.web.ts`). Si cambias una,
+   cambias la otra en el mismo commit.
+2. **Los cálculos viven en el dominio, con prueba.** Una pantalla o sección solo dibuja.
+3. **El día es local**: `localDateKey()`. Nunca `toISOString().slice(0, 10)` ni `date('now')`.
+4. **Refactor = mismos píxeles.** Al mover código de interfaz, comparar capturas antes y después.
+5. **Nada sale del dispositivo.** Sin red, sin analítica, sin fuentes ni scripts de terceros (la página
+   de presentación también: tipografías autoalojadas).
+6. **El plan no cambia solo.** Toda propuesta de ajuste necesita aceptación explícita.
+7. **Sin afirmaciones médicas.** El TDEE es una estimación y la interfaz lo dice.
+8. **El respaldo es compatible hacia atrás**: si cambia la forma de los datos, sube `BACKUP_FORMAT` y
+   conserva la lectura del formato anterior, con prueba.
+9. **Commits a nombre de Jharol, sin líneas `Co-Authored-By` ni `Claude-Session`.**
+10. **No afirmar lo que no se comprobó.** Aquí solo se puede ejecutar la web; lo nativo se declara como
+    no probado hasta que Jharol lo confirme en un teléfono.
+
+## Cómo comprobar la interfaz
+
+`npx expo export --platform web`, servir `dist/` bajo `/Dophamine/app/` y recorrer los flujos con Chrome
+sin ventana (puppeteer-core) a 390 px. El almacén de la web es la clave `dophamine.web-store.v1` de
+`localStorage`: se puede sembrar con datos de varios días para ver Análisis con contenido.
