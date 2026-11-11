@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 - 2026-11-11
+
+- Corregida la fecha de los registros: después de las 7 p. m. (hora de Lima) el peso, el bienestar y los hábitos se guardaban con la fecha del día siguiente, porque el día se tomaba en UTC. Ahora se usa el reloj del dispositivo.
+- Respaldo en la web: descargar todos los datos en un archivo JSON y restaurarlos desde ese archivo, con validación y confirmación antes de reemplazar.
+- Corregido el gráfico "Peso tendencia" de Análisis: la escala partía de cero y todas las barras salían iguales. Ahora muestra la tendencia y el pesaje de cada día.
+- Corregido el editor de rutina: el campo de ejercicios se reescribía con cada tecla y no dejaba escribir un nombre completo.
+- Pantallas "Hoy" y "Entreno" divididas en secciones; sus cálculos pasaron al dominio con pruebas (de 19 a 37 pruebas).
+- Código formateado con Prettier y chequeo de formato en CI.
+- Página de presentación rediseñada, con capturas reales de la app.
+
 ## 0.3.0 - Unreleased
 
 - Dashboard diario rediseñado con energia, progreso de macros, adherencia y TDEE.

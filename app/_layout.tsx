@@ -14,13 +14,19 @@ export default function RootLayout() {
   }, []);
 
   if (!ready) {
-    return <View style={AppTheme.loading}><ActivityIndicator color={AppTheme.colors.accent} /></View>;
+    return (
+      <View style={AppTheme.loading}>
+        <ActivityIndicator color={AppTheme.colors.accent} />
+      </View>
+    );
   }
 
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: AppTheme.colors.background } }} />
+      <Stack
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: AppTheme.colors.background } }}
+      />
     </>
   );
 }

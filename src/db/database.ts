@@ -68,6 +68,18 @@ export async function initializeDatabase() {
     );
     CREATE INDEX IF NOT EXISTS habit_entries_date_idx ON habit_entries(date DESC);
   `);
-  try { await db.execAsync("ALTER TABLE wellbeing_entries ADD COLUMN sleep_hours REAL CHECK(sleep_hours BETWEEN 0 AND 24)"); } catch { /* Existing installs already have their schema. */ }
-  try { await db.execAsync("ALTER TABLE wellbeing_entries ADD COLUMN stress INTEGER CHECK(stress BETWEEN 1 AND 5)"); } catch { /* Existing installs already have their schema. */ }
+  try {
+    await db.execAsync(
+      "ALTER TABLE wellbeing_entries ADD COLUMN sleep_hours REAL CHECK(sleep_hours BETWEEN 0 AND 24)",
+    );
+  } catch {
+    /* Existing installs already have their schema. */
+  }
+  try {
+    await db.execAsync(
+      "ALTER TABLE wellbeing_entries ADD COLUMN stress INTEGER CHECK(stress BETWEEN 1 AND 5)",
+    );
+  } catch {
+    /* Existing installs already have their schema. */
+  }
 }

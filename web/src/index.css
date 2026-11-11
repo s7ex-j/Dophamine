@@ -1,0 +1,308 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Tokens de shadcn/ui (new-york). El primario usa el verde de la app (#167B5B). */
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.985 0.004 150);
+  --foreground: oklch(0.24 0.03 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.03 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.03 160);
+  --primary: oklch(0.5 0.1 165);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.95 0.03 160);
+  --secondary-foreground: oklch(0.38 0.08 165);
+  --muted: oklch(0.96 0.008 150);
+  --muted-foreground: oklch(0.5 0.02 155);
+  --accent: oklch(0.95 0.03 160);
+  --accent-foreground: oklch(0.38 0.08 165);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.91 0.012 150);
+  --input: oklch(0.91 0.012 150);
+  --ring: oklch(0.5 0.1 165);
+  --chart-1: oklch(0.5 0.1 165);
+  --chart-2: oklch(0.6 0.13 245);
+  --chart-3: oklch(0.63 0.15 35);
+  --chart-4: oklch(0.6 0.12 80);
+  /* Banda oscura (bosque) y el coral del "ruido" diario. */
+  --forest: oklch(0.24 0.045 165);
+  --forest-foreground: oklch(0.97 0.012 150);
+  --noise: oklch(0.66 0.17 35);
+}
+
+.dark {
+  --background: oklch(0.17 0.015 165);
+  --foreground: oklch(0.96 0.01 160);
+  --card: oklch(0.21 0.018 165);
+  --card-foreground: oklch(0.96 0.01 160);
+  --popover: oklch(0.21 0.018 165);
+  --popover-foreground: oklch(0.96 0.01 160);
+  --primary: oklch(0.74 0.12 165);
+  --primary-foreground: oklch(0.2 0.03 165);
+  --secondary: oklch(0.28 0.03 165);
+  --secondary-foreground: oklch(0.92 0.03 160);
+  --muted: oklch(0.26 0.02 165);
+  --muted-foreground: oklch(0.72 0.02 160);
+  --accent: oklch(0.28 0.03 165);
+  --accent-foreground: oklch(0.92 0.03 160);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.74 0.12 165);
+  --chart-1: oklch(0.74 0.12 165);
+  --chart-2: oklch(0.72 0.12 245);
+  --chart-3: oklch(0.72 0.14 35);
+  --chart-4: oklch(0.75 0.12 80);
+  --forest: oklch(0.13 0.02 165);
+  --forest-foreground: oklch(0.96 0.01 160);
+  --noise: oklch(0.74 0.15 35);
+}
+
+@theme inline {
+  /* Fuentes servidas desde el propio sitio: la página no llama a servidores de terceros. */
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-forest: var(--forest);
+  --color-forest-foreground: var(--forest-foreground);
+  --color-noise: var(--noise);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+}
+
+/* La línea de tendencia del gráfico de portada se dibuja una vez al cargar. */
+@keyframes trazar {
+  from {
+    stroke-dashoffset: var(--largo);
+  }
+}
+.trazo {
+  stroke-dasharray: var(--largo);
+  animation: trazar 1.8s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trazo {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ───────── Teléfono de la portada. Genérico, dibujado con CSS: marco metálico,
+   botones laterales, recorte de la cámara y barra inferior. */
+.telefono {
+  --marco: 11px;
+  position: relative;
+  width: min(100%, 19.5rem);
+  aspect-ratio: 390 / 844;
+  padding: var(--marco);
+  border-radius: 3.4rem;
+  background:
+    linear-gradient(135deg, #5d6470 0%, #23272e 22%, #0c0e11 50%, #2a2e36 78%, #6b7280 100%);
+  box-shadow:
+    0 0 0 1.5px #0a0b0d,
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 60px 90px -30px rgba(10, 30, 22, 0.55),
+    0 30px 50px -30px rgba(10, 30, 22, 0.45);
+}
+
+.telefono-boton {
+  position: absolute;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #14161a, #4a505b 60%, #23272e);
+}
+
+.telefono-boton.b1 {
+  left: -3.5px;
+  top: 21%;
+  height: 4.5%;
+}
+
+.telefono-boton.b2 {
+  left: -3.5px;
+  top: 29%;
+  height: 8.5%;
+}
+
+.telefono-boton.b3 {
+  right: -3.5px;
+  top: 31%;
+  height: 12.5%;
+}
+
+.telefono-pantalla {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2.75rem;
+  /* Blanco como la barra de pestañas de la app: es lo que se ve bajo ella. */
+  background: #fff;
+  box-shadow: 0 0 0 3.5px #050607;
+  display: flex;
+  flex-direction: column;
+}
+
+.telefono-estado {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 7.6%;
+  padding: 0 11% 0 12.5%;
+  background: #f6f7f4;
+  color: #14201a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.telefono-isla {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 29%;
+  height: 54%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #050607;
+}
+
+.telefono-isla::after {
+  content: "";
+  position: absolute;
+  right: 14%;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2b3a55, #0b0f18 70%);
+}
+
+.telefono-iconos {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.telefono-iconos .senal {
+  width: 1rem;
+  height: 0.65rem;
+  background: linear-gradient(90deg, #14201a 18%, transparent 18% 27%, #14201a 27% 45%, transparent 45% 54%, #14201a 54% 72%, transparent 72% 81%, #14201a 81%);
+  clip-path: polygon(0 100%, 0 60%, 100% 0, 100% 100%);
+}
+
+.telefono-iconos .bateria {
+  position: relative;
+  width: 1.35rem;
+  height: 0.65rem;
+  border: 1.5px solid #14201a;
+  border-radius: 0.22rem;
+}
+
+.telefono-iconos .bateria::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  right: 24%;
+  border-radius: 1px;
+  background: #14201a;
+}
+
+.telefono-carril {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  /* Deja libre la franja de la barra inferior para que no tape las pestañas. */
+  margin-bottom: 7.2%;
+  transition: transform 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+.telefono-carril img {
+  flex: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  user-select: none;
+}
+
+.telefono-barra {
+  position: absolute;
+  left: 50%;
+  bottom: 1.1%;
+  z-index: 2;
+  width: 35%;
+  height: 0.3rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #101613;
+}
+
+/* Reflejo del vidrio. */
+.telefono-pantalla::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(118deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 26%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .telefono-carril {
+    transition: none;
+  }
+}

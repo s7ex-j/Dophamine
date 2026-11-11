@@ -1,0 +1,7 @@
+node_modules
+dist
+.expo
+web
+package-lock.json
+expo-env.d.ts
+*.md

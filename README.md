@@ -1,68 +1,71 @@
 # Dophamine
 
-> Un plan de nutricion, entrenamiento y bienestar que se entiende de un vistazo.
+> Una app local para convertir tus registros de nutricion, entrenamiento y bienestar en decisiones claras.
 
 [![Checks](https://github.com/s7ex-j/Dophamine/actions/workflows/checks.yml/badge.svg)](https://github.com/s7ex-j/Dophamine/actions/workflows/checks.yml)
 [![Deploy web](https://github.com/s7ex-j/Dophamine/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/s7ex-j/Dophamine/actions/workflows/deploy-web.yml)
+[![Release](https://img.shields.io/github/v/release/s7ex-j/Dophamine?display_name=tag&label=release)](https://github.com/s7ex-j/Dophamine/releases/latest)
+[![License](https://img.shields.io/github/license/s7ex-j/Dophamine)](LICENSE)
 
-**Dophamine** es una aplicacion offline-first para sostener un plan personal de nutricion y entrenamiento sin convertir cada dia en una hoja de calculo. Parte de tus datos, registra los totales que importan y transforma peso e ingesta en una recomendacion semanal pequena, visible y explicable.
+<sub>**Español** · [English](README.en.md)</sub>
 
-**Web:** [s7ex-j.github.io/Dophamine](https://s7ex-j.github.io/Dophamine/)  
-**Version actual:** `0.3.0`  
-**Autor y creador:** [Jharol Vilca Ramos](https://github.com/s7ex-j)
+**[Abrir la app web](https://s7ex-j.github.io/Dophamine/app/)** · **[Sitio del proyecto](https://s7ex-j.github.io/Dophamine/)** · **[Ver la última versión](https://github.com/s7ex-j/Dophamine/releases/latest)** · **[Leer arquitectura](docs/ARCHITECTURE.md)**
 
-## Por que existe
+Dophamine es un proyecto open source, offline-first, pensado para quienes quieren entender su plan sin convertir cada comida o entrenamiento en una hoja de calculo. Crea una referencia inicial, registra los totales que importan y recibe una lectura semanal pequena, explicable y bajo tu control.
 
-Muchos trackers obligan a registrar cada alimento y dejan al usuario solo con datos sueltos. Dophamine propone un flujo mas compacto:
+## El producto
 
-1. Crear un plan inicial a partir de edad, peso, altura, actividad y objetivo.
-2. Anotar peso y totales diarios de calorias y macronutrientes.
-3. Separar el ruido diario de la tendencia de peso.
-4. Revisar una vez por semana una recomendacion basada en la adherencia real.
+| Hoy | Progreso | Entreno | Bienestar |
+| --- | --- | --- | --- |
+| Energia disponible, consistencia, macros y siguiente paso. | Peso, ingesta y tendencia suavizada. | Rutinas, series, carga, reps y RIR. | Sueno, estres, energia, animo y notas privadas. |
 
-No pretende diagnosticar ni sustituir a un nutricionista. Es una herramienta de seguimiento personal y aprendizaje.
+### Un flujo corto que mantiene el contexto
 
-## Funciones actuales
+```text
+Configura tu plan -> Registra peso y totales diarios -> Mira la tendencia -> Decide en tu revision semanal
+```
 
-- **Onboarding nutricional:** estima BMR con Mifflin-St Jeor, aplica actividad y objetivo, y genera una meta inicial de calorias y macros.
-- **Registro diario compacto:** peso, calorias y macros con precarga del ultimo registro para reducir friccion.
-- **Dashboard de adherencia:** energia, progreso de cada macro, TDEE, estado de animo y marcas diarias en una sola vista.
-- **Tracker mensual de habitos:** plan nutricional, proteina, movimiento, sueno y chequeo personal, marcables por dia.
-- **Revisión semanal explicable:** distingue entre estimación en construcción, actualizando o en pausa según la calidad del registro; propone ajustes pequeños que siempre requieren aceptación.
-- **Rutinas configurables:** variantes full body, torso/pierna, empuje/tirón y cadena posterior; días, ejercicios, series, repeticiones y RIR editables.
-- **Generación de entrenamiento local:** crea una propuesta según objetivo, tiempo por sesión y acceso a gimnasio, casa o equipo limitado.
-- **Registro y progresión de fuerza:** guarda carga, repeticiones y RIR de las series de trabajo; la siguiente sesión ofrece una sugerencia de progresión basada en esa evidencia.
-- **Bienestar con contexto:** animo, energia, estres, horas de sueno y nota privada, con pulso de tendencias recientes.
-- **Analisis de senal:** tendencia de peso suavizada, ingesta de siete dias, adherencia a la meta y promedios de macros.
-- **TDEE explicable:** con 14 dias de datos y al menos 10 dias de ingesta valida, estima el gasto desde ingesta promedio y cambio de tendencia.
-- **Biblioteca de ejercicios:** catalogo inicial sin medios de terceros redistribuidos.
-- **Privacidad local:** sin cuentas ni telemetria; SQLite en Android/iOS y `localStorage` en la web.
+La pantalla principal no es un muro de numeros: presenta la energia disponible, los habitos del dia, la semana completa y la siguiente accion que desbloquea mas informacion. Los huecos de registro se muestran con honestidad; Dophamine no fabrica precision cuando todavia faltan datos.
 
-## El modelo de datos, en simple
+## Que incluye
 
-Dophamine no exige una base de datos de alimentos para ser util. El producto actual registra los **totales diarios**. Asi puede comparar energia ingerida, peso tendencia y objetivo sin aumentar friccion. El registro de alimentos, plantillas e importacion son extensiones futuras, no requisitos para empezar.
+- **Dashboard de decision diaria.** Energia consumida/restante, objetivo, macros, consistencia y un siguiente paso accionable desde la primera pantalla.
+- **Plan nutricional inicial.** Estima BMR con Mifflin-St Jeor, aplica actividad y objetivo, y propone calorias y macronutrientes de referencia.
+- **Registro compacto.** Peso, calorias y macros; no exige catalogar alimento por alimento para empezar a encontrar senales.
+- **TDEE y revision semanal transparentes.** Se activan al reunir historial suficiente, indican si la estimacion esta construyendose, actualizandose o en pausa, y nunca cambian tu objetivo sin aceptacion.
+- **Habitos mensuales.** Plan, proteina, movimiento, descanso y chequeo personal con una vista de consistencia por dia.
+- **Entrenamiento configurable.** Full body, torso/pierna, empuje/tiron, cadena posterior o rutina propia; dias, ejercicios, series, repeticiones y RIR editables.
+- **Generacion y progresion locales.** La rutina puede adaptarse al objetivo, duracion y equipo; las sugerencias usan las cargas, repeticiones y RIR de sesiones previas.
+- **Bienestar con contexto.** Animo, energia, estres, horas de sueno y una nota privada, con lectura de tendencia reciente.
+- **Privacidad por defecto.** Sin cuentas, anuncios ni telemetria. SQLite en Android/iOS y `localStorage` en la web.
 
-La estimacion de TDEE es una aproximacion transparente, no una copia ni una implementacion de algoritmos propietarios. Consulta [Arquitectura](docs/ARCHITECTURE.md) para sus supuestos y limites.
+## Filosofia
 
-## Empezar a desarrollar
+1. **Menos friccion, mejores datos.** Registrar los totales diarios es suficiente para iniciar una conversacion util con la tendencia.
+2. **Las recomendaciones deben poder explicarse.** Cada estado y propuesta muestra que datos tiene y que datos aun necesita.
+3. **El usuario conserva la ultima palabra.** Una revision propone; nunca modifica automaticamente el plan.
+4. **Offline no es una limitacion.** Tus datos permanecen en tu dispositivo y la app funciona sin una cuenta obligatoria.
+
+## Empezar
 
 ### Requisitos
 
-- Node.js 20 o superior
-- npm 10 o superior
-- Expo Go o Android Studio, solo si se desea probar en dispositivo
+- Node.js 20+
+- npm 10+
+- Expo Go o Android Studio, solo para probar en dispositivo
 
-### Instalacion
+### Desarrollo local
 
 ```powershell
 git clone https://github.com/s7ex-j/Dophamine.git
 Set-Location Dophamine
 npm ci
 npm run typecheck
+npm test
 npm run web
 ```
 
-Abre la URL que muestre Expo. Para otras plataformas:
+Otros destinos:
 
 ```powershell
 npm run start
@@ -70,46 +73,52 @@ npm run android
 npm run ios
 ```
 
-Los datos de la web se almacenan en el navegador y no se comparten con la base SQLite de una instalacion movil.
+Sitio del proyecto (landing en `web/`, hecha con Vite, Tailwind y [shadcn/ui](https://github.com/shadcn-ui/ui)):
 
-## Estructura
+```powershell
+Set-Location web
+npm ci
+npm run dev
+```
+
+La web guarda datos en el navegador. Esos registros no se sincronizan automaticamente con la base SQLite de una instalacion movil.
+
+## Arquitectura
 
 ```text
 app/                 Rutas y pantallas de Expo Router
 src/components/      Componentes visuales reutilizables
-src/db/              Repositorios SQLite nativo y adaptador web
-src/features/        Dominio: perfil, biometria, TDEE, habitos, rutinas y bienestar
-docs/                Arquitectura, privacidad y publicacion
-.github/workflows/   Verificacion de tipos y despliegue de GitHub Pages
+src/db/              SQLite nativo y adaptador localStorage para web
+src/features/        Dominio: perfil, biometria, TDEE, habitos, rutinas y bienestar (con tests *.test.ts)
+web/                 Sitio del proyecto: Vite + React + Tailwind + shadcn/ui
+docs/                Arquitectura, privacidad, contribucion y releases
+.github/workflows/   Typecheck, tests y despliegue continuo a GitHub Pages
 ```
 
-Consulta [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para conocer los limites entre interfaz, dominio y persistencia.
+La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). El detalle matematico, limites y criterios de datos del TDEE tambien vive alli.
 
-## Calidad y publicacion
+## Calidad y releases
 
-- `npm run typecheck` es el control minimo antes de un cambio.
-- Cada push a `main` ejecuta typecheck y publica la web en GitHub Pages.
-- El proceso para crear APK/AAB y preparar tiendas esta en [docs/RELEASING.md](docs/RELEASING.md).
-- Los cambios publicados estan documentados en [CHANGELOG.md](CHANGELOG.md).
+- Cada push y pull request ejecuta `npm run typecheck`, los tests de dominio (`npm test`, Vitest: perfil nutricional, TDEE, revision semanal y habitos) y compila el sitio.
+- Cada push a `main` publica en GitHub Pages el sitio en `/Dophamine/` y la app en `/Dophamine/app/`; los enlaces antiguos redirigen a la app.
+- La versión del código es 0.4.0; los cambios están en [CHANGELOG.md](CHANGELOG.md) y las versiones publicadas en [Releases](https://github.com/s7ex-j/Dophamine/releases).
+- La preparacion de APK/AAB y tiendas esta documentada en [docs/RELEASING.md](docs/RELEASING.md).
+- Consulta [CHANGELOG.md](CHANGELOG.md) para el historial de cambios.
 
-## Privacidad, salud y datos de ejercicios
+## Alcance y hoja de ruta
 
-Tus datos quedan en el dispositivo. Dophamine no diagnostica ni ofrece consejo medico. Consulta [docs/PRIVACY.md](docs/PRIVACY.md) para el detalle de datos y limitaciones.
+Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. El modelo actual registra **totales diarios**, no alimentos individuales. Por eso una base global de alimentos, plantillas de comidas e importacion manual pertenecen a la siguiente etapa, junto con el respaldo en la app movil (en la web ya se puede descargar y restaurar un archivo), bloques de periodizacion y sincronizacion cifrada opcional.
 
-El modelo de ejercicios es compatible con [`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset). No se incluyen imagenes ni GIFs de terceros. Lee [NOTICE.md](NOTICE.md) antes de importar contenido externo.
+El orden de lo que falta, con quién hace cada paso y cómo se comprueba, está en [docs/HOJA_DE_RUTA.md](docs/HOJA_DE_RUTA.md).
+
+## Datos de ejercicios, privacidad y licencia
+
+El catalogo inicial no redistribuye imagenes ni GIFs de terceros. El modelo es compatible con [`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset); consulta [NOTICE.md](NOTICE.md) antes de incorporar contenido externo.
+
+Lee [docs/PRIVACY.md](docs/PRIVACY.md) para conocer los limites de privacidad y salud. Dophamine se distribuye bajo licencia [MIT](LICENSE).
 
 ## Contribuir
 
-Las contribuciones son bienvenidas: correcciones, accesibilidad, pruebas, datos libres y mejoras de interfaz. Lee [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir un issue o pull request.
+Las contribuciones de producto, accesibilidad, pruebas, datos abiertos y diseno son bienvenidas. Revisa [CONTRIBUTING.md](CONTRIBUTING.md) antes de abrir un issue o pull request.
 
-## Hoja de ruta
-
-- Bloques de periodización y descargas configurables.
-- Plantillas de comidas e importacion manual de alimentos.
-- Graficos interactivos y exportacion de datos.
-- Sincronizacion cifrada opcional, siempre sin convertir una cuenta en requisito.
-- Builds de distribucion Android e iOS.
-
-## Licencia
-
-Distribuido bajo licencia [MIT](LICENSE). El nombre, codigo y documentacion son abiertos; los medios de terceros requieren sus propias licencias.
+Creado por [Jharol Vilca Ramos](https://github.com/s7ex-j).

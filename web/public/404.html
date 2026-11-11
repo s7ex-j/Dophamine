@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dophamine</title>
+    <script>
+      // Desde v0.3.0 la app vive en /Dophamine/app/. Redirige los enlaces antiguos (p. ej. /Dophamine/training).
+      ;(function () {
+        var base = "/Dophamine/"
+        var path = location.pathname
+        if (path.indexOf(base) === 0 && path.indexOf(base + "app/") !== 0) {
+          location.replace(base + "app/" + path.slice(base.length) + location.search + location.hash)
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <p>Página no encontrada. <a href="/Dophamine/">Volver a Dophamine</a>.</p>
+  </body>
+</html>

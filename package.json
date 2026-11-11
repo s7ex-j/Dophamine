@@ -1,6 +1,6 @@
 {
   "name": "dophamine",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -8,7 +8,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
@@ -26,6 +29,8 @@
   },
   "devDependencies": {
     "@types/react": "~18.3.12",
-    "typescript": "~5.3.3"
+    "prettier": "^3.10.0",
+    "typescript": "~5.3.3",
+    "vitest": "^5.1.0"
   }
 }

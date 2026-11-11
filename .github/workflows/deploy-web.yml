@@ -24,15 +24,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+      # App de Expo, servida en /Dophamine/app/ (experiments.baseUrl en app.json)
       - run: npm ci
       - run: npx expo export --platform web
+      # Landing (Vite + shadcn/ui), servida en /Dophamine/
+      - run: npm ci && npm run build
+        working-directory: web
+      - name: Combinar landing y app
+        run: |
+          mkdir -p site
+          cp -r web/dist/. site/
+          cp -r dist site/app
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

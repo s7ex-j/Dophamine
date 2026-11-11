@@ -3,7 +3,7 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
@@ -14,7 +14,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "baseUrl": "/Dophamine"
+      "baseUrl": "/Dophamine/app"
     },
     "web": { "output": "static", "bundler": "metro" },
     "android": { "package": "com.s7ex.dophamine", "versionCode": 1 },
