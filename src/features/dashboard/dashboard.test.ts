@@ -14,7 +14,7 @@ const record = (date: string, caloriesIn: number) => ({
 
 describe("tablero de hoy", () => {
   it("arma siete días con hoy al final y enlaza los registros", () => {
-    const week = buildWeek([record("2026-11-10", 2300)], new Date("2026-11-11T15:00:00Z"));
+    const week = buildWeek([record("2026-11-10", 2300)], new Date(2026, 10, 11, 21, 30));
     expect(week).toHaveLength(7);
     expect(week[6].key).toBe("2026-11-11");
     expect(week[5].record?.caloriesIn).toBe(2300);

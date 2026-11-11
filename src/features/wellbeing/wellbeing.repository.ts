@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import { getDatabase } from "@/src/db/database";
 
 export type WellbeingInput = {
@@ -10,7 +11,7 @@ export type WellbeingInput = {
 export async function saveWellbeingEntry({ mood, energy, stress, sleepHours, note }: WellbeingInput) {
   const db = await getDatabase();
   const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const date = new Date().toISOString().slice(0, 10);
+  const date = localDateKey();
   await db.runAsync(
     "INSERT INTO wellbeing_entries (id, date, mood, energy, stress, sleep_hours, note) VALUES (?, ?, ?, ?, ?, ?, ?)",
     id,

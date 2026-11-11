@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 export type Store = {
   biometrics: Array<{
     id: string;
@@ -70,4 +71,4 @@ export function writeStore(store: Store) {
 }
 
 export const webId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-export const webToday = () => new Date().toISOString().slice(0, 10);
+export const webToday = () => localDateKey();

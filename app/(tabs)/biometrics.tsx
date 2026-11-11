@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
@@ -13,7 +14,7 @@ import { AppTheme } from "@/src/theme";
 
 export default function BiometricsScreen() {
   const [weight, setWeight] = useState("");
-  const [entryDate, setEntryDate] = useState(new Date().toISOString().slice(0, 10));
+  const [entryDate, setEntryDate] = useState(localDateKey());
   const [calories, setCalories] = useState("");
   const [protein, setProtein] = useState("");
   const [carbs, setCarbs] = useState("");

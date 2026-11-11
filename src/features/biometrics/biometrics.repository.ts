@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import { getDatabase } from "@/src/db/database";
 
 export type DailyBiometrics = {
@@ -14,7 +15,7 @@ export type BiometricsInput = Pick<
   "weightKg" | "caloriesIn" | "proteinG" | "carbsG" | "fatsG"
 >;
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDateKey();
 const id = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export async function saveDailyBiometrics(input: BiometricsInput, date = today()) {

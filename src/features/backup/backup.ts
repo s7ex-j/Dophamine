@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import type { Store } from "@/src/db/web-storage";
 
 /**
@@ -17,8 +18,7 @@ export function buildBackup(store: Store, now = new Date()): Backup {
   return { app: "dophamine", format: BACKUP_FORMAT, exportedAt: now.toISOString(), data: store };
 }
 
-export const backupFileName = (now = new Date()) =>
-  `dophamine-respaldo-${now.toISOString().slice(0, 10)}.json`;
+export const backupFileName = (now = new Date()) => `dophamine-respaldo-${localDateKey(now)}.json`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

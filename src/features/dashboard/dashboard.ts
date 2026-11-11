@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 
 // Cálculos del tablero "Hoy" que no dependen de la interfaz. Se prueban solos.
@@ -10,7 +11,7 @@ export function buildWeek(recentRecords: DailyBiometrics[], today = new Date()):
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
     date.setDate(date.getDate() - (6 - index));
-    const key = date.toISOString().slice(0, 10);
+    const key = localDateKey(date);
     return {
       key,
       day: date.toLocaleDateString("es-PE", { weekday: "narrow" }).toUpperCase(),

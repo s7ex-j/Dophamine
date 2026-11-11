@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 export type Habit = { id: string; label: string; shortLabel: string; color: string };
 
 export const DEFAULT_HABITS: Habit[] = [
@@ -8,7 +9,7 @@ export const DEFAULT_HABITS: Habit[] = [
   { id: "checkin", label: "Chequeo personal", shortLabel: "C", color: "#C25476" },
 ];
 
-export const dateKey = (date = new Date()) => date.toISOString().slice(0, 10);
+export const dateKey = localDateKey;
 export const monthDays = (date = new Date()) => {
   const year = date.getFullYear();
   const month = date.getMonth();
