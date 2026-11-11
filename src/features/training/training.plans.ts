@@ -167,3 +167,23 @@ export function normalizeRoutine(value: unknown): Routine {
     ),
   };
 }
+
+export const trainingGoalLabel = (goal: TrainingGoal) =>
+  goal === "strength" ? "Fuerza" : goal === "hypertrophy" ? "Hipertrofia" : "Acondicionamiento";
+
+/** Una línea por ejercicio: "nombre | series | repeticiones | RIR". Es el formato del editor de rutina. */
+export const formatExerciseLines = (exercises: ExercisePlan[]) =>
+  exercises
+    .map((exercise) => `${exercise.name} | ${exercise.sets} | ${exercise.reps} | ${exercise.rir}`)
+    .join("\n");
+
+/** Lee el texto del editor. Las líneas sin nombre se descartan y lo que falte toma un valor por defecto. */
+export function parseExerciseLines(text: string): ExercisePlan[] {
+  return text
+    .split("\n")
+    .map((line): ExercisePlan | null => {
+      const [name, sets, reps, rir] = line.split("|").map((part) => part.trim());
+      return name ? { name, sets: Number(sets) || 3, reps: reps || "8–12", rir: Number(rir) || 2 } : null;
+    })
+    .filter((exercise): exercise is ExercisePlan => Boolean(exercise));
+}
