@@ -107,7 +107,7 @@ La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARC
 
 ## Alcance y hoja de ruta
 
-Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. El modelo actual registra **totales diarios**, no alimentos individuales. Por eso una base global de alimentos, plantillas de comidas e importacion manual pertenecen a la siguiente etapa, junto con exportacion de datos, bloques de periodizacion y sincronizacion cifrada opcional.
+Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. El modelo actual registra **totales diarios**, no alimentos individuales. Por eso una base global de alimentos, plantillas de comidas e importacion manual pertenecen a la siguiente etapa, junto con el respaldo en la app movil (en la web ya se puede descargar y restaurar un archivo), bloques de periodizacion y sincronizacion cifrada opcional.
 
 ## Datos de ejercicios, privacidad y licencia
 

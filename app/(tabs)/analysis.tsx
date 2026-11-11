@@ -6,6 +6,7 @@ import { Card, ListRow, Metric, Screen } from "@/src/components/ui";
 import { getBiometricsWindow, type DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { analyzeMetabolism, weeklyRecommendation } from "@/src/features/tdee/tdee";
+import { trendColumns } from "@/src/features/tdee/trendChart";
 import { goalLabels, type NutritionProfile } from "@/src/features/profile/profile";
 import { AppTheme } from "@/src/theme";
 
@@ -21,8 +22,7 @@ export default function AnalysisScreen() {
   useFocusEffect(load);
   const analysis = analyzeMetabolism(records);
   const points = analysis.points.slice(-14);
-  const minTrend = Math.min(...points.map((point) => point.trendKg), 0);
-  const maxTrend = Math.max(...points.map((point) => point.trendKg), 1);
+  const columns = trendColumns(points);
   const calorieTarget = profile?.calorieTarget ?? 1;
   const intakeDays = [...records].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
   const averageIntake = intakeDays.length
@@ -51,16 +51,10 @@ export default function AnalysisScreen() {
             <>
               <View style={AppTheme.chart}>
                 <View style={AppTheme.chartBars}>
-                  {points.map((point) => (
-                    <View key={point.date} style={AppTheme.chartColumn}>
-                      <View
-                        style={[
-                          AppTheme.chartBar,
-                          {
-                            height: `${Math.max(12, ((point.trendKg - minTrend) / Math.max(0.1, maxTrend - minTrend)) * 100)}%`,
-                          },
-                        ]}
-                      />
+                  {columns.map((column) => (
+                    <View key={column.date} style={AppTheme.chartColumn}>
+                      <View style={[AppTheme.chartBar, { height: `${column.trendPct}%` }]} />
+                      <View style={[AppTheme.chartDot, { bottom: `${column.weightPct}%` }]} />
                     </View>
                   ))}
                 </View>
@@ -69,6 +63,7 @@ export default function AnalysisScreen() {
                 <Text style={AppTheme.hint}>{points[0].date.slice(5)}</Text>
                 <Text style={AppTheme.hint}>{points.at(-1)?.date.slice(5)}</Text>
               </View>
+              <Text style={AppTheme.hint}>Barra: tu tendencia. Punto: el pesaje de ese día.</Text>
               <Text style={AppTheme.body}>
                 Tendencia actual: {points.at(-1)?.trendKg.toFixed(1)} kg · Peso registrado:{" "}
                 {points.at(-1)?.weightKg.toFixed(1)} kg

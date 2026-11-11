@@ -1,5 +1,12 @@
 # Changelog
 
+## Sin publicar
+
+- Respaldo en la web: descargar todos los datos en un archivo JSON y restaurarlos desde ese archivo, con validación y confirmación antes de reemplazar.
+- Corregido el gráfico "Peso tendencia" de Análisis: la escala partía de cero y todas las barras salían iguales. Ahora muestra la tendencia y el pesaje de cada día.
+- Código formateado con Prettier y chequeo de formato en CI.
+- Página de presentación rediseñada, con capturas reales de la app.
+
 ## 0.3.0 - Unreleased
 
 - Dashboard diario rediseñado con energia, progreso de macros, adherencia y TDEE.

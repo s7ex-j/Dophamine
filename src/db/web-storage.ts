@@ -1,4 +1,4 @@
-type Store = {
+export type Store = {
   biometrics: Array<{
     id: string;
     date: string;

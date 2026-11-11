@@ -26,6 +26,7 @@ import { saveNutritionProfile } from "@/src/features/profile/profile.repository"
 import { saveDailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { DEFAULT_HABITS, dateKey } from "@/src/features/habits/habits";
 import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
+import { BackupCard } from "@/src/features/backup/BackupCard";
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -414,6 +415,7 @@ export default function DashboardScreen() {
           />
           <Button title="Editar plan" onPress={openPlan} variant="secondary" />
         </Card>
+        <BackupCard onRestored={load} />
       </ScrollView>
     </Screen>
   );

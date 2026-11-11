@@ -38,10 +38,20 @@ Una rutina contiene estructura, dias, entorno de entrenamiento, objetivo, duraci
 
 La sugerencia de progresion se basa en el ultimo registro del mismo ejercicio: al alcanzar el extremo superior del rango con el RIR objetivo o mayor, recomienda aumentar un paso de carga; en caso contrario propone repetir y mejorar una repeticion. Es una sugerencia visible y modificable, no una prescripcion ni una sustitucion de tecnica profesional.
 
+## Respaldo
+
+`src/features/backup/backup.ts` arma y valida el archivo de respaldo y no toca ninguna API de plataforma, por eso tiene pruebas propias. `backup.repository.web.ts` descarga y restaura el archivo en el navegador; `backup.repository.ts` (Android e iOS) declara `backupAvailable = false` hasta que exista la exportacion desde SQLite. La pantalla solo muestra la tarjeta de respaldo donde esta disponible.
+
+## Convenciones
+
+- Un archivo `algo.web.ts` reemplaza a `algo.ts` en la version web; ambos exponen las mismas funciones.
+- Los calculos que alimentan un grafico viven en el dominio (por ejemplo `tdee/trendChart.ts`) y la pantalla solo dibuja. Asi se pueden probar sin interfaz.
+- El formato lo decide Prettier (`npm run format`); CI falla si un archivo no esta formateado.
+
 ## Limites actuales
 
 - No hay base de alimentos, lector de codigos ni registro por comida.
-- No hay sincronizacion, autenticacion ni respaldo en nube.
+- No hay sincronizacion, autenticacion ni respaldo en nube. El respaldo en archivo existe solo en la web.
 - La biblioteca de ejercicios no incorpora medios de terceros.
 - La estimacion necesita adherencia y mediciones suficientes; en caso contrario la interfaz comunica que aun no hay senal suficiente.
 - No hay periodizacion automatica, bloques de descarga ni temporizador de descansos todavia; se consideran extensiones separadas porque requieren un modelo de ciclos y controles de sesion mas detallados.
