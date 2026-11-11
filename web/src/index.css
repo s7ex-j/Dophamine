@@ -135,3 +135,174 @@
     scroll-behavior: auto;
   }
 }
+
+/* ───────── Teléfono de la portada. Genérico, dibujado con CSS: marco metálico,
+   botones laterales, recorte de la cámara y barra inferior. */
+.telefono {
+  --marco: 11px;
+  position: relative;
+  width: min(100%, 19.5rem);
+  aspect-ratio: 390 / 844;
+  padding: var(--marco);
+  border-radius: 3.4rem;
+  background:
+    linear-gradient(135deg, #5d6470 0%, #23272e 22%, #0c0e11 50%, #2a2e36 78%, #6b7280 100%);
+  box-shadow:
+    0 0 0 1.5px #0a0b0d,
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 60px 90px -30px rgba(10, 30, 22, 0.55),
+    0 30px 50px -30px rgba(10, 30, 22, 0.45);
+}
+
+.telefono-boton {
+  position: absolute;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #14161a, #4a505b 60%, #23272e);
+}
+
+.telefono-boton.b1 {
+  left: -3.5px;
+  top: 21%;
+  height: 4.5%;
+}
+
+.telefono-boton.b2 {
+  left: -3.5px;
+  top: 29%;
+  height: 8.5%;
+}
+
+.telefono-boton.b3 {
+  right: -3.5px;
+  top: 31%;
+  height: 12.5%;
+}
+
+.telefono-pantalla {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2.75rem;
+  /* Blanco como la barra de pestañas de la app: es lo que se ve bajo ella. */
+  background: #fff;
+  box-shadow: 0 0 0 3.5px #050607;
+  display: flex;
+  flex-direction: column;
+}
+
+.telefono-estado {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  height: 7.6%;
+  padding: 0 11% 0 12.5%;
+  background: #f6f7f4;
+  color: #14201a;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.telefono-isla {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 29%;
+  height: 54%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #050607;
+}
+
+.telefono-isla::after {
+  content: "";
+  position: absolute;
+  right: 14%;
+  top: 50%;
+  width: 0.5rem;
+  height: 0.5rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2b3a55, #0b0f18 70%);
+}
+
+.telefono-iconos {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.telefono-iconos .senal {
+  width: 1rem;
+  height: 0.65rem;
+  background: linear-gradient(90deg, #14201a 18%, transparent 18% 27%, #14201a 27% 45%, transparent 45% 54%, #14201a 54% 72%, transparent 72% 81%, #14201a 81%);
+  clip-path: polygon(0 100%, 0 60%, 100% 0, 100% 100%);
+}
+
+.telefono-iconos .bateria {
+  position: relative;
+  width: 1.35rem;
+  height: 0.65rem;
+  border: 1.5px solid #14201a;
+  border-radius: 0.22rem;
+}
+
+.telefono-iconos .bateria::before {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  right: 24%;
+  border-radius: 1px;
+  background: #14201a;
+}
+
+.telefono-carril {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  /* Deja libre la franja de la barra inferior para que no tape las pestañas. */
+  margin-bottom: 7.2%;
+  transition: transform 0.7s cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+.telefono-carril img {
+  flex: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  user-select: none;
+}
+
+.telefono-barra {
+  position: absolute;
+  left: 50%;
+  bottom: 1.1%;
+  z-index: 2;
+  width: 35%;
+  height: 0.3rem;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #101613;
+}
+
+/* Reflejo del vidrio. */
+.telefono-pantalla::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(118deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 26%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .telefono-carril {
+    transition: none;
+  }
+}

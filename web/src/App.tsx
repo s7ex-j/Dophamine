@@ -145,7 +145,7 @@ function serieDeEjemplo(): Punto[] {
     const real = 78.6 - dia * 0.047
     const ruido = (azar() - 0.5) * 1.5 + (dia % 7 === 5 || dia % 7 === 6 ? 0.45 : 0)
     const peso = Math.round((real + ruido) * 10) / 10
-    tendencia = dia === 0 ? peso : tendencia + 0.14 * (peso - tendencia)
+    tendencia = dia === 0 ? peso : tendencia + 0.28 * (peso - tendencia) // el mismo factor que usa la app
     puntos.push({ dia: dia + 1, peso, tendencia: Math.round(tendencia * 100) / 100 })
   }
   return puntos
@@ -266,27 +266,107 @@ function TrendChart() {
   )
 }
 
+
+/* ───────── El teléfono de la portada: capturas reales de la app, que van pasando solas.
+   Es un teléfono genérico dibujado con CSS (ver index.css), sin marca. */
+
+const pantallas = [
+  { id: "hoy", nombre: "Hoy", texto: "Cuánta energía te queda y qué falta registrar." },
+  { id: "analisis", nombre: "Análisis", texto: "La tendencia de tu peso y tu ingesta de la semana." },
+  { id: "entreno", nombre: "Entreno", texto: "Tu rutina y la sesión de hoy, serie por serie." },
+  { id: "habitos", nombre: "Hábitos", texto: "Cinco compromisos diarios en una vista mensual." },
+]
+
+function PhoneDemo() {
+  const [activa, setActiva] = useState(0)
+  const [manual, setManual] = useState(false)
+
+  useEffect(() => {
+    if (manual || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const reloj = window.setInterval(() => setActiva((i) => (i + 1) % pantallas.length), 3600)
+    return () => window.clearInterval(reloj)
+  }, [manual])
+
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <div className="telefono">
+        <span className="telefono-boton b1" />
+        <span className="telefono-boton b2" />
+        <span className="telefono-boton b3" />
+        <div className="telefono-pantalla">
+          <div className="telefono-estado">
+            <span>9:41</span>
+            <span className="telefono-isla" />
+            <span className="telefono-iconos" aria-hidden="true">
+              <i className="senal" />
+              <i className="bateria" />
+            </span>
+          </div>
+          <div className="telefono-carril" style={{ transform: `translateX(-${activa * 100}%)` }}>
+            {pantallas.map((p) => (
+              <img
+                key={p.id}
+                src={`${import.meta.env.BASE_URL}pantallas/${p.id}.webp`}
+                alt={`Pantalla ${p.nombre} de Dophamine con datos de ejemplo`}
+                width={390}
+                height={780}
+                draggable={false}
+              />
+            ))}
+          </div>
+          <span className="telefono-barra" />
+        </div>
+      </div>
+
+      <div className="w-full max-w-[21rem]">
+        <div className="flex justify-center gap-1.5" role="tablist" aria-label="Pantallas de la app">
+          {pantallas.map((p, i) => (
+            <button
+              key={p.id}
+              type="button"
+              role="tab"
+              aria-selected={i === activa}
+              onClick={() => {
+                setManual(true)
+                setActiva(i)
+              }}
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                i === activa ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {p.nombre}
+            </button>
+          ))}
+        </div>
+        <p className="mt-3 min-h-[2.75rem] text-center text-sm text-muted-foreground text-pretty">
+          {pantallas[activa].texto}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
-      <div className="mx-auto max-w-6xl px-5 pb-10 pt-14 md:pt-24">
-        <a
-          href={RELEASE_URL}
-          className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <span className="size-2 rounded-full bg-primary" />
-          Versión 0.3.0, de código abierto
-        </a>
-        <h1 className="mt-6 max-w-[14ch] text-[clamp(2.9rem,10.5vw,7rem)] font-extrabold leading-[0.93] tracking-[-0.035em] text-balance">
-          Un pesaje no dice nada. La tendencia sí.
-        </h1>
-        <div className="mt-8 grid items-end gap-8 lg:grid-cols-[1.1fr_auto]">
-          <p className="max-w-xl text-lg text-muted-foreground text-pretty md:text-xl">
+      <div className="mx-auto grid max-w-6xl items-center gap-x-10 gap-y-14 px-5 pb-16 pt-12 md:pt-20 lg:grid-cols-[1.15fr_0.85fr]">
+        <div>
+          <a
+            href={RELEASE_URL}
+            className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <span className="size-2 rounded-full bg-primary" />
+            Versión 0.3.0, de código abierto
+          </a>
+          <h1 className="mt-6 text-[clamp(2.9rem,9.6vw,6rem)] font-extrabold leading-[0.93] tracking-[-0.035em] text-balance">
+            Un pesaje no dice nada. La tendencia sí.
+          </h1>
+          <p className="mt-7 max-w-xl text-lg text-muted-foreground text-pretty md:text-xl">
             Dophamine toma los totales de tu día (peso, calorías y macros), separa la señal del ruido y una vez por
             semana te propone un ajuste pequeño, con su porqué. Sin catalogar cada comida, sin hojas de cálculo y sin
             cuentas.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap gap-3">
             <Button size="lg" asChild className="h-13 rounded-full px-7 text-base">
               <a href={APP_URL}>
                 Abrir en la web <ArrowRight />
@@ -298,11 +378,32 @@ function Hero() {
               </a>
             </Button>
           </div>
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            {["Sin cuentas", "Sin telemetría", "Funciona sin conexión"].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span className="size-1.5 rounded-full bg-primary" /> {item}
+              </li>
+            ))}
+          </ul>
         </div>
+        <PhoneDemo />
       </div>
+    </section>
+  )
+}
 
-      <div className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="rounded-3xl border bg-card p-5 shadow-[0_30px_80px_-30px_color-mix(in_oklch,var(--primary)_45%,transparent)] md:p-8">
+function Trend() {
+  return (
+    <section className="border-t bg-muted/50 py-20">
+      <div className="mx-auto max-w-6xl px-5">
+        <h2 className="max-w-[17ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
+          La báscula hace ruido. Aquí lo ves.
+        </h2>
+        <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+          El agua, la sal y la digestión mueven tu peso cada día más de lo que cambia en una semana. Por eso Dophamine
+          decide con la línea, no con los puntos.
+        </p>
+        <div className="mt-10 rounded-3xl border bg-card p-5 shadow-[0_30px_80px_-30px_color-mix(in_oklch,var(--primary)_45%,transparent)] md:p-8">
           <TrendChart />
         </div>
       </div>
@@ -628,6 +729,7 @@ export default function App() {
       <Header />
       <main>
         <Hero />
+        <Trend />
         <Vistas />
         <HowItWorks />
         <Tdee />
