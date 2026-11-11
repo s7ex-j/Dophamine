@@ -3,14 +3,24 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { buildNutritionProfile } from "@/src/features/profile/profile";
 import { analyzeMetabolism, buildWeeklyCheckIn, weeklyRecommendation } from "@/src/features/tdee/tdee";
 
-function days(count: number, record: (index: number) => { weightKg: number; caloriesIn: number }): DailyBiometrics[] {
+function days(
+  count: number,
+  record: (index: number) => { weightKg: number; caloriesIn: number },
+): DailyBiometrics[] {
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(Date.UTC(2026, 0, 1 + index)).toISOString().slice(0, 10);
     return { id: date, date, proteinG: 0, carbsG: 0, fatsG: 0, ...record(index) };
   });
 }
 
-const profile = buildNutritionProfile({ age: 25, sex: "male", heightCm: 180, weightKg: 75, activity: "moderate", goal: "maintain" });
+const profile = buildNutritionProfile({
+  age: 25,
+  sex: "male",
+  heightCm: 180,
+  weightKg: 75,
+  activity: "moderate",
+  goal: "maintain",
+});
 
 describe("analyzeMetabolism", () => {
   it("no estima el TDEE con menos de 14 días de registros", () => {
@@ -27,7 +37,9 @@ describe("analyzeMetabolism", () => {
   });
 
   it("si el peso baja, el gasto estimado supera a la ingesta", () => {
-    const analysis = analyzeMetabolism(days(28, (index) => ({ weightKg: 80 - index * 0.07, caloriesIn: 2200 })));
+    const analysis = analyzeMetabolism(
+      days(28, (index) => ({ weightKg: 80 - index * 0.07, caloriesIn: 2200 })),
+    );
     expect(analysis.weeklyRateKg).toBeLessThan(0);
     expect(analysis.tdee).toBeGreaterThan(2200);
   });
@@ -38,7 +50,9 @@ describe("analyzeMetabolism", () => {
   });
 
   it("pasa a pausa si la última semana tiene pocos registros de ingesta", () => {
-    const analysis = analyzeMetabolism(days(21, (index) => ({ weightKg: 75, caloriesIn: index < 14 || index === 20 ? 2500 : 0 })));
+    const analysis = analyzeMetabolism(
+      days(21, (index) => ({ weightKg: 75, caloriesIn: index < 14 || index === 20 ? 2500 : 0 })),
+    );
     expect(analysis.nutritionDaysLast7).toBe(1);
     expect(analysis.status).toBe("holding");
   });
@@ -46,7 +60,10 @@ describe("analyzeMetabolism", () => {
 
 describe("buildWeeklyCheckIn", () => {
   it("explica qué falta mientras la estimación se construye", () => {
-    const checkIn = buildWeeklyCheckIn(analyzeMetabolism(days(5, () => ({ weightKg: 75, caloriesIn: 2500 }))), profile);
+    const checkIn = buildWeeklyCheckIn(
+      analyzeMetabolism(days(5, () => ({ weightKg: 75, caloriesIn: 2500 }))),
+      profile,
+    );
     expect(checkIn).toMatchObject({ status: "building", ready: false, suggestedCalories: null });
     expect(checkIn.message).toContain("5/10");
   });
@@ -60,7 +77,9 @@ describe("buildWeeklyCheckIn", () => {
   });
 
   it("no propone cambios cuando el objetivo ya coincide con la estimación", () => {
-    const analysis = analyzeMetabolism(days(21, () => ({ weightKg: 75, caloriesIn: profile.calorieTarget + 10 })));
+    const analysis = analyzeMetabolism(
+      days(21, () => ({ weightKg: 75, caloriesIn: profile.calorieTarget + 10 })),
+    );
     const checkIn = buildWeeklyCheckIn(analysis, profile);
     expect(Math.abs(checkIn.delta ?? 0)).toBeLessThan(25);
     expect(checkIn.message).toContain("coincide");

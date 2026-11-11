@@ -1,17 +1,68 @@
 type Store = {
-  biometrics: Array<{ id: string; date: string; weightKg: number; caloriesIn: number; proteinG: number; carbsG?: number; fatsG?: number }>;
-  wellbeing: Array<{ id: string; date: string; mood: number; energy?: number; stress?: number; sleepHours?: number; note: string }>;
-  workouts: Array<{ id: string; name: string; completedAt: string; exerciseCount?: number; sessionLogs?: Array<{ exerciseName: string; loadKg: number | null; reps: number | null; rir: number | null }> }>;
+  biometrics: Array<{
+    id: string;
+    date: string;
+    weightKg: number;
+    caloriesIn: number;
+    proteinG: number;
+    carbsG?: number;
+    fatsG?: number;
+  }>;
+  wellbeing: Array<{
+    id: string;
+    date: string;
+    mood: number;
+    energy?: number;
+    stress?: number;
+    sleepHours?: number;
+    note: string;
+  }>;
+  workouts: Array<{
+    id: string;
+    name: string;
+    completedAt: string;
+    exerciseCount?: number;
+    sessionLogs?: Array<{
+      exerciseName: string;
+      loadKg: number | null;
+      reps: number | null;
+      rir: number | null;
+    }>;
+  }>;
   habits?: Array<{ id: string; date: string; completed: boolean }>;
-  routines?: Array<{ id: string; name: string; variant: "full_body" | "upper_lower" | "posterior" | "push_pull_legs" | "custom"; days: string[]; exercises: Array<{ name: string; sets: number; reps: string; rir: number }>; accent: string; gymProfile: "full_gym" | "home" | "limited"; trainingGoal: "strength" | "hypertrophy" | "general"; sessionMinutes: number }>;
-  profile?: { age: number; sex: "female" | "male"; heightCm: number; activity: "low" | "light" | "moderate" | "high"; goal: "gain" | "maintain" | "lose"; calorieTarget: number; proteinTarget: number; carbsTarget: number; fatsTarget: number };
+  routines?: Array<{
+    id: string;
+    name: string;
+    variant: "full_body" | "upper_lower" | "posterior" | "push_pull_legs" | "custom";
+    days: string[];
+    exercises: Array<{ name: string; sets: number; reps: string; rir: number }>;
+    accent: string;
+    gymProfile: "full_gym" | "home" | "limited";
+    trainingGoal: "strength" | "hypertrophy" | "general";
+    sessionMinutes: number;
+  }>;
+  profile?: {
+    age: number;
+    sex: "female" | "male";
+    heightCm: number;
+    activity: "low" | "light" | "moderate" | "high";
+    goal: "gain" | "maintain" | "lose";
+    calorieTarget: number;
+    proteinTarget: number;
+    carbsTarget: number;
+    fatsTarget: number;
+  };
 };
 
 const key = "dophamine.web-store.v1";
 const empty = (): Store => ({ biometrics: [], wellbeing: [], workouts: [] });
 
 export function readStore(): Store {
-  try { return JSON.parse(window.localStorage.getItem(key) ?? "") as Store; } catch { return empty(); }
+  try {
+    return JSON.parse(window.localStorage.getItem(key) ?? "") as Store;
+  } catch {
+    return empty();
+  }
 }
 
 export function writeStore(store: Store) {
