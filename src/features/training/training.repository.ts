@@ -64,7 +64,7 @@ export async function completeRoutine(routine: Routine, logs: SessionLog[] = [])
           set,
           log?.reps ?? null,
           log?.loadKg ?? null,
-          log?.rir === null || log?.rir === undefined ? null : 10 - log.rir,
+          log?.rir === null || log?.rir === undefined ? null : Math.min(10, Math.max(1, 10 - log.rir)),
         );
       }
     }

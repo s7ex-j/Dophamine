@@ -4,11 +4,18 @@ import { useFocusEffect } from "expo-router";
 import { Card, Screen } from "@/src/components/ui";
 import { DEFAULT_HABITS, monthDays } from "@/src/features/habits/habits";
 import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 const MONTH_NAME = new Intl.DateTimeFormat("es", { month: "long", year: "numeric" });
 
+// En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function HabitsScreen() {
+  return VIEWER ? <ViewerOnlyNotice what="Hábitos" /> : <HabitsScreenContent />;
+}
+
+function HabitsScreenContent() {
   const [entries, setEntries] = useState<HabitEntry[]>([]);
   const days = useMemo(() => monthDays(), []);
   const load = useCallback(() => {

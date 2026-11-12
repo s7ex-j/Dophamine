@@ -17,6 +17,8 @@ import { AutoAdjustBanner, CheckInCard, ReviewHistoryCard } from "@/src/features
 import type { WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
+import { ViewerEmpty } from "@/src/features/backup/ViewerSections";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 // Pestaña "Estrategia": el plan vigente, la revisión periódica y su historial.
@@ -36,6 +38,7 @@ export default function StrategyScreen() {
 
   if (!snapshot) return <Screen />;
   const profile = snapshot.profile;
+  if (!profile && VIEWER) return <ViewerEmpty onLoaded={load} />;
   if (!profile || editing)
     return (
       <Onboarding
@@ -70,7 +73,9 @@ export default function StrategyScreen() {
             detail="Nivel declarado en tu evaluación"
             value={activityLabels[profile.activity]}
           />
-          <Button title="Editar plan" variant="secondary" onPress={() => setEditing(true)} />
+          {VIEWER ? null : (
+            <Button title="Editar plan" variant="secondary" onPress={() => setEditing(true)} />
+          )}
         </Card>
         <CheckInCard snapshot={snapshot} controls={controls} />
         <GoalProgressCard profile={profile} trendKg={snapshot.trendKg} />

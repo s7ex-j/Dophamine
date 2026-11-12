@@ -25,11 +25,18 @@ import {
   SessionCard,
 } from "@/src/features/training/TrainingSections";
 import type { WeightUnit } from "@/src/lib/units";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 // Pantalla "Entreno": guarda el estado (rutina, edición, registro de la sesión)
 // y compone las secciones de TrainingSections.
+// En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function TrainingScreen() {
+  return VIEWER ? <ViewerOnlyNotice what="Entreno" /> : <TrainingScreenContent />;
+}
+
+function TrainingScreenContent() {
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [hints, setHints] = useState<ProgressionHint[]>([]);

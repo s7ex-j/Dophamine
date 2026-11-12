@@ -31,11 +31,18 @@ import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/prof
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { addDays, dayLabel, localDateKey } from "@/src/lib/dates";
 import { formatWeight, toKg } from "@/src/lib/units";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 // Pestaña "Diario": un día a la vez. Arriba se elige el día; debajo, el resumen
 // de energía y las tres partes del registro (peso, nutrición y composición).
+// En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function DailyLogScreen() {
+  return VIEWER ? <ViewerOnlyNotice what="El Diario" /> : <DailyLogScreenContent />;
+}
+
+function DailyLogScreenContent() {
   const [date, setDate] = useState(localDateKey());
   const [form, setForm] = useState<DailyForm>(emptyForm);
   const [saved, setSaved] = useState<DailyBiometrics | null>(null);

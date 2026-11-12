@@ -6,7 +6,7 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.6.0)
+## Estado al 11 de noviembre de 2026 (versión 0.7.0)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
@@ -15,8 +15,9 @@ navegación de cinco pestañas, evaluación inicial por pasos, peso meta y ritmo
 modo automático, composición corporal y Diario nuevo. 90 pruebas de dominio y 10 flujos de navegador.
 
 **Decisión de arquitectura (Jharol, 11 nov 2026):** la app principal es la de teléfono. La web queda para
-ver el progreso. Eso todavía no es así en el código: la web sigue siendo una app completa porque es lo
-único que se puede ejecutar y probar sin teléfono, y porque el respaldo aún no existe en móvil (paso 7).
+ver el progreso. Desde la 0.7.0 el código lo cumple: la web es un visor de solo lectura que se alimenta
+de un respaldo del teléfono. La app completa se sigue pudiendo abrir en la web para desarrollo y pruebas
+(clave `dophamine.web-mode = full` en `localStorage`); así corren las pruebas de navegador.
 
 **No comprobado:** la app en Android o iOS. Todo lo verificado hasta ahora fue en el navegador. El código
 de SQLite se compila y pasa la revisión de tipos, pero nadie lo ha ejecutado en un teléfono desde los
@@ -38,7 +39,7 @@ temporizador, también sin probar en un teléfono.
 | 4 | J | `npx eas login` y `npx eas build --platform android --profile preview` (cuenta gratuita de Expo). Instalar el APK. | La app abre y permite crear el plan. |
 | 5 | J | Recorrer las seis pantallas con datos de tres días: registrar, corregir y borrar un día anterior, marcar hábitos, guardar y borrar una sesión, usar el temporizador de descanso, cambiar a libras, hacer un chequeo. Cerrar la app del todo y volver a abrir. | Los datos siguen ahí. Lo que falle se anota como issue con captura. |
 | 6 | C | Corregir lo que falle en 5. | Jharol repite solo el punto que falló. |
-| 7 | C | Respaldo en Android e iOS con el **mismo formato** (`BACKUP_FORMAT = 2`, que incluye `weekly_reviews`) que la web. En `src/features/backup/backup.repository.ts`: leer las tablas de SQLite al tipo `Store`, escribir el JSON con `expo-file-system`, compartirlo con `expo-sharing`; restaurar con `expo-document-picker` dentro de una transacción que reemplaza todas las tablas. Poner `backupAvailable = true`. Las conversiones fila ↔ `Store` van en un archivo puro `backup.sqlite.ts` con pruebas. | Pruebas nuevas de conversión. En el teléfono: un respaldo hecho en la web se restaura en Android y al revés, y los totales de Análisis coinciden. |
+| 7 | C ✔ (sin probar en teléfono) | Respaldo en Android e iOS con el **mismo formato** (`BACKUP_FORMAT = 2`, que incluye `weekly_reviews`) que la web. En `src/features/backup/backup.repository.ts`: leer las tablas de SQLite al tipo `Store`, escribir el JSON con `expo-file-system`, compartirlo con `expo-sharing`; restaurar con `expo-document-picker` dentro de una transacción que reemplaza todas las tablas. Poner `backupAvailable = true`. Las conversiones fila ↔ `Store` van en un archivo puro `backup.sqlite.ts` con pruebas. | Pruebas nuevas de conversión. En el teléfono: un respaldo hecho en la web se restaura en Android y al revés, y los totales de Análisis coinciden. |
 | 8 | J | Adjuntar el APK a la versión de GitHub y enlazarlo desde la página (`web/src/App.tsx`, botón de descarga). | El botón descarga el APK. |
 
 ## Fase 3 — Lo que más se nota al usarla (hecha en la 0.5.0, adelantada a pedido de Jharol)
@@ -57,9 +58,9 @@ anteriores: el flujo e2e de "borrar un día" entra con el paso 3, y la comprobac
 
 | # | Quién | Paso | Cómo se comprueba |
 |---|---|---|---|
-| 13 | J | Abrir la 0.6.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático. | La app abre con los datos anteriores; lo que falle se anota con captura. |
-| 14 | C | Respaldo en el teléfono (es el paso 7): exportar e importar el archivo con `BACKUP_FORMAT = 3`. | Un respaldo del teléfono se abre en la web y al revés. |
-| 15 | C | Web como visor: al abrirla sin datos pide un respaldo del teléfono y muestra Panel, Estrategia y Análisis en solo lectura. | La web no permite registrar; todo lo que muestra sale del archivo. |
+| 13 | J | Abrir la 0.7.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático, y Más → Compartir respaldo → cargarlo en la web → restaurarlo en el teléfono. | La app abre con los datos anteriores; lo que falle se anota con captura. |
+| 14 | C ✔ | Respaldo en el teléfono (es el paso 7): exportar e importar el archivo con `BACKUP_FORMAT = 3`. | Un respaldo del teléfono se abre en la web y al revés. |
+| 15 | C ✔ | Web como visor: al abrirla sin datos pide un respaldo del teléfono y muestra Panel, Estrategia y Análisis en solo lectura. | La web no permite registrar; todo lo que muestra sale del archivo. |
 | 16 | C | Registro por comida sin base de alimentos: entradas con nombre, calorías y macros por momento del día, alimentos propios y comidas guardadas. Permitir días con comida y sin pesaje. Necesita diseño en `docs/` (cambia `analyzeMetabolism` y el respaldo). | Pruebas de dominio; el total del día sale de las entradas. |
 | 17 | C | Recordatorio de pesaje y de registro (notificaciones locales). | En el teléfono. |
 | 18 | C | Medidas corporales (cintura, cadera, pecho) y fotos de progreso guardadas solo en el dispositivo. | En el teléfono. |

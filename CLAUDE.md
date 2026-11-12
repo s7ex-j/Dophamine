@@ -37,9 +37,13 @@ npx expo export --platform web    # compila la web a dist/
 
 ## Hacia dónde va
 
-La app principal es la de teléfono. La web existe para probar y, más adelante, solo para ver el progreso
-a partir de un respaldo exportado desde el teléfono (ver la hoja de ruta). Al diseñar una pantalla se
-piensa primero en 390 px y en usarla con una mano.
+La app principal es la de teléfono. La web publicada es un visor de solo lectura (`src/lib/mode.web.ts`,
+constante `VIEWER`) que muestra el progreso a partir de un respaldo exportado desde el teléfono. Al diseñar
+una pantalla se piensa primero en 390 px y en usarla con una mano.
+
+Para ver la app completa en el navegador (desarrollo y `npm run e2e`):
+`localStorage.setItem("dophamine.web-mode", "full")` y recargar. Todo lo que escribe datos debe respetar
+`VIEWER`: el visor nunca guarda, edita ni aplica ajustes.
 
 ## Reglas que no se rompen
 
@@ -64,4 +68,5 @@ piensa primero en 390 px y en usarla con una mano.
 
 `npx expo export --platform web`, servir `dist/` bajo `/Dophamine/app/` y recorrer los flujos con Chrome
 sin ventana (puppeteer-core) a 390 px. El almacén de la web es la clave `dophamine.web-store.v1` de
-`localStorage`: se puede sembrar con datos de varios días para ver Análisis con contenido.
+`localStorage`: se puede sembrar con datos de varios días para ver Análisis con contenido. `npm run e2e`
+hace ese recorrido completo (app en modo `full` y, al final, el visor).

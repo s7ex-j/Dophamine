@@ -3,9 +3,13 @@
 //   npm run e2e            (exporta la web a dist/ y corre este archivo)
 //   node e2e/flujos.mjs    (usa el dist/ que ya exista)
 //
+// La web publicada es un visor de solo lectura. Aquí se abre la app completa (la
+// misma interfaz del teléfono) poniendo "full" en la clave dophamine.web-mode, y
+// al final se comprueba el visor en una sesión limpia.
+//
 // Necesita Chrome o Edge instalado. Si no está en una ruta habitual, indícala
 // con la variable CHROME_PATH. Todo corre en local: no se abre ninguna página externa.
-import { existsSync, mkdtempSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join, resolve } from "node:path";
@@ -75,6 +79,7 @@ async function main() {
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 844 });
+  await page.evaluateOnNewDocument(() => localStorage.setItem("dophamine.web-mode", "full"));
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
@@ -259,7 +264,7 @@ async function main() {
     await open("/more");
     const before = await store();
     await press("Descargar respaldo");
-    await waitText("Respaldo descargado");
+    await waitText("Respaldo listo");
     for (
       let attempt = 0;
       attempt < 40 && !readdirSync(downloads).some((name) => name.endsWith(".json"));
@@ -363,6 +368,67 @@ async function main() {
       "En 19 días",
     ])
       await waitText(text);
+  });
+
+  await step("visor web: carga un respaldo, no escribe y no ofrece registrar", async () => {
+    // Un respaldo en modo automático con una revisión pendiente: la app completa
+    // aplicaría el ajuste al abrir. El visor no debe tocar nada.
+    const current = await store();
+    const data = { ...current, reviews: [], profile: { ...current.profile, adjustMode: "auto" } };
+    const file = join(mkdtempSync(join(tmpdir(), "dophamine-visor-")), "respaldo.json");
+    writeFileSync(
+      file,
+      JSON.stringify({ app: "dophamine", format: 3, exportedAt: new Date().toISOString(), data }),
+    );
+
+    const context = await browser.createBrowserContext();
+    const viewer = await context.newPage();
+    await viewer.setViewport({ width: 390, height: 844 });
+    viewer.on("pageerror", (error) => errors.push(error.message));
+    const text = () => viewer.evaluate(() => document.body.innerText);
+    const waitFor = (value) =>
+      viewer.waitForFunction(
+        (expected) => document.body.innerText.includes(expected),
+        { timeout: 8000 },
+        value,
+      );
+    const tap = async (label) => {
+      const handle = await viewer.evaluateHandle(
+        (value) =>
+          [...document.querySelectorAll('[role="button"], [tabindex="0"]')].find(
+            (element) => element.innerText.trim() === value,
+          ) ?? null,
+        label,
+      );
+      assert(handle.asElement(), `El visor no muestra "${label}".`);
+      await handle.asElement().click();
+    };
+
+    await viewer.goto(`${base}/`, { waitUntil: "networkidle0" });
+    await waitFor("DOPHAMINE · VISOR");
+    assert(!(await text()).includes("EVALUACIÓN INICIAL"), "El visor ofreció crear un plan.");
+    const [chooser] = await Promise.all([viewer.waitForFileChooser(), tap("Cargar un respaldo")]);
+    await chooser.accept([file]);
+    await waitFor("Reemplazar mis datos");
+    await tap("Reemplazar mis datos");
+    await waitFor("Solo lectura");
+    await waitFor("Progreso hacia tu meta");
+    const shown = await text();
+    for (const hidden of ["Diario", "Entreno", "Adherencia de hoy", "Deshacer ajuste"])
+      assert(!shown.includes(hidden), `El visor muestra "${hidden}", que es para registrar.`);
+    const read = () => viewer.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORE_KEY);
+    await viewer.goto(`${base}/strategy`, { waitUntil: "networkidle0" });
+    await waitFor("Tu programa");
+    assert(!(await text()).includes("Editar plan"), "El visor permite editar el plan.");
+    const after = await read();
+    assert(after.reviews.length === 0, "El visor aplicó un ajuste automático.");
+    assert(
+      after.profile.calorieTarget === data.profile.calorieTarget,
+      "El visor cambió el objetivo calórico.",
+    );
+    await viewer.goto(`${base}/biometrics`, { waitUntil: "networkidle0" });
+    await waitFor("se usa en el teléfono");
+    await context.close();
   });
 
   await browser.close();

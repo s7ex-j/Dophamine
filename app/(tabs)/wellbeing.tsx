@@ -9,6 +9,8 @@ import {
 } from "@/src/features/wellbeing/wellbeing.repository";
 import { toggleHabit } from "@/src/features/habits/habits.repository";
 import { dateKey } from "@/src/features/habits/habits";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 const average = (values: Array<number | null | undefined>) => {
@@ -16,7 +18,12 @@ const average = (values: Array<number | null | undefined>) => {
   return valid.length ? (valid.reduce((sum, value) => sum + value, 0) / valid.length).toFixed(1) : "—";
 };
 
+// En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function WellbeingScreen() {
+  return VIEWER ? <ViewerOnlyNotice what="Bienestar" /> : <WellbeingScreenContent />;
+}
+
+function WellbeingScreenContent() {
   const [mood, setMood] = useState(3);
   const [energy, setEnergy] = useState(3);
   const [stress, setStress] = useState(3);

@@ -5,6 +5,7 @@ import { adjustModeOf, checkInDaysOf, withCalorieTarget } from "@/src/features/p
 import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { canUndoAuto, checkInAction, type CheckInAction } from "@/src/features/reviews/reviews";
 import { saveWeeklyReview, setReviewDecision } from "@/src/features/reviews/reviews.repository";
+import { VIEWER } from "@/src/lib/mode";
 
 export type CheckInControls = {
   action: CheckInAction;
@@ -23,9 +24,9 @@ export type CheckInControls = {
 export function useCheckIn(snapshot: DashboardSnapshot | null, reload: () => void): CheckInControls {
   const profile = snapshot?.profile ?? null;
   const checkIn = snapshot?.checkIn ?? null;
-  const action = profile
-    ? checkInAction(checkIn, snapshot?.reviewDue ?? false, adjustModeOf(profile))
-    : "none";
+  // El visor web no escribe: ni aplica ajustes ni ofrece responderlos.
+  const action =
+    profile && !VIEWER ? checkInAction(checkIn, snapshot?.reviewDue ?? false, adjustModeOf(profile)) : "none";
   const applying = useRef(false);
 
   const record = async (decision: "accepted" | "dismissed" | "auto") => {
@@ -54,7 +55,7 @@ export function useCheckIn(snapshot: DashboardSnapshot | null, reload: () => voi
   const last = snapshot?.lastReview ?? null;
   return {
     action,
-    undoable: canUndoAuto(last, undefined, checkInDaysOf(profile)),
+    undoable: !VIEWER && canUndoAuto(last, undefined, checkInDaysOf(profile)),
     apply: () => record("accepted"),
     dismiss: () => record("dismissed"),
     undo: async () => {
