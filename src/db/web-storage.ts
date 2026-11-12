@@ -52,7 +52,16 @@ export type Store = {
     proteinTarget: number;
     carbsTarget: number;
     fatsTarget: number;
+    weightUnit?: "kg" | "lb";
   };
+  reviews?: Array<{
+    id: string;
+    date: string;
+    decision: "accepted" | "dismissed";
+    previousCalories: number;
+    suggestedCalories: number;
+    tdee: number | null;
+  }>;
 };
 
 const key = "dophamine.web-store.v1";

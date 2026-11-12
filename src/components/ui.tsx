@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from "react";
+import { useState, type PropsWithChildren } from "react";
 import { Pressable, Text, TextInput, type TextInputProps, View } from "react-native";
 import { AppTheme } from "@/src/theme";
 
@@ -118,6 +118,52 @@ export function ListRow({ title, detail, value }: { title: string; detail: strin
         <Text style={AppTheme.listDetail}>{detail}</Text>
       </View>
       {value ? <Text style={AppTheme.listValue}>{value}</Text> : null}
+    </View>
+  );
+}
+export function LinkButton({
+  title,
+  onPress,
+  danger,
+}: {
+  title: string;
+  onPress: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={AppTheme.linkButton}>
+      <Text style={[AppTheme.linkButtonText, danger && AppTheme.linkButtonDanger]}>{title}</Text>
+    </Pressable>
+  );
+}
+/**
+ * Acciones bajo una fila de lista, con "Borrar" en dos pasos: primero pregunta
+ * y solo borra al confirmar. Va en la propia pantalla porque los diálogos del
+ * sistema no existen en la web.
+ */
+export function RowActions({
+  question,
+  onDelete,
+  children,
+}: PropsWithChildren<{ question: string; onDelete: () => void }>) {
+  const [asking, setAsking] = useState(false);
+  return asking ? (
+    <View style={AppTheme.rowActions}>
+      <Text style={AppTheme.rowQuestion}>{question}</Text>
+      <LinkButton
+        title="Sí, borrar"
+        danger
+        onPress={() => {
+          setAsking(false);
+          onDelete();
+        }}
+      />
+      <LinkButton title="Cancelar" onPress={() => setAsking(false)} />
+    </View>
+  ) : (
+    <View style={AppTheme.rowActions}>
+      {children}
+      <LinkButton title="Borrar" danger onPress={() => setAsking(true)} />
     </View>
   );
 }

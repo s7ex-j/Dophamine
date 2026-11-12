@@ -26,6 +26,11 @@ export async function saveDailyBiometrics(input: BiometricsInput, date = webToda
   else store.biometrics.push({ id: webId(), date, ...input });
   writeStore(store);
 }
+export async function deleteDailyBiometrics(date: string) {
+  const store = readStore();
+  store.biometrics = store.biometrics.filter((record) => record.date !== date);
+  writeStore(store);
+}
 export async function getLatestBiometrics(): Promise<DailyBiometrics | null> {
   const row = [...readStore().biometrics].sort((a, b) => b.date.localeCompare(a.date))[0];
   return row ? normalize(row as DailyBiometrics) : null;

@@ -1,3 +1,5 @@
+import type { WeightUnit } from "@/src/lib/units";
+
 export type Sex = "female" | "male";
 export type ActivityLevel = "low" | "light" | "moderate" | "high";
 export type Goal = "gain" | "maintain" | "lose";
@@ -12,7 +14,12 @@ export type NutritionProfile = {
   proteinTarget: number;
   carbsTarget: number;
   fatsTarget: number;
+  /** Solo presentación: los pesos se guardan siempre en kg. Sin valor = kg. */
+  weightUnit?: WeightUnit;
 };
+
+export const weightUnitOf = (profile: Pick<NutritionProfile, "weightUnit"> | null | undefined): WeightUnit =>
+  profile?.weightUnit ?? "kg";
 
 const activityFactors: Record<ActivityLevel, number> = {
   low: 1.2,

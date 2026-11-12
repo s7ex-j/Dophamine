@@ -1,4 +1,5 @@
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
+import { convertWeight, type WeightUnit } from "@/src/lib/units";
 import { goalAdjustments, type NutritionProfile } from "@/src/features/profile/profile";
 
 export type TrendPoint = { date: string; weightKg: number; trendKg: number; caloriesIn: number };
@@ -68,6 +69,7 @@ export function weeklyRecommendation(
   analysis: MetabolicAnalysis,
   goal: "gain" | "maintain" | "lose",
   currentWeightKg: number,
+  unit: WeightUnit = "kg",
 ) {
   if (!analysis.tdee || analysis.weeklyRateKg === null)
     return "Registra al menos 14 días, con 10 días de ingesta, antes de ajustar el plan.";
@@ -82,7 +84,7 @@ export function weeklyRecommendation(
     (goal === "maintain" && analysis.weeklyRateKg < -0.06)
       ? "subir"
       : "bajar";
-  return `La tendencia cambia ${analysis.weeklyRateKg >= 0 ? "+" : ""}${analysis.weeklyRateKg.toFixed(2)} kg/semana. Prueba ${direction} 100 kcal diarias y revisa en 7 días.`;
+  return `La tendencia cambia ${analysis.weeklyRateKg >= 0 ? "+" : ""}${convertWeight(analysis.weeklyRateKg, "kg", unit).toFixed(2)} ${unit}/semana. Prueba ${direction} 100 kcal diarias y revisa en 7 días.`;
 }
 
 export function buildWeeklyCheckIn(analysis: MetabolicAnalysis, profile: NutritionProfile): WeeklyCheckIn {

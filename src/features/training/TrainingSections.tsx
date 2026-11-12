@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { Button, Card, ChoiceControl, Input, ListRow } from "@/src/components/ui";
+import { Button, Card, ChoiceControl, Input, ListRow, RowActions } from "@/src/components/ui";
+import { hintDetail } from "@/src/features/training/progression";
+import { RestTimer } from "@/src/features/training/RestTimer";
 import { withLogField, type LogDraft } from "@/src/features/training/session";
 import {
   formatExerciseLines,
   GOAL_OPTIONS,
   GYM_OPTIONS,
   parseExerciseLines,
+  restSeconds,
   trainingGoalLabel,
   VARIANT_OPTIONS,
   WEEK_DAYS,
@@ -15,6 +18,8 @@ import {
   type TrainingVariant,
 } from "@/src/features/training/training.plans";
 import type { ProgressionHint, Workout } from "@/src/features/training/training.repository";
+import { localDateKey } from "@/src/lib/dates";
+import type { WeightUnit } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 // Las secciones de la pantalla "Entreno". La pantalla guarda el estado y aquí solo se dibuja.
@@ -167,6 +172,7 @@ export function SessionCard({
   logs,
   setLogs,
   complete,
+  unit,
 }: {
   routine: Routine;
   logging: boolean;
@@ -174,6 +180,7 @@ export function SessionCard({
   logs: LogDraft;
   setLogs: (update: (current: LogDraft) => LogDraft) => void;
   complete: () => void;
+  unit: WeightUnit;
 }) {
   return (
     <Card title="Sesión de hoy">
@@ -187,7 +194,7 @@ export function SessionCard({
             <View style={AppTheme.sessionLogRow}>
               <View style={AppTheme.sessionLogRowInput}>
                 <Input
-                  label="Kg"
+                  label={unit === "kg" ? "Kg" : "Lb"}
                   value={logs[exercise.name]?.load ?? ""}
                   onChangeText={(load) => setLogs((current) => withLogField(current, exercise, "load", load))}
                   keyboardType="decimal-pad"
@@ -211,6 +218,7 @@ export function SessionCard({
               </View>
             </View>
           ) : null}
+          {logging ? <RestTimer seconds={restSeconds(routine.trainingGoal, exercise.rir)} /> : null}
         </View>
       ))}
       <Button
@@ -224,14 +232,14 @@ export function SessionCard({
   );
 }
 
-export function ProgressionCard({ hints }: { hints: ProgressionHint[] }) {
+export function ProgressionCard({ hints, unit }: { hints: ProgressionHint[]; unit: WeightUnit }) {
   return hints.length ? (
     <Card title="Progresión sugerida">
       {hints.map((hint) => (
         <ListRow
           key={hint.exerciseName}
           title={hint.exerciseName}
-          detail={`${hint.detail} · ${hint.action}`}
+          detail={`${hintDetail(hint, unit)} · ${hint.action}`}
         />
       ))}
     </Card>
@@ -245,17 +253,28 @@ export function ProgressionCard({ hints }: { hints: ProgressionHint[] }) {
   );
 }
 
-export function HistoryCard({ workouts }: { workouts: Workout[] }) {
+export function HistoryCard({
+  workouts,
+  deleteWorkout,
+}: {
+  workouts: Workout[];
+  deleteWorkout: (workoutId: string) => void;
+}) {
   return (
     <Card title="Historial de sesiones">
       {workouts.length ? (
         workouts.map((workout) => (
-          <ListRow
-            key={workout.id}
-            title={workout.name}
-            detail={`${workout.exerciseCount} ejercicios registrados`}
-            value={workout.completedAt.slice(0, 10)}
-          />
+          <View key={workout.id}>
+            <ListRow
+              title={workout.name}
+              detail={`${workout.exerciseCount} ejercicios registrados`}
+              value={localDateKey(new Date(workout.completedAt))}
+            />
+            <RowActions
+              question={`¿Borrar la sesión del ${localDateKey(new Date(workout.completedAt))}?`}
+              onDelete={() => deleteWorkout(workout.id)}
+            />
+          </View>
         ))
       ) : (
         <Text style={AppTheme.body}>Tu primera sesión aparecerá aquí.</Text>

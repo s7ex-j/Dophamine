@@ -9,6 +9,8 @@ import {
   type MetabolicAnalysis,
   type WeeklyCheckIn,
 } from "@/src/features/tdee/tdee";
+import { isReviewDue, type WeeklyReview } from "@/src/features/reviews/reviews";
+import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { getLatestMood } from "@/src/features/wellbeing/wellbeing.repository";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import type { NutritionProfile } from "@/src/features/profile/profile";
@@ -25,14 +27,18 @@ export type DashboardSnapshot = {
   analysis: MetabolicAnalysis;
   checkIn: WeeklyCheckIn | null;
   recentRecords: DailyBiometrics[];
+  lastReview: WeeklyReview | null;
+  reviewDue: boolean;
 };
 export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
-  const [latest, records, mood, profile] = await Promise.all([
+  const [latest, records, mood, profile, reviews] = await Promise.all([
     getLatestBiometrics(),
     getBiometricsWindow(42),
     getLatestMood(),
     getNutritionProfile(),
+    getWeeklyReviews(1),
   ]);
+  const lastReview = reviews[0] ?? null;
   const analysis = analyzeMetabolism(records);
   return {
     weightKg: latest?.weightKg ?? null,
@@ -46,5 +52,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     analysis,
     checkIn: profile ? buildWeeklyCheckIn(analysis, profile) : null,
     recentRecords: [...records].slice(0, 7).reverse(),
+    lastReview,
+    reviewDue: isReviewDue(lastReview),
   };
 }

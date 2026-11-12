@@ -67,6 +67,16 @@ export async function initializeDatabase() {
       UNIQUE(habit_id, date)
     );
     CREATE INDEX IF NOT EXISTS habit_entries_date_idx ON habit_entries(date DESC);
+    CREATE TABLE IF NOT EXISTS weekly_reviews (
+      id TEXT PRIMARY KEY NOT NULL,
+      date TEXT NOT NULL,
+      decision TEXT NOT NULL CHECK(decision IN ('accepted', 'dismissed')),
+      previous_calories INTEGER NOT NULL,
+      suggested_calories INTEGER NOT NULL,
+      tdee INTEGER,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS weekly_reviews_date_idx ON weekly_reviews(date DESC);
   `);
   try {
     await db.execAsync(

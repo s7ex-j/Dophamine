@@ -3,10 +3,13 @@ import { Alert, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
 import { Screen } from "@/src/components/ui";
+import { weightUnitOf } from "@/src/features/profile/profile";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { buildSessionLogs, type LogDraft } from "@/src/features/training/session";
 import { generateRoutine, type Routine, type TrainingVariant } from "@/src/features/training/training.plans";
 import {
   completeRoutine,
+  deleteWorkoutSession,
   getProgressionHints,
   getRecentWorkouts,
   getRoutine,
@@ -21,6 +24,7 @@ import {
   RoutineSummary,
   SessionCard,
 } from "@/src/features/training/TrainingSections";
+import type { WeightUnit } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 // Pantalla "Entreno": guarda el estado (rutina, edición, registro de la sesión)
@@ -32,7 +36,9 @@ export default function TrainingScreen() {
   const [editing, setEditing] = useState(false);
   const [logging, setLogging] = useState(false);
   const [logs, setLogs] = useState<LogDraft>({});
+  const [unit, setUnit] = useState<WeightUnit>("kg");
   const load = useCallback(() => {
+    getNutritionProfile().then((profile) => setUnit(weightUnitOf(profile)));
     Promise.all([getRoutine(), getRecentWorkouts()]).then(async ([nextRoutine, nextWorkouts]) => {
       setRoutine(nextRoutine);
       setWorkouts(nextWorkouts);
@@ -90,11 +96,16 @@ export default function TrainingScreen() {
   };
   const complete = async () => {
     if (!routine) return;
-    await completeRoutine(routine, buildSessionLogs(routine, logs));
+    await completeRoutine(routine, buildSessionLogs(routine, logs, unit));
     setLogging(false);
     setLogs({});
     load();
     Alert.alert("Sesión registrada", `${routine.exercises.length} ejercicios quedaron en tu historial.`);
+  };
+
+  const deleteWorkout = async (workoutId: string) => {
+    await deleteWorkoutSession(workoutId);
+    load();
   };
 
   if (!routine)
@@ -128,9 +139,10 @@ export default function TrainingScreen() {
           logs={logs}
           setLogs={setLogs}
           complete={complete}
+          unit={unit}
         />
-        <ProgressionCard hints={hints} />
-        <HistoryCard workouts={workouts} />
+        <ProgressionCard hints={hints} unit={unit} />
+        <HistoryCard workouts={workouts} deleteWorkout={deleteWorkout} />
       </ScrollView>
     </Screen>
   );

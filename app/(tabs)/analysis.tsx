@@ -7,19 +7,27 @@ import { getBiometricsWindow, type DailyBiometrics } from "@/src/features/biomet
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { analyzeMetabolism, weeklyRecommendation } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
-import { goalLabels, type NutritionProfile } from "@/src/features/profile/profile";
+import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
+import { describeReview, type WeeklyReview } from "@/src/features/reviews/reviews";
+import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
+import { convertWeight, formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 export default function AnalysisScreen() {
   const [records, setRecords] = useState<DailyBiometrics[]>([]);
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
+  const [reviews, setReviews] = useState<WeeklyReview[]>([]);
   const load = useCallback(() => {
-    Promise.all([getBiometricsWindow(42), getNutritionProfile()]).then(([rows, savedProfile]) => {
-      setRecords(rows);
-      setProfile(savedProfile);
-    });
+    Promise.all([getBiometricsWindow(42), getNutritionProfile(), getWeeklyReviews()]).then(
+      ([rows, savedProfile, savedReviews]) => {
+        setRecords(rows);
+        setProfile(savedProfile);
+        setReviews(savedReviews);
+      },
+    );
   }, []);
   useFocusEffect(load);
+  const unit = weightUnitOf(profile);
   const analysis = analyzeMetabolism(records);
   const points = analysis.points.slice(-14);
   const columns = trendColumns(points);
@@ -65,8 +73,8 @@ export default function AnalysisScreen() {
               </View>
               <Text style={AppTheme.hint}>Barra: tu tendencia. Punto: el pesaje de ese día.</Text>
               <Text style={AppTheme.body}>
-                Tendencia actual: {points.at(-1)?.trendKg.toFixed(1)} kg · Peso registrado:{" "}
-                {points.at(-1)?.weightKg.toFixed(1)} kg
+                Tendencia actual: {formatWeight(points.at(-1)?.trendKg ?? 0, unit, 1)} · Peso registrado:{" "}
+                {formatWeight(points.at(-1)?.weightKg ?? 0, unit, 1)}
               </Text>
             </>
           ) : (
@@ -126,7 +134,7 @@ export default function AnalysisScreen() {
             value={
               analysis.weeklyRateKg === null
                 ? "En espera"
-                : `${analysis.weeklyRateKg >= 0 ? "+" : ""}${analysis.weeklyRateKg.toFixed(2)} kg/sem`
+                : `${analysis.weeklyRateKg >= 0 ? "+" : ""}${convertWeight(analysis.weeklyRateKg, "kg", unit).toFixed(2)} ${unit}/sem`
             }
           />
           <Text style={AppTheme.body}>
@@ -135,6 +143,7 @@ export default function AnalysisScreen() {
                   analysis,
                   profile.goal,
                   points.at(-1)?.trendKg ?? records[0]?.weightKg ?? 0,
+                  unit,
                 )
               : "Configura tu plan para recibir una recomendación semanal."}
           </Text>
@@ -144,6 +153,18 @@ export default function AnalysisScreen() {
               revisión.
             </Text>
           ) : null}
+        </Card>
+        <Card title="Historial de revisiones">
+          {reviews.length ? (
+            reviews.map((review) => {
+              const { title, detail, value } = describeReview(review);
+              return <ListRow key={review.id} title={title} detail={detail} value={value} />;
+            })
+          ) : (
+            <Text style={AppTheme.body}>
+              Aquí quedará cada propuesta semanal que aceptes o decidas no aplicar.
+            </Text>
+          )}
         </Card>
       </ScrollView>
     </Screen>
