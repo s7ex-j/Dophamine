@@ -4,6 +4,8 @@ import { backupFileName, buildBackup, type Backup } from "@/src/features/backup/
 // Variante web: los datos están en el almacenamiento del navegador, así que el
 // respaldo es un archivo que la persona descarga y guarda donde quiera.
 export const backupAvailable = true;
+export const backupPlace = "este navegador";
+export const exportLabel = "Descargar respaldo";
 
 export async function downloadBackup(): Promise<void> {
   const contenido = JSON.stringify(buildBackup(readStore()), null, 2);

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0 - 2026-11-11
+
+- Respaldo en el teléfono: "Compartir respaldo" exporta todos los datos a un archivo JSON con la hoja de compartir del sistema, y "Restaurar desde un archivo" los reemplaza dentro de una transacción. Es el mismo formato 3 de la web, así que el archivo pasa de una plataforma a la otra.
+- La web pasa a ser un visor de solo lectura: muestra Panel, Estrategia, Análisis y Más a partir de un respaldo del teléfono. No registra, no edita el plan y no aplica ajustes automáticos. Si ya tenías datos en la web, siguen ahí y se pueden descargar desde Más para llevarlos al teléfono.
+- Para desarrollo y pruebas, la app completa se abre en la web guardando `full` en la clave `dophamine.web-mode` de `localStorage`.
+- Corregido: un RIR de 10 o más hacía fallar el guardado de la sesión en SQLite (el RPE quedaba fuera del rango permitido).
+- De 90 a 97 pruebas de dominio y de 10 a 11 flujos de navegador.
+- Dependencias nuevas, solo para el teléfono: `expo-file-system`, `expo-sharing` y `expo-document-picker`.
+- No comprobado en teléfono: exportar, compartir y restaurar el respaldo en SQLite solo se verificaron por tipos y con pruebas de la conversión.
+
 ## 0.6.0 - 2026-11-11
 
 Primera versión pensada como app de teléfono, con la estructura de una app de seguimiento nutricional completa.

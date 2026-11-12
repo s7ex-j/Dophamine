@@ -3,6 +3,7 @@ import { ScrollView } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { Screen } from "@/src/components/ui";
+import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
 import { buildWeek, heroMessageFor, nextStepFor } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import {
@@ -27,6 +28,7 @@ import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/ha
 import { Onboarding } from "@/src/features/profile/PlanWizard";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 // Pestaña "Panel": el progreso de un vistazo. Carga los datos, decide qué mostrar
@@ -58,7 +60,12 @@ export default function DashboardScreen() {
   const todayScore = useMemo(() => DEFAULT_HABITS.filter((habit) => todayHabit(habit.id)).length, [entries]);
 
   if (!snapshot) return <Screen />;
-  if (!snapshot.profile) return <Onboarding profile={null} weightKg={snapshot.weightKg} onSaved={load} />;
+  if (!snapshot.profile)
+    return VIEWER ? (
+      <ViewerEmpty onLoaded={load} />
+    ) : (
+      <Onboarding profile={null} weightKg={snapshot.weightKg} onSaved={load} />
+    );
 
   const profile = snapshot.profile;
   const today = snapshot.recentRecords.find((record) => record.date === dateKey());
@@ -87,7 +94,11 @@ export default function DashboardScreen() {
         />
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
-        <NextStepCard nextStep={nextStep} openNextStep={() => router.push(nextStep.route)} />
+        {VIEWER ? (
+          <ViewerBanner />
+        ) : (
+          <NextStepCard nextStep={nextStep} openNextStep={() => router.push(nextStep.route)} />
+        )}
         <EnergyCard
           profile={profile}
           calories={calories}
@@ -102,7 +113,7 @@ export default function DashboardScreen() {
         <ExpenditureCard analysis={snapshot.analysis} />
         <CompositionCard records={snapshot.records} profile={profile} />
         <WeekCard profile={profile} week={week} />
-        <HabitsQuickCard todayHabit={todayHabit} toggleToday={toggleToday} />
+        {VIEWER ? null : <HabitsQuickCard todayHabit={todayHabit} toggleToday={toggleToday} />}
       </ScrollView>
     </Screen>
   );

@@ -1,0 +1,180 @@
+import { describe, expect, it } from "vitest";
+
+import type { Store } from "@/src/db/web-storage";
+import { buildBackup, parseBackup } from "./backup";
+import { storeFromTables, tablesFromStore } from "./backup.sqlite";
+
+const store: Store = {
+  biometrics: [
+    {
+      id: "b1",
+      date: "2026-11-10",
+      weightKg: 78.4,
+      caloriesIn: 2100,
+      proteinG: 150,
+      carbsG: 220,
+      fatsG: 65,
+      bodyFatPct: 18.5,
+      muscleMassKg: 36,
+      waterPct: null,
+      boneMassKg: 3.1,
+    },
+    {
+      id: "b2",
+      date: "2026-11-11",
+      weightKg: 78.1,
+      caloriesIn: 0,
+      proteinG: 0,
+      carbsG: 0,
+      fatsG: 0,
+      bodyFatPct: null,
+      muscleMassKg: null,
+      waterPct: null,
+      boneMassKg: null,
+    },
+  ],
+  wellbeing: [
+    { id: "w2", date: "2026-11-11", mood: 4, energy: 3, stress: 2, sleepHours: 7.5, note: "bien" },
+    { id: "w1", date: "2026-11-11", mood: 2, note: "" },
+  ],
+  workouts: [
+    {
+      id: "t1",
+      name: "Full body",
+      completedAt: "2026-11-11T15:00:00.000Z",
+      exerciseCount: 2,
+      sessionLogs: [
+        { exerciseName: "Sentadilla", loadKg: 80, reps: 8, rir: 2 },
+        { exerciseName: "Plancha", loadKg: null, reps: null, rir: null },
+      ],
+    },
+  ],
+  habits: [
+    { id: "protein", date: "2026-11-11", completed: true },
+    { id: "sleep", date: "2026-11-11", completed: false },
+  ],
+  routines: [
+    {
+      id: "routine-full_body",
+      name: "Full body",
+      variant: "full_body",
+      days: ["mon", "wed"],
+      exercises: [{ name: "Sentadilla", sets: 3, reps: "8–12", rir: 2 }],
+      accent: "#167B5B",
+      gymProfile: "full_gym",
+      trainingGoal: "hypertrophy",
+      sessionMinutes: 50,
+    },
+  ],
+  profile: {
+    age: 24,
+    sex: "male",
+    heightCm: 176,
+    activity: "moderate",
+    goal: "lose",
+    calorieTarget: 2350,
+    proteinTarget: 160,
+    carbsTarget: 260,
+    fatsTarget: 64,
+    weightUnit: "kg",
+    goalWeightKg: 74,
+    pace: "moderate",
+    adjustMode: "auto",
+    checkInDays: 3,
+  },
+  reviews: [
+    {
+      id: "r1",
+      date: "2026-11-08",
+      decision: "auto",
+      previousCalories: 2400,
+      suggestedCalories: 2350,
+      tdee: 2790,
+    },
+  ],
+};
+
+describe("respaldo entre el teléfono y la web", () => {
+  it("un respaldo guardado en SQLite y vuelto a leer es el mismo", () => {
+    expect(storeFromTables(tablesFromStore(store))).toEqual(store);
+  });
+
+  it("lo que exporta el teléfono pasa la validación del respaldo", () => {
+    const exported = buildBackup(storeFromTables(tablesFromStore(store)));
+    expect(parseBackup(JSON.stringify(exported)).data).toEqual(store);
+  });
+
+  it("guarda el RIR como RPE y una fila por ejercicio registrado", () => {
+    const { sets, workouts } = tablesFromStore(store);
+    expect(workouts).toHaveLength(1);
+    expect(sets).toEqual([
+      {
+        id: "t1-1",
+        workout_id: "t1",
+        exercise_name: "Sentadilla",
+        set_number: 1,
+        reps: 8,
+        load_kg: 80,
+        rpe: 8,
+      },
+      {
+        id: "t1-2",
+        workout_id: "t1",
+        exercise_name: "Plancha",
+        set_number: 1,
+        reps: null,
+        load_kg: null,
+        rpe: null,
+      },
+    ]);
+  });
+
+  it("resume las series del teléfono en una línea por ejercicio", () => {
+    const tables = tablesFromStore({ biometrics: [], wellbeing: [], workouts: [] });
+    tables.workouts = [
+      { id: "t9", name: "Pierna", started_at: null, completed_at: "2026-11-11T10:00:00.000Z" },
+    ];
+    tables.sets = [1, 2, 3].map((set) => ({
+      id: `s${set}`,
+      workout_id: "t9",
+      exercise_name: "Prensa",
+      set_number: set,
+      reps: 10,
+      load_kg: 120,
+      rpe: 9,
+    }));
+    const workout = storeFromTables(tables).workouts[0];
+    expect(workout.exerciseCount).toBe(1);
+    expect(workout.sessionLogs).toEqual([{ exerciseName: "Prensa", loadKg: 120, reps: 10, rir: 1 }]);
+  });
+
+  it("si el respaldo trae dos registros del mismo día, conserva el último", () => {
+    const repeated = {
+      ...store,
+      biometrics: [store.biometrics[0], { ...store.biometrics[0], id: "b9", weightKg: 79 }],
+    };
+    const rows = tablesFromStore(repeated).biometrics;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].weight_kg).toBe(79);
+  });
+
+  it("un respaldo vacío produce tablas vacías y vuelve como respaldo vacío", () => {
+    const empty = storeFromTables(tablesFromStore({ biometrics: [], wellbeing: [], workouts: [] }));
+    expect(empty).toEqual({
+      biometrics: [],
+      wellbeing: [],
+      workouts: [],
+      habits: [],
+      routines: [],
+      reviews: [],
+    });
+  });
+
+  it("ignora un plan o una rutina guardados con JSON dañado", () => {
+    const tables = tablesFromStore(store);
+    tables.settings = [{ key: "nutrition_profile", value: "{roto" }];
+    const read = storeFromTables(tables);
+    expect(read.profile).toBeUndefined();
+    expect(read.routines).toEqual([]);
+  });
+});

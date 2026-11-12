@@ -7,6 +7,7 @@ import { BackupCard } from "@/src/features/backup/BackupCard";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile, saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { WEIGHT_UNIT_OPTIONS, type WeightUnit } from "@/src/lib/units";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 // Pestaña "Más": el resto de secciones, preferencias y respaldo.
@@ -30,16 +31,20 @@ export default function MoreScreen() {
         <Text style={AppTheme.eyebrow}>MÁS</Text>
         <Text style={AppTheme.title}>Todo lo demás</Text>
         <Card title="Secciones">
-          <NavRow
-            title="Hábitos"
-            detail="Tus cinco compromisos diarios y el mes completo"
-            onPress={() => router.push("/habits")}
-          />
-          <NavRow
-            title="Bienestar"
-            detail="Ánimo, energía, estrés y sueño"
-            onPress={() => router.push("/wellbeing")}
-          />
+          {VIEWER ? null : (
+            <>
+              <NavRow
+                title="Hábitos"
+                detail="Tus cinco compromisos diarios y el mes completo"
+                onPress={() => router.push("/habits")}
+              />
+              <NavRow
+                title="Bienestar"
+                detail="Ánimo, energía, estrés y sueño"
+                onPress={() => router.push("/wellbeing")}
+              />
+            </>
+          )}
           <NavRow
             title="Análisis"
             detail="Tendencia, ingesta y adherencia"
@@ -58,7 +63,15 @@ export default function MoreScreen() {
             </Text>
           </Card>
         ) : null}
-        <BackupCard onRestored={load} />
+        {VIEWER ? (
+          <BackupCard
+            onRestored={load}
+            title="Actualizar datos"
+            intro="Carga un respaldo más reciente de tu teléfono para actualizar lo que ves aquí."
+          />
+        ) : (
+          <BackupCard onRestored={load} />
+        )}
         <Card title="Privacidad">
           <Text style={AppTheme.body}>
             Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica.
