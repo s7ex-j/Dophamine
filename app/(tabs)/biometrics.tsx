@@ -1,143 +1,284 @@
-import { localDateKey } from "@/src/lib/dates";
-import { useCallback, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
-import { Button, Card, Input, LinkButton, ListRow, Metric, RowActions, Screen } from "@/src/components/ui";
+import {
+  Button,
+  Card,
+  Input,
+  LinkButton,
+  ListRow,
+  ProgressBar,
+  RowActions,
+  Screen,
+} from "@/src/components/ui";
 import {
   deleteDailyBiometrics,
-  getLatestBiometrics,
+  getBiometricsByDate,
   getRecentBiometrics,
   saveDailyBiometrics,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
-import { weightUnitOf } from "@/src/features/profile/profile";
+import {
+  buildDailyInput,
+  emptyForm,
+  formCalories,
+  formFromRecord,
+  type DailyForm,
+} from "@/src/features/biometrics/dailyLog";
+import { leanMassKg } from "@/src/features/composition/composition";
+import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
-import { formatWeight, toKg, weightValue, type WeightUnit } from "@/src/lib/units";
+import { addDays, dayLabel, localDateKey } from "@/src/lib/dates";
+import { formatWeight, toKg } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
-export default function BiometricsScreen() {
-  const [weight, setWeight] = useState("");
-  const [entryDate, setEntryDate] = useState(localDateKey());
-  const [calories, setCalories] = useState("");
-  const [protein, setProtein] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [fats, setFats] = useState("");
+// Pestaña "Diario": un día a la vez. Arriba se elige el día; debajo, el resumen
+// de energía y las tres partes del registro (peso, nutrición y composición).
+export default function DailyLogScreen() {
+  const [date, setDate] = useState(localDateKey());
+  const [form, setForm] = useState<DailyForm>(emptyForm);
+  const [saved, setSaved] = useState<DailyBiometrics | null>(null);
   const [history, setHistory] = useState<DailyBiometrics[]>([]);
-  const [unit, setUnit] = useState<WeightUnit>("kg");
+  const [profile, setProfile] = useState<NutritionProfile | null>(null);
+  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const unit = weightUnitOf(profile);
+  const today = localDateKey();
 
-  // Pone un registro en el formulario: el más reciente al abrir, o el día que se elige editar.
-  const fillForm = (record: DailyBiometrics, nextUnit: WeightUnit) => {
-    setWeight(weightValue(record.weightKg, nextUnit));
-    setCalories(record.caloriesIn ? String(record.caloriesIn) : "");
-    setProtein(record.proteinG ? String(record.proteinG) : "");
-    setCarbs(record.carbsG ? String(record.carbsG) : "");
-    setFats(record.fatsG ? String(record.fatsG) : "");
-  };
-  const load = useCallback(() => {
-    Promise.all([getLatestBiometrics(), getRecentBiometrics(), getNutritionProfile()]).then(
-      ([record, rows, profile]) => {
-        const nextUnit = weightUnitOf(profile);
-        setUnit(nextUnit);
-        if (record) fillForm(record, nextUnit);
+  const load = useCallback((day: string) => {
+    Promise.all([getBiometricsByDate(day), getRecentBiometrics(), getNutritionProfile()]).then(
+      ([record, rows, nextProfile]) => {
+        setProfile(nextProfile);
+        setSaved(record);
+        setForm(formFromRecord(record, weightUnitOf(nextProfile)));
         setHistory(rows);
       },
     );
   }, []);
-  useFocusEffect(load);
+  useFocusEffect(useCallback(() => load(date), [load, date]));
+  useEffect(() => setMessage(null), [date]);
 
+  const set = (key: keyof DailyForm) => (value: string) => {
+    setMessage(null);
+    setForm((current) => ({ ...current, [key]: value }));
+  };
   const save = async () => {
-    const weightKg = toKg(Number(weight), unit);
-    if (!Number.isFinite(weightKg) || weightKg <= 0)
-      return Alert.alert("Peso requerido", `Introduce un peso válido en ${unit}.`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate) || entryDate > localDateKey())
-      return Alert.alert("Fecha inválida", "Usa una fecha pasada o de hoy con el formato AAAA-MM-DD.");
-    await saveDailyBiometrics(
-      {
-        weightKg,
-        caloriesIn: Number(calories) || 0,
-        proteinG: Number(protein) || 0,
-        carbsG: Number(carbs) || 0,
-        fatsG: Number(fats) || 0,
-      },
-      entryDate,
-    );
-    load();
-    Alert.alert("Guardado", "Tu registro diario se guardó solo en este dispositivo.");
+    const result = buildDailyInput(form, unit);
+    if (result.error !== null) return setMessage({ text: result.error, error: true });
+    await saveDailyBiometrics(result.input, date);
+    load(date);
+    setMessage({ text: "Guardado. Tus datos quedan solo en este dispositivo.", error: false });
   };
-  const edit = (record: DailyBiometrics) => {
-    setEntryDate(record.date);
-    fillForm(record, unit);
+  const remove = async () => {
+    await deleteDailyBiometrics(date);
+    load(date);
+    setMessage({ text: "Registro borrado.", error: false });
   };
-  const remove = async (record: DailyBiometrics) => {
-    await deleteDailyBiometrics(record.date);
-    if (record.date === entryDate) setEntryDate(localDateKey());
-    load();
-  };
-  const today = entryDate === localDateKey();
+
+  const calories = formCalories(form);
+  const target = profile?.calorieTarget ?? 0;
+  const macros = [
+    {
+      label: "Proteína",
+      value: Number(form.protein) || 0,
+      target: profile?.proteinTarget,
+      color: AppTheme.colors.coral,
+    },
+    {
+      label: "Carbos",
+      value: Number(form.carbs) || 0,
+      target: profile?.carbsTarget,
+      color: AppTheme.colors.amber,
+    },
+    {
+      label: "Grasas",
+      value: Number(form.fats) || 0,
+      target: profile?.fatsTarget,
+      color: AppTheme.colors.accent,
+    },
+  ];
+  const weightKg = toKg(Number(form.weight), unit);
+  const bodyFat = Number(form.bodyFat);
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>REGISTRO DIARIO</Text>
-        <Text style={AppTheme.title}>Progreso</Text>
-        <View style={AppTheme.metricGrid}>
-          <Metric label="Registros" value={String(history.length)} />
-          <Metric label="Peso reciente" value={history[0] ? formatWeight(history[0].weightKg, unit) : "—"} />
-          <Metric
-            label="Ingesta reciente"
-            value={history[0]?.caloriesIn ? `${history[0].caloriesIn}` : "—"}
-          />
-          <Metric label="Días visibles" value="7" />
+      <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
+        <Text style={AppTheme.eyebrow}>DIARIO</Text>
+        <View style={AppTheme.dateNav}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Día anterior"
+            onPress={() => setDate(addDays(date, -1))}
+            style={AppTheme.dateNavButton}
+          >
+            <Text style={AppTheme.dateNavArrow}>‹</Text>
+          </Pressable>
+          <View style={AppTheme.dateNavCenter}>
+            <Text style={AppTheme.dateNavTitle}>{dayLabel(date)}</Text>
+            <Text style={AppTheme.hint}>{date}</Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Día siguiente"
+            disabled={date >= today}
+            onPress={() => setDate(addDays(date, 1))}
+            style={[AppTheme.dateNavButton, date >= today && AppTheme.dateNavButtonDisabled]}
+          >
+            <Text style={AppTheme.dateNavArrow}>›</Text>
+          </Pressable>
         </View>
-        <Card title={today ? "Registro de hoy" : `Editando el ${entryDate}`}>
-          <Input label="Fecha" value={entryDate} onChangeText={setEntryDate} placeholder="AAAA-MM-DD" />
-          <Input
-            label={`Peso (${unit})`}
-            value={weight}
-            onChangeText={setWeight}
-            keyboardType="decimal-pad"
+
+        <Card title="Energía del día">
+          <View style={AppTheme.energyTop}>
+            <View>
+              <Text style={AppTheme.energyNumber}>{calories}</Text>
+              <Text style={AppTheme.hint}>
+                {target
+                  ? calories <= target
+                    ? `de ${target} kcal · quedan ${target - calories}`
+                    : `de ${target} kcal · ${calories - target} por encima`
+                  : "kcal"}
+              </Text>
+            </View>
+          </View>
+          <ProgressBar
+            value={target ? (calories / target) * 100 : 0}
+            color={target && calories > target * 1.1 ? AppTheme.colors.coral : AppTheme.colors.blue}
           />
+          <View style={AppTheme.macroRow}>
+            {macros.map((macro) => (
+              <View key={macro.label} style={AppTheme.macroColumn}>
+                <Text style={AppTheme.macroLabel}>{macro.label}</Text>
+                <Text style={AppTheme.macroValue}>
+                  {macro.value} g
+                  {macro.target ? <Text style={AppTheme.macroTarget}> / {macro.target}</Text> : null}
+                </Text>
+                <ProgressBar
+                  value={macro.target ? (macro.value / macro.target) * 100 : 0}
+                  color={macro.color}
+                />
+              </View>
+            ))}
+          </View>
+        </Card>
+
+        <Card title="Peso">
+          <Input
+            label={`Peso del día (${unit})`}
+            value={form.weight}
+            onChangeText={set("weight")}
+            keyboardType="decimal-pad"
+            placeholder={history[0] ? `Último: ${formatWeight(history[0].weightKg, unit)}` : ""}
+          />
+          <Text style={AppTheme.hint}>Pésate al despertar, en las mismas condiciones cada vez.</Text>
+        </Card>
+
+        <Card title="Nutrición">
           <Input
             label="Calorías"
-            value={calories}
-            onChangeText={setCalories}
+            value={form.calories}
+            onChangeText={set("calories")}
             keyboardType="number-pad"
-            placeholder="Opcional"
+            placeholder="Vacío: se calculan con los macros"
           />
-          <Input label="Proteína (g)" value={protein} onChangeText={setProtein} keyboardType="number-pad" />
-          <Input label="Carbohidratos (g)" value={carbs} onChangeText={setCarbs} keyboardType="number-pad" />
-          <Input label="Grasas (g)" value={fats} onChangeText={setFats} keyboardType="number-pad" />
-          <Button title={today ? "Guardar registro" : "Guardar cambios"} onPress={save} />
-          {today ? null : (
-            <Button title="Volver a hoy" variant="secondary" onPress={() => setEntryDate(localDateKey())} />
-          )}
+          <View style={AppTheme.fieldRow}>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Proteína (g)"
+                value={form.protein}
+                onChangeText={set("protein")}
+                keyboardType="number-pad"
+              />
+            </View>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Carbos (g)"
+                value={form.carbs}
+                onChangeText={set("carbs")}
+                keyboardType="number-pad"
+              />
+            </View>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Grasas (g)"
+                value={form.fats}
+                onChangeText={set("fats")}
+                keyboardType="number-pad"
+              />
+            </View>
+          </View>
         </Card>
-        <Card title="Últimos registros">
+
+        <Card title="Composición corporal · opcional">
+          <View style={AppTheme.fieldRow}>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Grasa (%)"
+                value={form.bodyFat}
+                onChangeText={set("bodyFat")}
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label={`Músculo (${unit})`}
+                value={form.muscle}
+                onChangeText={set("muscle")}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          </View>
+          <View style={AppTheme.fieldRow}>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Agua (%)"
+                value={form.water}
+                onChangeText={set("water")}
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label={`Hueso (${unit})`}
+                value={form.bone}
+                onChangeText={set("bone")}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          </View>
+          <Text style={AppTheme.hint}>
+            {weightKg > 0 && bodyFat > 0 && bodyFat < 100
+              ? `Masa magra: ${formatWeight(leanMassKg(weightKg, bodyFat), unit, 1)} · Grasa: ${formatWeight(weightKg - leanMassKg(weightKg, bodyFat), unit, 1)}`
+              : "Llena solo lo que mida tu balanza. Con el % de grasa se separa grasa de masa magra."}
+          </Text>
+        </Card>
+
+        {message ? (
+          <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
+        ) : null}
+        <Button title={saved ? "Guardar cambios" : "Guardar el día"} onPress={save} />
+        {saved ? <RowActions question={`¿Borrar el registro del ${date}?`} onDelete={remove} /> : null}
+
+        <Card title="Últimos días">
           {history.length ? (
             history.map((record) => (
               <View key={record.id}>
                 <ListRow
-                  title={record.date}
-                  detail={`${record.caloriesIn} kcal · P ${record.proteinG} · C ${record.carbsG} · G ${record.fatsG}`}
+                  title={`${dayLabel(record.date)} · ${record.date}`}
+                  detail={`${record.caloriesIn} kcal · P ${record.proteinG} · C ${record.carbsG} · G ${record.fatsG}${
+                    record.bodyFatPct ? ` · ${record.bodyFatPct} % grasa` : ""
+                  }`}
                   value={formatWeight(record.weightKg, unit)}
                 />
-                <RowActions
-                  question={`¿Borrar el registro del ${record.date}?`}
-                  onDelete={() => remove(record)}
-                >
-                  <LinkButton title="Editar" onPress={() => edit(record)} />
-                </RowActions>
+                <View style={AppTheme.rowActions}>
+                  <LinkButton title="Abrir" onPress={() => setDate(record.date)} />
+                </View>
               </View>
             ))
           ) : (
             <Text style={AppTheme.body}>Aún no hay registros guardados.</Text>
           )}
         </Card>
-        <Text style={AppTheme.hint}>
-          Puedes corregir o borrar un día pasado: la tendencia y el TDEE se recalculan con lo que queda. El
-          TDEE usa peso e ingesta acumulados cuando ya hay suficiente señal.
-        </Text>
       </ScrollView>
     </Screen>
   );

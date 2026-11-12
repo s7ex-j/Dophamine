@@ -15,7 +15,8 @@ Expo 52 + React Native 0.76 + expo-router; web con react-native-web. Repo públi
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan) |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más |
+| Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
 | Guardar y leer | `*.repository.ts` (SQLite) y `*.repository.web.ts` (localStorage) |
 | Esquema y almacén | `src/db/` |
@@ -34,6 +35,12 @@ npx expo export --platform web    # compila la web a dist/
 (cd web && npm ci && npm run build)   # página de presentación
 ```
 
+## Hacia dónde va
+
+La app principal es la de teléfono. La web existe para probar y, más adelante, solo para ver el progreso
+a partir de un respaldo exportado desde el teléfono (ver la hoja de ruta). Al diseñar una pantalla se
+piensa primero en 390 px y en usarla con una mano.
+
 ## Reglas que no se rompen
 
 1. **Cada repositorio tiene dos versiones con las mismas funciones** (`.ts` y `.web.ts`). Si cambias una,
@@ -43,7 +50,9 @@ npx expo export --platform web    # compila la web a dist/
 4. **Refactor = mismos píxeles.** Al mover código de interfaz, comparar capturas antes y después.
 5. **Nada sale del dispositivo.** Sin red, sin analítica, sin fuentes ni scripts de terceros (la página
    de presentación también: tipografías autoalojadas).
-6. **El plan no cambia solo.** Toda propuesta de ajuste necesita aceptación explícita.
+6. **El plan no cambia sin que la persona lo haya decidido.** En modo colaborativo toda propuesta
+   necesita aceptación explícita. En modo automático (que se elige a propósito en la evaluación inicial)
+   la app aplica el ajuste, pero siempre lo avisa en el Panel, lo deja en el historial y permite deshacerlo.
 7. **Sin afirmaciones médicas.** El TDEE es una estimación y la interfaz lo dice.
 8. **El respaldo es compatible hacia atrás**: si cambia la forma de los datos, sube `BACKUP_FORMAT` y
    conserva la lectura del formato anterior, con prueba.

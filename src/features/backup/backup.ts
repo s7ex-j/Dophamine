@@ -11,7 +11,10 @@ import { isWeeklyReview } from "@/src/features/reviews/reviews";
 
 // Formato 2: agrega `reviews` (historial de revisiones semanales). Un respaldo
 // de formato 1 se sigue leyendo; simplemente no trae revisiones.
-export const BACKUP_FORMAT = 2;
+// Formato 3: composición corporal en cada día, datos de la evaluación inicial en
+// el plan y revisiones "auto". Son campos nuevos y opcionales: los formatos 1 y 2
+// se leen igual.
+export const BACKUP_FORMAT = 3;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 

@@ -37,3 +37,8 @@ export async function getWeeklyReviews(limit = 12): Promise<WeeklyReview[]> {
     tdee: row.tdee,
   }));
 }
+
+export async function setReviewDecision(reviewId: string, decision: ReviewDecision) {
+  const db = await getDatabase();
+  await db.runAsync("UPDATE weekly_reviews SET decision = ? WHERE id = ?", decision, reviewId);
+}

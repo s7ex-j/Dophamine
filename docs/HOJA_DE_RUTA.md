@@ -6,11 +6,17 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.5.0)
+## Estado al 11 de noviembre de 2026 (versión 0.6.0)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
-y borrar registros, temporizador de descanso, historial de revisiones y unidades kg/lb. 59 pruebas de dominio.
+y borrar registros, temporizador de descanso, historial de revisiones y unidades kg/lb. Desde la 0.6.0:
+navegación de cinco pestañas, evaluación inicial por pasos, peso meta y ritmo, revisión cada 3 o 7 días con
+modo automático, composición corporal y Diario nuevo. 90 pruebas de dominio y 10 flujos de navegador.
+
+**Decisión de arquitectura (Jharol, 11 nov 2026):** la app principal es la de teléfono. La web queda para
+ver el progreso. Eso todavía no es así en el código: la web sigue siendo una app completa porque es lo
+único que se puede ejecutar y probar sin teléfono, y porque el respaldo aún no existe en móvil (paso 7).
 
 **No comprobado:** la app en Android o iOS. Todo lo verificado hasta ahora fue en el navegador. El código
 de SQLite se compila y pasa la revisión de tipos, pero nadie lo ha ejecutado en un teléfono desde los
@@ -23,7 +29,7 @@ temporizador, también sin probar en un teléfono.
 |---|---|---|---|
 | 1 | J | Crear la versión en GitHub: Releases → "Draft a new release" → etiqueta `v0.4.0` sobre `main` → pegar la sección 0.4.0 de `CHANGELOG.md`. | "Ver la última versión" del README abre la 0.4.0. |
 | 2 | J | Abrir la app web en el celular **después de las 7 p. m.**, registrar el peso y marcar un hábito. | Ambos quedan en el día de hoy, no en el de mañana. |
-| 3 | C | Guardar en el repo las pruebas de navegador que hoy se corren a mano: `e2e/flujos.mjs` (puppeteer-core contra `npx expo export --platform web`): crear plan, registrar un día, marcar hábito, guardar sesión de entreno, chequeo de bienestar, respaldo y restauración. Script `npm run e2e` y un trabajo en `checks.yml`. | El trabajo pasa en CI; si se rompe el editor de rutina o el guardado, falla. |
+| 3 | C ✔ | Guardar en el repo las pruebas de navegador que hoy se corren a mano: `e2e/flujos.mjs` (puppeteer-core contra `npx expo export --platform web`): crear plan, registrar un día, marcar hábito, guardar sesión de entreno, chequeo de bienestar, respaldo y restauración. Script `npm run e2e` y un trabajo en `checks.yml`. | El trabajo pasa en CI; si se rompe el editor de rutina o el guardado, falla. |
 
 ## Fase 2 — Android real
 
@@ -47,6 +53,21 @@ anteriores: el flujo e2e de "borrar un día" entra con el paso 3, y la comprobac
 | 11 | C ✔ | **Historial de revisiones semanales**: guardar cada propuesta aceptada o descartada (tabla `weekly_reviews`, clave `reviews` en la web) y mostrarla en Análisis. Incluirla en el respaldo subiendo `BACKUP_FORMAT` a 2 con lectura compatible del 1. | Pruebas de migración del respaldo 1 → 2. |
 | 12 | C ✔ | **Unidades**: kg/lb como preferencia de perfil; el dominio sigue en kg y solo convierte la interfaz. | Pruebas de conversión de ida y vuelta sin pérdida visible. |
 
+## Fase 3b — Móvil primero (lo que sigue, en este orden)
+
+| # | Quién | Paso | Cómo se comprueba |
+|---|---|---|---|
+| 13 | J | Abrir la 0.6.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático. | La app abre con los datos anteriores; lo que falle se anota con captura. |
+| 14 | C | Respaldo en el teléfono (es el paso 7): exportar e importar el archivo con `BACKUP_FORMAT = 3`. | Un respaldo del teléfono se abre en la web y al revés. |
+| 15 | C | Web como visor: al abrirla sin datos pide un respaldo del teléfono y muestra Panel, Estrategia y Análisis en solo lectura. | La web no permite registrar; todo lo que muestra sale del archivo. |
+| 16 | C | Registro por comida sin base de alimentos: entradas con nombre, calorías y macros por momento del día, alimentos propios y comidas guardadas. Permitir días con comida y sin pesaje. Necesita diseño en `docs/` (cambia `analyzeMetabolism` y el respaldo). | Pruebas de dominio; el total del día sale de las entradas. |
+| 17 | C | Recordatorio de pesaje y de registro (notificaciones locales). | En el teléfono. |
+| 18 | C | Medidas corporales (cintura, cadera, pecho) y fotos de progreso guardadas solo en el dispositivo. | En el teléfono. |
+| 19 | C | Exportar datos a CSV. | El archivo abre en una hoja de cálculo. |
+
+Después de esto viene el entrenamiento ampliado (catálogo de ejercicios, programas por ciclos, descargas,
+calculadora de discos), que es un proyecto aparte con su propio diseño.
+
 ## Fase 4 — Etapa siguiente (ya anunciada en el README; cada una es un proyecto aparte)
 
 Antes de empezar cualquiera se escribe su diseño en `docs/` y se agrega aquí como fase con pasos.
@@ -60,5 +81,6 @@ Antes de empezar cualquiera se escribe su diseño en `docs/` y se agrega aquí c
 ## No se hace
 
 - Cuentas obligatorias, anuncios o telemetría.
-- Cambiar el objetivo calórico sin que la persona lo acepte.
+- Cambiar el objetivo calórico sin que la persona lo haya decidido: o acepta cada propuesta, o eligió el
+  modo automático, que siempre avisa y se puede deshacer.
 - Presentar el TDEE como una cifra exacta, o dar consejo médico.

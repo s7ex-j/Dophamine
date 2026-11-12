@@ -167,3 +167,42 @@ export function RowActions({
     </View>
   );
 }
+/** Opciones en lista vertical, cada una con una línea de explicación. Para elegir una sola. */
+export function OptionList<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string; detail: string }>;
+}) {
+  return (
+    <View style={AppTheme.optionList}>
+      {options.map((option) => (
+        <Pressable
+          key={option.value}
+          accessibilityRole="button"
+          accessibilityState={{ selected: option.value === value }}
+          onPress={() => onChange(option.value)}
+          style={[AppTheme.optionCard, option.value === value && AppTheme.optionCardActive]}
+        >
+          <Text style={AppTheme.optionTitle}>{option.label}</Text>
+          <Text style={AppTheme.optionDetail}>{option.detail}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+/** Fila que lleva a otra pantalla. */
+export function NavRow({ title, detail, onPress }: { title: string; detail: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={AppTheme.navRow}>
+      <View style={AppTheme.listText}>
+        <Text style={AppTheme.listTitle}>{title}</Text>
+        <Text style={AppTheme.listDetail}>{detail}</Text>
+      </View>
+      <Text style={AppTheme.navChevron}>›</Text>
+    </Pressable>
+  );
+}

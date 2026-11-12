@@ -8,6 +8,10 @@ export type Store = {
     proteinG: number;
     carbsG?: number;
     fatsG?: number;
+    bodyFatPct?: number | null;
+    muscleMassKg?: number | null;
+    waterPct?: number | null;
+    boneMassKg?: number | null;
   }>;
   wellbeing: Array<{
     id: string;
@@ -53,11 +57,19 @@ export type Store = {
     carbsTarget: number;
     fatsTarget: number;
     weightUnit?: "kg" | "lb";
+    startWeightKg?: number;
+    startDate?: string;
+    goalWeightKg?: number;
+    pace?: "gentle" | "moderate" | "fast";
+    bodyFatPct?: number;
+    proteinLevel?: "moderate" | "high" | "very_high";
+    adjustMode?: "auto" | "collaborative" | "manual";
+    checkInDays?: 3 | 7;
   };
   reviews?: Array<{
     id: string;
     date: string;
-    decision: "accepted" | "dismissed";
+    decision: "accepted" | "dismissed" | "auto";
     previousCalories: number;
     suggestedCalories: number;
     tdee: number | null;

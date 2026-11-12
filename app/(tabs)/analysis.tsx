@@ -8,7 +8,9 @@ import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { analyzeMetabolism, weeklyRecommendation } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
 import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
-import { describeReview, type WeeklyReview } from "@/src/features/reviews/reviews";
+import { CompositionCard } from "@/src/features/dashboard/ProgressSections";
+import { ReviewHistoryCard } from "@/src/features/reviews/CheckInSections";
+import type { WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { convertWeight, formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
@@ -154,18 +156,8 @@ export default function AnalysisScreen() {
             </Text>
           ) : null}
         </Card>
-        <Card title="Historial de revisiones">
-          {reviews.length ? (
-            reviews.map((review) => {
-              const { title, detail, value } = describeReview(review);
-              return <ListRow key={review.id} title={title} detail={detail} value={value} />;
-            })
-          ) : (
-            <Text style={AppTheme.body}>
-              Aquí quedará cada propuesta semanal que aceptes o decidas no aplicar.
-            </Text>
-          )}
-        </Card>
+        {profile ? <CompositionCard records={records} profile={profile} /> : null}
+        <ReviewHistoryCard reviews={reviews} />
       </ScrollView>
     </Screen>
   );

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { addDays, describeReview, isReviewDue, isWeeklyReview, nextReviewDate } from "./reviews";
+import { addDays } from "@/src/lib/dates";
+import {
+  canUndoAuto,
+  checkInAction,
+  describeReview,
+  isReviewDue,
+  isWeeklyReview,
+  nextReviewDate,
+} from "./reviews";
 
 const accepted = {
   id: "1",
@@ -53,5 +61,52 @@ describe("revisiones semanales", () => {
     expect(isWeeklyReview({ ...accepted, date: "ayer" })).toBe(false);
     expect(isWeeklyReview({ ...accepted, suggestedCalories: "2500" })).toBe(false);
     expect(isWeeklyReview(null)).toBe(false);
+  });
+});
+
+describe("revisión cada 3 días y modos de ajuste", () => {
+  const last = { date: "2026-11-04" };
+  const proposal = { ready: true, delta: -50 };
+
+  it("con intervalo de 3 días la siguiente revisión llega antes", () => {
+    expect(nextReviewDate(last, 3)).toBe("2026-11-07");
+    expect(isReviewDue(last, "2026-11-06", 3)).toBe(false);
+    expect(isReviewDue(last, "2026-11-07", 3)).toBe(true);
+  });
+
+  it("automático aplica, colaborativo propone y manual solo informa", () => {
+    expect(checkInAction(proposal, true, "auto")).toBe("auto");
+    expect(checkInAction(proposal, true, "collaborative")).toBe("propose");
+    expect(checkInAction(proposal, true, "manual")).toBe("inform");
+    expect(checkInAction(proposal, false, "manual")).toBe("inform");
+  });
+
+  it("no hace nada si no toca revisión, no hay datos o el cambio es mínimo", () => {
+    expect(checkInAction(proposal, false, "auto")).toBe("none");
+    expect(checkInAction(proposal, false, "collaborative")).toBe("none");
+    expect(checkInAction({ ready: false, delta: null }, true, "auto")).toBe("none");
+    expect(checkInAction({ ready: true, delta: 10 }, true, "auto")).toBe("none");
+    expect(checkInAction(null, true, "auto")).toBe("none");
+  });
+
+  it("un ajuste automático se puede deshacer hasta la siguiente revisión", () => {
+    const auto = { date: "2026-11-04", decision: "auto" as const };
+    expect(canUndoAuto(auto, "2026-11-05", 3)).toBe(true);
+    expect(canUndoAuto(auto, "2026-11-07", 3)).toBe(false);
+    expect(canUndoAuto({ ...auto, decision: "accepted" }, "2026-11-05", 3)).toBe(false);
+    expect(canUndoAuto(null, "2026-11-05", 3)).toBe(false);
+  });
+
+  it("describe un ajuste automático y lo acepta al leer un respaldo", () => {
+    const review = {
+      id: "1",
+      date: "2026-11-04",
+      decision: "auto" as const,
+      previousCalories: 2400,
+      suggestedCalories: 2350,
+      tdee: 2700,
+    };
+    expect(describeReview(review).title).toBe("Ajuste automático");
+    expect(isWeeklyReview(review)).toBe(true);
   });
 });
