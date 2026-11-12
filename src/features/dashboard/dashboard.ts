@@ -57,3 +57,37 @@ export function heroMessageFor(caloriesIn: number | null, calorieTarget: number)
   if (caloriesIn > calorieTarget) return "Hoy superaste la energía objetivo.";
   return `${Math.max(0, calorieTarget - caloriesIn)} kcal para cerrar tu objetivo.`;
 }
+
+export type GridKey = "kcal" | "protein" | "fats" | "carbs";
+export type GridRow = { key: GridKey; label: string; unit: string; target: number; values: number[] };
+export type NutritionTargets = { calories: number; protein: number; fats: number; carbs: number };
+
+/**
+ * La cuadrícula de la semana: una fila por dato (calorías y macros), un valor
+ * por día. En modo "restante" cada valor es lo que falta para la meta.
+ */
+export function nutritionGrid(
+  week: WeekDay[],
+  targets: NutritionTargets,
+  mode: "consumed" | "remaining",
+): GridRow[] {
+  const rows: Array<{
+    key: GridKey;
+    label: string;
+    unit: string;
+    target: number;
+    field: keyof DailyBiometrics;
+  }> = [
+    { key: "kcal", label: "kcal", unit: "", target: targets.calories, field: "caloriesIn" },
+    { key: "protein", label: "P", unit: "g", target: targets.protein, field: "proteinG" },
+    { key: "fats", label: "G", unit: "g", target: targets.fats, field: "fatsG" },
+    { key: "carbs", label: "C", unit: "g", target: targets.carbs, field: "carbsG" },
+  ];
+  return rows.map(({ field, ...row }) => ({
+    ...row,
+    values: week.map(({ record }) => {
+      const consumed = Math.round(Number(record?.[field] ?? 0));
+      return mode === "consumed" ? consumed : Math.max(0, row.target - consumed);
+    }),
+  }));
+}

@@ -1,62 +1,89 @@
-import type { Food } from "@/src/features/nutrition/foods";
+import type { Food, FoodState } from "@/src/features/nutrition/foods";
 
 /**
  * Alimentos básicos incluidos en la app, para registrar sin red.
  *
+ * Son ingredientes sueltos, no platos armados: un almuerzo se registra como sus
+ * partes (arroz, pollo, palta), cada una con su peso. Los que cambian de peso al
+ * cocinarse están dos veces, crudo y cocido, enlazados por una clave para poder
+ * pasar de uno a otro: 100 g de arroz crudo no son 100 g de arroz cocido.
+ *
  * Valores de referencia por 100 g de porción comestible, redondeados, tomados
  * de tablas de composición de uso general (USDA FoodData Central y tablas
- * peruanas de composición de alimentos). Son promedios: una marca o una
- * preparación concreta puede diferir. Para un producto envasado, la etiqueta manda.
+ * peruanas de composición de alimentos). Son promedios: una marca o un corte
+ * concreto puede diferir. Para un producto envasado, la etiqueta manda.
  *
- * Cada fila: [nombre, kcal, proteína, carbohidratos, grasas, gramos de una porción, nombre de la porción].
- * "cocido" = hervido o al vapor, sin grasa añadida. Sin indicación = crudo o listo para comer.
+ * Cada fila: [nombre, kcal, proteína, carbohidratos, grasas, gramos de una porción,
+ * nombre de la porción, estado, clave del par crudo/cocido].
+ * "cocido" = hervido, al vapor, al horno o a la plancha, sin grasa añadida.
  */
-type Row = [string, number, number, number, number, number, string?];
+type Row = [string, number, number, number, number, number, string?, FoodState?, string?];
+const R: FoodState = "raw";
+const C: FoodState = "cooked";
 
 const ROWS: Row[] = [
-  // Carnes y aves
-  ["Pechuga de pollo cocida, sin piel", 165, 31, 0, 3.6, 120, "filete"],
-  ["Pechuga de pollo cruda, sin piel", 120, 22.5, 0, 2.6, 150, "filete"],
-  ["Muslo de pollo cocido, sin piel", 179, 24.8, 0, 8.2, 100, "muslo"],
-  ["Pierna de pollo cocida, con piel", 191, 23.3, 0, 10.2, 110, "pierna"],
-  ["Pollo a la brasa, con piel", 239, 27, 0, 13.6, 150, "cuarto"],
-  ["Pavo, pechuga cocida", 135, 30, 0, 0.7, 100, "porción"],
-  ["Carne de res magra cocida", 217, 26, 0, 11.8, 120, "filete"],
-  ["Carne de res molida 90/10 cocida", 217, 26.1, 0, 11.7, 100, "porción"],
-  ["Carne de res molida 80/20 cocida", 254, 25.7, 0, 16.2, 100, "porción"],
-  ["Lomo de res cocido", 211, 28, 0, 10, 120, "filete"],
-  ["Bistec de res crudo", 143, 21.4, 0, 6, 150, "bistec"],
-  ["Hígado de res cocido", 175, 26.5, 5.1, 4.7, 100, "porción"],
-  ["Lomo de cerdo cocido", 196, 27, 0, 9, 120, "porción"],
-  ["Chuleta de cerdo cocida", 231, 25.7, 0, 13.5, 120, "chuleta"],
+  // Aves
+  ["Pechuga de pollo cruda, sin piel", 120, 22.5, 0, 2.6, 150, "filete", R, "pollo-pechuga"],
+  ["Pechuga de pollo cocida, sin piel", 165, 31, 0, 3.6, 120, "filete", C, "pollo-pechuga"],
+  ["Muslo de pollo crudo, sin piel", 121, 19.7, 0, 4.1, 120, "muslo", R, "pollo-muslo"],
+  ["Muslo de pollo cocido, sin piel", 179, 24.8, 0, 8.2, 100, "muslo", C, "pollo-muslo"],
+  ["Pierna de pollo cruda, con piel", 161, 18, 0, 9.5, 130, "pierna", R, "pollo-pierna"],
+  ["Pierna de pollo cocida, con piel", 191, 23.3, 0, 10.2, 110, "pierna", C, "pollo-pierna"],
+  ["Pechuga de pavo cruda", 114, 23.7, 0, 1.5, 120, "porción", R, "pavo-pechuga"],
+  ["Pechuga de pavo cocida", 147, 30, 0, 2.1, 100, "porción", C, "pavo-pechuga"],
+
+  // Res, cerdo y otras carnes
+  ["Carne de res magra cruda", 143, 21.4, 0, 6, 150, "filete", R, "res-magra"],
+  ["Carne de res magra cocida", 200, 29, 0, 8.5, 120, "filete", C, "res-magra"],
+  ["Carne molida de res 90/10 cruda", 176, 20, 0, 10, 120, "porción", R, "res-molida-90"],
+  ["Carne molida de res 90/10 cocida", 217, 26.1, 0, 11.7, 100, "porción", C, "res-molida-90"],
+  ["Carne molida de res 80/20 cruda", 254, 17.2, 0, 20, 120, "porción", R, "res-molida-80"],
+  ["Carne molida de res 80/20 cocida", 272, 25.5, 0, 18, 100, "porción", C, "res-molida-80"],
+  ["Lomo de res crudo", 158, 21.5, 0, 7.5, 150, "filete", R, "res-lomo"],
+  ["Lomo de res cocido", 211, 28, 0, 10, 120, "filete", C, "res-lomo"],
+  ["Hígado de res crudo", 135, 20.4, 3.9, 3.6, 120, "porción", R, "res-higado"],
+  ["Hígado de res cocido", 175, 26.5, 5.1, 4.7, 100, "porción", C, "res-higado"],
+  ["Corazón de res crudo", 112, 17.7, 0.1, 3.9, 120, "porción", R, "res-corazon"],
+  ["Corazón de res cocido", 165, 28.5, 0.2, 4.7, 100, "porción", C, "res-corazon"],
+  ["Lomo de cerdo crudo", 143, 21, 0, 6, 150, "porción", R, "cerdo-lomo"],
+  ["Lomo de cerdo cocido", 196, 27, 0, 9, 120, "porción", C, "cerdo-lomo"],
+  ["Chuleta de cerdo cruda", 170, 20.5, 0, 9.5, 150, "chuleta", R, "cerdo-chuleta"],
+  ["Chuleta de cerdo cocida", 231, 25.7, 0, 13.5, 120, "chuleta", C, "cerdo-chuleta"],
+  ["Cordero crudo", 206, 19, 0, 14, 130, "porción", R, "cordero"],
+  ["Cordero cocido", 258, 25.5, 0, 16.5, 100, "porción", C, "cordero"],
   ["Chicharrón de cerdo", 544, 61, 0, 31, 30, "porción"],
   ["Tocino frito", 541, 37, 1.4, 42, 16, "2 tiras"],
   ["Jamón cocido", 110, 17.5, 1.5, 3.5, 30, "2 lonjas"],
   ["Jamón de pavo", 104, 17, 2, 3, 30, "2 lonjas"],
   ["Salchicha tipo hot dog", 290, 10.5, 2.5, 26, 45, "unidad"],
   ["Chorizo", 455, 24, 2, 38, 60, "unidad"],
-  ["Cordero cocido", 258, 25.5, 0, 16.5, 100, "porción"],
-  ["Anticucho de corazón", 165, 20, 4, 7.5, 100, "2 palitos"],
 
   // Pescados y mariscos
+  ["Salmón crudo", 208, 20.4, 0, 13.4, 150, "filete", R, "salmon"],
+  ["Salmón cocido", 206, 22, 0, 12.4, 120, "filete", C, "salmon"],
+  ["Trucha cruda", 141, 19.9, 0, 6.2, 150, "filete", R, "trucha"],
+  ["Trucha cocida", 168, 23.5, 0, 7.4, 120, "filete", C, "trucha"],
+  ["Bonito crudo", 130, 23, 0, 4, 150, "filete", R, "bonito"],
+  ["Bonito cocido", 150, 26, 0, 4.5, 120, "filete", C, "bonito"],
+  ["Jurel crudo", 135, 20.5, 0, 5.5, 150, "filete", R, "jurel"],
+  ["Jurel cocido", 155, 24, 0, 6, 120, "filete", C, "jurel"],
+  ["Caballa cruda", 158, 20.1, 0, 7.9, 150, "filete", R, "caballa"],
+  ["Caballa cocida", 205, 23.9, 0, 11.9, 120, "filete", C, "caballa"],
+  ["Tilapia cruda", 96, 20, 0, 1.7, 150, "filete", R, "tilapia"],
+  ["Tilapia cocida", 128, 26, 0, 2.7, 120, "filete", C, "tilapia"],
+  ["Pescado blanco crudo (merluza, lenguado)", 82, 17.8, 0, 0.7, 150, "filete", R, "pescado-blanco"],
+  ["Pescado blanco cocido (merluza, lenguado)", 105, 22, 0, 1.3, 120, "filete", C, "pescado-blanco"],
+  ["Camarones o langostinos crudos", 85, 20, 0, 0.5, 120, "porción", R, "camarones"],
+  ["Camarones o langostinos cocidos", 99, 24, 0.2, 0.3, 100, "porción", C, "camarones"],
+  ["Pota o calamar crudo", 92, 15.6, 3.1, 1.4, 120, "porción", R, "pota"],
+  ["Pota o calamar cocido", 105, 18, 3.5, 1.6, 100, "porción", C, "pota"],
   ["Atún en agua, escurrido", 116, 25.5, 0, 0.8, 100, "lata chica"],
   ["Atún en aceite, escurrido", 198, 29, 0, 8.2, 100, "lata chica"],
-  ["Salmón cocido", 206, 22, 0, 12.4, 120, "filete"],
-  ["Trucha cocida", 168, 23.5, 0, 7.4, 120, "filete"],
-  ["Bonito cocido", 150, 26, 0, 4.5, 120, "filete"],
-  ["Jurel cocido", 155, 24, 0, 6, 120, "filete"],
-  ["Caballa cocida", 205, 23.9, 0, 11.9, 120, "filete"],
-  ["Tilapia cocida", 128, 26, 0, 2.7, 120, "filete"],
-  ["Pescado blanco cocido (merluza, lenguado)", 105, 22, 0, 1.3, 120, "filete"],
-  ["Pescado frito", 232, 18, 8, 14, 120, "filete"],
   ["Sardinas en aceite, escurridas", 208, 24.6, 0, 11.5, 90, "lata"],
-  ["Camarones o langostinos cocidos", 99, 24, 0.2, 0.3, 100, "porción"],
-  ["Pota o calamar cocido", 105, 18, 3.5, 1.6, 100, "porción"],
-  ["Ceviche de pescado", 85, 14, 5, 1, 200, "plato"],
 
   // Huevos y lácteos
-  ["Huevo entero", 143, 12.6, 0.7, 9.5, 50, "unidad"],
-  ["Huevo duro", 155, 12.6, 1.1, 10.6, 50, "unidad"],
+  ["Huevo entero", 143, 12.6, 0.7, 9.5, 50, "unidad", R, "huevo"],
+  ["Huevo duro", 155, 12.6, 1.1, 10.6, 50, "unidad", C, "huevo"],
   ["Huevo frito", 196, 13.6, 0.8, 15, 46, "unidad"],
   ["Clara de huevo", 52, 10.9, 0.7, 0.2, 33, "clara"],
   ["Yema de huevo", 322, 15.9, 3.6, 26.5, 17, "yema"],
@@ -83,19 +110,20 @@ const ROWS: Row[] = [
   ["Mantequilla", 717, 0.9, 0.1, 81, 10, "cucharadita"],
   ["Crema de leche", 340, 2.1, 2.8, 36, 15, "cucharada"],
 
-  // Cereales, tubérculos y derivados
-  ["Arroz blanco cocido", 130, 2.7, 28.2, 0.3, 160, "taza"],
-  ["Arroz blanco crudo", 365, 7.1, 80, 0.7, 60, "porción"],
-  ["Arroz integral cocido", 123, 2.7, 25.6, 1, 160, "taza"],
-  ["Arroz chaufa", 185, 6, 27, 6, 250, "plato"],
-  ["Avena en hojuelas, cruda", 379, 13.2, 67.7, 6.5, 40, "media taza"],
-  ["Avena cocida en agua", 71, 2.5, 12, 1.5, 240, "taza"],
-  ["Quinua cocida", 120, 4.4, 21.3, 1.9, 185, "taza"],
-  ["Quinua cruda", 368, 14.1, 64.2, 6.1, 45, "porción"],
+  // Cereales y derivados
+  ["Arroz blanco crudo", 365, 7.1, 80, 0.7, 60, "porción", R, "arroz-blanco"],
+  ["Arroz blanco cocido", 130, 2.7, 28.2, 0.3, 160, "taza", C, "arroz-blanco"],
+  ["Arroz integral crudo", 367, 7.5, 76.2, 3.2, 60, "porción", R, "arroz-integral"],
+  ["Arroz integral cocido", 123, 2.7, 25.6, 1, 160, "taza", C, "arroz-integral"],
+  ["Avena en hojuelas, cruda", 379, 13.2, 67.7, 6.5, 40, "media taza", R, "avena"],
+  ["Avena cocida en agua", 71, 2.5, 12, 1.5, 240, "taza", C, "avena"],
+  ["Quinua cruda", 368, 14.1, 64.2, 6.1, 45, "porción", R, "quinua"],
+  ["Quinua cocida", 120, 4.4, 21.3, 1.9, 185, "taza", C, "quinua"],
+  ["Fideos o pasta cruda", 371, 13, 74.7, 1.5, 80, "porción", R, "fideos"],
+  ["Fideos o pasta cocida", 158, 5.8, 30.9, 0.9, 180, "plato", C, "fideos"],
+  ["Trigo o mote crudo", 340, 12, 72, 2, 50, "porción", R, "trigo"],
+  ["Trigo o mote cocido", 150, 5, 31, 0.8, 150, "porción", C, "trigo"],
   ["Kiwicha cruda", 371, 13.6, 65.2, 7, 30, "porción"],
-  ["Trigo o mote cocido", 150, 5, 31, 0.8, 150, "porción"],
-  ["Fideos o pasta cocida", 158, 5.8, 30.9, 0.9, 180, "plato"],
-  ["Fideos o pasta cruda", 371, 13, 74.7, 1.5, 80, "porción"],
   ["Pan francés", 277, 9, 56, 1.5, 35, "unidad"],
   ["Pan de molde blanco", 266, 8.9, 49.4, 3.3, 28, "tajada"],
   ["Pan de molde integral", 252, 12.5, 42.7, 3.5, 28, "tajada"],
@@ -106,33 +134,43 @@ const ROWS: Row[] = [
   ["Galletas dulces rellenas", 480, 5, 70, 20, 36, "paquete"],
   ["Cereal de maíz en hojuelas", 357, 7.5, 84, 0.4, 30, "taza"],
   ["Granola", 471, 10, 64, 20, 40, "porción"],
-  ["Papa blanca cocida", 87, 1.9, 20.1, 0.1, 150, "unidad mediana"],
-  ["Papa amarilla cocida", 103, 2, 23.5, 0.1, 100, "unidad"],
-  ["Papas fritas", 312, 3.4, 41.4, 14.7, 120, "porción"],
-  ["Puré de papa", 113, 2, 16.9, 4.2, 200, "porción"],
-  ["Camote cocido", 90, 2, 20.7, 0.2, 150, "unidad mediana"],
-  ["Yuca cocida", 160, 1.4, 38, 0.3, 120, "porción"],
-  ["Choclo cocido", 96, 3.4, 21, 1.5, 100, "medio choclo"],
   ["Cancha serrana tostada", 400, 9, 66, 11, 30, "puñado"],
   ["Maíz pop sin mantequilla", 387, 12.9, 77.8, 4.5, 20, "2 tazas"],
   ["Harina de trigo", 364, 10.3, 76.3, 1, 30, "2 cucharadas"],
-  ["Plátano verde cocido", 122, 0.8, 31, 0.2, 120, "medio plátano"],
+
+  // Tubérculos y raíces
+  ["Papa blanca cruda", 77, 2, 17.5, 0.1, 170, "unidad mediana", R, "papa-blanca"],
+  ["Papa blanca cocida", 87, 1.9, 20.1, 0.1, 150, "unidad mediana", C, "papa-blanca"],
+  ["Papa amarilla cruda", 97, 2, 22, 0.1, 110, "unidad", R, "papa-amarilla"],
+  ["Papa amarilla cocida", 103, 2, 23.5, 0.1, 100, "unidad", C, "papa-amarilla"],
+  ["Camote crudo", 86, 1.6, 20.1, 0.1, 170, "unidad mediana", R, "camote"],
+  ["Camote cocido", 90, 2, 20.7, 0.2, 150, "unidad mediana", C, "camote"],
+  ["Yuca cruda", 160, 1.4, 38.1, 0.3, 120, "porción", R, "yuca"],
+  ["Yuca cocida", 130, 1.1, 31, 0.2, 120, "porción", C, "yuca"],
+  ["Choclo crudo", 86, 3.3, 19, 1.4, 100, "medio choclo", R, "choclo"],
+  ["Choclo cocido", 96, 3.4, 21, 1.5, 100, "medio choclo", C, "choclo"],
+  ["Plátano verde crudo", 122, 1.3, 31.9, 0.4, 130, "medio plátano", R, "platano-verde"],
+  ["Plátano verde cocido", 116, 0.8, 31.2, 0.2, 120, "medio plátano", C, "platano-verde"],
+  ["Papas fritas", 312, 3.4, 41.4, 14.7, 120, "porción"],
   ["Plátano frito (tajadas)", 267, 1.5, 41, 12, 80, "porción"],
-  ["Tamal", 190, 6, 22, 8.5, 150, "unidad"],
-  ["Humita", 180, 4, 30, 5, 120, "unidad"],
 
   // Menestras
-  ["Lentejas cocidas", 116, 9, 20.1, 0.4, 200, "taza"],
-  ["Lentejas crudas", 352, 24.6, 63.4, 1.1, 60, "porción"],
-  ["Frejoles cocidos", 127, 8.7, 22.8, 0.5, 180, "taza"],
-  ["Frejol canario cocido", 130, 8.5, 23, 0.6, 180, "taza"],
-  ["Garbanzos cocidos", 164, 8.9, 27.4, 2.6, 165, "taza"],
-  ["Pallares cocidos", 115, 7.8, 20.9, 0.4, 170, "taza"],
-  ["Arvejas partidas cocidas", 118, 8.3, 21.1, 0.4, 195, "taza"],
-  ["Habas cocidas", 110, 7.6, 19.7, 0.4, 170, "taza"],
-  ["Soya cocida", 172, 18.2, 8.4, 9, 170, "taza"],
-  ["Tofu firme", 144, 17.3, 2.8, 8.7, 100, "porción"],
+  ["Lentejas crudas", 352, 24.6, 63.4, 1.1, 60, "porción", R, "lentejas"],
+  ["Lentejas cocidas", 116, 9, 20.1, 0.4, 200, "taza", C, "lentejas"],
+  ["Frejoles crudos", 333, 23.6, 60, 0.8, 60, "porción", R, "frejoles"],
+  ["Frejoles cocidos", 127, 8.7, 22.8, 0.5, 180, "taza", C, "frejoles"],
+  ["Garbanzos crudos", 378, 20.5, 63, 6, 60, "porción", R, "garbanzos"],
+  ["Garbanzos cocidos", 164, 8.9, 27.4, 2.6, 165, "taza", C, "garbanzos"],
+  ["Pallares crudos", 338, 21.5, 63.4, 0.7, 60, "porción", R, "pallares"],
+  ["Pallares cocidos", 115, 7.8, 20.9, 0.4, 170, "taza", C, "pallares"],
+  ["Arvejas partidas crudas", 341, 24.6, 60.4, 1.2, 60, "porción", R, "arvejas-partidas"],
+  ["Arvejas partidas cocidas", 118, 8.3, 21.1, 0.4, 195, "taza", C, "arvejas-partidas"],
+  ["Habas secas crudas", 341, 26.1, 58.3, 1.5, 60, "porción", R, "habas"],
+  ["Habas cocidas", 110, 7.6, 19.7, 0.4, 170, "taza", C, "habas"],
+  ["Soya cruda", 446, 36.5, 30.2, 19.9, 60, "porción", R, "soya"],
+  ["Soya cocida", 172, 18.2, 8.4, 9, 170, "taza", C, "soya"],
   ["Tarwi o chocho cocido", 151, 17.3, 9.5, 5.2, 100, "porción"],
+  ["Tofu firme", 144, 17.3, 2.8, 8.7, 100, "porción"],
   ["Hummus", 166, 7.9, 14.3, 9.6, 30, "2 cucharadas"],
 
   // Frutas
@@ -168,18 +206,24 @@ const ROWS: Row[] = [
   ["Tomate", 18, 0.9, 3.9, 0.2, 120, "unidad"],
   ["Lechuga", 15, 1.4, 2.9, 0.2, 50, "taza"],
   ["Cebolla", 40, 1.1, 9.3, 0.1, 110, "unidad"],
-  ["Zanahoria", 41, 0.9, 9.6, 0.2, 70, "unidad"],
-  ["Brócoli cocido", 35, 2.4, 7.2, 0.4, 90, "taza"],
-  ["Coliflor cocida", 23, 1.8, 4.1, 0.5, 100, "taza"],
-  ["Espinaca cruda", 23, 2.9, 3.6, 0.4, 30, "taza"],
-  ["Espinaca cocida", 23, 3, 3.8, 0.3, 180, "taza"],
+  ["Zanahoria cruda", 41, 0.9, 9.6, 0.2, 70, "unidad", R, "zanahoria"],
+  ["Zanahoria cocida", 35, 0.8, 8.2, 0.2, 75, "media taza", C, "zanahoria"],
+  ["Brócoli crudo", 34, 2.8, 6.6, 0.4, 90, "taza", R, "brocoli"],
+  ["Brócoli cocido", 35, 2.4, 7.2, 0.4, 90, "taza", C, "brocoli"],
+  ["Coliflor cruda", 25, 1.9, 5, 0.3, 100, "taza", R, "coliflor"],
+  ["Coliflor cocida", 23, 1.8, 4.1, 0.5, 100, "taza", C, "coliflor"],
+  ["Espinaca cruda", 23, 2.9, 3.6, 0.4, 30, "taza", R, "espinaca"],
+  ["Espinaca cocida", 23, 3, 3.8, 0.3, 180, "taza", C, "espinaca"],
+  ["Zapallo crudo", 26, 1, 6.5, 0.1, 120, "porción", R, "zapallo"],
+  ["Zapallo cocido", 20, 0.7, 4.9, 0.1, 120, "porción", C, "zapallo"],
+  ["Vainitas crudas", 31, 1.8, 7, 0.2, 110, "taza", R, "vainitas"],
+  ["Vainitas cocidas", 35, 1.9, 7.9, 0.3, 125, "taza", C, "vainitas"],
+  ["Betarraga cruda", 43, 1.6, 9.6, 0.2, 85, "unidad chica", R, "betarraga"],
+  ["Betarraga cocida", 44, 1.7, 10, 0.2, 85, "unidad chica", C, "betarraga"],
   ["Pepino", 15, 0.7, 3.6, 0.1, 100, "media unidad"],
   ["Pimiento", 26, 1, 6, 0.3, 120, "unidad"],
-  ["Zapallo cocido", 20, 0.7, 4.9, 0.1, 120, "porción"],
   ["Zapallito italiano o zucchini", 17, 1.2, 3.1, 0.3, 120, "media unidad"],
-  ["Vainitas cocidas", 35, 1.9, 7.9, 0.3, 125, "taza"],
   ["Arvejas verdes cocidas", 84, 5.4, 15.6, 0.2, 80, "media taza"],
-  ["Betarraga cocida", 44, 1.7, 10, 0.2, 85, "unidad chica"],
   ["Col o repollo", 25, 1.3, 5.8, 0.1, 70, "taza"],
   ["Apio", 16, 0.7, 3, 0.2, 40, "tallo"],
   ["Champiñones", 22, 3.1, 3.3, 0.3, 70, "taza"],
@@ -187,7 +231,6 @@ const ROWS: Row[] = [
   ["Berenjena cocida", 35, 0.8, 8.7, 0.2, 100, "porción"],
   ["Alcachofa cocida", 53, 2.9, 11.9, 0.3, 120, "unidad"],
   ["Ajo", 149, 6.4, 33.1, 0.5, 3, "diente"],
-  ["Ensalada mixta sin aliño", 20, 1.2, 4, 0.2, 150, "plato"],
 
   // Frutos secos, semillas y grasas
   ["Maní tostado", 585, 23.7, 21.5, 49.7, 30, "puñado"],
@@ -220,11 +263,6 @@ const ROWS: Row[] = [
   ["Cocoa en polvo sin azúcar", 228, 19.6, 57.9, 13.7, 5, "cucharada"],
   ["Helado de crema", 207, 3.5, 23.6, 11, 100, "bola grande"],
   ["Gelatina preparada", 62, 1.2, 14.2, 0, 120, "vaso"],
-  ["Mazamorra morada", 90, 0.3, 22, 0.1, 150, "porción"],
-  ["Arroz con leche", 130, 3.2, 23, 2.8, 150, "porción"],
-  ["Alfajor", 430, 5, 60, 19, 40, "unidad"],
-  ["Queque o bizcocho", 370, 5, 55, 14, 60, "tajada"],
-  ["Picarones", 310, 4, 50, 10, 100, "3 unidades"],
   ["Kétchup", 101, 1, 27.4, 0.1, 15, "cucharada"],
   ["Mostaza", 60, 3.7, 5.8, 3.3, 5, "cucharadita"],
   ["Salsa de soya o sillao", 53, 8.1, 4.9, 0.6, 15, "cucharada"],
@@ -244,34 +282,12 @@ const ROWS: Row[] = [
   ["Vino tinto", 85, 0.1, 2.6, 0, 150, "copa"],
   ["Pisco o destilado 40°", 231, 0, 0, 0, 45, "medida"],
 
-  // Suplementos y preparados habituales
+  // Suplementos
   ["Proteína de suero en polvo", 400, 80, 8, 6, 30, "scoop"],
   ["Proteína vegetal en polvo", 380, 75, 8, 6, 30, "scoop"],
   ["Barra de proteína", 360, 33, 35, 11, 60, "barra"],
   ["Barra de cereal", 390, 6, 70, 10, 25, "barra"],
   ["Creatina monohidrato", 0, 0, 0, 0, 5, "dosis"],
-
-  // Platos frecuentes (preparaciones caseras promedio)
-  ["Lomo saltado con papas", 150, 9, 13, 6.5, 400, "plato"],
-  ["Arroz con pollo", 160, 9.5, 20, 4.5, 400, "plato"],
-  ["Ají de gallina", 165, 9, 10, 9.5, 300, "porción"],
-  ["Tallarines rojos con pollo", 150, 8, 20, 4, 400, "plato"],
-  ["Tallarines verdes", 180, 6, 24, 6.5, 350, "plato"],
-  ["Seco de res con frejoles", 155, 10, 14, 6.5, 400, "plato"],
-  ["Estofado de pollo", 115, 10, 8, 4.5, 350, "plato"],
-  ["Causa rellena de pollo", 140, 6, 17, 5.5, 250, "porción"],
-  ["Papa a la huancaína", 150, 4, 15, 8.5, 250, "porción"],
-  ["Sopa de pollo con fideos", 50, 3.5, 6, 1.3, 400, "plato hondo"],
-  ["Caldo de gallina", 60, 5, 5.5, 2, 500, "plato hondo"],
-  ["Menestrón", 65, 3, 9, 2, 400, "plato hondo"],
-  ["Pollo saltado con verduras", 110, 12, 6, 4.5, 350, "plato"],
-  ["Tortilla de huevo con verduras", 150, 9, 4, 11, 150, "porción"],
-  ["Sánguche de pollo", 230, 13, 25, 8.5, 180, "unidad"],
-  ["Hamburguesa con pan", 260, 13, 24, 12.5, 200, "unidad"],
-  ["Pizza de queso", 266, 11.4, 33.3, 9.7, 110, "tajada"],
-  ["Empanada de carne", 300, 9, 30, 16, 120, "unidad"],
-  ["Salchipapa", 280, 6, 28, 16, 300, "porción"],
-  ["Sushi maki", 150, 5, 28, 2, 180, "6 piezas"],
 ];
 
 const slug = (text: string) =>
@@ -283,12 +299,14 @@ const slug = (text: string) =>
     .replace(/^-|-$/g, "");
 
 export const BUILTIN_FOODS: Food[] = ROWS.map(
-  ([name, kcal, proteinG, carbsG, fatsG, servingG, servingLabel]): Food => ({
+  ([name, kcal, proteinG, carbsG, fatsG, servingG, servingLabel, state, pair]): Food => ({
     id: `b:${slug(name)}`,
     source: "builtin",
     name,
     servingG,
     ...(servingLabel ? { servingLabel } : {}),
+    ...(state ? { state } : {}),
+    ...(pair ? { pair } : {}),
     per100: { kcal, proteinG, carbsG, fatsG },
   }),
 );

@@ -22,7 +22,10 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Guardar y leer | `*.repository.ts` (SQLite) y `*.repository.web.ts` (localStorage) |
 | Esquema y almacén | `src/db/` |
 | Fecha de un registro | `src/lib/dates.ts` (`localDateKey`) |
-| Estilo | `src/theme.ts`, `src/components/ui.tsx` |
+| Estilo (modo oscuro) | `src/theme.ts` (`AppTheme.colors`: un color fijo por dato), `src/components/ui.tsx`, gráficos en `src/components/charts.tsx` |
+| Gasto inicial del plan | `src/features/profile/expenditure.ts` |
+| Ajustes sueltos (Panel, recordatorios) | `src/features/settings/settings.repository.ts` |
+| Recordatorios | `src/features/reminders/` y `app/reminders.tsx` |
 | Página de presentación | `web/` (proyecto aparte: Vite, React 19, Tailwind 4) |
 | Publicar | `docs/RELEASING.md`, `.github/workflows/` |
 

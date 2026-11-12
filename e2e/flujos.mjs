@@ -104,9 +104,13 @@ async function main() {
   const press = async (text, index = 0) => {
     const handle = await page.evaluateHandle(
       (value, position) =>
-        [...document.querySelectorAll('[role="button"], [tabindex="0"]')].filter(
-          (element) =>
-            element.innerText.trim() === value || element.innerText.trim().startsWith(`${value}\n`),
+        [...document.querySelectorAll('[role="button"], [tabindex="0"]')].filter((element) =>
+          element.innerText
+            .replace(/[\uE000-\uF8FF]/g, "")
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .some((line, index, lines) => (index === 0 || lines.length <= 3) && line === value),
         )[position] ?? null,
       text,
       index,
@@ -140,6 +144,24 @@ async function main() {
     await element.type(String(value));
   };
 
+  // Pulsa un control por su nombre accesible (botones de solo icono).
+  const pressLabel = async (label, index = 0) => {
+    const elements = await page.$$(`[aria-label="${label}"]`);
+    assert(elements[index], `No hay ningún control llamado "${label}".`);
+    await elements[index].evaluate((node) => node.scrollIntoView({ block: "center" }));
+    await elements[index].click();
+    await new Promise((done) => setTimeout(done, 150));
+  };
+  // Escribe en un campo por su nombre accesible (campos sin etiqueta visible).
+  const fillLabel = async (label, value) => {
+    const element = await page.$(`input[aria-label="${label}"]`);
+    assert(element, `No hay ningún campo llamado "${label}".`);
+    await element.click();
+    await element.evaluate((node) => node.select());
+    await page.keyboard.press("Backspace");
+    await element.type(String(value));
+  };
+
   const steps = [];
   const step = async (name, run) => {
     await run();
@@ -158,9 +180,15 @@ async function main() {
     await fill("Altura", 180);
     await fill("Peso actual", 80);
     await press("Continuar");
-    await fill("% de grasa corporal", 20);
+    await fill("O escribe tu medición", 20);
     await press("Continuar");
-    await press("Moderada");
+    await press("Algo de movimiento");
+    await press("Continuar");
+    await press("4");
+    await press("Fuerza");
+    await press("1 a 3 años");
+    await press("Continuar");
+    await waitText("Lo que comes hoy");
     await press("Continuar");
     await fill("Peso meta", 74);
     await press("Moderado");
@@ -170,23 +198,34 @@ async function main() {
     await press("Cada 3 días");
     await press("Automático");
     await press("Continuar");
-    await waitText("Objetivo diario inicial");
+    await waitText("Gasto estimado");
+    await waitText("Metabolismo basal");
     await press("Crear mi plan");
-    await waitText("Tu panel.");
+    await waitText("Nutrición y metas");
     const { profile, biometrics } = await store();
     assert(profile.calorieTarget >= 1200, "El plan no tiene objetivo calórico.");
     assert(profile.adjustMode === "auto" && profile.checkInDays === 3, "No se guardó el modo de ajuste.");
     assert(profile.goalWeightKg === 74 && profile.bodyFatPct === 20, "No se guardó la meta o el % de grasa.");
+    assert(
+      profile.trainingDays === 4 &&
+        profile.experience === "intermediate" &&
+        profile.initialExpenditure > 2000,
+      "No se guardaron los datos de entrenamiento ni el gasto estimado.",
+    );
+    assert(
+      profile.calorieTarget < profile.initialExpenditure,
+      "Un plan de definición debe quedar bajo el gasto.",
+    );
     assert(biometrics.length === 1 && biometrics[0].weightKg === 80, "No se registró el primer pesaje.");
   });
 
   await step("diario: guardar peso y composición", async () => {
     await open("/biometrics");
-    await waitText("Energía del día");
-    await fill("Peso del día", 79.6);
+    await waitText("Desayuno");
+    await fill("Último", 79.6);
     await fill("Grasa (%)", 19.5);
     await fill("Músculo", 36);
-    await waitText("Masa magra: 64.1 kg");
+    await waitText("Magra 64.1 kg");
     await press("Guardar cambios de peso");
     await waitText("Peso guardado.");
     const today = (await store()).biometrics.find((record) => record.date === dateKey());
@@ -194,48 +233,57 @@ async function main() {
     assert(today.bodyFatPct === 19.5 && today.muscleMassKg === 36, "No se guardó la composición corporal.");
   });
 
-  await step("diario: buscar un alimento y un registro rápido en el almuerzo", async () => {
-    await press("Agregar a almuerzo");
+  await step("agregar: un alimento cocido, pasar a crudo y un registro rápido", async () => {
+    await pressLabel("Agregar a almuerzo");
     await waitText("Buscar alimento");
-    await fill("Nombre o marca", "pechuga pollo cocida");
-    await waitText("Pechuga de pollo cocida, sin piel");
-    await press("Elegir");
+    await fillLabel("Buscar alimento", "pechuga pollo");
+    await press("Pechuga de pollo cocida, sin piel");
     await fill("Cantidad", 200);
-    await waitText("330 kcal · P 62");
-    await press("Añadir al plato");
+    await waitText("330 kcal");
+    // 200 g cocidos son 275 g crudos: mismas calorías.
+    await press("Crudo");
+    await waitText("Equivale a 200 g cocido");
+    await press("Cocido");
+    await waitText("Equivale a 275 g crudo");
+    await press("Agregar a almuerzo");
+    await waitText("200 g en almuerzo");
     await press("Rápido");
     await fill("Calorías", 300);
-    await press("Añadir al plato");
-    await waitText("El plato · 630 kcal");
-    await press("Guardar en almuerzo");
+    await press("Agregar a almuerzo");
     await waitText("Almuerzo · 630 kcal");
     const current = await store();
     const today = current.biometrics.find((record) => record.date === dateKey());
     assert(current.meals.length === 2, "No se guardaron las dos entradas del almuerzo.");
+    assert(current.meals[0].name === "Pechuga de pollo cocida, sin piel", "No se guardó el alimento cocido.");
     assert(
       today.caloriesIn === 630 && today.proteinG === 62,
       "El total del día no es la suma de las comidas.",
     );
     assert(today.weightKg === 79.6, "Guardar comidas borró el peso del día.");
+    await press("Listo");
+    await waitText("630 kcal");
   });
 
-  await step("diario: alimento propio, receta y cena", async () => {
-    await press("Agregar a cena");
-    await press("Nuevo alimento");
+  await step("agregar: alimento propio, receta y sugerencias", async () => {
+    await pressLabel("Agregar a cena");
+    await press("Nuevo");
     await fill("Nombre", "Yogur e2e");
-    await fill("Gramos por porción", 200);
+    await fill("Porción (g)", 200);
     await fill("Proteína", 12);
     await fill("Carbos", 10);
     await fill("Grasas", 6);
     await press("Guardar alimento");
-    await waitText("por 100 g: 71 kcal");
-    await press("Añadir al plato");
-    await waitText("El plato · 142 kcal");
-    await fill("Nombre de la receta", "Cena e2e");
-    await press("Guardar como receta");
-    await waitText('Receta "Cena e2e" guardada');
-    await press("Guardar en cena");
+    await waitText("142 kcal");
+    await press("Agregar a cena");
     await waitText("Cena · 142 kcal");
+    await press("Receta");
+    await fillLabel("Buscar alimento", "yogur e2e");
+    await press("Yogur e2e");
+    await press("Agregar a la receta");
+    await waitText("en la receta");
+    await fill("Nombre de la receta", "Cena e2e");
+    await press("Guardar receta");
+    await waitText('Receta "Cena e2e" guardada');
     const current = await store();
     assert(current.foods.length === 2, "No se guardaron el alimento propio y la receta.");
     assert(
@@ -244,30 +292,33 @@ async function main() {
     );
     const today = current.biometrics.find((record) => record.date === dateKey());
     assert(today.caloriesIn === 772, "El total del día no incluye la cena.");
-    // Lo ya usado se sugiere al volver a agregar en el mismo momento del día.
-    await press("Agregar a cena");
+    // Lo ya usado se sugiere en el mismo momento del día.
+    await press("Buscar");
     await waitText("Habituales en cena");
-    await waitText("Yogur e2e");
-    await page.goBack();
-    await waitText("Energía del día");
+    await press("Listo");
+    await waitText("772");
   });
 
-  await step("diario: quitar una comida recalcula el día", async () => {
-    await press("Borrar", 1); // la segunda entrada del almuerzo: el registro rápido
-    await press("Sí, borrar");
-    await waitText("Almuerzo · 330 kcal");
-    const today = (await store()).biometrics.find((record) => record.date === dateKey());
-    assert(today.caloriesIn === 472, "Quitar una comida no recalculó el total.");
+  await step("diario: quitar un alimento recalcula el día", async () => {
+    await pressLabel("Quitar Registro rápido");
+    await press("Quitar");
+    await page.waitForFunction(
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).biometrics.find((record) => record.date === date)
+          ?.caloriesIn === 472,
+      {},
+      STORE_KEY,
+      dateKey(),
+    );
   });
 
   await step("diario: un día solo con comida, sin pesaje, y borrarlo", async () => {
     await press("‹");
     await waitText("Ayer");
-    await press("Agregar a snacks");
+    await pressLabel("Agregar a snacks");
     await press("Rápido");
     await fill("Calorías", 250);
-    await press("Añadir al plato");
-    await press("Guardar en snacks");
+    await press("Agregar a snacks");
     await waitText("Snacks · 250 kcal");
     let current = await store();
     const yesterday = current.biometrics.find((record) => record.date === daysAgo(1));
@@ -275,7 +326,9 @@ async function main() {
       yesterday && yesterday.weightKg === null && yesterday.caloriesIn === 250,
       "No se guardó un día sin pesaje.",
     );
-    await press("Borrar", 1); // el del día completo; el primero es el de la entrada
+    await press("Listo");
+    await waitText("Ayer");
+    await press("Borrar");
     await press("Sí, borrar");
     await waitText("Día borrado.");
     current = await store();
@@ -283,7 +336,7 @@ async function main() {
     assert(!current.meals.some((entry) => entry.date === daysAgo(1)), "Quedaron comidas de un día borrado.");
   });
 
-  await step("panel: marcar un hábito", async () => {
+  await step("panel: marcar un hábito y personalizar el orden", async () => {
     await open("/");
     await waitText("Adherencia de hoy");
     await press("N");
@@ -291,6 +344,42 @@ async function main() {
       (key) => (JSON.parse(localStorage.getItem(key)).habits ?? []).some((habit) => habit.completed),
       {},
       STORE_KEY,
+    );
+    await pressLabel("Personalizar el Panel");
+    await waitText("Personalizar");
+    await pressLabel("Subir", 1); // "Gasto energético" pasa al primer lugar
+    await pressLabel("Mostrar habits");
+    await page.waitForFunction(
+      (key) => {
+        const layout = JSON.parse(localStorage.getItem(key)).settings?.dashboard_layout ?? [];
+        return (
+          layout[0]?.id === "expenditure" && layout.find((item) => item.id === "habits")?.visible === false
+        );
+      },
+      {},
+      STORE_KEY,
+    );
+    await pressLabel("Terminar de personalizar");
+    assert(
+      !(await page.evaluate(() => document.body.innerText)).includes("Adherencia de hoy"),
+      "La sección oculta sigue visible.",
+    );
+  });
+
+  await step("recordatorios: 4 comidas toda la semana", async () => {
+    await open("/more");
+    await press("Recordatorios de comidas");
+    await waitText("Avisar 5 min antes");
+    await pressLabel("Recordatorios encendidos");
+    await press("4");
+    await press("Usar en toda la semana");
+    await press("Guardar recordatorios");
+    await waitText("Los avisos solo suenan en la app del teléfono");
+    const reminders = (await store()).settings.meal_reminders;
+    assert(reminders.enabled === true, "No se guardaron encendidos.");
+    assert(
+      Object.values(reminders.days).every((meals) => meals.length === 4),
+      "Las 4 comidas no se copiaron a toda la semana.",
     );
   });
 
@@ -354,7 +443,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 4, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 5, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);
@@ -440,13 +529,7 @@ async function main() {
     }));
     await seed({ ...current, biometrics });
     await open("/");
-    for (const text of [
-      "Progreso hacia tu meta",
-      "Tendencia de peso",
-      "Gasto energético",
-      "Masa magra",
-      "En 19 días",
-    ])
+    for (const text of ["Gasto", "Tendencia", "Balance", "Meta", "Composición corporal", "% grasa"])
       await waitText(text);
   });
 
@@ -492,9 +575,9 @@ async function main() {
     await waitFor("Reemplazar mis datos");
     await tap("Reemplazar mis datos");
     await waitFor("Solo lectura");
-    await waitFor("Progreso hacia tu meta");
+    await waitFor("Nutrición y metas");
     const shown = await text();
-    for (const hidden of ["Diario", "Entreno", "Adherencia de hoy", "Deshacer ajuste"])
+    for (const hidden of ["Diario", "Entreno", "Adherencia de hoy", "Deshacer ajuste", "Buscar un alimento"])
       assert(!shown.includes(hidden), `El visor muestra "${hidden}", que es para registrar.`);
     const read = () => viewer.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORE_KEY);
     await viewer.goto(`${base}/strategy`, { waitUntil: "networkidle0" });

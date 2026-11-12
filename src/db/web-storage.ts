@@ -67,6 +67,13 @@ export type Store = {
     proteinLevel?: "moderate" | "high" | "very_high";
     adjustMode?: "auto" | "collaborative" | "manual";
     checkInDays?: 3 | 7;
+    trainingDays?: number;
+    sessionMinutes?: number;
+    trainingType?: "strength" | "cardio" | "mixed";
+    experience?: "beginner" | "intermediate" | "advanced";
+    knownIntake?: number;
+    recentTrend?: "stable" | "gaining" | "losing";
+    initialExpenditure?: number;
   };
   reviews?: Array<{
     id: string;
@@ -80,7 +87,7 @@ export type Store = {
   foods?: Food[];
   /** Lo comido, entrada por entrada. El total de cada día en `biometrics` es su suma. */
   meals?: MealEntry[];
-  settings?: { onlineLookup?: boolean };
+  settings?: { onlineLookup?: boolean; [key: string]: unknown };
 };
 
 const key = "dophamine.web-store.v1";

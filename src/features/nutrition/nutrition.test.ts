@@ -6,6 +6,8 @@ import {
   buildCustomFood,
   buildRecipe,
   caloriesFromMacros,
+  counterpart,
+  equivalentGrams,
   emptyCustomFood,
   isFood,
   normalizeText,
@@ -327,5 +329,43 @@ describe("productos de Open Food Facts", () => {
     expect(cleanBarcode("12345678")).toBe("12345678");
     expect(cleanBarcode("1234")).toBeNull();
     expect(cleanBarcode("avena")).toBeNull();
+  });
+});
+
+describe("crudo y cocido", () => {
+  const raw = food("Arroz blanco crudo");
+  const cooked = food("Arroz blanco cocido");
+
+  it("cada alimento con estado tiene su otra versión, y solo una", () => {
+    const withState = BUILTIN_FOODS.filter((item) => item.state);
+    expect(withState.length).toBeGreaterThan(80);
+    const lonely = withState.filter((item) => {
+      const other = counterpart(item, BUILTIN_FOODS);
+      return !other || counterpart(other, BUILTIN_FOODS)?.id !== item.id;
+    });
+    expect(lonely.map((item) => item.name)).toEqual([]);
+    const groups = new Map<string, number>();
+    for (const item of withState) groups.set(item.pair as string, (groups.get(item.pair as string) ?? 0) + 1);
+    expect([...groups.values()].every((count) => count === 2)).toBe(true);
+  });
+
+  it("pasa de crudo a cocido y al revés", () => {
+    expect(counterpart(raw, BUILTIN_FOODS)?.id).toBe(cooked.id);
+    expect(counterpart(cooked, BUILTIN_FOODS)?.id).toBe(raw.id);
+    expect(counterpart(food("Manzana"), BUILTIN_FOODS)).toBeNull();
+  });
+
+  it("convierte la cantidad para que las calorías sean las mismas", () => {
+    // 60 g crudos (219 kcal) son unos 168 g cocidos
+    expect(equivalentGrams(raw, cooked, 60)).toBe(168);
+    expect(equivalentGrams(cooked, raw, 168)).toBe(60);
+    expect(nutrientsFor(cooked, 168).kcal).toBeCloseTo(nutrientsFor(raw, 60).kcal, -1);
+    expect(equivalentGrams(raw, cooked, 0)).toBe(0);
+  });
+
+  it("no incluye platos armados: cada alimento se registra por separado", () => {
+    const dishes = ["Lomo saltado", "Arroz con pollo", "Ají de gallina", "Hamburguesa", "Pizza", "Ceviche"];
+    const found = BUILTIN_FOODS.filter((item) => dishes.some((dish) => item.name.includes(dish)));
+    expect(found.map((item) => item.name)).toEqual([]);
   });
 });

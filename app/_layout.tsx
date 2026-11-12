@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import { initializeDatabase } from "@/src/db/database";
+import { configureNotifications } from "@/src/features/reminders/scheduler";
 import { AppTheme } from "@/src/theme";
 
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    configureNotifications();
     initializeDatabase().finally(() => setReady(true));
   }, []);
 
@@ -23,7 +25,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -37,7 +39,8 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" />
         {/* Pantallas que se abren encima de las pestañas, con botón de volver. */}
-        <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar comida" }} />
+        <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar alimento" }} />
+        <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
         <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
         <Stack.Screen name="wellbeing" options={{ headerShown: true, title: "Bienestar" }} />

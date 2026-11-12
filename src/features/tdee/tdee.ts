@@ -135,3 +135,29 @@ export function buildWeeklyCheckIn(analysis: MetabolicAnalysis, profile: Nutriti
         : `La estimación sugiere ${delta > 0 ? "subir" : "bajar"} ${Math.abs(delta)} kcal por día para mantener el ritmo de tu objetivo.`,
   };
 }
+
+/** El gasto estimado al cierre de cada uno de los últimos `days` días con datos suficientes. */
+export function expenditureSeries(
+  records: DailyBiometrics[],
+  days = 14,
+): Array<{ date: string; tdee: number }> {
+  const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
+  return ordered.slice(-days).flatMap((record) => {
+    const tdee = analyzeMetabolism(ordered.filter((item) => item.date <= record.date)).tdee;
+    return tdee === null ? [] : [{ date: record.date, tdee }];
+  });
+}
+
+/** Lo comido menos el gasto estimado en los últimos días con ingesta. Negativo = déficit. */
+export function energyBalance(
+  records: DailyBiometrics[],
+  tdee: number | null,
+  days = 7,
+): Array<{ date: string; intake: number; balance: number }> {
+  if (!tdee) return [];
+  return [...records]
+    .filter((record) => record.caloriesIn > 0)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-days)
+    .map((record) => ({ date: record.date, intake: record.caloriesIn, balance: record.caloriesIn - tdee }));
+}
