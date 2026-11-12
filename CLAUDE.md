@@ -17,6 +17,7 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
 | Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx` y `wellbeing.tsx` se abren encima, desde Más |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
+| Alimentos y comidas | `src/features/nutrition/` (`foods.ts`, `meals.ts`, `builtin.foods.ts`) y `app/add-food.tsx` |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
 | Guardar y leer | `*.repository.ts` (SQLite) y `*.repository.web.ts` (localStorage) |
 | Esquema y almacén | `src/db/` |
@@ -56,8 +57,10 @@ deban abrirse: en este SDK quedan inalcanzables.
 2. **Los cálculos viven en el dominio, con prueba.** Una pantalla o sección solo dibuja.
 3. **El día es local**: `localDateKey()`. Nunca `toISOString().slice(0, 10)` ni `date('now')`.
 4. **Refactor = mismos píxeles.** Al mover código de interfaz, comparar capturas antes y después.
-5. **Nada sale del dispositivo.** Sin red, sin analítica, sin fuentes ni scripts de terceros (la página
-   de presentación también: tipografías autoalojadas).
+5. **Nada sale del dispositivo**, con una sola excepción que la persona enciende a propósito: la
+   búsqueda de alimentos en línea (`src/features/nutrition/openfoodfacts.ts`), apagada por defecto, que
+   solo envía el texto buscado o un código de barras a Open Food Facts. Fuera de eso: sin red, sin
+   analítica, sin fuentes ni scripts de terceros (la página de presentación también).
 6. **El plan no cambia sin que la persona lo haya decidido.** En modo colaborativo toda propuesta
    necesita aceptación explícita. En modo automático (que se elige a propósito en la evaluación inicial)
    la app aplica el ajuste, pero siempre lo avisa en el Panel, lo deja en el historial y permite deshacerlo.

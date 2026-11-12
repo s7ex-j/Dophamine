@@ -70,7 +70,8 @@ export function compositionSeries(records: DailyBiometrics[]): CompositionSnapsh
   let fat = 0;
   return measured.map((record, index) => {
     const pct = record.bodyFatPct as number;
-    weight = index === 0 ? record.weightKg : weight + SMOOTHING * (record.weightKg - weight);
+    const kg = record.weightKg as number;
+    weight = index === 0 ? kg : weight + SMOOTHING * (kg - weight);
     fat = index === 0 ? pct : fat + SMOOTHING * (pct - fat);
     return {
       date: record.date,

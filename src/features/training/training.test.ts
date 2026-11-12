@@ -119,9 +119,9 @@ describe("progresión sugerida", () => {
 
   it("describe la última serie en la unidad elegida", () => {
     const hint = progressionHintFor(exercise, { loadKg: 80, reps: 9, rir: 2 });
-    expect(hint && hintDetail(hint)).toBe("80 kg × 9 · RIR 2");
-    expect(hint && hintDetail(hint, "lb")).toBe("176.4 lb × 9 · RIR 2");
+    expect(hint && hintDetail(hint)).toBe("80 kg × 9 · RIR 2 · 1RM est. 104 kg");
+    expect(hint && hintDetail(hint, "lb")).toBe("176.4 lb × 9 · RIR 2 · 1RM est. 229.3 lb");
     const sinRir = progressionHintFor(exercise, { loadKg: 80, reps: 9, rir: null });
-    expect(sinRir && hintDetail(sinRir)).toBe("80 kg × 9");
+    expect(sinRir && hintDetail(sinRir)).toBe("80 kg × 9 · 1RM est. 104 kg");
   });
 });

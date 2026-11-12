@@ -29,7 +29,7 @@ const store = {
 describe("respaldo", () => {
   it("lo que se exporta se puede volver a leer igual", () => {
     const backup = buildBackup(store, new Date("2026-11-11T12:00:00Z"));
-    expect(parseBackup(JSON.stringify(backup)).data).toEqual({ ...store, reviews: [] });
+    expect(parseBackup(JSON.stringify(backup)).data).toEqual({ ...store, reviews: [], foods: [], meals: [] });
     expect(backupFileName(new Date("2026-11-11T12:00:00Z"))).toBe("dophamine-respaldo-2026-11-11.json");
   });
 
@@ -58,7 +58,7 @@ describe("respaldo", () => {
     const v1 = { app: "dophamine", format: 1, exportedAt: "2026-11-11T12:00:00.000Z", data: store };
     const leido = parseBackup(JSON.stringify(v1));
     expect(leido.format).toBe(1);
-    expect(leido.data).toEqual({ ...store, reviews: [] });
+    expect(leido.data).toEqual({ ...store, reviews: [], foods: [], meals: [] });
   });
 
   it("lee un respaldo del formato 2 y conserva la composición corporal del formato 3", () => {
@@ -87,11 +87,42 @@ describe("respaldo", () => {
     };
     const backup = buildBackup({ ...store, reviews: [review] });
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(BACKUP_FORMAT).toBe(3);
+    expect(BACKUP_FORMAT).toBe(4);
     expect(parseBackup(JSON.stringify(backup)).data.reviews).toEqual([review]);
     const malo = { ...backup, data: { ...store, reviews: [{ ...review, decision: "quizá" }] } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/revisiones/);
-    expect(describeBackup(backup)).toContain("1 revisión semanal");
+    expect(describeBackup(backup)).toContain("1 revisión");
+  });
+
+  it("el formato 4 conserva comidas, alimentos propios y días sin pesaje", () => {
+    const meal = {
+      id: "m1",
+      date: "2026-11-11",
+      slot: "lunch" as const,
+      foodId: "c:1",
+      name: "Yogur de casa",
+      grams: 200,
+      kcal: 142,
+      proteinG: 12,
+      carbsG: 10,
+      fatsG: 6,
+    };
+    const food = {
+      id: "c:1",
+      source: "custom" as const,
+      name: "Yogur de casa",
+      servingG: 200,
+      per100: { kcal: 71, proteinG: 6, carbsG: 5, fatsG: 3 },
+    };
+    const sinPesaje = { id: "9", date: "2026-11-11", weightKg: null, caloriesIn: 142, proteinG: 12 };
+    const data = { ...store, biometrics: [...store.biometrics, sinPesaje], meals: [meal], foods: [food] };
+    const leido = parseBackup(JSON.stringify(buildBackup(data))).data;
+    expect(leido.meals).toEqual([meal]);
+    expect(leido.foods).toEqual([food]);
+    expect(leido.biometrics[1].weightKg).toBeNull();
+    expect(describeBackup(buildBackup(data))).toContain("1 comida registrada");
+    const malo = { ...buildBackup(data), data: { ...data, meals: [{ ...meal, slot: "merienda" }] } };
+    expect(() => parseBackup(JSON.stringify(malo))).toThrow(/comidas/);
   });
 
   it("resume el contenido antes de restaurar", () => {

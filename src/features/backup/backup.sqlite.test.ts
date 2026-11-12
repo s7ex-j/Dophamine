@@ -92,6 +92,40 @@ const store: Store = {
       tdee: 2790,
     },
   ],
+  foods: [
+    {
+      id: "c:1",
+      source: "custom",
+      name: "Yogur de casa",
+      servingG: 200,
+      per100: { kcal: 71, proteinG: 6, carbsG: 5, fatsG: 3 },
+    },
+  ],
+  meals: [
+    {
+      id: "m1",
+      date: "2026-11-11",
+      slot: "lunch",
+      foodId: "c:1",
+      name: "Yogur de casa",
+      grams: 200,
+      kcal: 142,
+      proteinG: 12,
+      carbsG: 10,
+      fatsG: 6,
+    },
+    {
+      id: "m2",
+      date: "2026-11-11",
+      slot: "snack",
+      name: "Registro rápido",
+      kcal: 300,
+      proteinG: 0,
+      carbsG: 0,
+      fatsG: 0,
+    },
+  ],
+  settings: { onlineLookup: true },
 };
 
 describe("respaldo entre el teléfono y la web", () => {
@@ -167,6 +201,9 @@ describe("respaldo entre el teléfono y la web", () => {
       habits: [],
       routines: [],
       reviews: [],
+      foods: [],
+      meals: [],
+      settings: { onlineLookup: false },
     });
   });
 

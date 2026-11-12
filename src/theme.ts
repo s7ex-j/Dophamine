@@ -215,6 +215,7 @@ export const AppTheme = {
     weeklyBarFill: { width: "100%", minHeight: 3, borderRadius: 4 },
     weeklyBarEmpty: { width: "100%", height: 4, borderRadius: 4, backgroundColor: "#BFD6EB" },
     weeklyBarLabel: { fontSize: 11, color: "#66736B" },
+    scannerFrame: { height: 260, borderRadius: 8, overflow: "hidden", backgroundColor: "#16231D" },
     optionList: { gap: 10 },
     optionCard: {
       borderWidth: 1,

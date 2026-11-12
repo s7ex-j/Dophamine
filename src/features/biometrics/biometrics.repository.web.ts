@@ -1,9 +1,14 @@
 import { readStore, webId, webToday, writeStore } from "@/src/db/web-storage";
 
+/**
+ * Un día: el pesaje y la composición corporal (opcionales) y el total de lo
+ * comido. El total lo escribe `nutrition.repository` al sumar las comidas.
+ * Puede haber días con comida y sin pesaje, y al revés.
+ */
 export type DailyBiometrics = {
   id: string;
   date: string;
-  weightKg: number;
+  weightKg: number | null;
   caloriesIn: number;
   proteinG: number;
   carbsG: number;
@@ -14,14 +19,15 @@ export type DailyBiometrics = {
   waterPct?: number | null;
   boneMassKg?: number | null;
 };
-export type BiometricsInput = Pick<
-  DailyBiometrics,
-  "weightKg" | "caloriesIn" | "proteinG" | "carbsG" | "fatsG"
-> &
+export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
+export type NutritionTotals = { kcal: number; proteinG: number; carbsG: number; fatsG: number };
 
-const normalize = (record: DailyBiometrics): DailyBiometrics => ({
+const normalize = (record: Partial<DailyBiometrics> & { id: string; date: string }): DailyBiometrics => ({
   ...record,
+  weightKg: record.weightKg ?? null,
+  caloriesIn: record.caloriesIn ?? 0,
+  proteinG: record.proteinG ?? 0,
   carbsG: record.carbsG ?? 0,
   fatsG: record.fatsG ?? 0,
   bodyFatPct: record.bodyFatPct ?? null,
@@ -29,22 +35,42 @@ const normalize = (record: DailyBiometrics): DailyBiometrics => ({
   waterPct: record.waterPct ?? null,
   boneMassKg: record.boneMassKg ?? null,
 });
-// Guardar reemplaza el día completo, igual que en SQLite: una medida que se deja vacía queda en null.
-const complete = (input: BiometricsInput) => ({
-  ...input,
-  bodyFatPct: input.bodyFatPct ?? null,
-  muscleMassKg: input.muscleMassKg ?? null,
-  waterPct: input.waterPct ?? null,
-  boneMassKg: input.boneMassKg ?? null,
-});
 
-export async function saveDailyBiometrics(input: BiometricsInput, date = webToday()) {
+// Devuelve el registro del día dentro del almacén, creándolo vacío si no existe.
+function dayIn(store: ReturnType<typeof readStore>, date: string) {
+  let record = store.biometrics.find((item) => item.date === date);
+  if (!record) {
+    record = { id: webId(), date, weightKg: null, caloriesIn: 0, proteinG: 0, carbsG: 0, fatsG: 0 };
+    store.biometrics.push(record);
+  }
+  return record;
+}
+
+/** Guarda el pesaje y la composición de un día sin tocar lo comido. */
+export async function saveDayBody(input: BodyInput, date = webToday()) {
   const store = readStore();
-  const existing = store.biometrics.find((record) => record.date === date);
-  if (existing) Object.assign(existing, complete(input));
-  else store.biometrics.push({ id: webId(), date, ...complete(input) });
+  Object.assign(dayIn(store, date), {
+    weightKg: input.weightKg,
+    bodyFatPct: input.bodyFatPct ?? null,
+    muscleMassKg: input.muscleMassKg ?? null,
+    waterPct: input.waterPct ?? null,
+    boneMassKg: input.boneMassKg ?? null,
+  });
   writeStore(store);
 }
+
+/** Guarda el total de lo comido en un día sin tocar el pesaje. */
+export async function saveDayNutrition(totals: NutritionTotals, date = webToday()) {
+  const store = readStore();
+  Object.assign(dayIn(store, date), {
+    caloriesIn: Math.round(totals.kcal),
+    proteinG: totals.proteinG,
+    carbsG: totals.carbsG,
+    fatsG: totals.fatsG,
+  });
+  writeStore(store);
+}
+
 export async function deleteDailyBiometrics(date: string) {
   const store = readStore();
   store.biometrics = store.biometrics.filter((record) => record.date !== date);
@@ -52,17 +78,17 @@ export async function deleteDailyBiometrics(date: string) {
 }
 export async function getBiometricsByDate(date: string): Promise<DailyBiometrics | null> {
   const row = readStore().biometrics.find((record) => record.date === date);
-  return row ? normalize(row as DailyBiometrics) : null;
+  return row ? normalize(row) : null;
 }
 export async function getLatestBiometrics(): Promise<DailyBiometrics | null> {
   const row = [...readStore().biometrics].sort((a, b) => b.date.localeCompare(a.date))[0];
-  return row ? normalize(row as DailyBiometrics) : null;
+  return row ? normalize(row) : null;
 }
 export async function getBiometricsWindow(days: number): Promise<DailyBiometrics[]> {
   return [...readStore().biometrics]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, days)
-    .map((record) => normalize(record as DailyBiometrics));
+    .map(normalize);
 }
 export async function getRecentBiometrics() {
   return getBiometricsWindow(7);

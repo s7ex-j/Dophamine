@@ -67,6 +67,27 @@ export async function initializeDatabase() {
       UNIQUE(habit_id, date)
     );
     CREATE INDEX IF NOT EXISTS habit_entries_date_idx ON habit_entries(date DESC);
+    CREATE TABLE IF NOT EXISTS foods (
+      id TEXT PRIMARY KEY NOT NULL,
+      data TEXT NOT NULL,
+      barcode TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS foods_barcode_idx ON foods(barcode);
+    CREATE TABLE IF NOT EXISTS meal_entries (
+      id TEXT PRIMARY KEY NOT NULL,
+      date TEXT NOT NULL,
+      slot TEXT NOT NULL,
+      food_id TEXT,
+      name TEXT NOT NULL,
+      grams REAL,
+      kcal REAL NOT NULL DEFAULT 0,
+      protein_g REAL NOT NULL DEFAULT 0,
+      carbs_g REAL NOT NULL DEFAULT 0,
+      fats_g REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS meal_entries_date_idx ON meal_entries(date DESC);
     CREATE TABLE IF NOT EXISTS weekly_reviews (
       id TEXT PRIMARY KEY NOT NULL,
       date TEXT NOT NULL,

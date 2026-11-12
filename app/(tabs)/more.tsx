@@ -4,6 +4,8 @@ import { useFocusEffect, useRouter } from "expo-router";
 
 import { Card, ChoiceControl, NavRow, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
+import { getOnlineLookup, setOnlineLookup } from "@/src/features/nutrition/nutrition.repository";
+import { OFF_ATTRIBUTION } from "@/src/features/nutrition/openfoodfacts";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile, saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { WEIGHT_UNIT_OPTIONS, type WeightUnit } from "@/src/lib/units";
@@ -14,9 +16,15 @@ import { AppTheme } from "@/src/theme";
 export default function MoreScreen() {
   const router = useRouter();
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
+  const [online, setOnline] = useState(false);
   const load = useCallback(() => {
     getNutritionProfile().then(setProfile);
+    getOnlineLookup().then(setOnline);
   }, []);
+  const changeOnline = async (value: "on" | "off") => {
+    await setOnlineLookup(value === "on");
+    load();
+  };
   useFocusEffect(load);
 
   const changeUnit = async (weightUnit: WeightUnit) => {
@@ -63,6 +71,27 @@ export default function MoreScreen() {
             </Text>
           </Card>
         ) : null}
+        {VIEWER ? null : (
+          <Card title="Búsqueda de alimentos en línea">
+            <ChoiceControl
+              value={online ? "on" : "off"}
+              onChange={changeOnline}
+              options={[
+                { value: "off", label: "Apagada" },
+                { value: "on", label: "Encendida" },
+              ]}
+            />
+            <Text style={AppTheme.body}>
+              Apagada, la app no usa internet: buscas entre los alimentos básicos incluidos, los tuyos y tus
+              recetas. Encendida, además puedes buscar productos envasados y leer códigos de barras en Open
+              Food Facts.
+            </Text>
+            <Text style={AppTheme.hint}>
+              Solo se envía el texto que buscas o el número del código de barras, nunca tus registros. Lo que
+              encuentres queda guardado para usarlo sin conexión. {OFF_ATTRIBUTION}
+            </Text>
+          </Card>
+        )}
         {VIEWER ? (
           <BackupCard
             onRestored={load}
@@ -74,7 +103,8 @@ export default function MoreScreen() {
         )}
         <Card title="Privacidad">
           <Text style={AppTheme.body}>
-            Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica.
+            Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica; lo
+            único que puede usar internet es la búsqueda de alimentos, y solo si la enciendes.
           </Text>
           <Text style={AppTheme.hint}>
             Las cifras de gasto y composición son estimaciones para orientar tus decisiones, no un consejo

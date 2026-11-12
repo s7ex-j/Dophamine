@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 import {
   Button,
@@ -12,100 +12,126 @@ import {
   RowActions,
   Screen,
 } from "@/src/components/ui";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import {
   deleteDailyBiometrics,
   getBiometricsByDate,
   getRecentBiometrics,
-  saveDailyBiometrics,
+  saveDayBody,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
 import {
-  buildDailyInput,
+  buildBodyInput,
   emptyForm,
-  formCalories,
   formFromRecord,
-  type DailyForm,
+  hasData,
+  type BodyForm,
 } from "@/src/features/biometrics/dailyLog";
 import { leanMassKg } from "@/src/features/composition/composition";
+import { groupBySlot, totalsOf, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
+import {
+  copyDay,
+  deleteDayMeals,
+  deleteMealEntry,
+  getMealEntries,
+} from "@/src/features/nutrition/nutrition.repository";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { addDays, dayLabel, localDateKey } from "@/src/lib/dates";
-import { formatWeight, toKg } from "@/src/lib/units";
-import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import { VIEWER } from "@/src/lib/mode";
+import { formatWeight, toKg } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
-// Pestaña "Diario": un día a la vez. Arriba se elige el día; debajo, el resumen
-// de energía y las tres partes del registro (peso, nutrición y composición).
 // En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function DailyLogScreen() {
   return VIEWER ? <ViewerOnlyNotice what="El Diario" /> : <DailyLogScreenContent />;
 }
 
+// Pestaña "Diario": un día a la vez. Arriba se elige el día; debajo, el resumen
+// de energía, las comidas por momento del día y el peso con su composición.
 function DailyLogScreenContent() {
+  const router = useRouter();
   const [date, setDate] = useState(localDateKey());
-  const [form, setForm] = useState<DailyForm>(emptyForm);
-  const [saved, setSaved] = useState<DailyBiometrics | null>(null);
+  const [form, setForm] = useState<BodyForm>(emptyForm);
+  const [day, setDay] = useState<DailyBiometrics | null>(null);
+  const [entries, setEntries] = useState<MealEntry[]>([]);
+  const [previous, setPrevious] = useState(0);
   const [history, setHistory] = useState<DailyBiometrics[]>([]);
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
 
-  const load = useCallback((day: string) => {
-    Promise.all([getBiometricsByDate(day), getRecentBiometrics(), getNutritionProfile()]).then(
-      ([record, rows, nextProfile]) => {
-        setProfile(nextProfile);
-        setSaved(record);
-        setForm(formFromRecord(record, weightUnitOf(nextProfile)));
-        setHistory(rows);
-      },
-    );
+  const load = useCallback((current: string) => {
+    Promise.all([
+      getBiometricsByDate(current),
+      getMealEntries(current),
+      getMealEntries(addDays(current, -1)),
+      getRecentBiometrics(),
+      getNutritionProfile(),
+    ]).then(([record, meals, before, rows, nextProfile]) => {
+      setProfile(nextProfile);
+      setDay(record);
+      setEntries(meals);
+      setPrevious(before.length);
+      setForm(formFromRecord(record, weightUnitOf(nextProfile)));
+      setHistory(rows.filter(hasData));
+    });
   }, []);
   useFocusEffect(useCallback(() => load(date), [load, date]));
   useEffect(() => setMessage(null), [date]);
 
-  const set = (key: keyof DailyForm) => (value: string) => {
+  const set = (key: keyof BodyForm) => (value: string) => {
     setMessage(null);
     setForm((current) => ({ ...current, [key]: value }));
   };
-  const save = async () => {
-    const result = buildDailyInput(form, unit);
+  const saveBody = async () => {
+    const result = buildBodyInput(form, unit);
     if (result.error !== null) return setMessage({ text: result.error, error: true });
-    await saveDailyBiometrics(result.input, date);
+    await saveDayBody(result.input, date);
     load(date);
-    setMessage({ text: "Guardado. Tus datos quedan solo en este dispositivo.", error: false });
+    setMessage({ text: "Peso guardado. Tus datos quedan solo en este dispositivo.", error: false });
   };
-  const remove = async () => {
+  const removeDay = async () => {
+    await deleteDayMeals(date);
     await deleteDailyBiometrics(date);
     load(date);
-    setMessage({ text: "Registro borrado.", error: false });
+    setMessage({ text: "Día borrado.", error: false });
   };
+  const removeEntry = async (entry: MealEntry) => {
+    await deleteMealEntry(entry);
+    load(date);
+  };
+  const copyPrevious = async () => {
+    const copied = await copyDay(addDays(date, -1), date);
+    load(date);
+    setMessage({ text: `Se copiaron ${copied} comidas del día anterior.`, error: false });
+  };
+  const add = (slot: MealSlot) => router.push({ pathname: "/add-food", params: { date, slot } });
 
-  const calories = formCalories(form);
+  // Un día anterior a las comidas por entrada solo tiene el total guardado.
+  const totals = entries.length
+    ? totalsOf(entries)
+    : {
+        kcal: day?.caloriesIn ?? 0,
+        proteinG: day?.proteinG ?? 0,
+        carbsG: day?.carbsG ?? 0,
+        fatsG: day?.fatsG ?? 0,
+      };
   const target = profile?.calorieTarget ?? 0;
   const macros = [
     {
       label: "Proteína",
-      value: Number(form.protein) || 0,
+      value: totals.proteinG,
       target: profile?.proteinTarget,
       color: AppTheme.colors.coral,
     },
-    {
-      label: "Carbos",
-      value: Number(form.carbs) || 0,
-      target: profile?.carbsTarget,
-      color: AppTheme.colors.amber,
-    },
-    {
-      label: "Grasas",
-      value: Number(form.fats) || 0,
-      target: profile?.fatsTarget,
-      color: AppTheme.colors.accent,
-    },
+    { label: "Carbos", value: totals.carbsG, target: profile?.carbsTarget, color: AppTheme.colors.amber },
+    { label: "Grasas", value: totals.fatsG, target: profile?.fatsTarget, color: AppTheme.colors.accent },
   ];
   const weightKg = toKg(Number(form.weight), unit);
   const bodyFat = Number(form.bodyFat);
+  const lastWeight = history.find((record) => record.weightKg)?.weightKg;
 
   return (
     <Screen>
@@ -138,26 +164,26 @@ function DailyLogScreenContent() {
         <Card title="Energía del día">
           <View style={AppTheme.energyTop}>
             <View>
-              <Text style={AppTheme.energyNumber}>{calories}</Text>
+              <Text style={AppTheme.energyNumber}>{totals.kcal}</Text>
               <Text style={AppTheme.hint}>
                 {target
-                  ? calories <= target
-                    ? `de ${target} kcal · quedan ${target - calories}`
-                    : `de ${target} kcal · ${calories - target} por encima`
+                  ? totals.kcal <= target
+                    ? `de ${target} kcal · quedan ${target - totals.kcal}`
+                    : `de ${target} kcal · ${totals.kcal - target} por encima`
                   : "kcal"}
               </Text>
             </View>
           </View>
           <ProgressBar
-            value={target ? (calories / target) * 100 : 0}
-            color={target && calories > target * 1.1 ? AppTheme.colors.coral : AppTheme.colors.blue}
+            value={target ? (totals.kcal / target) * 100 : 0}
+            color={target && totals.kcal > target * 1.1 ? AppTheme.colors.coral : AppTheme.colors.blue}
           />
           <View style={AppTheme.macroRow}>
             {macros.map((macro) => (
               <View key={macro.label} style={AppTheme.macroColumn}>
                 <Text style={AppTheme.macroLabel}>{macro.label}</Text>
                 <Text style={AppTheme.macroValue}>
-                  {macro.value} g
+                  {Math.round(macro.value)} g
                   {macro.target ? <Text style={AppTheme.macroTarget}> / {macro.target}</Text> : null}
                 </Text>
                 <ProgressBar
@@ -167,56 +193,50 @@ function DailyLogScreenContent() {
               </View>
             ))}
           </View>
+          {!entries.length && totals.kcal > 0 ? (
+            <Text style={AppTheme.hint}>
+              Este día tiene solo el total, de antes de registrar por comidas. Si agregas una comida, el total
+              se conserva como una entrada.
+            </Text>
+          ) : null}
+          {!entries.length && previous > 0 ? (
+            <View style={AppTheme.rowActions}>
+              <LinkButton title={`Copiar las ${previous} comidas del día anterior`} onPress={copyPrevious} />
+            </View>
+          ) : null}
         </Card>
 
-        <Card title="Peso">
+        {groupBySlot(entries).map((slot) => (
+          <Card
+            key={slot.id}
+            title={slot.entries.length ? `${slot.label} · ${slot.totals.kcal} kcal` : slot.label}
+          >
+            {slot.entries.map((entry) => (
+              <View key={entry.id}>
+                <ListRow
+                  title={entry.name}
+                  detail={`${entry.grams ? `${entry.grams} g · ` : ""}P ${entry.proteinG} · C ${entry.carbsG} · G ${entry.fatsG}`}
+                  value={`${entry.kcal} kcal`}
+                />
+                <RowActions question={`¿Quitar "${entry.name}"?`} onDelete={() => removeEntry(entry)} />
+              </View>
+            ))}
+            <Button
+              title={`Agregar a ${slot.label.toLowerCase()}`}
+              variant="secondary"
+              onPress={() => add(slot.id)}
+            />
+          </Card>
+        ))}
+
+        <Card title="Peso y composición">
           <Input
             label={`Peso del día (${unit})`}
             value={form.weight}
             onChangeText={set("weight")}
             keyboardType="decimal-pad"
-            placeholder={history[0] ? `Último: ${formatWeight(history[0].weightKg, unit)}` : ""}
+            placeholder={lastWeight ? `Último: ${formatWeight(lastWeight, unit)}` : ""}
           />
-          <Text style={AppTheme.hint}>Pésate al despertar, en las mismas condiciones cada vez.</Text>
-        </Card>
-
-        <Card title="Nutrición">
-          <Input
-            label="Calorías"
-            value={form.calories}
-            onChangeText={set("calories")}
-            keyboardType="number-pad"
-            placeholder="Vacío: se calculan con los macros"
-          />
-          <View style={AppTheme.fieldRow}>
-            <View style={AppTheme.fieldRowItem}>
-              <Input
-                label="Proteína (g)"
-                value={form.protein}
-                onChangeText={set("protein")}
-                keyboardType="number-pad"
-              />
-            </View>
-            <View style={AppTheme.fieldRowItem}>
-              <Input
-                label="Carbos (g)"
-                value={form.carbs}
-                onChangeText={set("carbs")}
-                keyboardType="number-pad"
-              />
-            </View>
-            <View style={AppTheme.fieldRowItem}>
-              <Input
-                label="Grasas (g)"
-                value={form.fats}
-                onChangeText={set("fats")}
-                keyboardType="number-pad"
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Card title="Composición corporal · opcional">
           <View style={AppTheme.fieldRow}>
             <View style={AppTheme.fieldRowItem}>
               <Input
@@ -256,15 +276,17 @@ function DailyLogScreenContent() {
           <Text style={AppTheme.hint}>
             {weightKg > 0 && bodyFat > 0 && bodyFat < 100
               ? `Masa magra: ${formatWeight(leanMassKg(weightKg, bodyFat), unit, 1)} · Grasa: ${formatWeight(weightKg - leanMassKg(weightKg, bodyFat), unit, 1)}`
-              : "Llena solo lo que mida tu balanza. Con el % de grasa se separa grasa de masa magra."}
+              : "Pésate al despertar. La composición es opcional: llena solo lo que mida tu balanza."}
           </Text>
+          <Button title={day?.weightKg ? "Guardar cambios de peso" : "Guardar peso"} onPress={saveBody} />
         </Card>
 
         {message ? (
           <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
         ) : null}
-        <Button title={saved ? "Guardar cambios" : "Guardar el día"} onPress={save} />
-        {saved ? <RowActions question={`¿Borrar el registro del ${date}?`} onDelete={remove} /> : null}
+        {hasData(day) || entries.length ? (
+          <RowActions question={`¿Borrar todo lo registrado el ${date}?`} onDelete={removeDay} />
+        ) : null}
 
         <Card title="Últimos días">
           {history.length ? (
@@ -272,10 +294,10 @@ function DailyLogScreenContent() {
               <View key={record.id}>
                 <ListRow
                   title={`${dayLabel(record.date)} · ${record.date}`}
-                  detail={`${record.caloriesIn} kcal · P ${record.proteinG} · C ${record.carbsG} · G ${record.fatsG}${
+                  detail={`${record.caloriesIn} kcal · P ${Math.round(record.proteinG)} · C ${Math.round(record.carbsG)} · G ${Math.round(record.fatsG)}${
                     record.bodyFatPct ? ` · ${record.bodyFatPct} % grasa` : ""
                   }`}
-                  value={formatWeight(record.weightKg, unit)}
+                  value={record.weightKg ? formatWeight(record.weightKg, unit) : "Sin pesaje"}
                 />
                 <View style={AppTheme.rowActions}>
                   <LinkButton title="Abrir" onPress={() => setDate(record.date)} />

@@ -1,3 +1,4 @@
+import { estimatedOneRepMax } from "@/src/features/training/strength";
 import { weightValue, type WeightUnit } from "@/src/lib/units";
 import type { ExercisePlan } from "@/src/features/training/training.plans";
 
@@ -31,6 +32,14 @@ export function progressionHintFor(
   };
 }
 
-/** "80 kg × 8 · RIR 2", con la carga en la unidad elegida. */
-export const hintDetail = (hint: ProgressionHint, unit: WeightUnit = "kg") =>
-  `${weightValue(hint.loadKg, unit)} ${unit} × ${hint.reps}${hint.rir === null ? "" : ` · RIR ${hint.rir}`}`;
+/** "80 kg × 8 · RIR 2 · 1RM est. 101.3 kg", con la carga en la unidad elegida. */
+export function hintDetail(hint: ProgressionHint, unit: WeightUnit = "kg") {
+  const max = estimatedOneRepMax(hint.loadKg, hint.reps);
+  return [
+    `${weightValue(hint.loadKg, unit)} ${unit} × ${hint.reps}`,
+    hint.rir === null ? "" : `RIR ${hint.rir}`,
+    max === null ? "" : `1RM est. ${weightValue(max, unit)} ${unit}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}

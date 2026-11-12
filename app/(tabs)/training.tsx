@@ -5,6 +5,7 @@ import { useFocusEffect } from "expo-router";
 import { Screen } from "@/src/components/ui";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { PlateCalculator } from "@/src/features/training/PlateCalculator";
 import { buildSessionLogs, type LogDraft } from "@/src/features/training/session";
 import { generateRoutine, type Routine, type TrainingVariant } from "@/src/features/training/training.plans";
 import {
@@ -149,6 +150,7 @@ function TrainingScreenContent() {
           unit={unit}
         />
         <ProgressionCard hints={hints} unit={unit} />
+        <PlateCalculator unit={unit} />
         <HistoryCard workouts={workouts} deleteWorkout={deleteWorkout} />
       </ScrollView>
     </Screen>

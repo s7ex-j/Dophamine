@@ -8,6 +8,8 @@ import {
   storeFromTables,
   tablesFromStore,
   type BiometricsRow,
+  type FoodRow,
+  type MealRow,
   type HabitRow,
   type ReviewRow,
   type SetRow,
@@ -33,6 +35,8 @@ export async function downloadBackup(): Promise<void> {
     habits: await db.getAllAsync<HabitRow>("SELECT * FROM habit_entries ORDER BY date"),
     settings: await db.getAllAsync<SettingRow>("SELECT key, value FROM app_settings"),
     reviews: await db.getAllAsync<ReviewRow>("SELECT * FROM weekly_reviews ORDER BY date DESC, rowid DESC"),
+    foods: await db.getAllAsync<FoodRow>("SELECT id, data, barcode FROM foods ORDER BY rowid"),
+    meals: await db.getAllAsync<MealRow>("SELECT * FROM meal_entries ORDER BY date, rowid"),
   });
   const file = new File(Paths.cache, backupFileName());
   if (file.exists) file.delete();
@@ -67,9 +71,13 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       "wellbeing_entries",
       "habit_entries",
       "weekly_reviews",
+      "foods",
+      "meal_entries",
     ])
       await db.runAsync(`DELETE FROM ${table}`);
-    await db.runAsync("DELETE FROM app_settings WHERE key IN ('nutrition_profile', 'training_routine')");
+    await db.runAsync(
+      "DELETE FROM app_settings WHERE key IN ('nutrition_profile', 'training_routine', 'online_lookup')",
+    );
 
     for (const row of tables.biometrics)
       await db.runAsync(
@@ -129,6 +137,27 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       );
     for (const row of tables.settings)
       await db.runAsync("INSERT INTO app_settings (key, value) VALUES (?, ?)", row.key, row.value);
+    for (const row of tables.foods)
+      await db.runAsync(
+        "INSERT INTO foods (id, data, barcode) VALUES (?, ?, ?)",
+        row.id,
+        row.data,
+        row.barcode,
+      );
+    for (const row of tables.meals)
+      await db.runAsync(
+        "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        row.id,
+        row.date,
+        row.slot,
+        row.food_id,
+        row.name,
+        row.grams,
+        row.kcal,
+        row.protein_g,
+        row.carbs_g,
+        row.fats_g,
+      );
     for (const row of tables.reviews)
       await db.runAsync(
         "INSERT INTO weekly_reviews (id, date, decision, previous_calories, suggested_calories, tdee) VALUES (?, ?, ?, ?, ?, ?)",
