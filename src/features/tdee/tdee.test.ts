@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { buildNutritionProfile } from "@/src/features/profile/profile";
-import { analyzeMetabolism, buildWeeklyCheckIn, weeklyRecommendation } from "@/src/features/tdee/tdee";
+import {
+  analyzeMetabolism,
+  buildWeeklyCheckIn,
+  energyBalance,
+  expenditureSeries,
+  weeklyRecommendation,
+} from "@/src/features/tdee/tdee";
 
 function days(
   count: number,
@@ -95,5 +101,27 @@ describe("weeklyRecommendation", () => {
   it("mantiene el plan cuando la tendencia coincide con el objetivo", () => {
     const analysis = analyzeMetabolism(days(21, () => ({ weightKg: 75, caloriesIn: 2500 })));
     expect(weeklyRecommendation(analysis, "maintain", 75)).toContain("Mantén el plan");
+  });
+});
+
+describe("gasto y balance para el Panel", () => {
+  const steady = days(30, () => ({ weightKg: 75, caloriesIn: 2500 }));
+
+  it("da el gasto de cada día desde que hay datos suficientes", () => {
+    const series = expenditureSeries(steady, 14);
+    expect(series.length).toBeGreaterThan(0);
+    expect(series.every((point) => point.tdee === 2500)).toBe(true);
+    expect(series.at(-1)?.date).toBe(steady.at(-1)?.date);
+    expect(expenditureSeries(days(5, () => ({ weightKg: 75, caloriesIn: 2500 })))).toEqual([]);
+  });
+
+  it("calcula el balance de los días con ingesta", () => {
+    const balance = energyBalance(
+      [...steady.slice(-3), { ...steady[0], date: "2026-03-01", caloriesIn: 0 }],
+      2700,
+    );
+    expect(balance).toHaveLength(3);
+    expect(balance.every((day) => day.balance === -200)).toBe(true);
+    expect(energyBalance(steady, null)).toEqual([]);
   });
 });

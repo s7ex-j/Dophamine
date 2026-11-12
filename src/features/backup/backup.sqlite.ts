@@ -175,7 +175,17 @@ export function storeFromTables(tables: Tables): Store {
       carbsG: row.carbs_g,
       fatsG: row.fats_g,
     })),
-    settings: { onlineLookup: tables.settings.find((row) => row.key === ONLINE_KEY)?.value === "on" },
+    settings: {
+      onlineLookup: tables.settings.find((row) => row.key === ONLINE_KEY)?.value === "on",
+      // El resto de ajustes (orden del Panel, recordatorios) viaja tal cual, como JSON.
+      ...Object.fromEntries(
+        tables.settings.flatMap((row) => {
+          if ([PROFILE_KEY, ROUTINE_KEY, ONLINE_KEY].includes(row.key)) return [];
+          const value = parseJson(row.value);
+          return value === undefined ? [] : [[row.key, value]];
+        }),
+      ),
+    },
   };
 }
 
@@ -184,6 +194,9 @@ export function tablesFromStore(store: Store): Tables {
   if (store.profile) settings.push({ key: PROFILE_KEY, value: JSON.stringify(store.profile) });
   if (store.routines?.[0]) settings.push({ key: ROUTINE_KEY, value: JSON.stringify(store.routines[0]) });
   if (store.settings?.onlineLookup) settings.push({ key: ONLINE_KEY, value: "on" });
+  for (const [key, value] of Object.entries(store.settings ?? {}))
+    if (key !== "onlineLookup" && value !== undefined && value !== null)
+      settings.push({ key, value: JSON.stringify(value) });
   // Dos registros del mismo día no caben en el teléfono (la fecha es única): gana el último.
   const byDate = new Map(store.biometrics.map((record) => [record.date, record]));
   const total = store.wellbeing.length;

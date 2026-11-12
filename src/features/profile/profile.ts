@@ -1,4 +1,10 @@
 import type { WeightUnit } from "@/src/lib/units";
+import {
+  estimateExpenditure,
+  type ExpenditureEstimate,
+  type RecentTrend,
+  type TrainingType,
+} from "@/src/features/profile/expenditure";
 
 export type Sex = "female" | "male";
 export type ActivityLevel = "low" | "light" | "moderate" | "high";
@@ -6,6 +12,8 @@ export type Goal = "gain" | "maintain" | "lose";
 /** Ritmo de cambio de peso elegido en la evaluación inicial. */
 export type Pace = "gentle" | "moderate" | "fast";
 export type ProteinLevel = "moderate" | "high" | "very_high";
+/** Tiempo entrenando fuerza con constancia. Define cuánto músculo se puede ganar por semana. */
+export type Experience = "beginner" | "intermediate" | "advanced";
 /**
  * Quién decide los ajustes del objetivo calórico:
  * - auto: la app aplica el ajuste en cada revisión, avisa y permite deshacerlo.
@@ -37,6 +45,17 @@ export type NutritionProfile = {
   proteinLevel?: ProteinLevel;
   adjustMode?: AdjustMode;
   checkInDays?: CheckInDays;
+  // Evaluación ampliada (0.10.0). Con `trainingDays` el gasto inicial se calcula
+  // con `expenditure.ts`; sin él, con el factor de actividad de antes. En estos
+  // planes `activity` es el movimiento fuera del entrenamiento.
+  trainingDays?: number;
+  sessionMinutes?: number;
+  trainingType?: TrainingType;
+  experience?: Experience;
+  knownIntake?: number;
+  recentTrend?: RecentTrend;
+  /** Gasto diario estimado al crear el plan, para mostrar de dónde salió el objetivo. */
+  initialExpenditure?: number;
 };
 
 export type PlanInput = Pick<NutritionProfile, "age" | "sex" | "heightCm" | "activity" | "goal"> &
@@ -52,6 +71,12 @@ export type PlanInput = Pick<NutritionProfile, "age" | "sex" | "heightCm" | "act
       | "proteinLevel"
       | "adjustMode"
       | "checkInDays"
+      | "trainingDays"
+      | "sessionMinutes"
+      | "trainingType"
+      | "experience"
+      | "knownIntake"
+      | "recentTrend"
     >
   > & { weightKg: number };
 
@@ -77,24 +102,27 @@ const paceRates: Record<Exclude<Goal, "maintain">, Record<Pace, number>> = {
   lose: { gentle: 0.25, moderate: 0.5, fast: 0.75 },
   gain: { gentle: 0.1, moderate: 0.25, fast: 0.4 },
 };
+// Quien empieza gana músculo más rápido y tolera un superávit mayor; quien lleva años, menos.
+const gainByExperience: Record<Experience, number> = { beginner: 1.5, intermediate: 1, advanced: 0.6 };
 const proteinPerKg: Record<ProteinLevel, number> = { moderate: 1.6, high: 2, very_high: 2.4 };
 const KCAL_PER_KG = 7700;
 const MIN_CALORIES = 1200;
 
 /** Cambio de peso buscado, en kg por semana (negativo al bajar). Sin ritmo elegido devuelve null. */
 export function targetWeeklyRateKg(
-  profile: Pick<NutritionProfile, "goal" | "pace">,
+  profile: Pick<NutritionProfile, "goal" | "pace" | "experience">,
   weightKg: number,
 ): number | null {
   if (profile.goal === "maintain") return 0;
   if (!profile.pace) return null;
   const rate = (weightKg * paceRates[profile.goal][profile.pace]) / 100;
-  return profile.goal === "lose" ? -rate : rate;
+  if (profile.goal === "lose") return -rate;
+  return rate * (profile.experience ? gainByExperience[profile.experience] : 1);
 }
 
 /** Calorías diarias por encima (o debajo) del gasto que corresponden al objetivo. */
 export function goalCalorieOffset(
-  profile: Pick<NutritionProfile, "goal" | "pace">,
+  profile: Pick<NutritionProfile, "goal" | "pace" | "experience">,
   weightKg: number,
 ): number {
   const rate = targetWeeklyRateKg(profile, weightKg);
@@ -113,18 +141,43 @@ export function basalMetabolicRate(
   return 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + (input.sex === "male" ? 5 : -161);
 }
 
+/**
+ * Desglose del gasto inicial de un plan hecho con la evaluación ampliada.
+ * Devuelve null para los planes anteriores, que no tienen datos de entrenamiento.
+ */
+export function planEstimate(input: PlanInput): ExpenditureEstimate | null {
+  if (input.trainingDays === undefined) return null;
+  return estimateExpenditure({
+    sex: input.sex,
+    age: input.age,
+    heightCm: input.heightCm,
+    weightKg: input.weightKg,
+    bodyFatPct: input.bodyFatPct,
+    activity: input.activity,
+    trainingDays: input.trainingDays,
+    sessionMinutes: input.sessionMinutes ?? 60,
+    trainingType: input.trainingType ?? "strength",
+    knownIntake: input.knownIntake,
+    recentTrend: input.recentTrend,
+  });
+}
+
 export function buildNutritionProfile(input: PlanInput): NutritionProfile {
   const { weightKg, ...rest } = input;
-  const maintenance = basalMetabolicRate(input) * activityFactors[input.activity];
-  const calorieTarget = Math.max(MIN_CALORIES, Math.round(maintenance + goalCalorieOffset(input, weightKg)));
+  const estimate = planEstimate(input);
+  const maintenance = estimate ? estimate.tdee : basalMetabolicRate(input) * activityFactors[input.activity];
+  // Con la evaluación ampliada el objetivo nunca baja del metabolismo basal.
+  const floor = estimate ? Math.max(MIN_CALORIES, estimate.bmr) : MIN_CALORIES;
+  const calorieTarget = Math.max(floor, Math.round(maintenance + goalCalorieOffset(input, weightKg)));
   const proteinTarget = Math.round(weightKg * (input.proteinLevel ? proteinPerKg[input.proteinLevel] : 1.8));
-  const fatsTarget = Math.round(weightKg * 0.8);
+  const fatsTarget = Math.round(weightKg * (estimate && input.goal === "gain" ? 1 : 0.8));
   const carbsTarget = Math.max(0, Math.round((calorieTarget - proteinTarget * 4 - fatsTarget * 9) / 4));
   return {
     ...rest,
     // `weightKg` se conserva en el perfil guardado por compatibilidad con planes anteriores.
     ...({ weightKg } as object),
     startWeightKg: input.startWeightKg ?? weightKg,
+    ...(estimate ? { initialExpenditure: estimate.tdee } : {}),
     calorieTarget,
     proteinTarget,
     carbsTarget,

@@ -215,3 +215,23 @@ describe("respaldo entre el teléfono y la web", () => {
     expect(read.routines).toEqual([]);
   });
 });
+
+describe("ajustes en el respaldo del teléfono", () => {
+  it("el orden del Panel y los recordatorios pasan por SQLite sin cambios", () => {
+    const reminders = {
+      enabled: true,
+      leadMinutes: 5,
+      days: { mon: [{ id: "a", label: "Cena", time: "20:00" }] },
+    };
+    const layout = [{ id: "trend", visible: false }];
+    const data = {
+      biometrics: [],
+      wellbeing: [],
+      workouts: [],
+      settings: { onlineLookup: false, dashboard_layout: layout, meal_reminders: reminders },
+    };
+    const tables = tablesFromStore(data);
+    expect(tables.settings.map((row) => row.key).sort()).toEqual(["dashboard_layout", "meal_reminders"]);
+    expect(storeFromTables(tables).settings).toEqual(data.settings);
+  });
+});

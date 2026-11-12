@@ -75,9 +75,8 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       "meal_entries",
     ])
       await db.runAsync(`DELETE FROM ${table}`);
-    await db.runAsync(
-      "DELETE FROM app_settings WHERE key IN ('nutrition_profile', 'training_routine', 'online_lookup')",
-    );
+    // Todos los ajustes vienen del respaldo (plan, rutina, búsqueda en línea, Panel, recordatorios).
+    await db.runAsync("DELETE FROM app_settings");
 
     for (const row of tables.biometrics)
       await db.runAsync(

@@ -1,4 +1,5 @@
 import { useState, type PropsWithChildren } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, TextInput, type TextInputProps, View } from "react-native";
 import { AppTheme } from "@/src/theme";
 
@@ -167,7 +168,9 @@ export function RowActions({
     </View>
   );
 }
-/** Opciones en lista vertical, cada una con una línea de explicación. Para elegir una sola. */
+export type IconName = keyof typeof Ionicons.glyphMap;
+
+/** Opciones en lista vertical, cada una con icono y una línea de explicación. Para elegir una sola. */
 export function OptionList<T extends string>({
   value,
   onChange,
@@ -175,22 +178,151 @@ export function OptionList<T extends string>({
 }: {
   value: T;
   onChange: (value: T) => void;
-  options: Array<{ value: T; label: string; detail: string }>;
+  options: Array<{ value: T; label: string; detail: string; icon?: IconName }>;
 }) {
   return (
     <View style={AppTheme.optionList}>
+      {options.map((option) => {
+        const active = option.value === value;
+        return (
+          <Pressable
+            key={option.value}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            onPress={() => onChange(option.value)}
+            style={[AppTheme.optionCard, active && AppTheme.optionCardActive]}
+          >
+            <View style={AppTheme.optionRow}>
+              {option.icon ? (
+                <View style={AppTheme.iconChip}>
+                  <Ionicons
+                    name={option.icon}
+                    size={20}
+                    color={active ? AppTheme.colors.accent : AppTheme.colors.muted}
+                  />
+                </View>
+              ) : null}
+              <View style={AppTheme.optionText}>
+                <Text style={AppTheme.optionTitle}>{option.label}</Text>
+                <Text style={AppTheme.optionDetail}>{option.detail}</Text>
+              </View>
+              {active ? <Ionicons name="checkmark-circle" size={22} color={AppTheme.colors.accent} /> : null}
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+/** Píldoras para elegir un valor corto (días, minutos). */
+export function Chips<T extends string | number>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string }>;
+}) {
+  return (
+    <View style={AppTheme.chipRow}>
       {options.map((option) => (
         <Pressable
-          key={option.value}
+          key={String(option.value)}
           accessibilityRole="button"
           accessibilityState={{ selected: option.value === value }}
           onPress={() => onChange(option.value)}
-          style={[AppTheme.optionCard, option.value === value && AppTheme.optionCardActive]}
+          style={[AppTheme.chip, option.value === value && AppTheme.chipActive]}
         >
-          <Text style={AppTheme.optionTitle}>{option.label}</Text>
-          <Text style={AppTheme.optionDetail}>{option.detail}</Text>
+          <Text style={[AppTheme.chipText, option.value === value && AppTheme.chipTextActive]}>
+            {option.label}
+          </Text>
         </Pressable>
       ))}
+    </View>
+  );
+}
+/** Campo numérico grande, para una sola cifra por pantalla o por fila. */
+export function BigInput({ label, unit, ...props }: TextInputProps & { label: string; unit?: string }) {
+  return (
+    <View style={{ flex: 1, alignItems: "center", gap: 4 }}>
+      <Text style={AppTheme.label}>{label}</Text>
+      <TextInput
+        accessibilityLabel={label}
+        style={AppTheme.bigInput}
+        placeholderTextColor={AppTheme.colors.border}
+        placeholder="0"
+        keyboardType="decimal-pad"
+        {...props}
+      />
+      {unit ? <Text style={AppTheme.bigInputUnit}>{unit}</Text> : null}
+    </View>
+  );
+}
+/** Avance por pasos: una raya por paso, llenas las ya recorridas. */
+export function StepDots({ total, current }: { total: number; current: number }) {
+  return (
+    <View style={AppTheme.dots}>
+      {Array.from({ length: total }, (_, index) => (
+        <View key={index} style={[AppTheme.dot, index <= current && AppTheme.dotActive]} />
+      ))}
+    </View>
+  );
+}
+/** Botón redondo con solo un icono. `label` es lo que lee un lector de pantalla. */
+export function IconButton({
+  icon,
+  label,
+  onPress,
+  danger,
+}: {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  danger?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={[AppTheme.iconButton, danger && { backgroundColor: AppTheme.colors.coralSoft }]}
+    >
+      <Ionicons name={icon} size={20} color={danger ? AppTheme.colors.coral : AppTheme.colors.accent} />
+    </Pressable>
+  );
+}
+/** Pestañas con icono arriba y texto abajo, para elegir entre pocas opciones a la vista. */
+export function IconTabs<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string; icon: IconName }>;
+}) {
+  return (
+    <View style={AppTheme.slotTabs}>
+      {options.map((option) => {
+        const active = option.value === value;
+        return (
+          <Pressable
+            key={option.value}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            onPress={() => onChange(option.value)}
+            style={[AppTheme.slotTab, active && AppTheme.slotTabActive]}
+          >
+            <Ionicons
+              name={option.icon}
+              size={22}
+              color={active ? AppTheme.colors.accent : AppTheme.colors.muted}
+            />
+            <Text style={[AppTheme.slotTabText, active && AppTheme.slotTabTextActive]}>{option.label}</Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }

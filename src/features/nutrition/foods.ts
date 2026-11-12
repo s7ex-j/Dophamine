@@ -15,6 +15,10 @@ export type FoodSource =
   /** Traído de Open Food Facts (búsqueda en línea o código de barras) y guardado. */
   | "off";
 
+/** Si el peso es del alimento crudo o ya cocido. Solo lo tienen los que cambian al cocinarse. */
+export type FoodState = "raw" | "cooked";
+export const stateLabels: Record<FoodState, string> = { raw: "Crudo", cooked: "Cocido" };
+
 export type Nutrients = { kcal: number; proteinG: number; carbsG: number; fatsG: number };
 export type RecipeIngredient = { foodId: string; name: string; grams: number } & Nutrients;
 
@@ -29,6 +33,9 @@ export type Food = {
   servingLabel?: string;
   per100: Nutrients;
   ingredients?: RecipeIngredient[];
+  state?: FoodState;
+  /** Clave que comparten la versión cruda y la cocida del mismo alimento. */
+  pair?: string;
 };
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -222,4 +229,19 @@ export function isFood(value: unknown): value is Food {
     (value.servingG as number) > 0 &&
     isNutrients(value.per100)
   );
+}
+
+/** La otra versión (cruda o cocida) del mismo alimento, si existe. */
+export function counterpart(food: Food, foods: Food[]): Food | null {
+  if (!food.pair || !food.state) return null;
+  return foods.find((item) => item.pair === food.pair && item.state && item.state !== food.state) ?? null;
+}
+
+/**
+ * Cuántos gramos de la otra versión equivalen a una cantidad: los que aportan
+ * las mismas calorías. 60 g de arroz crudo ≈ 168 g de arroz cocido.
+ */
+export function equivalentGrams(from: Food, to: Food, grams: number): number {
+  if (!(to.per100.kcal > 0) || !(grams > 0)) return 0;
+  return Math.round((grams * from.per100.kcal) / to.per100.kcal);
 }

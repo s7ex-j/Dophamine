@@ -19,7 +19,10 @@ import { isWeeklyReview } from "@/src/features/reviews/reviews";
 // Formato 4: comidas por entrada (`meals`), alimentos propios y recetas (`foods`),
 // ajustes (`settings`) y días sin pesaje (`weightKg` puede ser null). Los formatos
 // anteriores se leen igual: sus días conservan el total que ya tenían.
-export const BACKUP_FORMAT = 4;
+// Formato 5: plan con datos de entrenamiento e ingesta (evaluación ampliada),
+// alimentos con estado crudo/cocido, y ajustes libres en `settings` (orden del
+// Panel, recordatorios). Todo opcional: los formatos 1 a 4 se leen igual.
+export const BACKUP_FORMAT = 5;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 
@@ -69,6 +72,8 @@ export function parseBackup(text: string): Backup {
     throw new BackupError("El respaldo está dañado: hay registros sin fecha o con valores inválidos.");
   if (!((data.reviews as unknown[] | undefined) ?? []).every(isWeeklyReview))
     throw new BackupError("El respaldo está dañado: el historial de revisiones no es válido.");
+  if (data.settings !== undefined && !isRecord(data.settings))
+    throw new BackupError("El respaldo está dañado: los ajustes no tienen el formato esperado.");
   if (!((data.foods as unknown[] | undefined) ?? []).every(isFood))
     throw new BackupError("El respaldo está dañado: hay alimentos con datos inválidos.");
   if (!((data.meals as unknown[] | undefined) ?? []).every(isMealEntry))

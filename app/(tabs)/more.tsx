@@ -53,6 +53,13 @@ export default function MoreScreen() {
               />
             </>
           )}
+          {VIEWER ? null : (
+            <NavRow
+              title="Recordatorios de comidas"
+              detail="Cuántas comidas, a qué hora, cada día"
+              onPress={() => router.push("/reminders")}
+            />
+          )}
           <NavRow
             title="Análisis"
             detail="Tendencia, ingesta y adherencia"

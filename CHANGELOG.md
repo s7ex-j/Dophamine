@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.10.0 - 2026-11-12
+
+Rediseño en modo oscuro, cálculo inicial más preciso y recordatorios de comidas.
+
+- Cálculo del gasto inicial nuevo (`src/features/profile/expenditure.ts`). Antes era metabolismo basal × un factor de actividad, que se quedaba corto en personas jóvenes, livianas y activas: con 18 años, 170 cm, 56 kg y 15 % de grasa daba unas 2500 kcal para volumen. Ahora promedia dos métodos: el gasto por componentes (basal + día a día + entrenamiento según días, minutos y tipo) y el requerimiento estimado de energía de las ingestas de referencia, que tiene una ecuación propia para menores de 19 años. Con % de grasa el basal promedia Mifflin-St Jeor con una ecuación de masa magra. Si la persona sabe cuánto come hoy y qué hizo su peso, ese dato pesa más. El mismo caso ahora da 2520 kcal de mantenimiento y 2751 para volumen.
+- En volumen, el ritmo depende de la experiencia: quien lleva menos de un año apunta a ganar más rápido que quien lleva años. El objetivo nunca baja del metabolismo basal.
+- Evaluación inicial de 10 pasos con iconos y menos texto: objetivo, datos, grasa corporal (con referencias visuales si no hay medición), día a día, entrenamiento (días, minutos, tipo, experiencia), lo que comes hoy (opcional), meta y ritmo, proteína y seguimiento. El resumen muestra de dónde sale el gasto y el reparto de macros en barras.
+- Modo oscuro en toda la app, con un color fijo por dato (calorías azul, proteína rojo, carbohidratos verde, grasas amarillo).
+- Panel nuevo: buscador de alimentos arriba, cuadrícula de la semana con calorías y macros contra la meta (consumido o restante), y tarjetas con gráfico de gasto, tendencia de peso, balance energético, meta y composición. Se puede ordenar y ocultar cada sección.
+- Diario nuevo: anillo de calorías y barras de macros, cada comida con su icono y sus alimentos uno por uno, peso en grande y composición plegable.
+- Agregar alimento: momento del día y modo con iconos; cada alimento se registra por separado al momento (sin "plato"). Los alimentos que cambian al cocinarse tienen versión cruda y cocida enlazadas: se cambia de una a otra y la cantidad se convierte a la equivalente.
+- La base incluida pasa a ser de ingredientes sueltos: se quitaron los platos armados y se agregaron versiones crudas de carnes, pescados, cereales, tubérculos y menestras (102 alimentos con par crudo/cocido).
+- Las recetas se arman en su propia pestaña, ingrediente por ingrediente.
+- Recordatorios de comidas (Más → Recordatorios de comidas): de 2 a 6 comidas por día con su hora, distintas para cada día de la semana, y aviso 5, 10, 15 o 30 minutos antes con una frase corta. Son notificaciones locales del teléfono; en la web no hay avisos.
+- El respaldo pasa al formato 5 (ajustes del Panel y recordatorios). Los formatos 1 a 4 se siguen leyendo.
+- De 132 a 172 pruebas de dominio y de 14 a 15 flujos de navegador.
+- No comprobado en teléfono: las notificaciones (`expo-notifications`), el modo oscuro de la barra de estado y los gráficos SVG en Android. Verificado en la web y con el empaquetado de Android.
+
 ## 0.9.0 - 2026-11-12
 
 Registro de alimentos por comida.

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
@@ -15,9 +16,13 @@ const tabIcon =
 // dos de registro, Diario y Entreno. Análisis, Hábitos y Bienestar no son pestañas:
 // son pantallas que se abren encima desde "Más" y "Estrategia" (ver app/_layout.tsx).
 export default function TabsLayout() {
+  // Sin barra de título: cada pantalla trae el suyo. El margen superior evita la barra de estado.
+  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
+        sceneStyle: { backgroundColor: AppTheme.colors.background, paddingTop: insets.top },
         headerStyle: { backgroundColor: AppTheme.colors.background },
         headerShadowVisible: false,
         headerTitleStyle: { color: AppTheme.colors.text, fontWeight: "700" },

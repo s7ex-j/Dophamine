@@ -3,9 +3,9 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "plugins": [
       "expo-router",
       "expo-sqlite",
@@ -18,6 +18,12 @@
         {
           "cameraPermission": "Dophamine usa la cámara solo para leer el código de barras de un producto. La imagen no se guarda.",
           "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#34D399"
         }
       ]
     ],
@@ -39,6 +45,7 @@
     "ios": {
       "bundleIdentifier": "com.s7ex.dophamine",
       "buildNumber": "1"
-    }
+    },
+    "backgroundColor": "#0E1311"
   }
 }

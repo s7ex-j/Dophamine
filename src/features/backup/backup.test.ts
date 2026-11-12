@@ -87,7 +87,7 @@ describe("respaldo", () => {
     };
     const backup = buildBackup({ ...store, reviews: [review] });
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(BACKUP_FORMAT).toBe(4);
+    expect(BACKUP_FORMAT).toBe(5);
     expect(parseBackup(JSON.stringify(backup)).data.reviews).toEqual([review]);
     const malo = { ...backup, data: { ...store, reviews: [{ ...review, decision: "quizá" }] } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/revisiones/);
@@ -131,5 +131,15 @@ describe("respaldo", () => {
     expect(texto).toContain("1 día de registro");
     expect(texto).toContain("0 entrenos");
     expect(texto).toContain("tu plan");
+  });
+});
+
+describe("respaldo formato 5", () => {
+  it("conserva los ajustes libres y rechaza unos dañados", () => {
+    const settings = { onlineLookup: true, dashboard_layout: [{ id: "trend", visible: false }] };
+    const data = { biometrics: [], wellbeing: [], workouts: [], settings };
+    expect(parseBackup(JSON.stringify(buildBackup(data))).data.settings).toEqual(settings);
+    const malo = { ...buildBackup(data), data: { ...data, settings: "roto" } };
+    expect(() => parseBackup(JSON.stringify(malo))).toThrow(/ajustes/);
   });
 });
