@@ -45,7 +45,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   const lastReview = reviews[0] ?? null;
   const analysis = analyzeMetabolism(records);
   return {
-    weightKg: latest?.weightKg ?? null,
+    weightKg: records.find((record) => record.weightKg)?.weightKg ?? latest?.weightKg ?? null,
     trendKg: analysis.points.at(-1)?.trendKg ?? null,
     caloriesIn: latest?.caloriesIn ?? null,
     proteinG: latest?.proteinG ?? null,

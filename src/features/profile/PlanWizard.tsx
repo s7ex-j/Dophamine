@@ -11,7 +11,7 @@ import {
   ProgressBar,
   Screen,
 } from "@/src/components/ui";
-import { saveDailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
+import { saveDayBody } from "@/src/features/biometrics/biometrics.repository";
 import {
   answersFrom,
   planInputFrom,
@@ -105,14 +105,7 @@ export function Onboarding({
     const input = planInputFrom(answers, profile);
     await saveNutritionProfile(buildNutritionProfile(input));
     if (weightKg === null)
-      await saveDailyBiometrics({
-        weightKg: input.weightKg,
-        caloriesIn: 0,
-        proteinG: 0,
-        carbsG: 0,
-        fatsG: 0,
-        bodyFatPct: input.bodyFatPct ?? null,
-      });
+      await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
     onSaved();
   };
 

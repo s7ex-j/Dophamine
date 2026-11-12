@@ -3,7 +3,7 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
@@ -12,7 +12,14 @@
       "expo-asset",
       "expo-font",
       "expo-sharing",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Dophamine usa la cámara solo para leer el código de barras de un producto. La imagen no se guarda.",
+          "recordAudioAndroid": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

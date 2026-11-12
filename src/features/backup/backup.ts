@@ -1,5 +1,7 @@
 import { localDateKey } from "@/src/lib/dates";
 import type { Store } from "@/src/db/web-storage";
+import { isFood } from "@/src/features/nutrition/foods";
+import { isMealEntry } from "@/src/features/nutrition/meals";
 import { isWeeklyReview } from "@/src/features/reviews/reviews";
 
 /**
@@ -14,7 +16,10 @@ import { isWeeklyReview } from "@/src/features/reviews/reviews";
 // Formato 3: composición corporal en cada día, datos de la evaluación inicial en
 // el plan y revisiones "auto". Son campos nuevos y opcionales: los formatos 1 y 2
 // se leen igual.
-export const BACKUP_FORMAT = 3;
+// Formato 4: comidas por entrada (`meals`), alimentos propios y recetas (`foods`),
+// ajustes (`settings`) y días sin pesaje (`weightKg` puede ser null). Los formatos
+// anteriores se leen igual: sus días conservan el total que ya tenían.
+export const BACKUP_FORMAT = 4;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 
@@ -48,19 +53,26 @@ export function parseBackup(text: string): Backup {
   for (const key of ["biometrics", "wellbeing", "workouts"]) {
     if (!Array.isArray(data[key])) throw new BackupError(`El respaldo está incompleto: falta "${key}".`);
   }
-  for (const key of ["habits", "routines", "reviews"]) {
+  for (const key of ["habits", "routines", "reviews", "foods", "meals"]) {
     if (data[key] !== undefined && !Array.isArray(data[key]))
       throw new BackupError(`El respaldo está dañado: "${key}" no tiene el formato esperado.`);
   }
   const biometricsOk = (data.biometrics as unknown[]).every(
     (entry) =>
-      isRecord(entry) && isDate(entry.date) && isNumber(entry.weightKg) && isNumber(entry.caloriesIn),
+      isRecord(entry) &&
+      isDate(entry.date) &&
+      (entry.weightKg === null || isNumber(entry.weightKg)) &&
+      isNumber(entry.caloriesIn),
   );
   const wellbeingOk = (data.wellbeing as unknown[]).every((entry) => isRecord(entry) && isDate(entry.date));
   if (!biometricsOk || !wellbeingOk)
     throw new BackupError("El respaldo está dañado: hay registros sin fecha o con valores inválidos.");
   if (!((data.reviews as unknown[] | undefined) ?? []).every(isWeeklyReview))
     throw new BackupError("El respaldo está dañado: el historial de revisiones no es válido.");
+  if (!((data.foods as unknown[] | undefined) ?? []).every(isFood))
+    throw new BackupError("El respaldo está dañado: hay alimentos con datos inválidos.");
+  if (!((data.meals as unknown[] | undefined) ?? []).every(isMealEntry))
+    throw new BackupError("El respaldo está dañado: hay comidas con datos inválidos.");
   if (data.profile !== undefined && !(isRecord(data.profile) && isNumber(data.profile.calorieTarget)))
     throw new BackupError("El respaldo está dañado: el plan nutricional no es válido.");
 
@@ -68,7 +80,12 @@ export function parseBackup(text: string): Backup {
     app: "dophamine",
     format: raw.format as number,
     exportedAt: typeof raw.exportedAt === "string" ? raw.exportedAt : "",
-    data: { ...(data as unknown as Store), reviews: (data.reviews as Store["reviews"]) ?? [] },
+    data: {
+      ...(data as unknown as Store),
+      reviews: (data.reviews as Store["reviews"]) ?? [],
+      foods: (data.foods as Store["foods"]) ?? [],
+      meals: (data.meals as Store["meals"]) ?? [],
+    },
   };
 }
 
@@ -81,7 +98,9 @@ export function describeBackup(backup: Backup): string {
     count(data.workouts.length, "entreno", "entrenos"),
     count(data.wellbeing.length, "chequeo de bienestar", "chequeos de bienestar"),
     count(data.routines?.length ?? 0, "rutina", "rutinas"),
-    count(data.reviews?.length ?? 0, "revisión semanal", "revisiones semanales"),
+    count(data.reviews?.length ?? 0, "revisión", "revisiones"),
+    count(data.meals?.length ?? 0, "comida registrada", "comidas registradas"),
+    count(data.foods?.length ?? 0, "alimento propio", "alimentos propios"),
   ];
   const date = backup.exportedAt ? ` del ${backup.exportedAt.slice(0, 10)}` : "";
   return `Respaldo${date}: ${parts.join(", ")}${data.profile ? " y tu plan" : ""}.`;

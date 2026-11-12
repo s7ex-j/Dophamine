@@ -1,10 +1,15 @@
 import { localDateKey } from "@/src/lib/dates";
 import { getDatabase } from "@/src/db/database";
 
+/**
+ * Un día: el pesaje y la composición corporal (opcionales) y el total de lo
+ * comido. El total lo escribe `nutrition.repository` al sumar las comidas.
+ * Puede haber días con comida y sin pesaje, y al revés.
+ */
 export type DailyBiometrics = {
   id: string;
   date: string;
-  weightKg: number;
+  weightKg: number | null;
   caloriesIn: number;
   proteinG: number;
   carbsG: number;
@@ -15,16 +20,14 @@ export type DailyBiometrics = {
   waterPct?: number | null;
   boneMassKg?: number | null;
 };
-export type BiometricsInput = Pick<
-  DailyBiometrics,
-  "weightKg" | "caloriesIn" | "proteinG" | "carbsG" | "fatsG"
-> &
+export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
+export type NutritionTotals = { kcal: number; proteinG: number; carbsG: number; fatsG: number };
 
 type Row = {
   id: string;
   date: string;
-  weight_kg: number;
+  weight_kg: number | null;
   calories_in: number;
   protein_g: number;
   carbs_g: number;
@@ -51,27 +54,39 @@ const fromRow = (row: Row): DailyBiometrics => ({
   boneMassKg: row.bone_mass_kg,
 });
 
-export async function saveDailyBiometrics(input: BiometricsInput, date = today()) {
+/** Guarda el pesaje y la composición de un día sin tocar lo comido. */
+export async function saveDayBody(input: BodyInput, date = today()) {
   const db = await getDatabase();
   await db.runAsync(
-    `INSERT INTO daily_biometrics
-      (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(date) DO UPDATE SET weight_kg = excluded.weight_kg,
-      calories_in = excluded.calories_in, protein_g = excluded.protein_g, carbs_g = excluded.carbs_g,
-      fats_g = excluded.fats_g, body_fat_pct = excluded.body_fat_pct, muscle_mass_kg = excluded.muscle_mass_kg,
-      water_pct = excluded.water_pct, bone_mass_kg = excluded.bone_mass_kg, updated_at = CURRENT_TIMESTAMP`,
+    `INSERT INTO daily_biometrics (id, date, weight_kg, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET weight_kg = excluded.weight_kg, body_fat_pct = excluded.body_fat_pct,
+      muscle_mass_kg = excluded.muscle_mass_kg, water_pct = excluded.water_pct,
+      bone_mass_kg = excluded.bone_mass_kg, updated_at = CURRENT_TIMESTAMP`,
     id(),
     date,
     input.weightKg,
-    input.caloriesIn,
-    input.proteinG,
-    input.carbsG,
-    input.fatsG,
     input.bodyFatPct ?? null,
     input.muscleMassKg ?? null,
     input.waterPct ?? null,
     input.boneMassKg ?? null,
+  );
+}
+
+/** Guarda el total de lo comido en un día sin tocar el pesaje. */
+export async function saveDayNutrition(totals: NutritionTotals, date = today()) {
+  const db = await getDatabase();
+  await db.runAsync(
+    `INSERT INTO daily_biometrics (id, date, calories_in, protein_g, carbs_g, fats_g)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET calories_in = excluded.calories_in, protein_g = excluded.protein_g,
+      carbs_g = excluded.carbs_g, fats_g = excluded.fats_g, updated_at = CURRENT_TIMESTAMP`,
+    id(),
+    date,
+    Math.round(totals.kcal),
+    totals.proteinG,
+    totals.carbsG,
+    totals.fatsG,
   );
 }
 

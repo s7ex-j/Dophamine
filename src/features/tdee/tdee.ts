@@ -26,15 +26,21 @@ const dayDifference = (from: string, to: string) =>
 
 export function analyzeMetabolism(records: DailyBiometrics[]): MetabolicAnalysis {
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
+  // La tendencia solo usa los días con pesaje; la ingesta cuenta todos los días con comida.
+  const weighed = ordered.flatMap((record) =>
+    typeof record.weightKg === "number" && record.weightKg > 0
+      ? [{ ...record, weightKg: record.weightKg }]
+      : [],
+  );
   let trend = 0;
-  const points = ordered.map((record, index) => {
+  const points = weighed.map((record, index) => {
     trend = index === 0 ? record.weightKg : trend + 0.28 * (record.weightKg - trend);
     return { date: record.date, weightKg: record.weightKg, trendKg: trend, caloriesIn: record.caloriesIn };
   });
   const intakeDays = ordered.filter((record) => record.caloriesIn > 0);
   const lastSeven = ordered.slice(-7);
   const nutritionDaysLast7 = lastSeven.filter((record) => record.caloriesIn > 0).length;
-  const weightDaysLast7 = lastSeven.filter((record) => record.weightKg > 0).length;
+  const weightDaysLast7 = lastSeven.filter((record) => (record.weightKg ?? 0) > 0).length;
   const spanDays = points.length > 1 ? dayDifference(points[0].date, points[points.length - 1].date) : 0;
   if (points.length < 14 || intakeDays.length < 10 || spanDays < 13)
     return {

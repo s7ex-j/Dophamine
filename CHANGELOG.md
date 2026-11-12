@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.9.0 - 2026-11-12
+
+Registro de alimentos por comida.
+
+- El Diario ahora se llena por comidas: desayuno, almuerzo, cena y snacks, cada una con sus entradas y su subtotal. El total del día es la suma de lo registrado.
+- Pantalla "Agregar comida" con cuatro formas de registrar: buscar un alimento, registro rápido (solo calorías y macros), crear un alimento propio con los valores de su etiqueta, o código de barras.
+- 230 alimentos básicos incluidos en la app, en español y con alimentos y platos peruanos comunes, para buscar sin conexión. La búsqueda ignora tildes y mayúsculas.
+- "El plato": se juntan varios alimentos y se guardan de una vez. El plato se puede guardar como receta, con su rendimiento en porciones.
+- Historial inteligente: al agregar, primero aparece lo que sueles comer en ese momento del día, con la última cantidad que usaste.
+- Copiar las comidas del día anterior con un toque.
+- Búsqueda en línea opcional (Más → Búsqueda de alimentos en línea, apagada por defecto): productos envasados y códigos de barras en Open Food Facts. Lo que se encuentra queda guardado para usarlo sin conexión. En el teléfono el código se lee con la cámara.
+- Días con comida y sin pesaje: el peso ya no es obligatorio para registrar el día. La tendencia usa solo los días con pesaje y la ingesta cuenta todos.
+- Los días registrados antes conservan su total; al agregarles una comida, ese total pasa a ser una entrada.
+- Entreno: calculadora de discos por lado (kg o lb) y 1RM estimado (Epley) en la progresión sugerida.
+- El respaldo pasa al formato 4 (comidas, alimentos propios, recetas y ajustes). Los formatos 1 a 3 se siguen leyendo.
+- Cambio de regla: "nada sale del dispositivo" admite una sola excepción, la búsqueda de alimentos en línea, que es opcional, está apagada por defecto y solo envía el texto buscado o el código de barras.
+- De 97 a 132 pruebas de dominio y de 11 a 14 flujos de navegador.
+- Los valores de los alimentos incluidos son promedios de referencia redondeados, escritos a mano a partir de tablas de composición de uso general; no se generaron desde un archivo oficial. Para un producto envasado manda la etiqueta.
+- No comprobado en teléfono: las tablas nuevas de SQLite (`foods`, `meal_entries`), la cámara para códigos de barras y el resto de lo nativo.
+
 ## 0.8.0 - 2026-11-11
 
 - Proyecto actualizado de Expo SDK 52 a SDK 58 (React Native 0.88, React 19, expo-router 58, TypeScript 6), para que abra en el Expo Go actual de la tienda.

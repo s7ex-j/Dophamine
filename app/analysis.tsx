@@ -144,7 +144,7 @@ export default function AnalysisScreen() {
               ? weeklyRecommendation(
                   analysis,
                   profile.goal,
-                  points.at(-1)?.trendKg ?? records[0]?.weightKg ?? 0,
+                  points.at(-1)?.trendKg ?? records.find((record) => record.weightKg)?.weightKg ?? 0,
                   unit,
                 )
               : "Configura tu plan para recibir una recomendación semanal."}

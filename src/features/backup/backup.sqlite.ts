@@ -1,4 +1,6 @@
 import type { Store } from "@/src/db/web-storage";
+import type { Food } from "@/src/features/nutrition/foods";
+import type { MealSlot } from "@/src/features/nutrition/meals";
 
 /**
  * Conversión entre las filas de SQLite (teléfono) y el `Store` del respaldo.
@@ -10,7 +12,7 @@ import type { Store } from "@/src/db/web-storage";
 export type BiometricsRow = {
   id: string;
   date: string;
-  weight_kg: number;
+  weight_kg: number | null;
   calories_in: number;
   protein_g: number;
   carbs_g: number;
@@ -50,7 +52,22 @@ export type ReviewRow = {
   suggested_calories: number;
   tdee: number | null;
 };
+export type FoodRow = { id: string; data: string; barcode: string | null };
+export type MealRow = {
+  id: string;
+  date: string;
+  slot: string;
+  food_id: string | null;
+  name: string;
+  grams: number | null;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fats_g: number;
+};
 export type Tables = {
+  foods: FoodRow[];
+  meals: MealRow[];
   biometrics: BiometricsRow[];
   wellbeing: WellbeingRow[];
   workouts: WorkoutRow[];
@@ -62,6 +79,7 @@ export type Tables = {
 
 export const PROFILE_KEY = "nutrition_profile";
 export const ROUTINE_KEY = "training_routine";
+export const ONLINE_KEY = "online_lookup";
 
 const parseJson = (text: string | undefined): unknown => {
   try {
@@ -141,6 +159,23 @@ export function storeFromTables(tables: Tables): Store {
       suggestedCalories: row.suggested_calories,
       tdee: row.tdee,
     })),
+    foods: tables.foods.flatMap((row) => {
+      const food = parseJson(row.data) as Food | undefined;
+      return food ? [food] : [];
+    }),
+    meals: tables.meals.map((row) => ({
+      id: row.id,
+      date: row.date,
+      slot: row.slot as MealSlot,
+      ...(row.food_id ? { foodId: row.food_id } : {}),
+      name: row.name,
+      ...(row.grams === null ? {} : { grams: row.grams }),
+      kcal: row.kcal,
+      proteinG: row.protein_g,
+      carbsG: row.carbs_g,
+      fatsG: row.fats_g,
+    })),
+    settings: { onlineLookup: tables.settings.find((row) => row.key === ONLINE_KEY)?.value === "on" },
   };
 }
 
@@ -148,6 +183,7 @@ export function tablesFromStore(store: Store): Tables {
   const settings: SettingRow[] = [];
   if (store.profile) settings.push({ key: PROFILE_KEY, value: JSON.stringify(store.profile) });
   if (store.routines?.[0]) settings.push({ key: ROUTINE_KEY, value: JSON.stringify(store.routines[0]) });
+  if (store.settings?.onlineLookup) settings.push({ key: ONLINE_KEY, value: "on" });
   // Dos registros del mismo día no caben en el teléfono (la fecha es única): gana el último.
   const byDate = new Map(store.biometrics.map((record) => [record.date, record]));
   const total = store.wellbeing.length;
@@ -208,6 +244,23 @@ export function tablesFromStore(store: Store): Tables {
       previous_calories: Math.round(review.previousCalories),
       suggested_calories: Math.round(review.suggestedCalories),
       tdee: review.tdee === null ? null : Math.round(review.tdee),
+    })),
+    foods: (store.foods ?? []).map((food) => ({
+      id: food.id,
+      data: JSON.stringify(food),
+      barcode: food.barcode ?? null,
+    })),
+    meals: (store.meals ?? []).map((entry) => ({
+      id: entry.id,
+      date: entry.date,
+      slot: entry.slot,
+      food_id: entry.foodId ?? null,
+      name: entry.name,
+      grams: entry.grams ?? null,
+      kcal: entry.kcal,
+      protein_g: entry.proteinG,
+      carbs_g: entry.carbsG,
+      fats_g: entry.fatsG,
     })),
   };
 }

@@ -1,21 +1,31 @@
 import { describe, expect, it } from "vitest";
 
 import { addDays, dayLabel } from "@/src/lib/dates";
-import { buildDailyInput, caloriesFromMacros, emptyForm, formCalories, formFromRecord } from "./dailyLog";
+import { buildBodyInput, emptyForm, formFromRecord, hasData } from "./dailyLog";
 
-describe("formulario del diario", () => {
+const record = {
+  id: "1",
+  date: "2026-11-10",
+  weightKg: 78,
+  caloriesIn: 2100,
+  proteinG: 150,
+  carbsG: 0,
+  fatsG: 70,
+  bodyFatPct: 18.5,
+  muscleMassKg: 36,
+  waterPct: null,
+  boneMassKg: null,
+};
+
+describe("peso y composición del diario", () => {
   it("pide el peso y rechaza valores imposibles", () => {
-    expect(buildDailyInput(emptyForm(), "kg").error).toContain("peso");
-    expect(buildDailyInput({ ...emptyForm(), weight: "500" }, "kg").error).toContain("rango");
+    expect(buildBodyInput(emptyForm(), "kg").error).toContain("peso");
+    expect(buildBodyInput({ ...emptyForm(), weight: "500" }, "kg").error).toContain("rango");
   });
 
   it("guarda solo el peso si no se llenó nada más", () => {
-    expect(buildDailyInput({ ...emptyForm(), weight: "78.4" }, "kg").input).toEqual({
+    expect(buildBodyInput({ ...emptyForm(), weight: "78.4" }, "kg").input).toEqual({
       weightKg: 78.4,
-      caloriesIn: 0,
-      proteinG: 0,
-      carbsG: 0,
-      fatsG: 0,
       bodyFatPct: null,
       muscleMassKg: null,
       waterPct: null,
@@ -23,17 +33,9 @@ describe("formulario del diario", () => {
     });
   });
 
-  it("calcula las calorías desde los macros cuando se dejan vacías", () => {
-    expect(caloriesFromMacros(150, 200, 60)).toBe(1940);
-    const form = { ...emptyForm(), weight: "78", protein: "150", carbs: "200", fats: "60" };
-    expect(formCalories(form)).toBe(1940);
-    expect(buildDailyInput(form, "kg").input?.caloriesIn).toBe(1940);
-    expect(buildDailyInput({ ...form, calories: "2000" }, "kg").input?.caloriesIn).toBe(2000);
-  });
-
   it("convierte a kg el peso y las masas escritas en libras; los porcentajes no cambian", () => {
-    const form = { ...emptyForm(), weight: "172", bodyFat: "18.5", muscle: "80", water: "58", bone: "7" };
-    const input = buildDailyInput(form, "lb").input;
+    const form = { weight: "172", bodyFat: "18.5", muscle: "80", water: "58", bone: "7" };
+    const input = buildBodyInput(form, "lb").input;
     expect(input?.weightKg).toBeCloseTo(78.02, 2);
     expect(input?.muscleMassKg).toBeCloseTo(36.29, 2);
     expect(input?.boneMassKg).toBeCloseTo(3.18, 2);
@@ -41,34 +43,17 @@ describe("formulario del diario", () => {
   });
 
   it("explica qué medida de composición está mal", () => {
-    expect(buildDailyInput({ ...emptyForm(), weight: "78", bodyFat: "95" }, "kg").error).toContain(
+    expect(buildBodyInput({ ...emptyForm(), weight: "78", bodyFat: "95" }, "kg").error).toContain(
       "el % de grasa",
     );
-    expect(buildDailyInput({ ...emptyForm(), weight: "78", muscle: "90" }, "kg").error).toContain(
+    expect(buildBodyInput({ ...emptyForm(), weight: "78", muscle: "90" }, "kg").error).toContain(
       "masa muscular",
     );
   });
 
   it("llena el formulario desde un registro guardado, en la unidad elegida", () => {
-    const record = {
-      id: "1",
-      date: "2026-11-10",
-      weightKg: 78,
-      caloriesIn: 2100,
-      proteinG: 150,
-      carbsG: 0,
-      fatsG: 70,
-      bodyFatPct: 18.5,
-      muscleMassKg: 36,
-      waterPct: null,
-      boneMassKg: null,
-    };
     expect(formFromRecord(record, "kg")).toEqual({
       weight: "78",
-      calories: "2100",
-      protein: "150",
-      carbs: "",
-      fats: "70",
       bodyFat: "18.5",
       muscle: "36",
       water: "",
@@ -77,6 +62,17 @@ describe("formulario del diario", () => {
     expect(formFromRecord(record, "lb").weight).toBe("172");
     expect(formFromRecord(record, "lb").muscle).toBe("79.4");
     expect(formFromRecord(null, "kg")).toEqual(emptyForm());
+  });
+
+  it("un día con comida y sin pesaje deja el peso vacío", () => {
+    expect(formFromRecord({ ...record, weightKg: null }, "kg").weight).toBe("");
+  });
+
+  it("distingue un día con datos de uno vacío", () => {
+    expect(hasData(record)).toBe(true);
+    expect(hasData({ ...record, weightKg: null, bodyFatPct: null })).toBe(true);
+    expect(hasData({ ...record, weightKg: null, caloriesIn: 0, proteinG: 0, bodyFatPct: null })).toBe(false);
+    expect(hasData(null)).toBe(false);
   });
 });
 

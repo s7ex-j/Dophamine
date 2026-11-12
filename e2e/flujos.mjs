@@ -180,35 +180,107 @@ async function main() {
     assert(biometrics.length === 1 && biometrics[0].weightKg === 80, "No se registró el primer pesaje.");
   });
 
-  await step("diario: guardar el día con macros y composición", async () => {
+  await step("diario: guardar peso y composición", async () => {
     await open("/biometrics");
     await waitText("Energía del día");
     await fill("Peso del día", 79.6);
-    await fill("Proteína", 150);
-    await fill("Carbos", 200);
-    await fill("Grasas", 60);
     await fill("Grasa (%)", 19.5);
     await fill("Músculo", 36);
-    await waitText("1940"); // 150·4 + 200·4 + 60·9, calculadas de los macros
-    await press("Guardar cambios");
-    await waitText("Guardado.");
+    await waitText("Masa magra: 64.1 kg");
+    await press("Guardar cambios de peso");
+    await waitText("Peso guardado.");
     const today = (await store()).biometrics.find((record) => record.date === dateKey());
-    assert(today?.weightKg === 79.6 && today.caloriesIn === 1940, "El día no se guardó con sus calorías.");
+    assert(today?.weightKg === 79.6, "El peso del día no se guardó.");
     assert(today.bodyFatPct === 19.5 && today.muscleMassKg === 36, "No se guardó la composición corporal.");
   });
 
-  await step("diario: registrar ayer y borrarlo", async () => {
+  await step("diario: buscar un alimento y un registro rápido en el almuerzo", async () => {
+    await press("Agregar a almuerzo");
+    await waitText("Buscar alimento");
+    await fill("Nombre o marca", "pechuga pollo cocida");
+    await waitText("Pechuga de pollo cocida, sin piel");
+    await press("Elegir");
+    await fill("Cantidad", 200);
+    await waitText("330 kcal · P 62");
+    await press("Añadir al plato");
+    await press("Rápido");
+    await fill("Calorías", 300);
+    await press("Añadir al plato");
+    await waitText("El plato · 630 kcal");
+    await press("Guardar en almuerzo");
+    await waitText("Almuerzo · 630 kcal");
+    const current = await store();
+    const today = current.biometrics.find((record) => record.date === dateKey());
+    assert(current.meals.length === 2, "No se guardaron las dos entradas del almuerzo.");
+    assert(
+      today.caloriesIn === 630 && today.proteinG === 62,
+      "El total del día no es la suma de las comidas.",
+    );
+    assert(today.weightKg === 79.6, "Guardar comidas borró el peso del día.");
+  });
+
+  await step("diario: alimento propio, receta y cena", async () => {
+    await press("Agregar a cena");
+    await press("Nuevo alimento");
+    await fill("Nombre", "Yogur e2e");
+    await fill("Gramos por porción", 200);
+    await fill("Proteína", 12);
+    await fill("Carbos", 10);
+    await fill("Grasas", 6);
+    await press("Guardar alimento");
+    await waitText("por 100 g: 71 kcal");
+    await press("Añadir al plato");
+    await waitText("El plato · 142 kcal");
+    await fill("Nombre de la receta", "Cena e2e");
+    await press("Guardar como receta");
+    await waitText('Receta "Cena e2e" guardada');
+    await press("Guardar en cena");
+    await waitText("Cena · 142 kcal");
+    const current = await store();
+    assert(current.foods.length === 2, "No se guardaron el alimento propio y la receta.");
+    assert(
+      current.foods.some((food) => food.source === "recipe" && food.servingG === 200),
+      "La receta no tiene su porción.",
+    );
+    const today = current.biometrics.find((record) => record.date === dateKey());
+    assert(today.caloriesIn === 772, "El total del día no incluye la cena.");
+    // Lo ya usado se sugiere al volver a agregar en el mismo momento del día.
+    await press("Agregar a cena");
+    await waitText("Habituales en cena");
+    await waitText("Yogur e2e");
+    await page.goBack();
+    await waitText("Energía del día");
+  });
+
+  await step("diario: quitar una comida recalcula el día", async () => {
+    await press("Borrar", 1); // la segunda entrada del almuerzo: el registro rápido
+    await press("Sí, borrar");
+    await waitText("Almuerzo · 330 kcal");
+    const today = (await store()).biometrics.find((record) => record.date === dateKey());
+    assert(today.caloriesIn === 472, "Quitar una comida no recalculó el total.");
+  });
+
+  await step("diario: un día solo con comida, sin pesaje, y borrarlo", async () => {
     await press("‹");
     await waitText("Ayer");
-    await fill("Peso del día", 80.2);
-    await press("Guardar el día");
-    await waitText("Guardado.");
-    assert((await store()).biometrics.length === 2, "No se guardó el día anterior.");
-    await press("Borrar");
+    await press("Agregar a snacks");
+    await press("Rápido");
+    await fill("Calorías", 250);
+    await press("Añadir al plato");
+    await press("Guardar en snacks");
+    await waitText("Snacks · 250 kcal");
+    let current = await store();
+    const yesterday = current.biometrics.find((record) => record.date === daysAgo(1));
+    assert(
+      yesterday && yesterday.weightKg === null && yesterday.caloriesIn === 250,
+      "No se guardó un día sin pesaje.",
+    );
+    await press("Borrar", 1); // el del día completo; el primero es el de la entrada
     await press("Sí, borrar");
-    await waitText("Registro borrado.");
-    const { biometrics } = await store();
-    assert(biometrics.length === 1 && biometrics[0].date === dateKey(), "No se borró el día anterior.");
+    await waitText("Día borrado.");
+    current = await store();
+    assert(!current.biometrics.some((record) => record.date === daysAgo(1)), "No se borró el día anterior.");
+    assert(!current.meals.some((entry) => entry.date === daysAgo(1)), "Quedaron comidas de un día borrado.");
   });
 
   await step("panel: marcar un hábito", async () => {
@@ -282,7 +354,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 3, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 4, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);

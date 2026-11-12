@@ -1,9 +1,11 @@
 import { localDateKey } from "@/src/lib/dates";
+import type { Food } from "@/src/features/nutrition/foods";
+import type { MealEntry } from "@/src/features/nutrition/meals";
 export type Store = {
   biometrics: Array<{
     id: string;
     date: string;
-    weightKg: number;
+    weightKg: number | null;
     caloriesIn: number;
     proteinG: number;
     carbsG?: number;
@@ -74,6 +76,11 @@ export type Store = {
     suggestedCalories: number;
     tdee: number | null;
   }>;
+  /** Alimentos propios, recetas y los traídos de internet. Los incluidos en la app no se guardan. */
+  foods?: Food[];
+  /** Lo comido, entrada por entrada. El total de cada día en `biometrics` es su suma. */
+  meals?: MealEntry[];
+  settings?: { onlineLookup?: boolean };
 };
 
 const key = "dophamine.web-store.v1";
