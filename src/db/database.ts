@@ -70,7 +70,7 @@ export async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS weekly_reviews (
       id TEXT PRIMARY KEY NOT NULL,
       date TEXT NOT NULL,
-      decision TEXT NOT NULL CHECK(decision IN ('accepted', 'dismissed')),
+      decision TEXT NOT NULL,
       previous_calories INTEGER NOT NULL,
       suggested_calories INTEGER NOT NULL,
       tdee INTEGER,
@@ -78,6 +78,27 @@ export async function initializeDatabase() {
     );
     CREATE INDEX IF NOT EXISTS weekly_reviews_date_idx ON weekly_reviews(date DESC);
   `);
+  // La 0.5.0 creó weekly_reviews con un CHECK que solo admitía dos decisiones.
+  // Si esa tabla existe, se reconstruye sin el CHECK para admitir "auto".
+  const reviewsTable = await db.getFirstAsync<{ sql: string }>(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'weekly_reviews'",
+  );
+  if (reviewsTable?.sql.includes("CHECK(decision"))
+    await db.execAsync(`
+      ALTER TABLE weekly_reviews RENAME TO weekly_reviews_old;
+      CREATE TABLE weekly_reviews (
+        id TEXT PRIMARY KEY NOT NULL,
+        date TEXT NOT NULL,
+        decision TEXT NOT NULL,
+        previous_calories INTEGER NOT NULL,
+        suggested_calories INTEGER NOT NULL,
+        tdee INTEGER,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      INSERT INTO weekly_reviews SELECT * FROM weekly_reviews_old;
+      DROP TABLE weekly_reviews_old;
+      CREATE INDEX IF NOT EXISTS weekly_reviews_date_idx ON weekly_reviews(date DESC);
+    `);
   try {
     await db.execAsync(
       "ALTER TABLE wellbeing_entries ADD COLUMN sleep_hours REAL CHECK(sleep_hours BETWEEN 0 AND 24)",

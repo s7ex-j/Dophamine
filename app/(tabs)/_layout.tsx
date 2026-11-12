@@ -3,6 +3,8 @@ import { Tabs } from "expo-router";
 
 import { AppTheme } from "@/src/theme";
 
+// Cinco pestañas visibles. Análisis, Hábitos y Bienestar siguen existiendo como
+// pantallas, pero se abren desde "Más" y "Estrategia" (href: null las saca de la barra).
 export default function TabsLayout() {
   return (
     <Tabs
@@ -18,15 +20,22 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Hoy",
+          title: "Panel",
           tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="biometrics"
         options={{
-          title: "Progreso",
-          tabBarIcon: ({ color, size }) => <Ionicons name="pulse-outline" size={size} color={color} />,
+          title: "Diario",
+          tabBarIcon: ({ color, size }) => <Ionicons name="create-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="strategy"
+        options={{
+          title: "Estrategia",
+          tabBarIcon: ({ color, size }) => <Ionicons name="compass-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -37,26 +46,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="analysis"
+        name="more"
         options={{
-          title: "Análisis",
-          tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} />,
+          title: "Más",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={color} />
+          ),
         }}
       />
-      <Tabs.Screen
-        name="habits"
-        options={{
-          title: "Hábitos",
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="wellbeing"
-        options={{
-          title: "Bienestar",
-          tabBarIcon: ({ color, size }) => <Ionicons name="heart-outline" size={size} color={color} />,
-        }}
-      />
+      <Tabs.Screen name="analysis" options={{ title: "Análisis", href: null }} />
+      <Tabs.Screen name="habits" options={{ title: "Hábitos", href: null }} />
+      <Tabs.Screen name="wellbeing" options={{ title: "Bienestar", href: null }} />
     </Tabs>
   );
 }

@@ -1,39 +1,40 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { Screen } from "@/src/components/ui";
-import { BackupCard } from "@/src/features/backup/BackupCard";
 import { buildWeek, heroMessageFor, nextStepFor } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import {
-  CheckInCard,
   DashboardHeader,
   EnergyCard,
   EnergyHero,
   HabitsQuickCard,
   MacrosCard,
   NextStepCard,
-  PlanSummaryCard,
   TodayMetrics,
   WeekCard,
   type NutritionView,
 } from "@/src/features/dashboard/DashboardSections";
+import {
+  CompositionCard,
+  ExpenditureCard,
+  GoalProgressCard,
+  TrendCard,
+} from "@/src/features/dashboard/ProgressSections";
 import { DEFAULT_HABITS, dateKey } from "@/src/features/habits/habits";
 import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
-import { PlanForm } from "@/src/features/profile/PlanForm";
-import { withCalorieTarget } from "@/src/features/profile/profile";
-import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
-import { saveWeeklyReview } from "@/src/features/reviews/reviews.repository";
+import { Onboarding } from "@/src/features/profile/PlanWizard";
+import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
+import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { AppTheme } from "@/src/theme";
 
-// Pantalla "Hoy": carga los datos, decide qué mostrar y compone las secciones.
-// El dibujo de cada sección está en DashboardSections y los cálculos en dashboard.ts.
+// Pestaña "Panel": el progreso de un vistazo. Carga los datos, decide qué mostrar
+// y compone las secciones; los cálculos están en el dominio.
 export default function DashboardScreen() {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
   const [entries, setEntries] = useState<HabitEntry[]>([]);
-  const [editingPlan, setEditingPlan] = useState(false);
   const [nutritionView, setNutritionView] = useState<NutritionView>("consumed");
 
   const load = useCallback(() => {
@@ -46,6 +47,7 @@ export default function DashboardScreen() {
   }, []);
   useEffect(load, [load]);
   useFocusEffect(load);
+  const controls = useCheckIn(snapshot, load);
 
   const todayHabit = (habitId: string) =>
     entries.find((entry) => entry.id === habitId && entry.date === dateKey())?.completed ?? false;
@@ -56,62 +58,35 @@ export default function DashboardScreen() {
   const todayScore = useMemo(() => DEFAULT_HABITS.filter((habit) => todayHabit(habit.id)).length, [entries]);
 
   if (!snapshot) return <Screen />;
-  if (!snapshot.profile || editingPlan)
-    return (
-      <PlanForm
-        profile={snapshot.profile}
-        weightKg={snapshot.weightKg}
-        onSaved={() => {
-          setEditingPlan(false);
-          load();
-        }}
-      />
-    );
+  if (!snapshot.profile) return <Onboarding profile={null} weightKg={snapshot.weightKg} onSaved={load} />;
 
   const profile = snapshot.profile;
-  const calories = snapshot.caloriesIn ?? 0;
+  const today = snapshot.recentRecords.find((record) => record.date === dateKey());
+  const calories = today?.caloriesIn ?? 0;
   const remainingCalories = Math.max(0, profile.calorieTarget - calories);
   const week = buildWeek(snapshot.recentRecords);
-  const nextStep = nextStepFor(Boolean(snapshot.caloriesIn), todayScore, DEFAULT_HABITS.length);
-  const openPlan = () => setEditingPlan(true);
-  const applyCheckIn = async () => {
-    if (!snapshot.checkIn?.suggestedCalories) return;
-    await saveNutritionProfile(withCalorieTarget(profile, snapshot.checkIn.suggestedCalories));
-    await saveWeeklyReview({
-      decision: "accepted",
-      previousCalories: profile.calorieTarget,
-      suggestedCalories: snapshot.checkIn.suggestedCalories,
-      tdee: snapshot.tdee,
-    });
-    load();
-    Alert.alert(
-      "Objetivo actualizado",
-      `Tu nuevo objetivo diario es ${snapshot.checkIn.suggestedCalories} kcal.`,
-    );
-  };
-
-  const dismissCheckIn = async () => {
-    if (!snapshot.checkIn?.suggestedCalories) return;
-    await saveWeeklyReview({
-      decision: "dismissed",
-      previousCalories: profile.calorieTarget,
-      suggestedCalories: snapshot.checkIn.suggestedCalories,
-      tdee: snapshot.tdee,
-    });
-    load();
+  const nextStep = nextStepFor(Boolean(today?.caloriesIn), todayScore, DEFAULT_HABITS.length);
+  const todaySnapshot: DashboardSnapshot = {
+    ...snapshot,
+    caloriesIn: today?.caloriesIn ?? null,
+    proteinG: today?.proteinG ?? null,
+    carbsG: today?.carbsG ?? null,
+    fatsG: today?.fatsG ?? null,
   };
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <DashboardHeader profile={profile} openPlan={openPlan} />
+        <DashboardHeader profile={profile} openPlan={() => router.push("/strategy")} />
         <EnergyHero
           profile={profile}
           remainingCalories={remainingCalories}
           todayScore={todayScore}
           week={week}
-          heroMessage={heroMessageFor(snapshot.caloriesIn, profile.calorieTarget)}
+          heroMessage={heroMessageFor(today?.caloriesIn ?? null, profile.calorieTarget)}
         />
+        <AutoAdjustBanner snapshot={snapshot} controls={controls} />
+        {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
         <NextStepCard nextStep={nextStep} openNextStep={() => router.push(nextStep.route)} />
         <EnergyCard
           profile={profile}
@@ -120,13 +95,14 @@ export default function DashboardScreen() {
           nutritionView={nutritionView}
           setNutritionView={setNutritionView}
         />
-        <TodayMetrics snapshot={snapshot} />
-        <CheckInCard snapshot={snapshot} applyCheckIn={applyCheckIn} dismissCheckIn={dismissCheckIn} />
+        <MacrosCard profile={profile} snapshot={todaySnapshot} nutritionView={nutritionView} />
+        <TodayMetrics snapshot={todaySnapshot} />
+        <GoalProgressCard profile={profile} trendKg={snapshot.trendKg} />
+        <TrendCard analysis={snapshot.analysis} profile={profile} />
+        <ExpenditureCard analysis={snapshot.analysis} />
+        <CompositionCard records={snapshot.records} profile={profile} />
         <WeekCard profile={profile} week={week} />
         <HabitsQuickCard todayHabit={todayHabit} toggleToday={toggleToday} />
-        <MacrosCard profile={profile} snapshot={snapshot} nutritionView={nutritionView} />
-        <PlanSummaryCard profile={profile} snapshot={snapshot} openPlan={openPlan} />
-        <BackupCard onRestored={load} />
       </ScrollView>
     </Screen>
   );

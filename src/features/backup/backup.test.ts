@@ -61,6 +61,21 @@ describe("respaldo", () => {
     expect(leido.data).toEqual({ ...store, reviews: [] });
   });
 
+  it("lee un respaldo del formato 2 y conserva la composición corporal del formato 3", () => {
+    const v2 = { app: "dophamine", format: 2, exportedAt: "", data: { ...store, reviews: [] } };
+    expect(parseBackup(JSON.stringify(v2)).data.biometrics).toEqual(store.biometrics);
+    const conComposicion = {
+      ...store,
+      biometrics: [
+        { ...store.biometrics[0], bodyFatPct: 18.5, muscleMassKg: 36, waterPct: 58, boneMassKg: 3.1 },
+      ],
+      profile: { ...store.profile, goalWeightKg: 74, pace: "moderate" as const, adjustMode: "auto" as const },
+    };
+    const leido = parseBackup(JSON.stringify(buildBackup(conComposicion)));
+    expect(leido.data.biometrics[0]).toMatchObject({ bodyFatPct: 18.5, boneMassKg: 3.1 });
+    expect(leido.data.profile).toMatchObject({ goalWeightKg: 74, adjustMode: "auto" });
+  });
+
   it("el formato 2 conserva el historial de revisiones y rechaza uno dañado", () => {
     const review = {
       id: "r1",
@@ -72,7 +87,7 @@ describe("respaldo", () => {
     };
     const backup = buildBackup({ ...store, reviews: [review] });
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(BACKUP_FORMAT).toBe(2);
+    expect(BACKUP_FORMAT).toBe(3);
     expect(parseBackup(JSON.stringify(backup)).data.reviews).toEqual([review]);
     const malo = { ...backup, data: { ...store, reviews: [{ ...review, decision: "quizá" }] } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/revisiones/);

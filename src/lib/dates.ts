@@ -10,3 +10,19 @@ export function localDateKey(date: Date = new Date()): string {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+/** Suma (o resta) días a una clave AAAA-MM-DD con el calendario local. */
+export function addDays(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return localDateKey(new Date(year, month - 1, day + days));
+}
+
+/** "Hoy", "Ayer" o una fecha corta ("mié 11 nov") para encabezados. */
+export function dayLabel(dateKey: string, today = localDateKey()): string {
+  if (dateKey === today) return "Hoy";
+  if (dateKey === addDays(today, -1)) return "Ayer";
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day)
+    .toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short" })
+    .replace(/[.,]/g, "");
+}

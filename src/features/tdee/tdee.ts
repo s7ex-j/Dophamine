@@ -1,6 +1,6 @@
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { convertWeight, type WeightUnit } from "@/src/lib/units";
-import { goalAdjustments, type NutritionProfile } from "@/src/features/profile/profile";
+import { checkInDaysOf, goalCalorieOffset, type NutritionProfile } from "@/src/features/profile/profile";
 
 export type TrendPoint = { date: string; weightKg: number; trendKg: number; caloriesIn: number };
 export type ExpenditureStatus = "building" | "updating" | "holding";
@@ -112,8 +112,11 @@ export function buildWeeklyCheckIn(analysis: MetabolicAnalysis, profile: Nutriti
       delta: null,
       message: "Aún no hay datos suficientes para una propuesta.",
     };
-  const desired = analysis.tdee + goalAdjustments[profile.goal];
-  const delta = Math.max(-100, Math.min(100, Math.round(desired - profile.calorieTarget)));
+  const currentKg = analysis.points.at(-1)?.trendKg ?? 0;
+  const desired = analysis.tdee + goalCalorieOffset(profile, currentKg);
+  // Revisar más seguido pide pasos más cortos: ±50 kcal cada 3 días, ±100 cada 7.
+  const step = checkInDaysOf(profile) === 3 ? 50 : 100;
+  const delta = Math.max(-step, Math.min(step, Math.round(desired - profile.calorieTarget)));
   const suggestedCalories = profile.calorieTarget + delta;
   return {
     status: "updating",
@@ -122,7 +125,7 @@ export function buildWeeklyCheckIn(analysis: MetabolicAnalysis, profile: Nutriti
     delta,
     message:
       Math.abs(delta) < 25
-        ? "Tu objetivo actual coincide con la estimación. Mantén el plan una semana más."
+        ? "Tu objetivo actual coincide con la estimación. Mantén el plan hasta la próxima revisión."
         : `La estimación sugiere ${delta > 0 ? "subir" : "bajar"} ${Math.abs(delta)} kcal por día para mantener el ritmo de tu objetivo.`,
   };
 }

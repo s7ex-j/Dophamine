@@ -33,7 +33,7 @@ export function nextStepFor(hasIntake: boolean, todayScore: number, totalHabits:
     return {
       title: "Registra tu día",
       detail: "Añade peso, energía y macros para activar tus señales.",
-      action: "Abrir registro",
+      action: "Abrir diario",
       route: "/biometrics",
     };
   if (todayScore < totalHabits)

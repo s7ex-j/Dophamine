@@ -1,11 +1,10 @@
 import { Pressable, Text, View } from "react-native";
 
-import { Button, Card, ChoiceControl, ListRow, Metric, ProgressBar } from "@/src/components/ui";
+import { Card, ChoiceControl, ListRow, Metric, ProgressBar } from "@/src/components/ui";
 import type { WeekDay, NextStep } from "@/src/features/dashboard/dashboard";
 import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { DEFAULT_HABITS } from "@/src/features/habits/habits";
 import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
-import { nextReviewDate } from "@/src/features/reviews/reviews";
 import { formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
@@ -21,7 +20,7 @@ export function DashboardHeader({ profile, openPlan }: { profile: NutritionProfi
         <Text style={AppTheme.eyebrow}>
           {goalLabels[profile.goal].toUpperCase()} · DÍA {new Date().getDate()}
         </Text>
-        <Text style={AppTheme.title}>Tu tablero.</Text>
+        <Text style={AppTheme.title}>Tu panel.</Text>
       </View>
       <Pressable onPress={openPlan} style={AppTheme.headerAction}>
         <Text style={AppTheme.headerActionText}>Plan</Text>
@@ -160,60 +159,6 @@ export function TodayMetrics({ snapshot }: { snapshot: DashboardSnapshot }) {
   );
 }
 
-export function CheckInCard({
-  snapshot,
-  applyCheckIn,
-  dismissCheckIn,
-}: {
-  snapshot: DashboardSnapshot;
-  applyCheckIn: () => void;
-  dismissCheckIn: () => void;
-}) {
-  const hasProposal = Boolean(
-    snapshot.checkIn?.ready && snapshot.checkIn.delta && Math.abs(snapshot.checkIn.delta) >= 25,
-  );
-  return snapshot.checkIn ? (
-    <Card title="Revisión semanal">
-      <View style={AppTheme.checkInTop}>
-        <View
-          style={[
-            AppTheme.statusPill,
-            snapshot.checkIn.status === "updating"
-              ? AppTheme.statusUpdating
-              : snapshot.checkIn.status === "holding"
-                ? AppTheme.statusHolding
-                : AppTheme.statusBuilding,
-          ]}
-        >
-          <Text style={AppTheme.statusPillText}>
-            {snapshot.checkIn.status === "updating"
-              ? "Actualizando"
-              : snapshot.checkIn.status === "holding"
-                ? "En pausa"
-                : "Construyendo"}
-          </Text>
-        </View>
-        <Text style={AppTheme.hint}>
-          {snapshot.analysis.nutritionDaysLast7}/7 ingestas · {snapshot.analysis.weightDaysLast7}/7 pesajes
-        </Text>
-      </View>
-      <Text style={AppTheme.body}>{snapshot.checkIn.message}</Text>
-      {hasProposal && snapshot.reviewDue ? (
-        <>
-          <Button title={`Aplicar ${snapshot.checkIn.suggestedCalories} kcal`} onPress={applyCheckIn} />
-          <Button title="Mantener mi objetivo actual" variant="secondary" onPress={dismissCheckIn} />
-        </>
-      ) : null}
-      {hasProposal && !snapshot.reviewDue ? (
-        <Text style={AppTheme.hint}>
-          Ya respondiste la revisión de esta semana. La próxima propuesta llega el{" "}
-          {nextReviewDate(snapshot.lastReview)}.
-        </Text>
-      ) : null}
-    </Card>
-  ) : null;
-}
-
 export function WeekCard({ profile, week }: { profile: NutritionProfile; week: WeekDay[] }) {
   return (
     <Card title="Semana en una mirada">
@@ -318,36 +263,6 @@ export function MacrosCard({
         value={((snapshot.fatsG ?? 0) / profile.fatsTarget) * 100}
         color={AppTheme.colors.accent}
       />
-    </Card>
-  );
-}
-
-export function PlanSummaryCard({
-  profile,
-  snapshot,
-  openPlan,
-}: {
-  profile: NutritionProfile;
-  snapshot: DashboardSnapshot;
-  openPlan: () => void;
-}) {
-  return (
-    <Card title="Plan y tendencia">
-      <ListRow
-        title="TDEE observado"
-        detail={
-          snapshot.tdee
-            ? "Se ajusta con tu historial de peso e ingesta"
-            : "Se activará al reunir registros suficientes"
-        }
-        value={snapshot.tdee ? `${snapshot.tdee} kcal` : "En espera"}
-      />
-      <ListRow
-        title="Objetivo actual"
-        detail={`${profile.proteinTarget} g proteína · ${profile.carbsTarget} g carbohidratos · ${profile.fatsTarget} g grasas`}
-        value={`${profile.calorieTarget} kcal`}
-      />
-      <Button title="Editar plan" onPress={openPlan} variant="secondary" />
     </Card>
   );
 }
