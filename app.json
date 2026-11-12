@@ -3,25 +3,35 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
       "expo-sqlite",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-sharing",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,
       "baseUrl": "/Dophamine/app"
     },
-    "web": { "output": "static", "bundler": "metro" },
+    "web": {
+      "output": "static",
+      "bundler": "metro"
+    },
     "android": {
       "package": "com.s7ex.dophamine",
       "versionCode": 1,
-      "permissions": ["android.permission.VIBRATE"]
+      "permissions": [
+        "android.permission.VIBRATE"
+      ]
     },
-    "ios": { "bundleIdentifier": "com.s7ex.dophamine", "buildNumber": "1" }
+    "ios": {
+      "bundleIdentifier": "com.s7ex.dophamine",
+      "buildNumber": "1"
+    }
   }
 }

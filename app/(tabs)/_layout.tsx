@@ -4,10 +4,16 @@ import { Tabs } from "expo-router";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
-// En la web (visor) solo quedan las pestañas que muestran progreso: Panel,
-// Estrategia, Análisis y Más.
-// Cinco pestañas visibles en el teléfono. Análisis, Hábitos y Bienestar siguen existiendo como
-// pantallas, pero se abren desde "Más" y "Estrategia" (href: null las saca de la barra).
+// Los colores de la barra vienen del tema y son textos ("#167B5B").
+const tabIcon =
+  (name: keyof typeof Ionicons.glyphMap) =>
+  ({ color, size }: { color?: unknown; size: number }) => (
+    <Ionicons name={name} size={size} color={typeof color === "string" ? color : undefined} />
+  );
+
+// Cinco pestañas en el teléfono. En la web (visor de solo lectura) se quitan las
+// dos de registro, Diario y Entreno. Análisis, Hábitos y Bienestar no son pestañas:
+// son pantallas que se abren encima desde "Más" y "Estrategia" (ver app/_layout.tsx).
 export default function TabsLayout() {
   return (
     <Tabs
@@ -24,7 +30,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Panel",
-          tabBarIcon: ({ color, size }) => <Ionicons name="grid-outline" size={size} color={color} />,
+          tabBarIcon: tabIcon("grid-outline"),
         }}
       />
       <Tabs.Screen
@@ -32,14 +38,14 @@ export default function TabsLayout() {
         options={{
           href: VIEWER ? null : undefined,
           title: "Diario",
-          tabBarIcon: ({ color, size }) => <Ionicons name="create-outline" size={size} color={color} />,
+          tabBarIcon: tabIcon("create-outline"),
         }}
       />
       <Tabs.Screen
         name="strategy"
         options={{
           title: "Estrategia",
-          tabBarIcon: ({ color, size }) => <Ionicons name="compass-outline" size={size} color={color} />,
+          tabBarIcon: tabIcon("compass-outline"),
         }}
       />
       <Tabs.Screen
@@ -47,28 +53,16 @@ export default function TabsLayout() {
         options={{
           href: VIEWER ? null : undefined,
           title: "Entreno",
-          tabBarIcon: ({ color, size }) => <Ionicons name="barbell-outline" size={size} color={color} />,
+          tabBarIcon: tabIcon("barbell-outline"),
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: "Más",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="ellipsis-horizontal-circle-outline" size={size} color={color} />
-          ),
+          tabBarIcon: tabIcon("ellipsis-horizontal-circle-outline"),
         }}
       />
-      <Tabs.Screen
-        name="analysis"
-        options={{
-          title: "Análisis",
-          href: VIEWER ? undefined : null,
-          tabBarIcon: ({ color, size }) => <Ionicons name="analytics-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen name="habits" options={{ title: "Hábitos", href: null }} />
-      <Tabs.Screen name="wellbeing" options={{ title: "Bienestar", href: null }} />
     </Tabs>
   );
 }

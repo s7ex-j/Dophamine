@@ -1,5 +1,5 @@
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
 import { getDatabase } from "@/src/db/database";
@@ -34,10 +34,12 @@ export async function downloadBackup(): Promise<void> {
     settings: await db.getAllAsync<SettingRow>("SELECT key, value FROM app_settings"),
     reviews: await db.getAllAsync<ReviewRow>("SELECT * FROM weekly_reviews ORDER BY date DESC, rowid DESC"),
   });
-  const uri = `${FileSystem.cacheDirectory}${backupFileName()}`;
-  await FileSystem.writeAsStringAsync(uri, JSON.stringify(buildBackup(store), null, 2));
+  const file = new File(Paths.cache, backupFileName());
+  if (file.exists) file.delete();
+  file.create();
+  file.write(JSON.stringify(buildBackup(store), null, 2));
   if (!(await Sharing.isAvailableAsync())) throw new Error("Este dispositivo no permite compartir archivos.");
-  await Sharing.shareAsync(uri, {
+  await Sharing.shareAsync(file.uri, {
     mimeType: "application/json",
     dialogTitle: "Guardar respaldo de Dophamine",
   });
@@ -50,7 +52,7 @@ export async function pickBackupFile(): Promise<string | null> {
     copyToCacheDirectory: true,
   });
   if (result.canceled || !result.assets?.[0]) return null;
-  return FileSystem.readAsStringAsync(result.assets[0].uri);
+  return new File(result.assets[0].uri).text();
 }
 
 /** Reemplaza todos los datos por los del respaldo, en una sola transacción: o entra todo o no cambia nada. */

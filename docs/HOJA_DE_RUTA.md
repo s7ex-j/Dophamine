@@ -6,7 +6,7 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.7.0)
+## Estado al 11 de noviembre de 2026 (versión 0.8.0, Expo SDK 58)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
@@ -58,7 +58,7 @@ anteriores: el flujo e2e de "borrar un día" entra con el paso 3, y la comprobac
 
 | # | Quién | Paso | Cómo se comprueba |
 |---|---|---|---|
-| 13 | J | Abrir la 0.7.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático, y Más → Compartir respaldo → cargarlo en la web → restaurarlo en el teléfono. | La app abre con los datos anteriores; lo que falle se anota con captura. |
+| 13 | J | Abrir la 0.8.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático, y Más → Compartir respaldo → cargarlo en la web → restaurarlo en el teléfono. | La app abre con los datos anteriores; lo que falle se anota con captura. |
 | 14 | C ✔ | Respaldo en el teléfono (es el paso 7): exportar e importar el archivo con `BACKUP_FORMAT = 3`. | Un respaldo del teléfono se abre en la web y al revés. |
 | 15 | C ✔ | Web como visor: al abrirla sin datos pide un respaldo del teléfono y muestra Panel, Estrategia y Análisis en solo lectura. | La web no permite registrar; todo lo que muestra sale del archivo. |
 | 16 | C | Registro por comida sin base de alimentos: entradas con nombre, calorías y macros por momento del día, alimentos propios y comidas guardadas. Permitir días con comida y sin pesaje. Necesita diseño en `docs/` (cambia `analyzeMetabolism` y el respaldo). | Pruebas de dominio; el total del día sale de las entradas. |
