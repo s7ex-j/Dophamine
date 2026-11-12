@@ -1,4 +1,5 @@
 import { getDatabase } from "@/src/db/database";
+import { progressionHintFor, type ProgressionHint } from "./progression";
 import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
 
 export type Workout = { id: string; name: string; completedAt: string; exerciseCount: number };
@@ -8,7 +9,7 @@ export type SessionLog = {
   reps: number | null;
   rir: number | null;
 };
-export type ProgressionHint = { exerciseName: string; detail: string; action: string };
+export type { ProgressionHint };
 const SETTINGS_KEY = "training_routine";
 const id = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -88,6 +89,14 @@ export async function getRecentWorkouts(): Promise<Workout[]> {
   }));
 }
 
+export async function deleteWorkoutSession(workoutId: string) {
+  const db = await getDatabase();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync("DELETE FROM exercise_sets WHERE workout_id = ?", workoutId);
+    await db.runAsync("DELETE FROM workouts WHERE id = ?", workoutId);
+  });
+}
+
 export async function getProgressionHints(routine: Routine): Promise<ProgressionHint[]> {
   const db = await getDatabase();
   const hints: ProgressionHint[] = [];
@@ -96,17 +105,11 @@ export async function getProgressionHints(routine: Routine): Promise<Progression
       "SELECT load_kg, reps, rpe FROM exercise_sets WHERE exercise_name = ? AND load_kg IS NOT NULL ORDER BY rowid DESC LIMIT 1",
       exercise.name,
     );
-    if (!row?.load_kg || !row.reps) continue;
-    const upper = Number(exercise.reps.split("–").at(-1)?.replace(/\D/g, "")) || 12;
-    const rir = row.rpe === null ? null : 10 - row.rpe;
-    hints.push({
-      exerciseName: exercise.name,
-      detail: `${row.load_kg} kg × ${row.reps}${rir === null ? "" : ` · RIR ${rir}`}`,
-      action:
-        row.reps >= upper && (rir === null || rir >= exercise.rir)
-          ? "Prueba subir la carga un paso"
-          : "Repite y busca mejorar una repetición",
-    });
+    const hint = progressionHintFor(
+      exercise,
+      row ? { loadKg: row.load_kg, reps: row.reps, rir: row.rpe === null ? null : 10 - row.rpe } : null,
+    );
+    if (hint) hints.push(hint);
   }
   return hints;
 }

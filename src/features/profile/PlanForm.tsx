@@ -8,12 +8,14 @@ import {
   activityLabels,
   buildNutritionProfile,
   goalLabels,
+  weightUnitOf,
   type ActivityLevel,
   type Goal,
   type NutritionProfile,
   type Sex,
 } from "@/src/features/profile/profile";
 import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
+import { toKg, WEIGHT_UNIT_OPTIONS, weightValue, type WeightUnit } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 /**
@@ -32,16 +34,23 @@ export function PlanForm({
 }) {
   const [age, setAge] = useState(profile ? String(profile.age) : "");
   const [height, setHeight] = useState(profile ? String(profile.heightCm) : "");
-  const [weight, setWeight] = useState(profile && weightKg ? String(weightKg) : "");
+  const [unit, setUnit] = useState<WeightUnit>(weightUnitOf(profile));
+  const [weight, setWeight] = useState(profile && weightKg ? weightValue(weightKg, unit) : "");
   const [sex, setSex] = useState<Sex>(profile?.sex ?? "male");
   const [activity, setActivity] = useState<ActivityLevel>(profile?.activity ?? "moderate");
   const [goal, setGoal] = useState<Goal>(profile?.goal ?? "gain");
 
+  // Al cambiar de unidad se convierte lo ya escrito, para no guardar 170 lb como 170 kg.
+  const changeUnit = (next: WeightUnit) => {
+    if (Number(weight) > 0) setWeight(weightValue(toKg(Number(weight), unit), next));
+    setUnit(next);
+  };
+
   const savePlan = async () => {
-    const values = { age: Number(age), heightCm: Number(height), weightKg: Number(weight) };
+    const values = { age: Number(age), heightCm: Number(height), weightKg: toKg(Number(weight), unit) };
     if (!isValidPlanInput(values))
       return Alert.alert("Revisa tus datos", "Introduce edad, altura y peso dentro de rangos razonables.");
-    await saveNutritionProfile(buildNutritionProfile({ ...values, sex, activity, goal }));
+    await saveNutritionProfile(buildNutritionProfile({ ...values, sex, activity, goal, weightUnit: unit }));
     if (weightKg === null)
       await saveDailyBiometrics({
         weightKg: values.weightKg,
@@ -61,8 +70,10 @@ export function PlanForm({
         <Card title="Datos de referencia">
           <Input label="Edad" value={age} onChangeText={setAge} keyboardType="number-pad" />
           <Input label="Altura (cm)" value={height} onChangeText={setHeight} keyboardType="number-pad" />
+          <Text style={AppTheme.label}>Unidad de peso</Text>
+          <ChoiceControl value={unit} onChange={changeUnit} options={WEIGHT_UNIT_OPTIONS} />
           <Input
-            label="Peso actual (kg)"
+            label={`Peso actual (${unit})`}
             value={weight}
             onChangeText={setWeight}
             keyboardType="decimal-pad"

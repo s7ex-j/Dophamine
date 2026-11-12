@@ -34,6 +34,11 @@ export async function saveDailyBiometrics(input: BiometricsInput, date = today()
   );
 }
 
+export async function deleteDailyBiometrics(date: string) {
+  const db = await getDatabase();
+  await db.runAsync("DELETE FROM daily_biometrics WHERE date = ?", date);
+}
+
 export async function getLatestBiometrics(): Promise<DailyBiometrics | null> {
   const db = await getDatabase();
   const row = await db.getFirstAsync<{

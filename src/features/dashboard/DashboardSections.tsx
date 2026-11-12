@@ -4,7 +4,9 @@ import { Button, Card, ChoiceControl, ListRow, Metric, ProgressBar } from "@/src
 import type { WeekDay, NextStep } from "@/src/features/dashboard/dashboard";
 import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { DEFAULT_HABITS } from "@/src/features/habits/habits";
-import { goalLabels, type NutritionProfile } from "@/src/features/profile/profile";
+import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
+import { nextReviewDate } from "@/src/features/reviews/reviews";
+import { formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 // Las secciones del tablero "Hoy". Cada una recibe solo lo que dibuja; los
@@ -147,7 +149,10 @@ export function TodayMetrics({ snapshot }: { snapshot: DashboardSnapshot }) {
   const protein = snapshot.proteinG ?? 0;
   return (
     <View style={AppTheme.metricGrid}>
-      <Metric label="Peso" value={snapshot.weightKg ? `${snapshot.weightKg} kg` : "--"} />
+      <Metric
+        label="Peso"
+        value={snapshot.weightKg ? formatWeight(snapshot.weightKg, weightUnitOf(snapshot.profile)) : "--"}
+      />
       <Metric label="Proteína" value={`${protein} g`} />
       <Metric label="TDEE" value={snapshot.tdee ? `${snapshot.tdee}` : "--"} />
       <Metric label="Ánimo" value={snapshot.mood ? `${snapshot.mood}/5` : "--"} />
@@ -158,10 +163,15 @@ export function TodayMetrics({ snapshot }: { snapshot: DashboardSnapshot }) {
 export function CheckInCard({
   snapshot,
   applyCheckIn,
+  dismissCheckIn,
 }: {
   snapshot: DashboardSnapshot;
   applyCheckIn: () => void;
+  dismissCheckIn: () => void;
 }) {
+  const hasProposal = Boolean(
+    snapshot.checkIn?.ready && snapshot.checkIn.delta && Math.abs(snapshot.checkIn.delta) >= 25,
+  );
   return snapshot.checkIn ? (
     <Card title="Revisión semanal">
       <View style={AppTheme.checkInTop}>
@@ -188,8 +198,17 @@ export function CheckInCard({
         </Text>
       </View>
       <Text style={AppTheme.body}>{snapshot.checkIn.message}</Text>
-      {snapshot.checkIn.ready && snapshot.checkIn.delta && Math.abs(snapshot.checkIn.delta) >= 25 ? (
-        <Button title={`Aplicar ${snapshot.checkIn.suggestedCalories} kcal`} onPress={applyCheckIn} />
+      {hasProposal && snapshot.reviewDue ? (
+        <>
+          <Button title={`Aplicar ${snapshot.checkIn.suggestedCalories} kcal`} onPress={applyCheckIn} />
+          <Button title="Mantener mi objetivo actual" variant="secondary" onPress={dismissCheckIn} />
+        </>
+      ) : null}
+      {hasProposal && !snapshot.reviewDue ? (
+        <Text style={AppTheme.hint}>
+          Ya respondiste la revisión de esta semana. La próxima propuesta llega el{" "}
+          {nextReviewDate(snapshot.lastReview)}.
+        </Text>
       ) : null}
     </Card>
   ) : null;

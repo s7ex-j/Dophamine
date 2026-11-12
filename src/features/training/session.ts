@@ -1,3 +1,4 @@
+import { toKg, type WeightUnit } from "@/src/lib/units";
 import type { ExercisePlan, Routine } from "@/src/features/training/training.plans";
 import type { SessionLog } from "@/src/features/training/training.repository";
 
@@ -22,11 +23,15 @@ export function withLogField(
   return { ...draft, [exercise.name]: { ...entry, [field]: value } };
 }
 
-/** Convierte el borrador en los registros que se guardan. Un campo vacío o inválido queda en null. */
-export function buildSessionLogs(routine: Routine, draft: LogDraft): SessionLog[] {
+/**
+ * Convierte el borrador en los registros que se guardan. Un campo vacío o inválido queda en null.
+ * La carga se escribe en la unidad elegida y se guarda en kilogramos.
+ */
+export function buildSessionLogs(routine: Routine, draft: LogDraft, unit: WeightUnit = "kg"): SessionLog[] {
+  const load = (text: string | undefined) => (Number(text) > 0 ? toKg(Number(text), unit) : null);
   return routine.exercises.map((exercise) => ({
     exerciseName: exercise.name,
-    loadKg: Number(draft[exercise.name]?.load) || null,
+    loadKg: load(draft[exercise.name]?.load),
     reps: Number(draft[exercise.name]?.reps) || null,
     rir: Number(draft[exercise.name]?.rir) || null,
   }));

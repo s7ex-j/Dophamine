@@ -1,5 +1,6 @@
 import { localDateKey } from "@/src/lib/dates";
 import type { Store } from "@/src/db/web-storage";
+import { isWeeklyReview } from "@/src/features/reviews/reviews";
 
 /**
  * Respaldo de los datos en un archivo JSON.
@@ -8,7 +9,9 @@ import type { Store } from "@/src/db/web-storage";
  * es trabajo de `backup.repository` (una variante por plataforma).
  */
 
-export const BACKUP_FORMAT = 1;
+// Formato 2: agrega `reviews` (historial de revisiones semanales). Un respaldo
+// de formato 1 se sigue leyendo; simplemente no trae revisiones.
+export const BACKUP_FORMAT = 2;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 
@@ -42,7 +45,7 @@ export function parseBackup(text: string): Backup {
   for (const key of ["biometrics", "wellbeing", "workouts"]) {
     if (!Array.isArray(data[key])) throw new BackupError(`El respaldo está incompleto: falta "${key}".`);
   }
-  for (const key of ["habits", "routines"]) {
+  for (const key of ["habits", "routines", "reviews"]) {
     if (data[key] !== undefined && !Array.isArray(data[key]))
       throw new BackupError(`El respaldo está dañado: "${key}" no tiene el formato esperado.`);
   }
@@ -53,6 +56,8 @@ export function parseBackup(text: string): Backup {
   const wellbeingOk = (data.wellbeing as unknown[]).every((entry) => isRecord(entry) && isDate(entry.date));
   if (!biometricsOk || !wellbeingOk)
     throw new BackupError("El respaldo está dañado: hay registros sin fecha o con valores inválidos.");
+  if (!((data.reviews as unknown[] | undefined) ?? []).every(isWeeklyReview))
+    throw new BackupError("El respaldo está dañado: el historial de revisiones no es válido.");
   if (data.profile !== undefined && !(isRecord(data.profile) && isNumber(data.profile.calorieTarget)))
     throw new BackupError("El respaldo está dañado: el plan nutricional no es válido.");
 
@@ -60,7 +65,7 @@ export function parseBackup(text: string): Backup {
     app: "dophamine",
     format: raw.format as number,
     exportedAt: typeof raw.exportedAt === "string" ? raw.exportedAt : "",
-    data: data as unknown as Store,
+    data: { ...(data as unknown as Store), reviews: (data.reviews as Store["reviews"]) ?? [] },
   };
 }
 
@@ -73,6 +78,7 @@ export function describeBackup(backup: Backup): string {
     count(data.workouts.length, "entreno", "entrenos"),
     count(data.wellbeing.length, "chequeo de bienestar", "chequeos de bienestar"),
     count(data.routines?.length ?? 0, "rutina", "rutinas"),
+    count(data.reviews?.length ?? 0, "revisión semanal", "revisiones semanales"),
   ];
   const date = backup.exportedAt ? ` del ${backup.exportedAt.slice(0, 10)}` : "";
   return `Respaldo${date}: ${parts.join(", ")}${data.profile ? " y tu plan" : ""}.`;

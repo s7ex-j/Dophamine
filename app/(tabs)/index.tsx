@@ -24,6 +24,7 @@ import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/ha
 import { PlanForm } from "@/src/features/profile/PlanForm";
 import { withCalorieTarget } from "@/src/features/profile/profile";
 import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
+import { saveWeeklyReview } from "@/src/features/reviews/reviews.repository";
 import { AppTheme } from "@/src/theme";
 
 // Pantalla "Hoy": carga los datos, decide qué mostrar y compone las secciones.
@@ -76,11 +77,28 @@ export default function DashboardScreen() {
   const applyCheckIn = async () => {
     if (!snapshot.checkIn?.suggestedCalories) return;
     await saveNutritionProfile(withCalorieTarget(profile, snapshot.checkIn.suggestedCalories));
+    await saveWeeklyReview({
+      decision: "accepted",
+      previousCalories: profile.calorieTarget,
+      suggestedCalories: snapshot.checkIn.suggestedCalories,
+      tdee: snapshot.tdee,
+    });
     load();
     Alert.alert(
       "Objetivo actualizado",
       `Tu nuevo objetivo diario es ${snapshot.checkIn.suggestedCalories} kcal.`,
     );
+  };
+
+  const dismissCheckIn = async () => {
+    if (!snapshot.checkIn?.suggestedCalories) return;
+    await saveWeeklyReview({
+      decision: "dismissed",
+      previousCalories: profile.calorieTarget,
+      suggestedCalories: snapshot.checkIn.suggestedCalories,
+      tdee: snapshot.tdee,
+    });
+    load();
   };
 
   return (
@@ -103,7 +121,7 @@ export default function DashboardScreen() {
           setNutritionView={setNutritionView}
         />
         <TodayMetrics snapshot={snapshot} />
-        <CheckInCard snapshot={snapshot} applyCheckIn={applyCheckIn} />
+        <CheckInCard snapshot={snapshot} applyCheckIn={applyCheckIn} dismissCheckIn={dismissCheckIn} />
         <WeekCard profile={profile} week={week} />
         <HabitsQuickCard todayHabit={todayHabit} toggleToday={toggleToday} />
         <MacrosCard profile={profile} snapshot={snapshot} nutritionView={nutritionView} />
