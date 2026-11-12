@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 - 2026-11-11
+
+- Proyecto actualizado de Expo SDK 52 a SDK 58 (React Native 0.88, React 19, expo-router 58, TypeScript 6), para que abra en el Expo Go actual de la tienda.
+- Hábitos, Bienestar y Análisis dejan de ser pestañas ocultas y pasan a ser pantallas que se abren encima con botón de volver. En SDK 58 una pestaña oculta ya no se puede abrir, así que desde "Más" no habrían funcionado.
+- El respaldo en el teléfono usa la API nueva de archivos de Expo (`File`, `Paths`).
+- En el visor web, Análisis se abre desde Más y Estrategia en lugar de ser una pestaña.
+- La prueba de navegador de Bienestar ahora llega desde Más, como en el teléfono.
+- Comprobado: tipos, 97 pruebas de dominio, 11 flujos de navegador, `expo-doctor` 20/20 y el empaquetado de JavaScript para Android (`expo export --platform android`). No comprobado: la app ejecutándose en un teléfono.
+
 ## 0.7.0 - 2026-11-11
 
 - Respaldo en el teléfono: "Compartir respaldo" exporta todos los datos a un archivo JSON con la hoja de compartir del sistema, y "Restaurar desde un archivo" los reemplaza dentro de una transacción. Es el mismo formato 3 de la web, así que el archivo pasa de una plataforma a la otra.

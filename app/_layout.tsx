@@ -25,8 +25,22 @@ export default function RootLayout() {
     <>
       <StatusBar style="dark" />
       <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: AppTheme.colors.background } }}
-      />
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: AppTheme.colors.background },
+          headerStyle: { backgroundColor: AppTheme.colors.background },
+          headerShadowVisible: false,
+          headerTintColor: AppTheme.colors.accent,
+          headerTitleStyle: { color: AppTheme.colors.text, fontWeight: "700" },
+          headerBackTitle: "Atrás",
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        {/* Pantallas que se abren encima de las pestañas, con botón de volver. */}
+        <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
+        <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
+        <Stack.Screen name="wellbeing" options={{ headerShown: true, title: "Bienestar" }} />
+      </Stack>
     </>
   );
 }

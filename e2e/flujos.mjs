@@ -112,7 +112,12 @@ async function main() {
       index,
     );
     const element = handle.asElement();
-    assert(element, `No hay ningún control con el texto "${text}".`);
+    if (!element) {
+      const visible = await page.evaluate(() =>
+        document.body.innerText.split("\n").filter(Boolean).join(" | "),
+      );
+      throw new Error(`No hay ningún control con el texto "${text}". En pantalla: ${visible.slice(0, 900)}`);
+    }
     await element.evaluate((node) => node.scrollIntoView({ block: "center" }));
     await element.click();
     await new Promise((done) => setTimeout(done, 150));
@@ -247,8 +252,11 @@ async function main() {
     assert(log.loadKg === 60 && log.reps === 8, "La sesión no guardó carga y repeticiones.");
   });
 
-  await step("bienestar: guardar un chequeo", async () => {
-    await open("/wellbeing");
+  await step("más → bienestar: guardar un chequeo", async () => {
+    // Se llega desde Más, como en el teléfono: Bienestar no es una pestaña.
+    await open("/more");
+    await press("Bienestar");
+    await waitText("Chequeo de hoy");
     await press("Guardar chequeo");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).wellbeing.length === 1,
@@ -427,7 +435,9 @@ async function main() {
       "El visor cambió el objetivo calórico.",
     );
     await viewer.goto(`${base}/biometrics`, { waitUntil: "networkidle0" });
-    await waitFor("se usa en el teléfono");
+    // La pantalla de registro no existe en el visor: o avisa o vuelve al Panel.
+    await viewer.waitForFunction(() => document.body.innerText.trim().length > 20);
+    assert(!(await text()).includes("Guardar"), "El visor permite abrir el Diario para registrar.");
     await context.close();
   });
 

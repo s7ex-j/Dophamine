@@ -1,7 +1,7 @@
 # CLAUDE.md — Dophamine
 
 App de seguimiento personal (peso, energía, hábitos, entrenamiento, bienestar) sin cuentas ni servidor.
-Expo 52 + React Native 0.76 + expo-router; web con react-native-web. Repo público de Jharol (`s7ex-j`).
+Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo público de Jharol (`s7ex-j`).
 
 ## Qué hacer al empezar
 
@@ -15,7 +15,7 @@ Expo 52 + React Native 0.76 + expo-router; web con react-native-web. Repo públi
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx` y `wellbeing.tsx` se abren encima, desde Más |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
 | Guardar y leer | `*.repository.ts` (SQLite) y `*.repository.web.ts` (localStorage) |
@@ -44,6 +44,10 @@ una pantalla se piensa primero en 390 px y en usarla con una mano.
 Para ver la app completa en el navegador (desarrollo y `npm run e2e`):
 `localStorage.setItem("dophamine.web-mode", "full")` y recargar. Todo lo que escribe datos debe respetar
 `VIEWER`: el visor nunca guarda, edita ni aplica ajustes.
+
+Al instalar dependencias usa `npx expo install <paquete>` (elige la versión del SDK) y, si npm se queja
+de dependencias pares, revisa qué paquete falta en lugar de forzar la instalación: `npm ci` debe pasar. No uses pestañas con `href: null` para pantallas que
+deban abrirse: en este SDK quedan inalcanzables.
 
 ## Reglas que no se rompen
 
