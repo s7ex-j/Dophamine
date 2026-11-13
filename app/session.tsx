@@ -1,17 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, Vibration, View } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
-import { Button, Card, Chips, LinkButton, RowActions, Screen } from "@/src/components/ui";
+import { Button, Card, LinkButton, RowActions, Screen } from "@/src/components/ui";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import { alternatives, findExercise, MUSCLE_LABELS } from "@/src/features/exercises/catalog";
+import { CatalogBrowser } from "@/src/features/exercises/CatalogBrowser";
+import { ExerciseImage } from "@/src/features/exercises/ExerciseImage";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
-import { formatClock } from "@/src/features/training/training.plans";
+import { formatClock, workoutFor } from "@/src/features/training/training.plans";
 import { completeSession, getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
 import {
+  addExerciseToSession,
   addSet,
   finishSession,
   personalRecords,
@@ -40,17 +43,20 @@ export default function SessionScreen() {
 
 type Summary = { session: CompletedSession; stats: SessionStats; records: PersonalRecord[] };
 
-// Entreno en vivo: un ejercicio a la vez, serie por serie, con la carga sugerida,
-// descanso automático al marcar cada serie y resumen con récords al terminar.
+// Entreno en vivo: un ejercicio a la vez, serie por serie, con la carga sugerida
+// y resumen con récords al terminar. Sin temporizador de descanso: la idea es
+// anotar lo hecho, no mirar la pantalla entre series.
 // La sesión se guarda mientras se entrena: cerrar la app no la pierde.
 function SessionContent() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ day?: string }>();
   const [active, setActive] = useState<ActiveSession | null>(null);
   const [history, setHistory] = useState<CompletedSession[]>([]);
   const [unit, setUnit] = useState<WeightUnit>("kg");
   const [index, setIndex] = useState(0);
   const [swapping, setSwapping] = useState(false);
-  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [showSteps, setShowSteps] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState("");
@@ -66,28 +72,26 @@ function SessionContent() {
           setUnit(nextUnit);
           setHistory(sessions);
           const resumed = readActiveSession(saved);
-          const session = resumed ?? startSession(routine, sessions, nextUnit, new Date(), newId());
+          const workout = params.day ? workoutFor(routine, params.day) : null;
+          const session =
+            resumed ??
+            startSession(
+              routine,
+              sessions,
+              nextUnit,
+              new Date(),
+              newId(),
+              workout ?? routine.schedule[0] ?? null,
+            );
           setActive(session);
           if (!resumed) void setSetting(KEY, session);
         },
       );
-    }, []),
+    }, [params.day]),
   );
-  // Reloj de la sesión y del descanso.
+  // Reloj de la sesión.
   useEffect(() => {
-    const timer = setInterval(() => {
-      const current = Date.now();
-      setNow(current);
-      setRestEndsAt((endsAt) => {
-        if (endsAt === null || current < endsAt) return endsAt;
-        try {
-          Vibration.vibrate(400);
-        } catch {
-          /* Sin vibración: el aviso en pantalla basta. */
-        }
-        return null;
-      });
-    }, 500);
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -117,7 +121,6 @@ function SessionContent() {
     // Al marcar una serie sin repeticiones escritas se toma la sugerida.
     const reps = set.reps || (set.suggestion ? String(set.suggestion.reps) : "");
     setSet(position, { done: !set.done, reps });
-    if (!set.done && exercise.restSeconds) setRestEndsAt(Date.now() + exercise.restSeconds * 1000);
   };
   const finish = async () => {
     const result = finishSession(active, unit, new Date());
@@ -148,21 +151,6 @@ function SessionContent() {
           <Button title="Terminar" onPress={finish} />
         </View>
 
-        {restEndsAt !== null ? (
-          <View style={[AppTheme.banner, AppTheme.sectionHeader]}>
-            <View>
-              <Text style={AppTheme.bannerTitle}>Descanso</Text>
-              <Text style={[AppTheme.restClock, { color: AppTheme.colors.text }]}>
-                {formatClock((restEndsAt - now) / 1000)}
-              </Text>
-            </View>
-            <View style={AppTheme.rowActions}>
-              <LinkButton title="+30 s" onPress={() => setRestEndsAt(restEndsAt + 30000)} />
-              <LinkButton title="Saltar" onPress={() => setRestEndsAt(null)} />
-            </View>
-          </View>
-        ) : null}
-
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {active.exercises.map((item, position) => (
             <Pressable
@@ -171,6 +159,7 @@ function SessionContent() {
               onPress={() => {
                 setIndex(position);
                 setSwapping(false);
+                setShowSteps(false);
               }}
               style={[AppTheme.chip, position === index && AppTheme.chipActive, { paddingHorizontal: 12 }]}
             >
@@ -185,12 +174,34 @@ function SessionContent() {
         </ScrollView>
 
         <Card title={exercise.name}>
-          <Text style={AppTheme.hint}>
-            {exercise.target.sets} × {exercise.target.repsMin}
-            {exercise.target.repsMax !== exercise.target.repsMin ? `–${exercise.target.repsMax}` : ""} reps ·
-            RIR {exercise.target.rir}
-            {catalog ? ` · ${catalog.primary.map((muscle) => MUSCLE_LABELS[muscle]).join(", ")}` : ""}
-          </Text>
+          <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
+            <ExerciseImage media={catalog?.media} size={96} animate />
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={AppTheme.hint}>
+                {exercise.target.sets} × {exercise.target.repsMin}
+                {exercise.target.repsMax !== exercise.target.repsMin
+                  ? `–${exercise.target.repsMax}`
+                  : ""}{" "}
+                reps · RIR {exercise.target.rir}
+                {catalog ? ` · ${catalog.primary.map((muscle) => MUSCLE_LABELS[muscle]).join(", ")}` : ""}
+              </Text>
+              {catalog?.steps?.length ? (
+                <LinkButton
+                  title={showSteps ? "Ocultar pasos" : "Cómo se hace"}
+                  onPress={() => setShowSteps(!showSteps)}
+                />
+              ) : null}
+            </View>
+          </View>
+          {showSteps && catalog?.steps ? (
+            <View style={{ gap: 4 }}>
+              {catalog.steps.map((step, number) => (
+                <Text key={step} style={AppTheme.body}>
+                  {number + 1}. {step}
+                </Text>
+              ))}
+            </View>
+          ) : null}
           <View style={AppTheme.rowActions}>
             <LinkButton title="Calentamiento" onPress={() => setExercise(addSet(exercise, "warmup"))} />
             <LinkButton
@@ -301,6 +312,7 @@ function SessionContent() {
           </View>
         </Card>
 
+        <Button title="Agregar otro ejercicio" variant="secondary" onPress={() => setAdding(true)} />
         {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}
         <Text style={AppTheme.hint}>
           La carga sugerida sale de tu última sesión: si llegaste al tope de repeticiones con el RIR pedido,
@@ -308,6 +320,25 @@ function SessionContent() {
         </Text>
         <RowActions question="¿Descartar esta sesión sin guardarla?" onDelete={discard} />
       </ScrollView>
+      <Modal visible={adding} animationType="slide" onRequestClose={() => setAdding(false)}>
+        <Screen>
+          <View style={[AppTheme.sectionHeader, { padding: 20, paddingTop: 48, paddingBottom: 0 }]}>
+            <Text style={AppTheme.title}>Agregar</Text>
+            <LinkButton title="Cerrar" onPress={() => setAdding(false)} />
+          </View>
+          <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
+            <CatalogBrowser
+              picked={active.exercises.map((item) => item.name)}
+              onPick={(option) => {
+                if (active.exercises.some((item) => item.name === option.name)) return;
+                update(addExerciseToSession(active, option.name, history, unit));
+                setIndex(active.exercises.length);
+                setAdding(false);
+              }}
+            />
+          </ScrollView>
+        </Screen>
+      </Modal>
     </Screen>
   );
 }

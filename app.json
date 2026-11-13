@@ -3,7 +3,7 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.13.0",
+    "version": "0.14.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "plugins": [
@@ -13,6 +13,13 @@
       "expo-font",
       "expo-sharing",
       "expo-status-bar",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Dophamine usa tus fotos solo si eliges una foto de progreso. Se copia a la carpeta privada de la app.",
+          "cameraPermission": "Dophamine usa la cámara para leer códigos de barras y, si tú quieres, para tus fotos de progreso."
+        }
+      ],
       [
         "expo-camera",
         {

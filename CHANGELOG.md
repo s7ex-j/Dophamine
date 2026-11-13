@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.14.0 - 2026-11-13
+
+Entreno por días con catálogo ilustrado, comidas guardadas, racha con Dopi, sobriedad, resumen semanal y fotos de progreso.
+
+- Entreno:
+  - La rutina tiene un entreno por día (por ejemplo, Torso A el lunes y Pierna A el martes) en lugar de una sola lista para toda la semana. Las plantillas (full body, torso/pierna, empuje/tirón/pierna, cadena posterior) arman días distintos. Las rutinas guardadas antes se convierten solas: cada día queda con la lista que tenían.
+  - La pantalla Entreno muestra la semana de lunes a domingo (qué toca, qué se hizo, qué se saltó), el entreno del día elegido con sus ejercicios y el botón para empezarlo, los totales de la semana, un mapa muscular de frente y espalda, un gráfico semana a semana (series, volumen o sesiones) y cada ejercicio con su mejor serie y si subió o bajó.
+  - Editor de rutina nuevo (Entreno → lápiz): días, nombre de cada entreno, ejercicios con series, repeticiones y RIR, ordenar, copiar un día a otro y plantillas.
+  - Catálogo de casi 600 ejercicios con imagen e instrucciones en español, que se explora por grupo muscular, músculo y equipo sin saber el nombre. Fuente: Exercise data by RepDB (repdb.co), con su propia licencia (ver NOTICE.md). Los 94 ejercicios propios conservan su nombre e id y ganan imagen e instrucciones.
+  - Sesión en vivo: sin temporizador de descanso. Muestra la imagen del ejercicio (alterna posición inicial y final) y "Cómo se hace", y deja agregar ejercicios que no estaban en el plan.
+- Comidas guardadas: los alimentos de una comida se guardan con nombre (desde el Panel o desde Agregar) y se registran enteros con un toque en "Mis comidas". Las arma cada uno; la app no trae plantillas.
+- Racha y Dopi: días seguidos registrando (comida, peso o entreno). Dopi, la mascota, crece con tu mejor racha (huevo, recién nacido, cría, joven, adulto, sabio y leyenda) y nunca encoge; su ánimo cambia si ya anotaste hoy o si la racha se cortó. Logros por racha, pesajes, entrenos, peso meta y sobriedad, que se pueden compartir con el menú del teléfono (solo sale si tú lo envías).
+- Sobriedad (Más → Sobriedad): contadores privados de días sin un hábito, con hitos, mejor racha, dinero ahorrado y "empezar de nuevo" sin perder la mejor racha.
+- Resumen de la semana pasada en el Panel: peso medio y su cambio, calorías y días con proteína frente a la meta, entrenos, sueño y días registrados.
+- Fotos de progreso (Más → Fotos de progreso): de frente, perfil y espalda, guardadas solo en la carpeta privada de la app, con la primera y la última lado a lado. No entran en el respaldo.
+- De 228 a 256 pruebas de dominio y de 17 a 20 flujos de navegador.
+- No comprobado en teléfono: imágenes de ejercicios en Android/iOS, fotos de progreso (cámara, galería y archivos), compartir y el editor de rutina.
+
 ## 0.13.0 - 2026-11-13
 
 Todo se registra desde el Panel, comidas a medida, agua y un ajuste que mira cómo fue cada día.

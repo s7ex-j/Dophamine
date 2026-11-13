@@ -44,6 +44,11 @@ export default function RootLayout() {
         <Stack.Screen name="edit-entry" options={{ headerShown: true, title: "Editar alimento" }} />
         <Stack.Screen name="session" options={{ headerShown: true, title: "Entreno en curso" }} />
         <Stack.Screen name="exercise" options={{ headerShown: true, title: "Ejercicio" }} />
+        <Stack.Screen name="catalog" options={{ headerShown: true, title: "Ejercicios" }} />
+        <Stack.Screen name="routine" options={{ headerShown: true, title: "Mi rutina" }} />
+        <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
+        <Stack.Screen name="sobriety" options={{ headerShown: true, title: "Sobriedad" }} />
+        <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
         <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
         <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />

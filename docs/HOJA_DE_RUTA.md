@@ -6,7 +6,7 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.13.0, Expo SDK 58)
+## Estado al 11 de noviembre de 2026 (versión 0.14.0, Expo SDK 58)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
@@ -93,6 +93,15 @@ semanas estimadas ya estaba desde la 0.6.0.
 - Widgets de pantalla de inicio y de bloqueo (necesitan código nativo fuera de Expo Go).
 - Exportar a CSV para compartir con un entrenador; panel configurable.
 
+**Hecho en la 0.14.0:** entreno por días con catálogo ilustrado de RepDB (por grupo muscular), mapa
+muscular, volumen semanal y mejores marcas, sin temporizador; comidas guardadas; racha con Dopi y logros;
+sobriedad; resumen semanal; fotos de progreso.
+
+**Lo que sigue:** pulir la interfaz y agregar animaciones; después, el APK propio (EAS) con Health Connect
+(sueño, pasos y peso de Samsung Health), sueño automático por uso del teléfono y lectura de etiquetas
+nutricionales con la cámara. Pasos diarios cuando haya Health Connect. GIFs de Gym Visual solo si el
+proyecto crece y se consigue una licencia propia.
+
 **Hecho en la 0.13.0:** el Diario se fusionó con el Panel (todo se anota desde "Hoy"), comidas por nombre o
 por número, agua diaria y ajuste del plan según adherencia, sueño y cercanía a la meta.
 
@@ -107,8 +116,9 @@ por número, agua diaria y ajuste del plan según adherencia, sueño y cercanía
 
 **Entreno.** Hechas en la 0.12.0: E1 (catálogo propio y registro serie por serie), E2 (sesión en vivo con
 descanso y cambio de ejercicio) y E3 (resumen con récords, historial por ejercicio, series por músculo).
-Faltan: E4 programas por semanas con descarga, E5 perfiles de gimnasio, E6 mapa muscular con silueta,
-lados izquierdo/derecho en la interfaz y superseries.
+En la 0.14.0: entreno por día, catálogo por grupo muscular con imágenes y mapa muscular (E6). Faltan:
+E4 programas por semanas con descarga, E5 perfiles de gimnasio, lados izquierdo/derecho en la interfaz y
+superseries.
 
 **Entreno** (plan por fases E1–E6: base con catálogo y registro serie por serie, sesión en vivo,
 resultados y récords, programas por semanas, gimnasios, mapa muscular). Las imágenes y animaciones de

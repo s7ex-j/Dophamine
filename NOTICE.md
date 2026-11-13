@@ -1,15 +1,34 @@
 # Third-party exercise data
 
-Dophamine's exercise catalog is designed to support the data model published by
-`hasaneyldrm/exercises-dataset` (MIT for code, dataset structure, and
-instruction text). See the upstream repository for the complete license and
-current data source:
+## RepDB (images, instructions and part of the catalog)
 
-https://github.com/hasaneyldrm/exercises-dataset
+**Exercise data by [RepDB](https://repdb.co) (repdb.co).**
 
-Exercise images and GIFs from that project are not included in Dophamine.
-Those media assets are attributed to Gym Visual and require a separate license
-before redistribution. See https://gymvisual.com/ for licensing information.
+The exercise illustrations in `assets/exercises/`, the Spanish exercise names and
+step-by-step instructions in `src/features/exercises/repdb.data.ts`, and its muscle and
+equipment tags come from the RepDB free-tier dataset
+(https://github.com/RepDB/exercise-dataset), used under the RepDB Free Tier License v1.0:
+free for personal and commercial use inside applications, with this attribution.
+
+These files are **not** covered by Dophamine's MIT license. They are part of the app,
+not a dataset: do not extract or republish them as a dataset, dataset repository or API
+(RepDB license, term 3), and do not use the images as input for generative models
+(term 5). Images were resized to 320 px for in-app use (term 4). The paid-tier preview
+animations are not included. To regenerate them: `python scripts/import-repdb.py <path to
+a local clone of RepDB/exercise-dataset>`.
+
+Full terms: https://github.com/RepDB/exercise-dataset/blob/main/LICENSE-DATA.md
+
+## Dophamine's own exercises
+
+The 94 exercises written for Dophamine (`src/features/exercises/catalog.ts`) keep their
+names and ids; each one is linked to its RepDB equivalent for the image and instructions.
+
+## Not included
+
+Images and GIFs from Gym Visual (used by other open projects such as openGym or
+`hasaneyldrm/exercises-dataset`) are **not** included: they are licensed to those projects
+only. Using them would need a separate license from Gym Visual (https://gymvisual.com/).
 
 # Food data
 

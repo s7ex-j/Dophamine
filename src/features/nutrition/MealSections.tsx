@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 import { Ring, StackBar } from "@/src/components/charts";
 import { IconButton, LinkButton, type IconName } from "@/src/components/ui";
@@ -72,6 +72,60 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
 }
 
 /** Una comida del día: encabezado con icono y total, y cada alimento en su fila. */
+/** Guardar los alimentos de un momento como una comida propia, para repetirla con un toque. */
+export function SaveMealInline({
+  label,
+  onSave,
+}: {
+  label: string;
+  onSave: (name: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [saved, setSaved] = useState(false);
+  if (!open)
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          setOpen(true);
+          setSaved(false);
+        }}
+        style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 6 }}
+      >
+        <Ionicons name={saved ? "bookmark" : "bookmark-outline"} size={16} color={AppTheme.colors.accent} />
+        <Text style={[AppTheme.hint, { color: AppTheme.colors.accent }]}>
+          {saved ? "Comida guardada" : "Guardar como comida"}
+        </Text>
+      </Pressable>
+    );
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 6 }}>
+      <TextInput
+        accessibilityLabel="Nombre de la comida"
+        value={name}
+        onChangeText={setName}
+        placeholder={`Ej. Mi ${label.toLowerCase()}`}
+        placeholderTextColor={AppTheme.colors.muted}
+        style={[AppTheme.input, { flex: 1 }]}
+        autoFocus
+      />
+      <IconButton
+        icon="checkmark"
+        label="Guardar comida"
+        onPress={async () => {
+          if (!name.trim()) return;
+          await onSave(name);
+          setName("");
+          setOpen(false);
+          setSaved(true);
+        }}
+      />
+      <IconButton icon="close" label="Cancelar" onPress={() => setOpen(false)} danger />
+    </View>
+  );
+}
+
 export function MealCard({
   slot,
   label,
@@ -80,6 +134,7 @@ export function MealCard({
   onAdd,
   onRemove,
   onEdit,
+  onSave,
 }: {
   slot: MealSlot;
   label: string;
@@ -88,6 +143,8 @@ export function MealCard({
   onAdd: () => void;
   onRemove: (entry: MealEntry) => void;
   onEdit?: (entry: MealEntry) => void;
+  /** Guardar estos alimentos como una comida propia. */
+  onSave?: (name: string) => Promise<void>;
 }) {
   return (
     <View style={AppTheme.card}>
@@ -109,6 +166,7 @@ export function MealCard({
           onPress={onEdit ? () => onEdit(entry) : undefined}
         />
       ))}
+      {onSave && entries.length ? <SaveMealInline label={label} onSave={onSave} /> : null}
     </View>
   );
 }
