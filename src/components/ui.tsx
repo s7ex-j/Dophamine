@@ -1,6 +1,6 @@
 import { useState, type PropsWithChildren } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, TextInput, type TextInputProps, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, type TextInputProps, View } from "react-native";
 import { AppTheme } from "@/src/theme";
 
 export function Screen({ children }: PropsWithChildren) {
@@ -336,5 +336,39 @@ export function NavRow({ title, detail, onPress }: { title: string; detail: stri
       </View>
       <Text style={AppTheme.navChevron}>›</Text>
     </Pressable>
+  );
+}
+/** Elegir un momento del día: con iconos si son 4 o menos; con píldoras desplazables si son más. */
+export function SlotPicker<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string; icon: IconName }>;
+}) {
+  if (options.length <= 4) return <IconTabs value={value} onChange={onChange} options={options} />;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+      {options.map((option) => (
+        <Pressable
+          key={option.value}
+          accessibilityRole="button"
+          accessibilityState={{ selected: option.value === value }}
+          onPress={() => onChange(option.value)}
+          style={[AppTheme.chip, AppTheme.iconRow, { gap: 6 }, option.value === value && AppTheme.chipActive]}
+        >
+          <Ionicons
+            name={option.icon}
+            size={16}
+            color={option.value === value ? AppTheme.colors.onAccent : AppTheme.colors.muted}
+          />
+          <Text style={[AppTheme.chipText, option.value === value && AppTheme.chipTextActive]}>
+            {option.label}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }

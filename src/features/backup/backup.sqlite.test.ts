@@ -304,3 +304,25 @@ describe("entrenos serie por serie en el respaldo del teléfono", () => {
     expect(back.startedAt).toBe(workout.startedAt);
   });
 });
+
+describe("agua en el respaldo del teléfono", () => {
+  it("el agua del día pasa por SQLite sin cambios", () => {
+    const day = {
+      id: "d",
+      date: "2026-11-13",
+      weightKg: 56,
+      caloriesIn: 0,
+      proteinG: 0,
+      carbsG: 0,
+      fatsG: 0,
+      bodyFatPct: null,
+      muscleMassKg: null,
+      waterPct: null,
+      boneMassKg: null,
+      waterMl: 1750,
+    };
+    const back = storeFromTables(tablesFromStore({ biometrics: [day], wellbeing: [], workouts: [] }))
+      .biometrics[0];
+    expect(back.waterMl).toBe(1750);
+  });
+});

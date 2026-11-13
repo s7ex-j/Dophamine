@@ -170,7 +170,7 @@ export function CompositionCard({
         </>
       ) : (
         <Text style={AppTheme.body}>
-          Si tienes una balanza que mide grasa, músculo, agua o masa ósea, regístralos en el Diario para
+          Si tienes una balanza que mide grasa, músculo, agua o masa ósea, anótalos al registrar tu peso para
           separar grasa de masa magra en tu progreso.
         </Text>
       )}

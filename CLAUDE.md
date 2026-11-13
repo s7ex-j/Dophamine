@@ -15,7 +15,7 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx` y `reminders.tsx` se abren encima |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`, con la sección "Hoy" de `src/features/dashboard/TodaySection.tsx` donde se anota todo), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx` y `reminders.tsx` se abren encima |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Alimentos y comidas | `src/features/nutrition/` (`foods.ts`, `meals.ts`, `builtin.foods.ts`) y `app/add-food.tsx` |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
@@ -27,6 +27,9 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Ajustes sueltos (Panel, recordatorios) | `src/features/settings/settings.repository.ts` |
 | Recordatorios | `src/features/reminders/` y `app/reminders.tsx` |
 | Entreno serie por serie | `src/features/training/workout.ts` (sesión, progresión, récords), `src/features/exercises/catalog.ts`, `app/session.tsx`, `app/exercise.tsx` |
+| Ajuste del plan según adherencia, sueño y meta | `src/features/tdee/checkin.ts` |
+| Agua del día | `src/features/water/water.ts` |
+| División de comidas (por nombre o número) | `src/features/nutrition/meals.ts` (`mealSlots`, `mealSetupOf` en `profile.ts`) |
 | Sueño y cumplimiento del día | `src/features/sleep/`, `src/features/habits/compliance.ts` |
 | Gráficos de detalle del Panel | `src/features/dashboard/insights.ts` (datos) y `src/components/DetailChart.tsx` (dibujo), en `app/insight.tsx` |
 | Página de presentación | `web/` (proyecto aparte: Vite, React 19, Tailwind 4) |

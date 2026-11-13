@@ -6,7 +6,7 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.12.0, Expo SDK 58)
+## Estado al 11 de noviembre de 2026 (versión 0.13.0, Expo SDK 58)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
@@ -93,11 +93,17 @@ semanas estimadas ya estaba desde la 0.6.0.
 - Widgets de pantalla de inicio y de bloqueo (necesitan código nativo fuera de Expo Go).
 - Exportar a CSV para compartir con un entrenador; panel configurable.
 
+**Hecho en la 0.13.0:** el Diario se fusionó con el Panel (todo se anota desde "Hoy"), comidas por nombre o
+por número, agua diaria y ajuste del plan según adherencia, sueño y cercanía a la meta.
+
 **Salud del teléfono:**
 
 - Health Connect (donde Samsung Health, Google Fit y otras apps comparten sueño, pasos, peso y
-  composición): importar al Diario. Necesita un APK propio con `react-native-health-connect`; no
+  composición): importar al Panel. Necesita un APK propio con `react-native-health-connect`; no
   funciona en Expo Go.
+- Sueño automático como Samsung Health (último uso del teléfono de noche, primero de la mañana): necesita
+  el permiso de uso de apps de Android (`UsageStatsManager`) en un módulo nativo propio, también solo en
+  APK. En iOS no existe ese dato; ahí solo vale Health Connect/HealthKit o el registro a mano.
 
 **Entreno.** Hechas en la 0.12.0: E1 (catálogo propio y registro serie por serie), E2 (sesión en vivo con
 descanso y cambio de ejercicio) y E3 (resumen con récords, historial por ejercicio, series por músculo).

@@ -6,6 +6,7 @@ import { sleepMinutes } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
 import { getRoutine, getWorkoutDates } from "@/src/features/training/training.repository";
 import { getWellbeingDates } from "@/src/features/wellbeing/wellbeing.repository";
+import { waterTargetMl } from "@/src/features/water/water";
 import { addDays, localDateKey } from "@/src/lib/dates";
 
 // Junta lo registrado en distintas partes de la app para calcular el
@@ -29,6 +30,9 @@ export async function getComplianceDays(
   );
   const trained = new Set(workouts);
   const checked = new Set(wellbeing);
+  const lastWeight =
+    [...records].sort((a, b) => b.date.localeCompare(a.date)).find((record) => record.weightKg)?.weightKg ??
+    null;
   const targets = { calories: profile?.calorieTarget ?? 0, protein: profile?.proteinTarget ?? 0 };
   return Array.from({ length: days }, (_, index) => {
     const date = addDays(since, index);
@@ -43,7 +47,14 @@ export async function getComplianceDays(
           sleepMinutes: sleepByDate.get(date) ?? null,
           wellbeingDone: checked.has(date),
         },
-        targets,
+        {
+          ...targets,
+          // Agua: la meta del día, con el entrenamiento si toca.
+          water: waterTargetMl(
+            lastWeight,
+            routine.days.includes(weekdayOf(new Date(year, month - 1, day))) ? routine.sessionMinutes : 0,
+          ),
+        },
       ),
     };
   });

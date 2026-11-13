@@ -28,7 +28,9 @@ import { isSleepEntry } from "@/src/features/sleep/sleep";
 // Formato 7: sesiones de entreno serie por serie (`workouts[].sets`, con tipo de
 // serie, ejercicio del catálogo y lado) e inicio de la sesión. Los formatos 1 a 6
 // se leen igual: sus sesiones conservan una línea por ejercicio.
-export const BACKUP_FORMAT = 7;
+// Formato 8: agua del día (`waterMl`) y configuración de comidas del plan
+// (`mealStyle`, `mealsPerDay`). Los formatos 1 a 7 se leen igual.
+export const BACKUP_FORMAT = 8;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 

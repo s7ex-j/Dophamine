@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
-import { BigInput, Button, Card, ChoiceControl, IconTabs, Input, Screen } from "@/src/components/ui";
+import { BigInput, Button, Card, ChoiceControl, Input, Screen, SlotPicker } from "@/src/components/ui";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import { BUILTIN_FOODS } from "@/src/features/nutrition/builtin.foods";
 import {
@@ -12,14 +12,16 @@ import {
   type Food,
   type FoodState,
 } from "@/src/features/nutrition/foods";
-import { MacroSplit, SLOT_ICONS } from "@/src/features/nutrition/MealSections";
-import { draftFromQuick, MEAL_SLOTS, rescaleEntry, type MealEntry } from "@/src/features/nutrition/meals";
+import { MacroSplit, slotIcon } from "@/src/features/nutrition/MealSections";
+import { draftFromQuick, rescaleEntry, slotsForDay, type MealEntry } from "@/src/features/nutrition/meals";
 import {
   deleteMealEntry,
   getMealEntries,
   getUserFoods,
   updateMealEntry,
 } from "@/src/features/nutrition/nutrition.repository";
+import { mealSetupOf, type NutritionProfile } from "@/src/features/profile/profile";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
@@ -38,30 +40,35 @@ function EditEntryContent() {
   const [grams, setGrams] = useState("");
   const [quick, setQuick] = useState({ kcal: "", protein: "", carbs: "", fats: "" });
   const [error, setError] = useState("");
+  const [profile, setProfile] = useState<NutritionProfile | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       if (!params.date) return;
-      Promise.all([getMealEntries(params.date), getUserFoods()]).then(([entries, userFoods]) => {
-        const all = [...userFoods, ...BUILTIN_FOODS];
-        const found = entries.find((item) => item.id === params.id) ?? null;
-        setFoods(all);
-        setEntry(found);
-        setFood(all.find((item) => item.id === found?.foodId) ?? null);
-        setGrams(found?.grams ? String(found.grams) : "");
-        if (found)
-          setQuick({
-            kcal: String(found.kcal),
-            protein: String(found.proteinG),
-            carbs: String(found.carbsG),
-            fats: String(found.fatsG),
-          });
-      });
+      Promise.all([getMealEntries(params.date), getUserFoods(), getNutritionProfile()]).then(
+        ([entries, userFoods, nextProfile]) => {
+          setProfile(nextProfile);
+          const all = [...userFoods, ...BUILTIN_FOODS];
+          const found = entries.find((item) => item.id === params.id) ?? null;
+          setFoods(all);
+          setEntry(found);
+          setFood(all.find((item) => item.id === found?.foodId) ?? null);
+          setGrams(found?.grams ? String(found.grams) : "");
+          if (found)
+            setQuick({
+              kcal: String(found.kcal),
+              protein: String(found.proteinG),
+              carbs: String(found.carbsG),
+              fats: String(found.fatsG),
+            });
+        },
+      );
     }, [params.date, params.id]),
   );
 
   if (!entry) return <Screen />;
   const isQuick = !entry.grams;
+  const slots = slotsForDay([entry], mealSetupOf(profile));
   const other = food ? counterpart(food, foods) : null;
   const amount = Number(grams);
   const preview = isQuick ? entry : rescaleEntry(entry, amount > 0 ? amount : (entry.grams ?? 0), food);
@@ -90,14 +97,10 @@ function EditEntryContent() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
-        <IconTabs
+        <SlotPicker
           value={entry.slot}
           onChange={(slot) => setEntry({ ...entry, slot })}
-          options={MEAL_SLOTS.map((item) => ({
-            value: item.id,
-            label: item.label,
-            icon: SLOT_ICONS[item.id],
-          }))}
+          options={slots.map((item) => ({ value: item.id, label: item.label, icon: slotIcon(item.id) }))}
         />
         <Card title={food?.name ?? entry.name}>
           {isQuick ? (

@@ -2,14 +2,15 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { SLEEP_ENOUGH_MINUTES } from "@/src/features/sleep/sleep";
 
 /**
- * Cumplimiento del día: seis compromisos que se marcan solos con lo que ya se
+ * Cumplimiento del día: siete compromisos que se marcan solos con lo que ya se
  * registró. Reemplaza a los hábitos que había que marcar a mano. Módulo puro.
  */
-export type ComplianceKey = "calories" | "protein" | "weight" | "training" | "sleep" | "wellbeing";
+export type ComplianceKey = "calories" | "protein" | "water" | "weight" | "training" | "sleep" | "wellbeing";
 
 export const COMPLIANCE_ITEMS: Array<{ key: ComplianceKey; label: string; rule: string }> = [
   { key: "calories", label: "Calorías", rule: "Dentro de ±10 % de tu meta" },
   { key: "protein", label: "Proteína", rule: "Al menos el 90 % de tu meta" },
+  { key: "water", label: "Agua", rule: "Llegar a tu meta de agua" },
   { key: "weight", label: "Pesaje", rule: "Peso registrado" },
   { key: "training", label: "Entreno", rule: "Sesión registrada, o día de descanso" },
   { key: "sleep", label: "Sueño", rule: "7 horas o más" },
@@ -25,7 +26,7 @@ export type DayFacts = {
   sleepMinutes: number | null;
   wellbeingDone: boolean;
 };
-export type Targets = { calories: number; protein: number };
+export type Targets = { calories: number; protein: number; water: number };
 export type DayCompliance = Record<ComplianceKey, boolean>;
 
 export function dayCompliance(facts: DayFacts, targets: Targets): DayCompliance {
@@ -34,6 +35,7 @@ export function dayCompliance(facts: DayFacts, targets: Targets): DayCompliance 
   return {
     calories: calories > 0 && Math.abs(calories - targets.calories) <= targets.calories * 0.1,
     protein: targets.protein > 0 && protein >= targets.protein * 0.9,
+    water: targets.water > 0 && (facts.record?.waterMl ?? 0) >= targets.water,
     weight: (facts.record?.weightKg ?? 0) > 0,
     // Un día de descanso cuenta como cumplido: descansar también es parte del plan.
     training: facts.trained || !facts.trainingDay,

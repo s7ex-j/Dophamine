@@ -14,6 +14,7 @@ import {
   StepDots,
 } from "@/src/components/ui";
 import { saveDayBody } from "@/src/features/biometrics/biometrics.repository";
+import { MEAL_COUNTS, mealSlots } from "@/src/features/nutrition/meals";
 import {
   answersFrom,
   bodyFatPresets,
@@ -47,6 +48,7 @@ const TITLES: Record<OnboardingStep, { title: string; help: string }> = {
   intake: { title: "Lo que comes hoy", help: "Opcional. Si lo sabes, es el mejor dato para empezar." },
   target: { title: "Tu meta", help: "A dónde quieres llegar y a qué ritmo." },
   protein: { title: "Proteína", help: "Más proteína ayuda a conservar músculo." },
+  meals: { title: "Tus comidas", help: "Cómo divides lo que comes en el día." },
   tracking: { title: "Seguimiento", help: "La app compara tu avance con la meta y recalcula." },
   summary: { title: "Tu plan", help: "Un punto de partida: se afina con tus registros." },
 };
@@ -393,6 +395,40 @@ export function Onboarding({
               },
             ]}
           />
+        ) : null}
+
+        {step === "meals" ? (
+          <>
+            <OptionList
+              value={answers.mealStyle}
+              onChange={(mealStyle) => set("mealStyle", mealStyle)}
+              options={[
+                {
+                  value: "named",
+                  label: "Por nombre",
+                  detail: "Desayuno, almuerzo, cena…",
+                  icon: "restaurant-outline",
+                },
+                {
+                  value: "numbered",
+                  label: "Por número",
+                  detail: "Comida 1, comida 2… ideal si comes 5 o 6 veces",
+                  icon: "list-outline",
+                },
+              ]}
+            />
+            <Text style={AppTheme.label}>Comidas al día</Text>
+            <Chips
+              value={answers.mealsPerDay}
+              onChange={(mealsPerDay) => set("mealsPerDay", mealsPerDay)}
+              options={MEAL_COUNTS.map((count) => ({ value: count, label: String(count) }))}
+            />
+            <Text style={AppTheme.hint}>
+              {mealSlots({ style: answers.mealStyle, count: answers.mealsPerDay })
+                .map((slot) => slot.label)
+                .join(" · ")}
+            </Text>
+          </>
         ) : null}
 
         {step === "tracking" ? (

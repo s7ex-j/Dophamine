@@ -21,6 +21,8 @@ export type DailyBiometrics = {
   boneMassKg?: number | null;
   /** La persona marcó que no registró todo lo que comió ese día. */
   partial?: boolean;
+  /** Agua tomada en el día, en ml. */
+  waterMl?: number;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -39,6 +41,7 @@ type Row = {
   water_pct: number | null;
   bone_mass_kg: number | null;
   partial: number | null;
+  water_ml: number | null;
 };
 
 const today = () => localDateKey();
@@ -56,6 +59,7 @@ const fromRow = (row: Row): DailyBiometrics => ({
   waterPct: row.water_pct,
   boneMassKg: row.bone_mass_kg,
   partial: row.partial === 1,
+  waterMl: row.water_ml ?? 0,
 });
 
 /** Guarda el pesaje y la composición de un día sin tocar lo comido. */
@@ -131,4 +135,19 @@ export async function setDayPartial(date: string, partial: boolean) {
     date,
     partial ? 1 : 0,
   );
+}
+
+/** Suma (o resta) agua al día. Devuelve el total que quedó. */
+export async function addWater(date: string, deltaMl: number): Promise<number> {
+  const db = await getDatabase();
+  const current = (await getBiometricsByDate(date))?.waterMl ?? 0;
+  const total = Math.max(0, Math.min(10000, current + deltaMl));
+  await db.runAsync(
+    `INSERT INTO daily_biometrics (id, date, water_ml) VALUES (?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET water_ml = excluded.water_ml, updated_at = CURRENT_TIMESTAMP`,
+    id(),
+    date,
+    total,
+  );
+  return total;
 }

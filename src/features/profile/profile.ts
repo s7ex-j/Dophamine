@@ -1,4 +1,5 @@
 import type { WeightUnit } from "@/src/lib/units";
+import { normalizeMealSetup } from "@/src/features/nutrition/meals";
 import {
   estimateExpenditure,
   type ExpenditureEstimate,
@@ -56,6 +57,9 @@ export type NutritionProfile = {
   recentTrend?: RecentTrend;
   /** Gasto diario estimado al crear el plan, para mostrar de dónde salió el objetivo. */
   initialExpenditure?: number;
+  /** Cómo se dividen las comidas del día (0.13.0). Sin valor: 4 con nombre. */
+  mealStyle?: "named" | "numbered";
+  mealsPerDay?: number;
 };
 
 export type PlanInput = Pick<NutritionProfile, "age" | "sex" | "heightCm" | "activity" | "goal"> &
@@ -77,6 +81,8 @@ export type PlanInput = Pick<NutritionProfile, "age" | "sex" | "heightCm" | "act
       | "experience"
       | "knownIntake"
       | "recentTrend"
+      | "mealStyle"
+      | "mealsPerDay"
     >
   > & { weightKg: number };
 
@@ -244,3 +250,8 @@ export const adjustModeLabels: Record<AdjustMode, string> = {
   collaborative: "Colaborativo",
   manual: "Manual",
 };
+
+/** La configuración de comidas del plan. */
+export const mealSetupOf = (
+  profile: Pick<NutritionProfile, "mealStyle" | "mealsPerDay"> | null | undefined,
+) => normalizeMealSetup({ style: profile?.mealStyle, count: profile?.mealsPerDay });

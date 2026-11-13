@@ -56,6 +56,7 @@ describe("ejes y escalas de los gráficos de detalle", () => {
     expect(niceTicks(0, 2750)).toEqual([0, 1000, 2000, 3000]);
     expect(niceTicks(-300, 250)).toEqual([-400, -200, 0, 200, 400]);
     expect(niceTicks(5, 5).length).toBeGreaterThanOrEqual(2);
+    expect(niceTicks(74.9, 74.90000000000001).length).toBeLessThan(10);
   });
 
   it("comparte la escala entre series, incluye el cero en barras y apila", () => {

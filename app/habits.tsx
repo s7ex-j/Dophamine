@@ -19,6 +19,7 @@ import { AppTheme } from "@/src/theme";
 const ICONS: Record<ComplianceKey, IconName> = {
   calories: "flame-outline",
   protein: "fish-outline",
+  water: "water-outline",
   weight: "scale-outline",
   training: "barbell-outline",
   sleep: "moon-outline",
@@ -85,8 +86,8 @@ function ComplianceContent() {
           </Card>
         ))}
         <Text style={AppTheme.hint}>
-          Se calcula con lo que registras: comida y peso en el Diario, sesiones en Entreno, sueño y bienestar.
-          Los días de descanso de tu rutina cuentan como cumplidos en Entreno.
+          Se calcula con lo que registras: comida, peso y agua en el Panel, sesiones en Entreno, sueño y
+          bienestar. Los días de descanso de tu rutina cuentan como cumplidos en Entreno.
         </Text>
       </ScrollView>
     </Screen>

@@ -195,6 +195,13 @@ async function main() {
     await press("Continuar");
     await press("Alta");
     await press("Continuar");
+    await waitText("Tus comidas");
+    await press("Por número");
+    await press("5");
+    await waitText("Comida 1 · Comida 2 · Comida 3 · Comida 4 · Comida 5");
+    await press("Por nombre");
+    await press("4");
+    await press("Continuar");
     await press("Cada 3 días");
     await press("Automático");
     await press("Continuar");
@@ -217,11 +224,16 @@ async function main() {
       "Un plan de definición debe quedar bajo el gasto.",
     );
     assert(biometrics.length === 1 && biometrics[0].weightKg === 80, "No se registró el primer pesaje.");
+    assert(
+      profile.mealStyle === "named" && profile.mealsPerDay === 4,
+      "No se guardó cómo se dividen las comidas.",
+    );
   });
 
-  await step("diario: guardar peso y composición", async () => {
-    await open("/biometrics");
+  await step("panel · hoy: guardar peso y composición", async () => {
+    await open("/");
     await waitText("Desayuno");
+    await pressLabel("Anotar peso");
     await fill("Último", 79.6);
     await fill("Grasa (%)", 19.5);
     await fill("Músculo", 36);
@@ -299,7 +311,7 @@ async function main() {
     await waitText("772");
   });
 
-  await step("diario: quitar un alimento recalcula el día", async () => {
+  await step("panel · hoy: quitar un alimento recalcula el día", async () => {
     await pressLabel("Quitar Registro rápido");
     await press("Quitar");
     await page.waitForFunction(
@@ -312,7 +324,7 @@ async function main() {
     );
   });
 
-  await step("diario: un día solo con comida, sin pesaje, y borrarlo", async () => {
+  await step("panel · hoy: un día solo con comida, sin pesaje, y borrarlo", async () => {
     await press("‹");
     await waitText("Ayer");
     await pressLabel("Agregar a snacks");
@@ -336,7 +348,7 @@ async function main() {
     assert(!current.meals.some((entry) => entry.date === daysAgo(1)), "Quedaron comidas de un día borrado.");
   });
 
-  await step("diario: editar un alimento, registrar sueño y marcar día incompleto", async () => {
+  await step("panel · hoy: editar un alimento, registrar sueño y marcar día incompleto", async () => {
     await press("›");
     await waitText("Hoy");
     await pressLabel("Editar Pechuga de pollo cocida, sin piel");
@@ -352,6 +364,17 @@ async function main() {
       STORE_KEY,
       dateKey(),
     );
+    await pressLabel("Agregar un vaso de agua");
+    await pressLabel("Agregar un vaso de agua");
+    await page.waitForFunction(
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).biometrics.find((record) => record.date === date)?.waterMl ===
+        500,
+      {},
+      STORE_KEY,
+      dateKey(),
+    );
+    await pressLabel("Anotar sueño");
     await fill("Me acosté", "23:30");
     await fill("Desperté", "07:00");
     await press("4");
@@ -378,7 +401,7 @@ async function main() {
     await open("/");
     await waitText("Cumplimiento de hoy");
     // Hoy hay peso y sueño de 7.5 h registrados: esos dos cuentan solos.
-    for (const label of ["Pesaje: cumplido", "Sueño: cumplido", "Bienestar: pendiente"])
+    for (const label of ["Pesaje: cumplido", "Sueño: cumplido", "Agua: pendiente", "Bienestar: pendiente"])
       assert(await page.$(`[aria-label="${label}"]`), `El cumplimiento no marca "${label}".`);
     await pressLabel("Personalizar el Panel");
     await waitText("Personalizar");
@@ -507,7 +530,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 7, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 8, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);
@@ -660,7 +683,7 @@ async function main() {
     const shown = await text();
     for (const hidden of ["Cumplimiento de hoy", "Deshacer ajuste", "Buscar un alimento"])
       assert(!shown.includes(hidden), `El visor muestra "${hidden}", que es para registrar.`);
-    for (const tab of ["biometrics", "training"])
+    for (const tab of ["training"])
       assert(
         !(await viewer.$(`[role="tab"][href*="${tab}"], a[href$="/${tab}"]`)),
         `El visor muestra la pestaña "${tab}", que es para registrar.`,
@@ -675,7 +698,7 @@ async function main() {
       after.profile.calorieTarget === data.profile.calorieTarget,
       "El visor cambió el objetivo calórico.",
     );
-    await viewer.goto(`${base}/biometrics`, { waitUntil: "networkidle0" });
+    await viewer.goto(`${base}/add-food`, { waitUntil: "networkidle0" });
     // La pantalla de registro no existe en el visor: o avisa o vuelve al Panel.
     await viewer.waitForFunction(() => document.body.innerText.trim().length > 20);
     assert(!(await text()).includes("Guardar"), "El visor permite abrir el Diario para registrar.");

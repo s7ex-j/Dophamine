@@ -53,6 +53,8 @@ export function linePath(
 /** Marcas "redondas" del eje vertical que cubren de `min` a `max` (pasos de 1, 2, 2.5 o 5 × 10ⁿ). */
 export function niceTicks(min: number, max: number, count = 4): number[] {
   if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1];
+  // Un rango casi nulo (por redondeo) se trata como un valor único: evita pasos de 1e-15.
+  if (Math.abs(max - min) < 1e-9 * Math.max(1, Math.abs(min), Math.abs(max))) max = min;
   if (min === max) {
     const pad = Math.abs(min) * 0.05 || 1;
     min -= pad;
@@ -64,7 +66,7 @@ export function niceTicks(min: number, max: number, count = 4): number[] {
     [1, 2, 2.5, 5, 10].map((factor) => factor * power).find((candidate) => candidate >= raw) ?? raw;
   const start = Math.floor(min / step) * step;
   const ticks: number[] = [];
-  for (let value = start; value <= max + step * 1e-9; value += step)
+  for (let value = start; value <= max + step * 1e-9 && ticks.length < 50; value += step)
     ticks.push(Math.round(value * 1e6) / 1e6);
   if ((ticks.at(-1) as number) < max) ticks.push(Math.round(((ticks.at(-1) as number) + step) * 1e6) / 1e6);
   return ticks;

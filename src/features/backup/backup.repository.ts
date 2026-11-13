@@ -84,8 +84,8 @@ export async function restoreBackup(backup: Backup): Promise<void> {
     for (const row of tables.biometrics)
       await db.runAsync(
         `INSERT INTO daily_biometrics
-          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg, partial)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg, partial, water_ml)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         row.id,
         row.date,
         row.weight_kg,
@@ -98,6 +98,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.water_pct,
         row.bone_mass_kg,
         row.partial ?? 0,
+        row.water_ml ?? 0,
       );
     for (const row of tables.wellbeing)
       await db.runAsync(

@@ -33,6 +33,7 @@ import { getComplianceDays } from "@/src/features/habits/compliance.data";
 import { Onboarding } from "@/src/features/profile/PlanWizard";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
+import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import type { SleepEntry } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
@@ -183,6 +184,8 @@ export default function DashboardScreen() {
         {VIEWER ? <ViewerBanner /> : <FoodSearchBar onPress={() => router.push("/add-food")} />}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
+        {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
+        <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>
         {customizing ? (
           <CustomizePanel
             layout={layout}

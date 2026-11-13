@@ -14,7 +14,71 @@ import {
  * La entrada guarda una copia de los nutrientes: si después se corrige el
  * alimento, lo ya registrado no cambia.
  */
-export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
+/**
+ * El momento del día de una entrada. Con nombres: breakfast, midmorning, lunch,
+ * snack, dinner, latenight. Por número: meal1 … meal6. Cuáles se usan lo decide
+ * la configuración de comidas del plan (`MealSetup`).
+ */
+export type MealSlot = string;
+export type MealStyle = "named" | "numbered";
+export type MealSetup = { style: MealStyle; count: number };
+type SlotInfo = { id: MealSlot; label: string; hour: number };
+
+const NAMED: Record<string, SlotInfo> = {
+  breakfast: { id: "breakfast", label: "Desayuno", hour: 7 },
+  midmorning: { id: "midmorning", label: "Media mañana", hour: 10 },
+  lunch: { id: "lunch", label: "Almuerzo", hour: 13 },
+  snack: { id: "snack", label: "Snacks", hour: 17 },
+  dinner: { id: "dinner", label: "Cena", hour: 20 },
+  latenight: { id: "latenight", label: "Antes de dormir", hour: 22 },
+};
+const NAMED_SETS: Record<number, string[]> = {
+  2: ["lunch", "dinner"],
+  3: ["breakfast", "lunch", "dinner"],
+  4: ["breakfast", "lunch", "snack", "dinner"],
+  5: ["breakfast", "midmorning", "lunch", "snack", "dinner"],
+  6: ["breakfast", "midmorning", "lunch", "snack", "dinner", "latenight"],
+};
+const NUMBERED: SlotInfo[] = Array.from({ length: 6 }, (_, index) => ({
+  id: `meal${index + 1}`,
+  label: `Comida ${index + 1}`,
+  hour: 0,
+}));
+export const MEAL_COUNTS = [2, 3, 4, 5, 6];
+export const DEFAULT_MEAL_SETUP: MealSetup = { style: "named", count: 4 };
+/** Todos los ids posibles, para validar entradas de un respaldo. */
+export const KNOWN_SLOTS = [...Object.keys(NAMED), ...NUMBERED.map((slot) => slot.id)];
+
+export function normalizeMealSetup(value: unknown): MealSetup {
+  const candidate = (value ?? {}) as Partial<MealSetup>;
+  const count = Number(candidate.count);
+  return {
+    style: candidate.style === "numbered" ? "numbered" : "named",
+    count: MEAL_COUNTS.includes(count) ? count : DEFAULT_MEAL_SETUP.count,
+  };
+}
+
+/** Los momentos del día de una configuración, en orden. Por número se reparten entre las 7 y las 21 h. */
+export function mealSlots(setup: MealSetup = DEFAULT_MEAL_SETUP): SlotInfo[] {
+  const { style, count } = normalizeMealSetup(setup);
+  if (style === "named") return NAMED_SETS[count].map((id) => NAMED[id]);
+  return NUMBERED.slice(0, count).map((slot, index) => ({
+    ...slot,
+    hour: count === 1 ? 13 : Math.round(7 + (14 * index) / (count - 1)),
+  }));
+}
+
+/** Momentos de la configuración más los que tengan entradas de antes (si se cambió la configuración). */
+export function slotsForDay(
+  entries: Pick<MealEntry, "slot">[],
+  setup: MealSetup = DEFAULT_MEAL_SETUP,
+): SlotInfo[] {
+  const slots = mealSlots(setup);
+  const extra = [...new Set(entries.map((entry) => entry.slot))].filter(
+    (slot) => !slots.some((item) => item.id === slot),
+  );
+  return [...slots, ...extra.map((id) => ({ id, label: slotLabel(id), hour: 24 }))];
+}
 
 export type MealEntry = {
   id: string;
@@ -29,20 +93,16 @@ export type MealEntry = {
 
 export type MealDraft = Omit<MealEntry, "id" | "date" | "slot">;
 
-export const MEAL_SLOTS: Array<{ id: MealSlot; label: string }> = [
-  { id: "breakfast", label: "Desayuno" },
-  { id: "lunch", label: "Almuerzo" },
-  { id: "dinner", label: "Cena" },
-  { id: "snack", label: "Snacks" },
-];
-export const slotLabel = (slot: MealSlot) => MEAL_SLOTS.find((item) => item.id === slot)?.label ?? slot;
+/** Los momentos de la configuración por defecto (4 con nombre). */
+export const MEAL_SLOTS = mealSlots(DEFAULT_MEAL_SETUP);
+export const slotLabel = (slot: MealSlot) =>
+  NAMED[slot]?.label ?? NUMBERED.find((item) => item.id === slot)?.label ?? slot;
 
-/** El momento del día que corresponde a una hora, para proponerlo al abrir "Agregar". */
-export function slotForHour(hour: number): MealSlot {
-  if (hour >= 5 && hour < 11) return "breakfast";
-  if (hour >= 11 && hour < 16) return "lunch";
-  if (hour >= 18 && hour < 23) return "dinner";
-  return "snack";
+/** El momento que corresponde a una hora: el último cuya hora típica ya llegó (con 1 h de margen). */
+export function slotForHour(hour: number, setup: MealSetup = DEFAULT_MEAL_SETUP): MealSlot {
+  const slots = mealSlots(setup);
+  const passed = slots.filter((slot) => slot.hour <= hour + 1);
+  return (passed.at(-1) ?? slots[0]).id;
 }
 
 export const totalsOf = (entries: Nutrients[]): Nutrients => sumNutrients(entries);
@@ -71,8 +131,8 @@ export function draftFromQuick(
 }
 
 /** Las entradas de un día, en el orden de los momentos y con el subtotal de cada uno. */
-export function groupBySlot(entries: MealEntry[]) {
-  return MEAL_SLOTS.map((slot) => {
+export function groupBySlot(entries: MealEntry[], setup: MealSetup = DEFAULT_MEAL_SETUP) {
+  return slotsForDay(entries, setup).map((slot) => {
     const items = entries.filter((entry) => entry.slot === slot.id);
     return { ...slot, entries: items, totals: totalsOf(items) };
   });
@@ -128,30 +188,26 @@ export function foodUsage(entries: MealEntry[]): FoodUsage {
   for (const entry of entries) {
     if (!entry.foodId) continue;
     counts[entry.foodId] = (counts[entry.foodId] ?? 0) + 1;
+    slotCounts[entry.slot] ??= {};
     slotCounts[entry.slot][entry.foodId] = (slotCounts[entry.slot][entry.foodId] ?? 0) + 1;
     if (!(entry.foodId in lastGrams) && entry.grams) lastGrams[entry.foodId] = entry.grams;
     if (!recent.includes(entry.foodId)) recent.push(entry.foodId);
   }
   const ranked = (slot: MealSlot) =>
-    Object.entries(slotCounts[slot])
+    Object.entries(slotCounts[slot] ?? {})
       .sort((a, b) => b[1] - a[1] || recent.indexOf(a[0]) - recent.indexOf(b[0]))
       .map(([id]) => id);
   return {
     counts,
     lastGrams,
-    bySlot: {
-      breakfast: ranked("breakfast"),
-      lunch: ranked("lunch"),
-      dinner: ranked("dinner"),
-      snack: ranked("snack"),
-    },
+    bySlot: Object.fromEntries(Object.keys(slotCounts).map((slot) => [slot, ranked(slot)])),
     recent,
   };
 }
 
 /** Sugerencias para un momento: primero lo habitual a esa hora, luego lo reciente. */
 export function suggestionsFor(slot: MealSlot, usage: FoodUsage, foods: Food[], limit = 8): Food[] {
-  const ids = [...new Set([...usage.bySlot[slot], ...usage.recent])];
+  const ids = [...new Set([...(usage.bySlot[slot] ?? []), ...usage.recent])];
   const byId = new Map(foods.map((food) => [food.id, food]));
   return ids.flatMap((id) => (byId.has(id) ? [byId.get(id) as Food] : [])).slice(0, limit);
 }
@@ -177,7 +233,7 @@ export function isMealEntry(value: unknown): value is MealEntry {
     typeof value.name === "string" &&
     typeof value.date === "string" &&
     /^\d{4}-\d{2}-\d{2}$/.test(value.date) &&
-    MEAL_SLOTS.some((slot) => slot.id === value.slot) &&
+    KNOWN_SLOTS.includes(value.slot as string) &&
     ["kcal", "proteinG", "carbsG", "fatsG"].every((key) => Number.isFinite(value[key]))
   );
 }
