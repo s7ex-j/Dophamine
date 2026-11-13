@@ -6,7 +6,7 @@ import { IconButton, Screen } from "@/src/components/ui";
 import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
 import { buildWeek } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
-import { HabitsQuickCard } from "@/src/features/dashboard/DashboardSections";
+import type { InsightMetric } from "@/src/features/dashboard/insights";
 import {
   moveSection,
   normalizeLayout,
@@ -16,43 +16,55 @@ import {
 } from "@/src/features/dashboard/layout";
 import {
   BalanceTile,
+  ComplianceCard,
   CompositionTile,
+  ConsistencyTile,
   CustomizePanel,
   ExpenditureTile,
   FoodSearchBar,
   GoalTile,
+  MacrosTile,
   NutritionWeek,
+  SleepTile,
   TrendTile,
 } from "@/src/features/dashboard/PanelSections";
-import { DEFAULT_HABITS, dateKey } from "@/src/features/habits/habits";
-import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
+import type { DayCompliance } from "@/src/features/habits/compliance";
+import { getComplianceDays } from "@/src/features/habits/compliance.data";
 import { Onboarding } from "@/src/features/profile/PlanWizard";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import type { SleepEntry } from "@/src/features/sleep/sleep";
+import { getSleepSince } from "@/src/features/sleep/sleep.repository";
+import { addDays, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 const LAYOUT_KEY = "dashboard_layout";
 // Estas secciones son tarjetas pequeñas: las seguidas se acomodan de a dos por fila.
-const TILES: PanelSection[] = ["expenditure", "trend", "balance", "goal"];
+const TILES: PanelSection[] = ["expenditure", "trend", "balance", "goal", "macros", "sleep"];
 
 // Pestaña "Panel": el progreso de un vistazo, en el orden que elija la persona.
 export default function DashboardScreen() {
   const router = useRouter();
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
-  const [entries, setEntries] = useState<HabitEntry[]>([]);
+  const [compliance, setCompliance] = useState<DayCompliance | null>(null);
+  const [sleep, setSleep] = useState<SleepEntry[]>([]);
   const [layout, setLayout] = useState<PanelLayout>(normalizeLayout(null));
   const [customizing, setCustomizing] = useState(false);
 
   const load = useCallback(() => {
-    Promise.all([getDashboardSnapshot(), getHabitEntries(DEFAULT_HABITS, 31), getSetting(LAYOUT_KEY)]).then(
-      ([nextSnapshot, nextEntries, savedLayout]) => {
-        setSnapshot(nextSnapshot);
-        setEntries(nextEntries);
-        setLayout(normalizeLayout(savedLayout));
-      },
-    );
+    Promise.all([
+      getDashboardSnapshot(),
+      getComplianceDays(1),
+      getSleepSince(addDays(localDateKey(), -40)),
+      getSetting(LAYOUT_KEY),
+    ]).then(([nextSnapshot, days, nights, savedLayout]) => {
+      setSnapshot(nextSnapshot);
+      setCompliance(days[0]?.compliance ?? null);
+      setSleep(nights);
+      setLayout(normalizeLayout(savedLayout));
+    });
   }, []);
   useEffect(load, [load]);
   useFocusEffect(load);
@@ -61,12 +73,6 @@ export default function DashboardScreen() {
   const changeLayout = (next: PanelLayout) => {
     setLayout(next);
     void setSetting(LAYOUT_KEY, next);
-  };
-  const todayHabit = (habitId: string) =>
-    entries.find((entry) => entry.id === habitId && entry.date === dateKey())?.completed ?? false;
-  const toggleToday = async (habitId: string) => {
-    await toggleHabit(habitId);
-    load();
   };
 
   if (!snapshot) return <Screen />;
@@ -79,30 +85,37 @@ export default function DashboardScreen() {
 
   const profile = snapshot.profile;
   const week = buildWeek(snapshot.records);
-  const openAnalysis = () => router.push("/analysis");
+  const today = localDateKey();
+  const lastDays = (count: number) =>
+    Array.from({ length: count }, (_, index) => addDays(today, index - count + 1));
+  const open = (metric: InsightMetric) => () => router.push({ pathname: "/insight", params: { metric } });
 
   const render = (id: PanelSection) => {
     switch (id) {
       case "nutrition":
         return <NutritionWeek key={id} week={week} profile={profile} />;
+      case "habits":
+        return compliance && !VIEWER ? (
+          <ComplianceCard key={id} compliance={compliance} onPress={() => router.push("/habits")} />
+        ) : null;
       case "expenditure":
         return (
           <ExpenditureTile
             key={id}
             records={snapshot.records}
             analysis={snapshot.analysis}
-            onPress={openAnalysis}
+            onPress={open("expenditure")}
           />
         );
       case "trend":
-        return <TrendTile key={id} analysis={snapshot.analysis} profile={profile} onPress={openAnalysis} />;
+        return <TrendTile key={id} analysis={snapshot.analysis} profile={profile} onPress={open("weight")} />;
       case "balance":
         return (
           <BalanceTile
             key={id}
             records={snapshot.records}
             analysis={snapshot.analysis}
-            onPress={openAnalysis}
+            onPress={open("balance")}
           />
         );
       case "goal":
@@ -112,15 +125,32 @@ export default function DashboardScreen() {
             profile={profile}
             trendKg={snapshot.trendKg}
             analysis={snapshot.analysis}
-            onPress={() => router.push("/strategy")}
+            onPress={open("weight")}
           />
         );
+      case "macros":
+        return <MacrosTile key={id} week={week} profile={profile} onPress={open("macros")} />;
+      case "sleep":
+        return <SleepTile key={id} sleep={sleep} dates={lastDays(7)} onPress={open("sleep")} />;
       case "composition":
         return (
-          <CompositionTile key={id} records={snapshot.records} profile={profile} onPress={openAnalysis} />
+          <CompositionTile
+            key={id}
+            records={snapshot.records}
+            profile={profile}
+            onPress={open("composition")}
+          />
         );
-      case "habits":
-        return VIEWER ? null : <HabitsQuickCard key={id} todayHabit={todayHabit} toggleToday={toggleToday} />;
+      case "consistency":
+        return (
+          <ConsistencyTile
+            key={id}
+            records={snapshot.records}
+            sleep={sleep}
+            dates={lastDays(35)}
+            onPress={open("consistency")}
+          />
+        );
     }
   };
   // Agrupa las tarjetas pequeñas seguidas en una misma cuadrícula, respetando el orden.
@@ -130,7 +160,7 @@ export default function DashboardScreen() {
     if (TILES.includes(item.id) && last && TILES.includes(last[0])) last.push(item.id);
     else blocks.push([item.id]);
   }
-  const today = new Date()
+  const heading = new Date()
     .toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })
     .toUpperCase();
 
@@ -139,7 +169,7 @@ export default function DashboardScreen() {
       <ScrollView contentContainerStyle={AppTheme.content}>
         <View style={AppTheme.sectionHeader}>
           <View>
-            <Text style={AppTheme.eyebrow}>{today}</Text>
+            <Text style={AppTheme.eyebrow}>{heading}</Text>
             <Text style={AppTheme.title}>Panel</Text>
           </View>
           {VIEWER ? null : (

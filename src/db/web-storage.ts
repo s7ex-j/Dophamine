@@ -1,6 +1,7 @@
 import { localDateKey } from "@/src/lib/dates";
 import type { Food } from "@/src/features/nutrition/foods";
 import type { MealEntry } from "@/src/features/nutrition/meals";
+import type { SleepEntry } from "@/src/features/sleep/sleep";
 export type Store = {
   biometrics: Array<{
     id: string;
@@ -14,6 +15,7 @@ export type Store = {
     muscleMassKg?: number | null;
     waterPct?: number | null;
     boneMassKg?: number | null;
+    partial?: boolean;
   }>;
   wellbeing: Array<{
     id: string;
@@ -88,6 +90,8 @@ export type Store = {
   /** Lo comido, entrada por entrada. El total de cada día en `biometrics` es su suma. */
   meals?: MealEntry[];
   settings?: { onlineLookup?: boolean; [key: string]: unknown };
+  /** Noches de sueño (manuales o importadas de Health Connect). */
+  sleep?: SleepEntry[];
 };
 
 const key = "dophamine.web-store.v1";

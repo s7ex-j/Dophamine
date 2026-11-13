@@ -1,112 +1,93 @@
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useCallback, useState } from "react";
+import { ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-import { Card, Screen } from "@/src/components/ui";
-import { DEFAULT_HABITS, monthDays } from "@/src/features/habits/habits";
-import { getHabitEntries, toggleHabit, type HabitEntry } from "@/src/features/habits/habits.repository";
+
+import { Card, Chips, Screen, type IconName } from "@/src/components/ui";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import {
+  COMPLIANCE_ITEMS,
+  complianceRates,
+  streak,
+  type ComplianceKey,
+  type DayCompliance,
+} from "@/src/features/habits/compliance";
+import { getComplianceDays } from "@/src/features/habits/compliance.data";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
-const MONTH_NAME = new Intl.DateTimeFormat("es", { month: "long", year: "numeric" });
+const ICONS: Record<ComplianceKey, IconName> = {
+  calories: "flame-outline",
+  protein: "fish-outline",
+  weight: "scale-outline",
+  training: "barbell-outline",
+  sleep: "moon-outline",
+  wellbeing: "happy-outline",
+};
 
-// En la web (visor de solo lectura) esta pantalla no registra nada.
 export default function HabitsScreen() {
-  return VIEWER ? <ViewerOnlyNotice what="Hábitos" /> : <HabitsScreenContent />;
+  return VIEWER ? <ViewerOnlyNotice what="El cumplimiento" /> : <ComplianceContent />;
 }
 
-function HabitsScreenContent() {
-  const [entries, setEntries] = useState<HabitEntry[]>([]);
-  const days = useMemo(() => monthDays(), []);
-  const load = useCallback(() => {
-    getHabitEntries(DEFAULT_HABITS, days.length).then(setEntries);
-  }, [days.length]);
-  useFocusEffect(load);
-  const completed = (habitId: string, date: string) =>
-    entries.find((entry) => entry.id === habitId && entry.date === date)?.completed ?? false;
-  const toggle = async (habitId: string, date: string) => {
-    await toggleHabit(habitId, date);
-    load();
-  };
-  const total = entries.filter((entry) => entry.completed).length;
-  const available = days.length * DEFAULT_HABITS.length;
+// Cumplimiento: los seis compromisos de cada día, marcados solos con lo que se
+// registró. Una fila por compromiso, un cuadro por día.
+function ComplianceContent() {
+  const [range, setRange] = useState(28);
+  const [days, setDays] = useState<Array<{ date: string; compliance: DayCompliance }>>([]);
+  useFocusEffect(
+    useCallback(() => {
+      getComplianceDays(range).then(setDays);
+    }, [range]),
+  );
+  const values = days.map((day) => day.compliance);
+  const rates = complianceRates(values);
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>CONSISTENCIA, NO PERFECCIÓN</Text>
-        <Text style={AppTheme.title}>Hábitos</Text>
-        <Card title={MONTH_NAME.format(new Date())}>
-          <Text style={AppTheme.body}>
-            {total} marcas de {available} posibles · {available ? Math.round((total / available) * 100) : 0}%
-            de consistencia mensual
-          </Text>
-          <View style={AppTheme.progressTrack}>
-            <View
-              style={[AppTheme.progressFill, { width: `${available ? (total / available) * 100 : 0}%` }]}
-            />
-          </View>
-        </Card>
-        <Card title="Vista mensual">
-          <Text style={AppTheme.hint}>Toca una casilla para marcar o desmarcar el hábito de ese día.</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={AppTheme.habitGrid}>
-              <View style={AppTheme.habitHeader}>
-                <Text style={AppTheme.habitLabel}>Hábito</Text>
-                {days.map((date) => (
-                  <Text key={date} style={AppTheme.habitDay}>
-                    {Number(date.slice(-2))}
-                  </Text>
-                ))}
-              </View>
-              {DEFAULT_HABITS.map((habit) => (
-                <View key={habit.id} style={AppTheme.habitRow}>
-                  <View style={AppTheme.habitName}>
-                    <View style={[AppTheme.habitColor, { backgroundColor: habit.color }]} />
-                    <Text style={AppTheme.habitLabel}>{habit.shortLabel}</Text>
-                  </View>
-                  {days.map((date) => (
-                    <Pressable
-                      key={date}
-                      accessibilityLabel={`${habit.label} ${date}`}
-                      onPress={() => toggle(habit.id, date)}
-                      style={[
-                        AppTheme.habitCell,
-                        completed(habit.id, date) && {
-                          backgroundColor: habit.color,
-                          borderColor: habit.color,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          AppTheme.habitCellText,
-                          completed(habit.id, date) && AppTheme.habitCellTextActive,
-                        ]}
-                      >
-                        {completed(habit.id, date) ? "✓" : ""}
-                      </Text>
-                    </Pressable>
-                  ))}
+        <Chips
+          value={range}
+          onChange={setRange}
+          options={[
+            { value: 7, label: "7 días" },
+            { value: 28, label: "4 semanas" },
+            { value: 84, label: "12 semanas" },
+          ]}
+        />
+        {COMPLIANCE_ITEMS.map((item) => (
+          <Card key={item.key} title={item.label}>
+            <View style={AppTheme.sectionHeader}>
+              <View style={AppTheme.iconRow}>
+                <View style={AppTheme.iconChip}>
+                  <Ionicons name={ICONS[item.key]} size={18} color={AppTheme.colors.accent} />
                 </View>
+                <Text style={AppTheme.hint}>{item.rule}</Text>
+              </View>
+              <Text style={AppTheme.tileValue}>{rates[item.key]} %</Text>
+            </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+              {days.map((day) => (
+                <View
+                  key={day.date}
+                  accessibilityLabel={`${day.date}: ${day.compliance[item.key] ? "cumplido" : "no"}`}
+                  style={{
+                    width: range > 28 ? 8 : 16,
+                    height: 16,
+                    borderRadius: 4,
+                    backgroundColor: day.compliance[item.key]
+                      ? AppTheme.colors.accent
+                      : AppTheme.colors.surface2,
+                  }}
+                />
               ))}
             </View>
-          </ScrollView>
-        </Card>
-        <Card title="Qué cuenta hoy">
-          {DEFAULT_HABITS.map((habit) => {
-            const count = entries.filter((entry) => entry.id === habit.id && entry.completed).length;
-            return (
-              <View key={habit.id} style={AppTheme.habitSummary}>
-                <View style={[AppTheme.habitColor, { backgroundColor: habit.color }]} />
-                <Text style={AppTheme.listText}>{habit.label}</Text>
-                <Text style={AppTheme.listValue}>
-                  {count}/{days.length}
-                </Text>
-              </View>
-            );
-          })}
-        </Card>
+            <Text style={AppTheme.hint}>Racha actual: {streak(values, item.key)} días</Text>
+          </Card>
+        ))}
+        <Text style={AppTheme.hint}>
+          Se calcula con lo que registras: comida y peso en el Diario, sesiones en Entreno, sueño y bienestar.
+          Los días de descanso de tu rutina cuentan como cumplidos en Entreno.
+        </Text>
       </ScrollView>
     </Screen>
   );

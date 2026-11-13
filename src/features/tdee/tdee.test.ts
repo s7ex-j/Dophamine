@@ -5,7 +5,11 @@ import {
   analyzeMetabolism,
   buildWeeklyCheckIn,
   energyBalance,
+  energyPerKg,
   expenditureSeries,
+  KCAL_PER_KG_DEFAULT,
+  linearTrend,
+  trendPoints,
   weeklyRecommendation,
 } from "@/src/features/tdee/tdee";
 
@@ -123,5 +127,54 @@ describe("gasto y balance para el Panel", () => {
     expect(balance).toHaveLength(3);
     expect(balance.every((day) => day.balance === -200)).toBe(true);
     expect(energyBalance(steady, null)).toEqual([]);
+  });
+});
+
+describe("precisión del gasto", () => {
+  it("ajusta una recta y da su error", () => {
+    expect(linearTrend([0, 1, 2, 3], [1, 3, 5, 7])).toEqual({ slope: 2, standardError: 0 });
+    expect(linearTrend([0, 1, 2, 3], [1, 2, 4, 3]).standardError).toBeGreaterThan(0);
+    expect(linearTrend([0, 1], [1, 2]).slope).toBe(0);
+  });
+
+  it("los días incompletos no cuentan para la ingesta media", () => {
+    const records = days(21, (index) => ({ weightKg: 75, caloriesIn: index % 7 === 3 ? 900 : 2500 }));
+    for (const record of records) if (record.caloriesIn === 900) record.partial = true;
+    const analysis = analyzeMetabolism(records);
+    expect(analysis.tdee).toBe(2500);
+    expect(analysis.partialDays).toBe(3);
+    expect(analysis.loggedDays).toBe(18);
+  });
+
+  it("un salto de agua pesa menos en la tendencia", () => {
+    const records = days(10, () => ({ weightKg: 75, caloriesIn: 2500 }));
+    records.forEach((record) => (record.waterPct = 58));
+    records[9] = { ...records[9], weightKg: 76.5, waterPct: 61 };
+    const points = trendPoints(records);
+    expect(points.at(-1)?.damped).toBe(true);
+    expect(points.at(-1)?.trendKg).toBeCloseTo(75.15, 2);
+    const plain = trendPoints(days(10, (index) => ({ weightKg: index === 9 ? 75.5 : 75, caloriesIn: 2500 })));
+    expect(plain.at(-1)?.damped).toBeUndefined();
+  });
+
+  it("usa la energía real del tejido cuando hay composición medida", () => {
+    expect(energyPerKg(days(20, () => ({ weightKg: 75, caloriesIn: 2500 })))).toBe(KCAL_PER_KG_DEFAULT);
+    // Sube 2 kg y el % de grasa baja: casi todo es masa magra, que aporta pocas kcal por kg.
+    const lean = days(20, (index) => ({ weightKg: 70 + index * 0.1, caloriesIn: 2800 }));
+    lean.forEach((record, index) => (record.bodyFatPct = 15 - index * 0.05));
+    expect(energyPerKg(lean)).toBeLessThan(3000);
+    // Baja 2 kg y casi todo es grasa.
+    const fat = days(20, (index) => ({ weightKg: 80 - index * 0.1, caloriesIn: 2000 }));
+    fat.forEach((record, index) => (record.bodyFatPct = 20 - index * 0.11));
+    expect(energyPerKg(fat)).toBeGreaterThan(8500);
+  });
+
+  it("da un margen que crece con el ruido del peso", () => {
+    const steady = analyzeMetabolism(days(21, () => ({ weightKg: 75, caloriesIn: 2500 })));
+    const noisy = analyzeMetabolism(
+      days(21, (index) => ({ weightKg: 75 + (index % 2 ? 0.8 : -0.8), caloriesIn: 2500 })),
+    );
+    expect(steady.tdeeMargin).toBe(80);
+    expect(noisy.tdeeMargin ?? 0).toBeGreaterThan(steady.tdeeMargin ?? 0);
   });
 });

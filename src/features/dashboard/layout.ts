@@ -2,17 +2,29 @@
  * El Panel personalizable: qué secciones se ven y en qué orden. Módulo puro.
  */
 export type PanelSection =
-  "nutrition" | "expenditure" | "trend" | "balance" | "goal" | "composition" | "habits";
+  | "habits"
+  | "nutrition"
+  | "expenditure"
+  | "trend"
+  | "balance"
+  | "goal"
+  | "macros"
+  | "sleep"
+  | "composition"
+  | "consistency";
 export type PanelLayout = Array<{ id: PanelSection; visible: boolean }>;
 
 export const PANEL_SECTIONS: Array<{ id: PanelSection; label: string }> = [
   { id: "nutrition", label: "Nutrición y metas" },
+  { id: "habits", label: "Cumplimiento de hoy" },
   { id: "expenditure", label: "Gasto energético" },
   { id: "trend", label: "Tendencia de peso" },
   { id: "balance", label: "Balance energético" },
   { id: "goal", label: "Progreso de la meta" },
+  { id: "macros", label: "Macros de la semana" },
+  { id: "sleep", label: "Sueño" },
   { id: "composition", label: "Composición corporal" },
-  { id: "habits", label: "Hábitos de hoy" },
+  { id: "consistency", label: "Constancia" },
 ];
 
 export const DEFAULT_LAYOUT: PanelLayout = PANEL_SECTIONS.map((section) => ({

@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { BigInput, Button, Card, Input, LinkButton, RowActions, Screen } from "@/src/components/ui";
+import { BigInput, Button, Card, Chips, Input, LinkButton, RowActions, Screen } from "@/src/components/ui";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import {
   deleteDailyBiometrics,
   getBiometricsByDate,
   getRecentBiometrics,
   saveDayBody,
+  setDayPartial,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
 import {
@@ -30,7 +31,10 @@ import {
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { addDays, dayLabel, localDateKey } from "@/src/lib/dates";
+import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
+import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import { VIEWER } from "@/src/lib/mode";
+import { formatDuration, normalizeTime } from "@/src/lib/time";
 import { formatWeight, toKg } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
@@ -51,6 +55,8 @@ function DailyLogScreenContent() {
   const [history, setHistory] = useState<DailyBiometrics[]>([]);
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
   const [showComposition, setShowComposition] = useState(false);
+  const [sleep, setSleep] = useState<SleepEntry | null>(null);
+  const [sleepForm, setSleepForm] = useState({ bedtime: "", wakeTime: "", quality: 0 });
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
@@ -62,7 +68,15 @@ function DailyLogScreenContent() {
       getMealEntries(addDays(current, -1)),
       getRecentBiometrics(),
       getNutritionProfile(),
-    ]).then(([record, meals, before, rows, nextProfile]) => {
+      getSleepSince(current),
+    ]).then(([record, meals, before, rows, nextProfile, nights]) => {
+      const night = nights.find((entry) => entry.date === current) ?? null;
+      setSleep(night);
+      setSleepForm({
+        bedtime: night?.bedtime ?? "",
+        wakeTime: night?.wakeTime ?? "",
+        quality: night?.quality ?? 0,
+      });
       setProfile(nextProfile);
       setDay(record);
       setEntries(meals);
@@ -101,6 +115,27 @@ function DailyLogScreenContent() {
     load(date);
     setMessage({ text: `Se copiaron ${copied} alimentos del día anterior.`, error: false });
   };
+  const saveNight = async () => {
+    const input = {
+      bedtime: normalizeTime(sleepForm.bedtime) ?? sleepForm.bedtime,
+      wakeTime: normalizeTime(sleepForm.wakeTime) ?? sleepForm.wakeTime,
+      quality: sleepForm.quality || null,
+    };
+    const problem = sleepError(input);
+    if (problem) return setMessage({ text: problem, error: true });
+    await saveSleep(input, date);
+    load(date);
+    setMessage({ text: "Sueño guardado.", error: false });
+  };
+  const removeNight = async () => {
+    await deleteSleep(date);
+    load(date);
+  };
+  const togglePartial = async (partial: boolean) => {
+    await setDayPartial(date, partial);
+    load(date);
+  };
+  const edit = (entry: MealEntry) => router.push({ pathname: "/edit-entry", params: { id: entry.id, date } });
   const add = (slot: MealSlot) => router.push({ pathname: "/add-food", params: { date, slot } });
 
   // Un día anterior a las comidas por entrada solo tiene el total guardado.
@@ -152,6 +187,18 @@ function DailyLogScreenContent() {
         </View>
 
         <DaySummary totals={totals} targets={targets} />
+        {entries.length || totals.kcal ? (
+          <View style={[AppTheme.sectionHeader, { paddingHorizontal: 4 }]}>
+            <Text style={AppTheme.hint}>No registré todo lo que comí este día</Text>
+            <Switch
+              accessibilityLabel="Día incompleto"
+              value={Boolean(day?.partial)}
+              onValueChange={togglePartial}
+              trackColor={{ true: AppTheme.colors.amber, false: AppTheme.colors.border }}
+              thumbColor={AppTheme.colors.text}
+            />
+          </View>
+        ) : null}
         {!entries.length && previous > 0 ? (
           <View style={AppTheme.rowActions}>
             <LinkButton title={`Copiar los ${previous} alimentos de ayer`} onPress={copyPrevious} />
@@ -167,8 +214,59 @@ function DailyLogScreenContent() {
             kcal={slot.totals.kcal}
             onAdd={() => add(slot.id)}
             onRemove={removeEntry}
+            onEdit={edit}
           />
         ))}
+
+        <Card
+          title={
+            sleep ? `Sueño · ${formatDuration(sleepMinutes(sleep.bedtime, sleep.wakeTime) ?? 0)}` : "Sueño"
+          }
+        >
+          <View style={AppTheme.fieldRow}>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Me acosté"
+                value={sleepForm.bedtime}
+                onChangeText={(bedtime) => setSleepForm({ ...sleepForm, bedtime })}
+                keyboardType="numbers-and-punctuation"
+                placeholder="23:30"
+              />
+            </View>
+            <View style={AppTheme.fieldRowItem}>
+              <Input
+                label="Desperté"
+                value={sleepForm.wakeTime}
+                onChangeText={(wakeTime) => setSleepForm({ ...sleepForm, wakeTime })}
+                keyboardType="numbers-and-punctuation"
+                placeholder="07:00"
+              />
+            </View>
+          </View>
+          <Text style={AppTheme.label}>¿Cómo dormiste?</Text>
+          <Chips
+            value={sleepForm.quality}
+            onChange={(quality) => setSleepForm({ ...sleepForm, quality })}
+            options={[1, 2, 3, 4, 5].map((value) => ({ value, label: String(value) }))}
+          />
+          {(() => {
+            const minutes = sleepMinutes(
+              normalizeTime(sleepForm.bedtime) ?? "",
+              normalizeTime(sleepForm.wakeTime) ?? "",
+            );
+            return minutes ? <Text style={AppTheme.hint}>{formatDuration(minutes)} de sueño</Text> : null;
+          })()}
+          <Button
+            title={sleep ? "Guardar cambios de sueño" : "Guardar sueño"}
+            variant="secondary"
+            onPress={saveNight}
+          />
+          {sleep ? (
+            <View style={AppTheme.rowActions}>
+              <LinkButton title="Quitar esta noche" danger onPress={removeNight} />
+            </View>
+          ) : null}
+        </Card>
 
         <Card title="Peso">
           <View style={AppTheme.fieldRow}>

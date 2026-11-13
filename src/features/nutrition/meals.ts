@@ -181,3 +181,26 @@ export function isMealEntry(value: unknown): value is MealEntry {
     ["kcal", "proteinG", "carbsG", "fatsG"].every((key) => Number.isFinite(value[key]))
   );
 }
+
+/**
+ * Una entrada con otra cantidad. Si se conoce el alimento, se recalcula desde
+ * él; si no (alimento borrado), se escala proporcionalmente.
+ */
+export function rescaleEntry(entry: MealEntry, grams: number, food: Food | null): MealEntry {
+  if (food) return { ...entry, ...draftFromFood(food, grams) };
+  if (!entry.grams) return entry;
+  const factor = grams / entry.grams;
+  const round1 = (value: number) => Math.round(value * factor * 10) / 10;
+  return {
+    ...entry,
+    grams,
+    kcal: Math.round(entry.kcal * factor),
+    proteinG: round1(entry.proteinG),
+    carbsG: round1(entry.carbsG),
+    fatsG: round1(entry.fatsG),
+  };
+}
+
+/** Agrega o quita un id de una lista (favoritos). */
+export const toggleId = (ids: string[], id: string) =>
+  ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];

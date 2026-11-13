@@ -3,6 +3,8 @@
  * hora, y cuándo avisar (unos minutos antes). Módulo puro; programar las
  * notificaciones es trabajo de `reminders.scheduler` (solo en el teléfono).
  */
+import { formatTime, normalizeTime, parseTime } from "@/src/lib/time";
+
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type MealReminder = { id: string; label: string; time: string };
 export type ReminderConfig = {
@@ -46,28 +48,7 @@ export const MOTIVATION = [
   "Lo que mides, lo puedes cambiar.",
 ];
 
-/** "7:30", "0730", "07.30" o "7" → minutos desde la medianoche. null si no es una hora válida. */
-export function parseTime(text: string): number | null {
-  const clean = text.trim().replace(/[.h]/gi, ":");
-  const match = clean.includes(":")
-    ? clean.match(/^(\d{1,2}):(\d{1,2})$/)
-    : clean.match(/^(\d{1,2})(\d{2})?$/);
-  if (!match) return null;
-  const hour = Number(match[1]);
-  const minute = Number(match[2] ?? 0);
-  return hour <= 23 && minute <= 59 ? hour * 60 + minute : null;
-}
-
-export const formatTime = (minutes: number) => {
-  const value = ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
-  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
-};
-
-/** La hora escrita en formato HH:MM, o null si no es válida. */
-export const normalizeTime = (text: string) => {
-  const minutes = parseTime(text);
-  return minutes === null ? null : formatTime(minutes);
-};
+export { formatTime, normalizeTime, parseTime };
 
 const TEMPLATES: Record<number, Array<[string, string]>> = {
   2: [

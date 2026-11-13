@@ -18,6 +18,8 @@ export type DailyBiometrics = {
   muscleMassKg?: number | null;
   waterPct?: number | null;
   boneMassKg?: number | null;
+  /** La persona marcó que no registró todo lo que comió ese día. */
+  partial?: boolean;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -34,6 +36,7 @@ const normalize = (record: Partial<DailyBiometrics> & { id: string; date: string
   muscleMassKg: record.muscleMassKg ?? null,
   waterPct: record.waterPct ?? null,
   boneMassKg: record.boneMassKg ?? null,
+  partial: record.partial === true,
 });
 
 // Devuelve el registro del día dentro del almacén, creándolo vacío si no existe.
@@ -92,4 +95,11 @@ export async function getBiometricsWindow(days: number): Promise<DailyBiometrics
 }
 export async function getRecentBiometrics() {
   return getBiometricsWindow(7);
+}
+
+/** Marca o desmarca un día como incompleto (no se registró todo lo comido). */
+export async function setDayPartial(date: string, partial: boolean) {
+  const store = readStore();
+  dayIn(store, date).partial = partial;
+  writeStore(store);
 }

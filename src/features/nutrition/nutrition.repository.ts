@@ -169,3 +169,21 @@ export async function setOnlineLookup(enabled: boolean) {
     enabled ? "on" : "off",
   );
 }
+
+/** Reemplaza una entrada (cantidad, momento del día o alimento) y recalcula su día. */
+export async function updateMealEntry(entry: MealEntry) {
+  const db = await getDatabase();
+  await db.runAsync(
+    "UPDATE meal_entries SET slot = ?, food_id = ?, name = ?, grams = ?, kcal = ?, protein_g = ?, carbs_g = ?, fats_g = ? WHERE id = ?",
+    entry.slot,
+    entry.foodId ?? null,
+    entry.name,
+    entry.grams ?? null,
+    entry.kcal,
+    entry.proteinG,
+    entry.carbsG,
+    entry.fatsG,
+    entry.id,
+  );
+  await syncTotals(entry.date);
+}

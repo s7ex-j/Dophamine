@@ -75,6 +75,7 @@ export function MealCard({
   kcal,
   onAdd,
   onRemove,
+  onEdit,
 }: {
   slot: MealSlot;
   label: string;
@@ -82,6 +83,7 @@ export function MealCard({
   kcal: number;
   onAdd: () => void;
   onRemove: (entry: MealEntry) => void;
+  onEdit?: (entry: MealEntry) => void;
 }) {
   return (
     <View style={AppTheme.card}>
@@ -96,25 +98,44 @@ export function MealCard({
         <IconButton icon="add" label={`Agregar a ${label.toLowerCase()}`} onPress={onAdd} />
       </View>
       {entries.map((entry) => (
-        <EntryRow key={entry.id} entry={entry} onRemove={() => onRemove(entry)} />
+        <EntryRow
+          key={entry.id}
+          entry={entry}
+          onRemove={() => onRemove(entry)}
+          onPress={onEdit ? () => onEdit(entry) : undefined}
+        />
       ))}
     </View>
   );
 }
 
 /** Un alimento registrado. Quitarlo pide confirmar en la misma fila. */
-export function EntryRow({ entry, onRemove }: { entry: MealEntry; onRemove?: () => void }) {
+export function EntryRow({
+  entry,
+  onRemove,
+  onPress,
+}: {
+  entry: MealEntry;
+  onRemove?: () => void;
+  onPress?: () => void;
+}) {
   const [asking, setAsking] = useState(false);
   return (
     <View style={AppTheme.entryRow}>
-      <View style={{ flex: 1, gap: 2 }}>
+      <Pressable
+        accessibilityRole={onPress ? "button" : undefined}
+        accessibilityLabel={onPress ? `Editar ${entry.name}` : undefined}
+        disabled={!onPress}
+        onPress={onPress}
+        style={{ flex: 1, gap: 2 }}
+      >
         <Text style={AppTheme.entryName} numberOfLines={1}>
           {entry.name}
         </Text>
         <Text style={AppTheme.entryDetail}>
           {entry.grams ? `${entry.grams} g · ` : ""}P {entry.proteinG} · C {entry.carbsG} · G {entry.fatsG}
         </Text>
-      </View>
+      </Pressable>
       {asking ? (
         <>
           <LinkButton title="Quitar" danger onPress={() => (setAsking(false), onRemove?.())} />

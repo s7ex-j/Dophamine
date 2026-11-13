@@ -1,4 +1,5 @@
 import { readStore, webId, writeStore } from "@/src/db/web-storage";
+import { localDateKey } from "@/src/lib/dates";
 import { progressionHintFor, type ProgressionHint } from "./progression";
 import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
 
@@ -59,4 +60,11 @@ export async function getProgressionHints(routine: Routine): Promise<Progression
     const hint = progressionHintFor(exercise, last);
     return hint ? [hint] : [];
   });
+}
+
+/** Fechas locales (AAAA-MM-DD) con al menos una sesión registrada desde `since`. */
+export async function getWorkoutDates(since: string): Promise<string[]> {
+  return [
+    ...new Set(readStore().workouts.map((workout) => localDateKey(new Date(workout.completedAt)))),
+  ].filter((date) => date >= since);
 }

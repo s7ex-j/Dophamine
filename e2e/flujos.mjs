@@ -336,32 +336,65 @@ async function main() {
     assert(!current.meals.some((entry) => entry.date === daysAgo(1)), "Quedaron comidas de un día borrado.");
   });
 
-  await step("panel: marcar un hábito y personalizar el orden", async () => {
-    await open("/");
-    await waitText("Adherencia de hoy");
-    await press("N");
+  await step("diario: editar un alimento, registrar sueño y marcar día incompleto", async () => {
+    await press("›");
+    await waitText("Hoy");
+    await pressLabel("Editar Pechuga de pollo cocida, sin piel");
+    await waitText("Guardar cambios");
+    await fill("Cantidad", 100);
+    await waitText("165 kcal");
+    await press("Guardar cambios");
     await page.waitForFunction(
-      (key) => (JSON.parse(localStorage.getItem(key)).habits ?? []).some((habit) => habit.completed),
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).biometrics.find((record) => record.date === date)
+          ?.caloriesIn === 307,
       {},
       STORE_KEY,
+      dateKey(),
     );
+    await fill("Me acosté", "23:30");
+    await fill("Desperté", "07:00");
+    await press("4");
+    await waitText("7 h 30 min de sueño");
+    await press("Guardar sueño");
+    await waitText("Sueño guardado.");
+    const night = (await store()).sleep[0];
+    assert(
+      night.bedtime === "23:30" && night.wakeTime === "07:00" && night.quality === 4,
+      "No se guardó el sueño.",
+    );
+    await pressLabel("Día incompleto");
+    await page.waitForFunction(
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).biometrics.find((record) => record.date === date)?.partial ===
+        true,
+      {},
+      STORE_KEY,
+      dateKey(),
+    );
+  });
+
+  await step("panel: cumplimiento automático y personalizar el orden", async () => {
+    await open("/");
+    await waitText("Cumplimiento de hoy");
+    // Hoy hay peso y sueño de 7.5 h registrados: esos dos cuentan solos.
+    for (const label of ["Pesaje: cumplido", "Sueño: cumplido", "Bienestar: pendiente"])
+      assert(await page.$(`[aria-label="${label}"]`), `El cumplimiento no marca "${label}".`);
     await pressLabel("Personalizar el Panel");
     await waitText("Personalizar");
-    await pressLabel("Subir", 1); // "Gasto energético" pasa al primer lugar
+    await pressLabel("Subir", 1); // "Cumplimiento de hoy" pasa al primer lugar
     await pressLabel("Mostrar habits");
     await page.waitForFunction(
       (key) => {
         const layout = JSON.parse(localStorage.getItem(key)).settings?.dashboard_layout ?? [];
-        return (
-          layout[0]?.id === "expenditure" && layout.find((item) => item.id === "habits")?.visible === false
-        );
+        return layout[0]?.id === "habits" && layout[0]?.visible === false;
       },
       {},
       STORE_KEY,
     );
     await pressLabel("Terminar de personalizar");
     assert(
-      !(await page.evaluate(() => document.body.innerText)).includes("Adherencia de hoy"),
+      !(await page.evaluate(() => document.body.innerText)).includes("Cumplimiento de hoy"),
       "La sección oculta sigue visible.",
     );
   });
@@ -443,7 +476,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 5, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 6, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);
@@ -529,8 +562,25 @@ async function main() {
     }));
     await seed({ ...current, biometrics });
     await open("/");
-    for (const text of ["Gasto", "Tendencia", "Balance", "Meta", "Composición corporal", "% grasa"])
+    for (const text of [
+      "Gasto",
+      "Tendencia",
+      "Balance",
+      "Meta",
+      "Macros",
+      "Sueño",
+      "Composición corporal",
+      "Constancia",
+    ])
       await waitText(text);
+    // Pantallas de detalle con rango de fechas.
+    await open("/insight?metric=weight");
+    await waitText("Tendencia actual");
+    await waitText("Llegada estimada a la meta");
+    await press("3M");
+    await waitText("Cambio en el rango");
+    await open("/insight?metric=consistency");
+    await waitText("Racha actual");
   });
 
   await step("visor web: carga un respaldo, no escribe y no ofrece registrar", async () => {
@@ -577,8 +627,13 @@ async function main() {
     await waitFor("Solo lectura");
     await waitFor("Nutrición y metas");
     const shown = await text();
-    for (const hidden of ["Diario", "Entreno", "Adherencia de hoy", "Deshacer ajuste", "Buscar un alimento"])
+    for (const hidden of ["Cumplimiento de hoy", "Deshacer ajuste", "Buscar un alimento"])
       assert(!shown.includes(hidden), `El visor muestra "${hidden}", que es para registrar.`);
+    for (const tab of ["biometrics", "training"])
+      assert(
+        !(await viewer.$(`[role="tab"][href*="${tab}"], a[href$="/${tab}"]`)),
+        `El visor muestra la pestaña "${tab}", que es para registrar.`,
+      );
     const read = () => viewer.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORE_KEY);
     await viewer.goto(`${base}/strategy`, { waitUntil: "networkidle0" });
     await waitFor("Tu programa");

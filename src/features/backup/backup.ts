@@ -3,6 +3,7 @@ import type { Store } from "@/src/db/web-storage";
 import { isFood } from "@/src/features/nutrition/foods";
 import { isMealEntry } from "@/src/features/nutrition/meals";
 import { isWeeklyReview } from "@/src/features/reviews/reviews";
+import { isSleepEntry } from "@/src/features/sleep/sleep";
 
 /**
  * Respaldo de los datos en un archivo JSON.
@@ -22,7 +23,9 @@ import { isWeeklyReview } from "@/src/features/reviews/reviews";
 // Formato 5: plan con datos de entrenamiento e ingesta (evaluación ampliada),
 // alimentos con estado crudo/cocido, y ajustes libres en `settings` (orden del
 // Panel, recordatorios). Todo opcional: los formatos 1 a 4 se leen igual.
-export const BACKUP_FORMAT = 5;
+// Formato 6: noches de sueño (`sleep`) y días marcados como incompletos
+// (`partial`). Los formatos 1 a 5 se leen igual.
+export const BACKUP_FORMAT = 6;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 
@@ -56,7 +59,7 @@ export function parseBackup(text: string): Backup {
   for (const key of ["biometrics", "wellbeing", "workouts"]) {
     if (!Array.isArray(data[key])) throw new BackupError(`El respaldo está incompleto: falta "${key}".`);
   }
-  for (const key of ["habits", "routines", "reviews", "foods", "meals"]) {
+  for (const key of ["habits", "routines", "reviews", "foods", "meals", "sleep"]) {
     if (data[key] !== undefined && !Array.isArray(data[key]))
       throw new BackupError(`El respaldo está dañado: "${key}" no tiene el formato esperado.`);
   }
@@ -74,6 +77,8 @@ export function parseBackup(text: string): Backup {
     throw new BackupError("El respaldo está dañado: el historial de revisiones no es válido.");
   if (data.settings !== undefined && !isRecord(data.settings))
     throw new BackupError("El respaldo está dañado: los ajustes no tienen el formato esperado.");
+  if (!((data.sleep as unknown[] | undefined) ?? []).every(isSleepEntry))
+    throw new BackupError("El respaldo está dañado: hay noches de sueño con datos inválidos.");
   if (!((data.foods as unknown[] | undefined) ?? []).every(isFood))
     throw new BackupError("El respaldo está dañado: hay alimentos con datos inválidos.");
   if (!((data.meals as unknown[] | undefined) ?? []).every(isMealEntry))
@@ -90,6 +95,7 @@ export function parseBackup(text: string): Backup {
       reviews: (data.reviews as Store["reviews"]) ?? [],
       foods: (data.foods as Store["foods"]) ?? [],
       meals: (data.meals as Store["meals"]) ?? [],
+      sleep: (data.sleep as Store["sleep"]) ?? [],
     },
   };
 }
@@ -106,6 +112,7 @@ export function describeBackup(backup: Backup): string {
     count(data.reviews?.length ?? 0, "revisión", "revisiones"),
     count(data.meals?.length ?? 0, "comida registrada", "comidas registradas"),
     count(data.foods?.length ?? 0, "alimento propio", "alimentos propios"),
+    count(data.sleep?.length ?? 0, "noche de sueño", "noches de sueño"),
   ];
   const date = backup.exportedAt ? ` del ${backup.exportedAt.slice(0, 10)}` : "";
   return `Respaldo${date}: ${parts.join(", ")}${data.profile ? " y tu plan" : ""}.`;

@@ -126,6 +126,7 @@ const store: Store = {
     },
   ],
   settings: { onlineLookup: true },
+  sleep: [],
 };
 
 describe("respaldo entre el teléfono y la web", () => {
@@ -203,6 +204,7 @@ describe("respaldo entre el teléfono y la web", () => {
       reviews: [],
       foods: [],
       meals: [],
+      sleep: [],
       settings: { onlineLookup: false },
     });
   });
@@ -233,5 +235,22 @@ describe("ajustes en el respaldo del teléfono", () => {
     const tables = tablesFromStore(data);
     expect(tables.settings.map((row) => row.key).sort()).toEqual(["dashboard_layout", "meal_reminders"]);
     expect(storeFromTables(tables).settings).toEqual(data.settings);
+  });
+});
+
+describe("sueño en el respaldo del teléfono", () => {
+  it("las noches pasan por SQLite sin cambios", () => {
+    const sleep = [
+      {
+        id: "n1",
+        date: "2026-11-12",
+        bedtime: "23:30",
+        wakeTime: "07:00",
+        quality: 4,
+        source: "health" as const,
+      },
+    ];
+    const data = { biometrics: [], wellbeing: [], workouts: [], sleep };
+    expect(storeFromTables(tablesFromStore(data)).sleep).toEqual(sleep);
   });
 });
