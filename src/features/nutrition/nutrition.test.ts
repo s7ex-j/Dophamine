@@ -22,6 +22,9 @@ import {
   emptyQuick,
   foodUsage,
   groupBySlot,
+  mealSlots,
+  normalizeMealSetup,
+  slotsForDay,
   ingredientsFromDrafts,
   isMealEntry,
   legacyDraft,
@@ -164,7 +167,7 @@ describe("registro rápido y comidas del día", () => {
     expect(slotForHour(13)).toBe("lunch");
     expect(slotForHour(20)).toBe("dinner");
     expect(slotForHour(16)).toBe("snack");
-    expect(slotForHour(2)).toBe("snack");
+    expect(slotForHour(2)).toBe("breakfast");
   });
 
   it("suma el día y da el subtotal de cada momento", () => {
@@ -175,7 +178,7 @@ describe("registro rápido y comidas del día", () => {
     ];
     expect(totalsOf(entries)).toEqual({ kcal: 638, proteinG: 54.6, carbsG: 84.6, fatsG: 6.3 });
     const groups = groupBySlot(entries);
-    expect(groups.map((group) => group.entries.length)).toEqual([0, 2, 1, 0]);
+    expect(groups.map((group) => group.entries.length)).toEqual([0, 2, 0, 1]);
     expect(groups[1].totals.kcal).toBe(508);
     expect(totalsOf([])).toEqual({ kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 });
   });
@@ -391,5 +394,47 @@ describe("editar una entrada", () => {
   it("marca y desmarca favoritos", () => {
     expect(toggleId([], "a")).toEqual(["a"]);
     expect(toggleId(["a", "b"], "a")).toEqual(["b"]);
+  });
+});
+
+describe("configuración de comidas", () => {
+  it("con nombres: de 2 a 6 comidas en el orden del día", () => {
+    expect(mealSlots({ style: "named", count: 3 }).map((slot) => slot.label)).toEqual([
+      "Desayuno",
+      "Almuerzo",
+      "Cena",
+    ]);
+    expect(mealSlots({ style: "named", count: 5 }).map((slot) => slot.id)).toEqual([
+      "breakfast",
+      "midmorning",
+      "lunch",
+      "snack",
+      "dinner",
+    ]);
+  });
+
+  it("por número: Comida 1 … N, repartidas entre las 7 y las 21 h", () => {
+    const slots = mealSlots({ style: "numbered", count: 5 });
+    expect(slots.map((slot) => slot.label)).toEqual([
+      "Comida 1",
+      "Comida 2",
+      "Comida 3",
+      "Comida 4",
+      "Comida 5",
+    ]);
+    expect(slots.map((slot) => slot.hour)).toEqual([7, 11, 14, 18, 21]);
+    expect(slotForHour(15, { style: "numbered", count: 5 })).toBe("meal3");
+  });
+
+  it("corrige configuraciones inválidas", () => {
+    expect(normalizeMealSetup(null)).toEqual({ style: "named", count: 4 });
+    expect(normalizeMealSetup({ style: "numbered", count: 9 })).toEqual({ style: "numbered", count: 4 });
+  });
+
+  it("muestra también las entradas de momentos que ya no están en la configuración", () => {
+    const entries = [entry("1", "lunch", rice, 100), entry("2", "meal2", rice, 100)];
+    const slots = slotsForDay(entries, { style: "named", count: 3 });
+    expect(slots.map((slot) => slot.label)).toEqual(["Desayuno", "Almuerzo", "Cena", "Comida 2"]);
+    expect(isMealEntry(entry("3", "meal6", rice, 50))).toBe(true);
   });
 });

@@ -22,6 +22,7 @@ export type BiometricsRow = {
   water_pct: number | null;
   bone_mass_kg: number | null;
   partial?: number | null;
+  water_ml?: number | null;
 };
 export type WellbeingRow = {
   id: string;
@@ -120,6 +121,7 @@ export function storeFromTables(tables: Tables): Store {
       waterPct: row.water_pct,
       boneMassKg: row.bone_mass_kg,
       ...(row.partial === 1 ? { partial: true } : {}),
+      ...(row.water_ml ? { waterMl: row.water_ml } : {}),
     })),
     // La web guarda los chequeos del más reciente al más antiguo.
     wellbeing: [...tables.wellbeing]
@@ -259,6 +261,7 @@ export function tablesFromStore(store: Store): Tables {
       water_pct: record.waterPct ?? null,
       bone_mass_kg: record.boneMassKg ?? null,
       partial: record.partial ? 1 : 0,
+      water_ml: record.waterMl ?? 0,
     })),
     // El respaldo no trae la hora del chequeo: se reconstruye una que conserve el orden.
     wellbeing: store.wellbeing.map((entry, index) => ({

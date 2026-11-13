@@ -17,6 +17,7 @@ export type Store = {
     waterPct?: number | null;
     boneMassKg?: number | null;
     partial?: boolean;
+    waterMl?: number;
   }>;
   wellbeing: Array<{
     id: string;
@@ -80,6 +81,8 @@ export type Store = {
     knownIntake?: number;
     recentTrend?: "stable" | "gaining" | "losing";
     initialExpenditure?: number;
+    mealStyle?: "named" | "numbered";
+    mealsPerDay?: number;
   };
   reviews?: Array<{
     id: string;

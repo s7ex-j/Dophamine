@@ -13,7 +13,7 @@ const tabIcon =
   );
 
 // Cinco pestañas en el teléfono. En la web (visor de solo lectura) se quitan las
-// dos de registro, Diario y Entreno. Análisis, Hábitos y Bienestar no son pestañas:
+// pestaña de registro, Entreno. Todo lo del día se anota en el Panel. Análisis, Hábitos y Bienestar no son pestañas:
 // son pantallas que se abren encima desde "Más" y "Estrategia" (ver app/_layout.tsx).
 export default function TabsLayout() {
   // Sin barra de título: cada pantalla trae el suyo. El margen superior evita la barra de estado.
@@ -36,14 +36,6 @@ export default function TabsLayout() {
         options={{
           title: "Panel",
           tabBarIcon: tabIcon("grid-outline"),
-        }}
-      />
-      <Tabs.Screen
-        name="biometrics"
-        options={{
-          href: VIEWER ? null : undefined,
-          title: "Diario",
-          tabBarIcon: tabIcon("create-outline"),
         }}
       />
       <Tabs.Screen

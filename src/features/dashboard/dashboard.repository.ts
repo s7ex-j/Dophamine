@@ -3,12 +3,11 @@ import {
   getBiometricsWindow,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
-import {
-  analyzeMetabolism,
-  buildWeeklyCheckIn,
-  type MetabolicAnalysis,
-  type WeeklyCheckIn,
-} from "@/src/features/tdee/tdee";
+import { analyzeMetabolism, type MetabolicAnalysis, type WeeklyCheckIn } from "@/src/features/tdee/tdee";
+import { contextualCheckIn } from "@/src/features/tdee/checkin";
+import { sleepSummary } from "@/src/features/sleep/sleep";
+import { getSleepSince } from "@/src/features/sleep/sleep.repository";
+import { addDays, localDateKey } from "@/src/lib/dates";
 import { isReviewDue, type WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { getLatestMood } from "@/src/features/wellbeing/wellbeing.repository";
@@ -42,6 +41,10 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     getNutritionProfile(),
     getWeeklyReviews(1),
   ]);
+  // El contexto de la revisión: lo comido y lo dormido en el periodo (3 o 7 días).
+  const period = checkInDaysOf(profile);
+  const since = addDays(localDateKey(), -(period - 1));
+  const nights = await getSleepSince(since);
   const lastReview = reviews[0] ?? null;
   const analysis = analyzeMetabolism(records);
   return {
@@ -55,7 +58,12 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     mood,
     profile,
     analysis,
-    checkIn: profile ? buildWeeklyCheckIn(analysis, profile) : null,
+    checkIn: profile
+      ? contextualCheckIn(analysis, profile, {
+          recent: records.filter((record) => record.date >= since),
+          sleepMinutes: nights.length ? sleepSummary(nights, period).averageMinutes : null,
+        })
+      : null,
     recentRecords: [...records].slice(0, 7).reverse(),
     records,
     lastReview,

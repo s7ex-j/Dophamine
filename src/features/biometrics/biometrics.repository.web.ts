@@ -20,6 +20,8 @@ export type DailyBiometrics = {
   boneMassKg?: number | null;
   /** La persona marcó que no registró todo lo que comió ese día. */
   partial?: boolean;
+  /** Agua tomada en el día, en ml. */
+  waterMl?: number;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -37,6 +39,7 @@ const normalize = (record: Partial<DailyBiometrics> & { id: string; date: string
   waterPct: record.waterPct ?? null,
   boneMassKg: record.boneMassKg ?? null,
   partial: record.partial === true,
+  waterMl: record.waterMl ?? 0,
 });
 
 // Devuelve el registro del día dentro del almacén, creándolo vacío si no existe.
@@ -102,4 +105,13 @@ export async function setDayPartial(date: string, partial: boolean) {
   const store = readStore();
   dayIn(store, date).partial = partial;
   writeStore(store);
+}
+
+/** Suma (o resta) agua al día. Devuelve el total que quedó. */
+export async function addWater(date: string, deltaMl: number): Promise<number> {
+  const store = readStore();
+  const day = dayIn(store, date);
+  day.waterMl = Math.max(0, Math.min(10000, (day.waterMl ?? 0) + deltaMl));
+  writeStore(store);
+  return day.waterMl;
 }

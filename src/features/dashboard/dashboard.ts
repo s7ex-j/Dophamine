@@ -20,44 +20,6 @@ export function buildWeek(recentRecords: DailyBiometrics[], today = new Date()):
   });
 }
 
-export type NextStep = {
-  title: string;
-  detail: string;
-  action: string;
-  route: "/biometrics" | "/habits" | "/training";
-};
-
-/** Qué conviene hacer ahora: registrar el día, completar hábitos o entrenar. */
-export function nextStepFor(hasIntake: boolean, todayScore: number, totalHabits: number): NextStep {
-  if (!hasIntake)
-    return {
-      title: "Registra tu día",
-      detail: "Añade peso, energía y macros para activar tus señales.",
-      action: "Abrir diario",
-      route: "/biometrics",
-    };
-  if (todayScore < totalHabits)
-    return {
-      title: "Completa tu consistencia",
-      detail: `Llevas ${todayScore} de ${totalHabits} compromisos diarios.`,
-      action: "Ver hábitos",
-      route: "/habits",
-    };
-  return {
-    title: "Día bien encaminado",
-    detail: "Tus hábitos de hoy están completos. Revisa tu sesión si entrenas.",
-    action: "Abrir entreno",
-    route: "/training",
-  };
-}
-
-/** La frase bajo la energía disponible. */
-export function heroMessageFor(caloriesIn: number | null, calorieTarget: number): string {
-  if (!caloriesIn) return "Aún no has registrado tu balance.";
-  if (caloriesIn > calorieTarget) return "Hoy superaste la energía objetivo.";
-  return `${Math.max(0, calorieTarget - caloriesIn)} kcal para cerrar tu objetivo.`;
-}
-
 export type GridKey = "kcal" | "protein" | "fats" | "carbs";
 export type GridRow = { key: GridKey; label: string; unit: string; target: number; values: number[] };
 export type NutritionTargets = { calories: number; protein: number; fats: number; carbs: number };

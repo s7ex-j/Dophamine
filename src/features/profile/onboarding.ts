@@ -5,6 +5,7 @@ import { isValidPlanInput } from "@/src/features/profile/planInput";
 import {
   adjustModeOf,
   checkInDaysOf,
+  mealSetupOf,
   weightUnitOf,
   type ActivityLevel,
   type AdjustMode,
@@ -32,6 +33,7 @@ export type OnboardingStep =
   | "intake"
   | "target"
   | "protein"
+  | "meals"
   | "tracking"
   | "summary";
 
@@ -57,6 +59,8 @@ export type Answers = {
   proteinLevel: ProteinLevel;
   adjustMode: AdjustMode;
   checkInDays: CheckInDays;
+  mealStyle: "named" | "numbered";
+  mealsPerDay: number;
 };
 
 /** Mantener no tiene peso meta ni ritmo, así que se salta ese paso. */
@@ -70,6 +74,7 @@ export function stepsFor(goal: Goal): OnboardingStep[] {
     "intake",
     "target",
     "protein",
+    "meals",
     "tracking",
   ];
   return [...steps.filter((step) => goal !== "maintain" || step !== "target"), "summary"];
@@ -118,6 +123,8 @@ export function answersFrom(profile: NutritionProfile | null, weightKg: number |
     proteinLevel: profile?.proteinLevel ?? "high",
     adjustMode: adjustModeOf(profile),
     checkInDays: checkInDaysOf(profile),
+    mealStyle: mealSetupOf(profile).style,
+    mealsPerDay: mealSetupOf(profile).count,
   };
 }
 
@@ -192,5 +199,7 @@ export function planInputFrom(
     proteinLevel: answers.proteinLevel,
     adjustMode: answers.adjustMode,
     checkInDays: answers.checkInDays,
+    mealStyle: answers.mealStyle,
+    mealsPerDay: answers.mealsPerDay,
   };
 }

@@ -12,6 +12,7 @@ import {
   IconButton,
   IconTabs,
   Input,
+  SlotPicker,
   RowActions,
   Screen,
 } from "@/src/components/ui";
@@ -31,14 +32,15 @@ import {
   type Food,
   type FoodState,
 } from "@/src/features/nutrition/foods";
-import { EntryRow, FoodResult, MacroSplit, SLOT_ICONS } from "@/src/features/nutrition/MealSections";
+import { EntryRow, FoodResult, MacroSplit, slotIcon } from "@/src/features/nutrition/MealSections";
 import {
   draftFromFood,
   draftFromQuick,
   emptyQuick,
   foodUsage,
   ingredientsFromDrafts,
-  MEAL_SLOTS,
+  DEFAULT_MEAL_SETUP,
+  mealSlots,
   slotForHour,
   slotLabel,
   suggestionsFor,
@@ -66,6 +68,8 @@ import {
   OFF_ATTRIBUTION,
   searchOnline,
 } from "@/src/features/nutrition/openfoodfacts";
+import { mealSetupOf } from "@/src/features/profile/profile";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
@@ -83,11 +87,9 @@ function AddFoodContent() {
   const router = useRouter();
   const params = useLocalSearchParams<{ date?: string; slot?: string }>();
   const date = /^\d{4}-\d{2}-\d{2}$/.test(params.date ?? "") ? (params.date as string) : localDateKey();
-  const [slot, setSlot] = useState<MealSlot>(
-    MEAL_SLOTS.some((item) => item.id === params.slot)
-      ? (params.slot as MealSlot)
-      : slotForHour(new Date().getHours()),
-  );
+  const [setup, setSetup] = useState(DEFAULT_MEAL_SETUP);
+  const slots = mealSlots(setup);
+  const [slot, setSlot] = useState<MealSlot>(params.slot || slotForHour(new Date().getHours()));
   const [mode, setMode] = useState<Mode>("search");
   const [userFoods, setUserFoods] = useState<Food[]>([]);
   const [history, setHistory] = useState<MealEntry[]>([]);
@@ -115,7 +117,10 @@ function AddFoodContent() {
       getOnlineLookup(),
       getMealEntries(date),
       getSetting("favorite_foods"),
-    ]).then(([foods, entries, enabled, today, saved]) => {
+      getNutritionProfile(),
+    ]).then(([foods, entries, enabled, today, saved, profile]) => {
+      setSetup(mealSetupOf(profile));
+      if (!params.slot) setSlot(slotForHour(new Date().getHours(), mealSetupOf(profile)));
       setUserFoods(foods);
       setHistory(entries);
       setOnline(enabled);
@@ -124,6 +129,7 @@ function AddFoodContent() {
         Array.isArray(saved) ? saved.filter((item): item is string => typeof item === "string") : [],
       );
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
   useFocusEffect(load);
 
@@ -257,14 +263,10 @@ function AddFoodContent() {
         <Text style={AppTheme.eyebrow}>
           {dayLabel(date).toUpperCase()} · {date}
         </Text>
-        <IconTabs
+        <SlotPicker
           value={slot}
           onChange={setSlot}
-          options={MEAL_SLOTS.map((item) => ({
-            value: item.id,
-            label: item.label,
-            icon: SLOT_ICONS[item.id],
-          }))}
+          options={slots.map((item) => ({ value: item.id, label: item.label, icon: slotIcon(item.id) }))}
         />
 
         {selected && preview ? (

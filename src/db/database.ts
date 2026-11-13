@@ -136,6 +136,11 @@ export async function initializeDatabase() {
       /* Ya existe. */
     }
   try {
+    await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN water_ml INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    /* Ya existe. */
+  }
+  try {
     await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN partial INTEGER NOT NULL DEFAULT 0");
   } catch {
     /* Ya existe. */

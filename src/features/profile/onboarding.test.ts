@@ -38,6 +38,8 @@ const answers: Answers = {
   proteinLevel: "high",
   adjustMode: "auto",
   checkInDays: 3,
+  mealStyle: "numbered",
+  mealsPerDay: 5,
 };
 
 // El caso que reportó Jharol: 18 años, 170 cm, 56 kg, 15 % de grasa, estudiante que entrena fuerza.

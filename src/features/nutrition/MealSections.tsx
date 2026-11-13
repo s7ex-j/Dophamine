@@ -8,14 +8,18 @@ import { stateLabels, type Food, type Nutrients } from "@/src/features/nutrition
 import type { MealEntry, MealSlot } from "@/src/features/nutrition/meals";
 import { AppTheme } from "@/src/theme";
 
-// Piezas del Diario y de "Agregar alimento". Solo dibujan.
+// Piezas de las comidas del Panel y de "Agregar alimento". Solo dibujan.
 
-export const SLOT_ICONS: Record<MealSlot, IconName> = {
+const ICONS: Record<string, IconName> = {
   breakfast: "sunny-outline",
+  midmorning: "partly-sunny-outline",
   lunch: "restaurant-outline",
-  dinner: "moon-outline",
   snack: "cafe-outline",
+  dinner: "moon-outline",
+  latenight: "bed-outline",
 };
+/** Icono de un momento del día; las comidas por número usan el mismo. */
+export const slotIcon = (slot: MealSlot): IconName => ICONS[slot] ?? "nutrition-outline";
 
 type Targets = { calories: number; protein: number; carbs: number; fats: number } | null;
 
@@ -89,7 +93,7 @@ export function MealCard({
     <View style={AppTheme.card}>
       <View style={AppTheme.mealHeader}>
         <View style={AppTheme.iconChip}>
-          <Ionicons name={SLOT_ICONS[slot]} size={20} color={AppTheme.colors.accent} />
+          <Ionicons name={slotIcon(slot)} size={20} color={AppTheme.colors.accent} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={AppTheme.mealTitle}>{label}</Text>

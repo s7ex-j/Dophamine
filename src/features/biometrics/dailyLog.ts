@@ -3,7 +3,7 @@ import type { BodyInput, DailyBiometrics } from "@/src/features/biometrics/biome
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 
 /**
- * La parte corporal del Diario (peso y composición): lo que se escribe, en la
+ * La parte corporal del día (peso y composición): lo que se escribe, en la
  * unidad elegida, y cómo se convierte en lo que se guarda, en kg. Módulo puro.
  * Lo comido no pasa por aquí: son entradas de `nutrition/meals`.
  */

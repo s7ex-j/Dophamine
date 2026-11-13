@@ -64,14 +64,16 @@ describe("cumplimiento del día", () => {
     proteinG: 105,
     carbsG: 0,
     fatsG: 0,
+    waterMl: 2250,
   };
-  const targets = { calories: 2750, protein: 112 };
+  const targets = { calories: 2750, protein: 112, water: 2000 };
   const full = { record, trained: true, trainingDay: true, sleepMinutes: 450, wellbeingDone: true };
 
   it("marca solo lo que se cumplió con lo registrado", () => {
     expect(dayCompliance(full, targets)).toEqual({
       calories: true,
       protein: true,
+      water: true,
       weight: true,
       training: true,
       sleep: true,
@@ -91,6 +93,7 @@ describe("cumplimiento del día", () => {
     expect(at({ caloriesIn: 2475 }).calories).toBe(true);
     expect(at({ proteinG: 100 }).protein).toBe(false);
     expect(at({ weightKg: null }).weight).toBe(false);
+    expect(at({ waterMl: 1500 }).water).toBe(false);
     expect(dayCompliance({ ...full, sleepMinutes: 400 }, targets).sleep).toBe(false);
   });
 

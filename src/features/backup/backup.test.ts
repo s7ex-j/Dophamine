@@ -93,7 +93,7 @@ describe("respaldo", () => {
     };
     const backup = buildBackup({ ...store, reviews: [review] });
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(BACKUP_FORMAT).toBe(7);
+    expect(BACKUP_FORMAT).toBe(8);
     expect(parseBackup(JSON.stringify(backup)).data.reviews).toEqual([review]);
     const malo = { ...backup, data: { ...store, reviews: [{ ...review, decision: "quizá" }] } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/revisiones/);

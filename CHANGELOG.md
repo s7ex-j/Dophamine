@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.13.0 - 2026-11-13
+
+Todo se registra desde el Panel, comidas a medida, agua y un ajuste que mira cómo fue cada día.
+
+- La pestaña Diario desaparece. El Panel tiene una sección "Hoy" con el día elegido (‹ ›): peso y composición, sueño y agua en mosaicos que se abren al tocarlos, las comidas del día, día incompleto, copiar el día anterior y borrar el día. Debajo siguen los gráficos de progreso.
+- Comidas a medida: en la evaluación inicial se elige dividirlas por nombre (desayuno, almuerzo, cena…) o por número (Comida 1, Comida 2…), de 2 a 6 al día. Agregar y editar alimentos usan esa división.
+- Agua diaria: un vaso (250 ml) por toque, con meta de 35 ml por kilo más 12 ml por minuto de entreno. Cuenta en "Cumplimiento de hoy".
+- Ajuste del plan (3 o 7 días, automático o colaborativo) según el contexto:
+  - Si la ingesta real se alejó más de un 10 % de la meta, mantiene las calorías: el problema es la adherencia, no el plan.
+  - Con menos de 7 h de sueño de media no recorta calorías.
+  - Cerca del peso meta reduce el paso y, al llegar, pasa a mantenimiento.
+  - Cada ajuste dice por qué.
+- Las marcas del eje de los gráficos ya no pueden entrar en un bucle con rangos casi nulos.
+- El respaldo pasa al formato 8 (agua del día y división de comidas). Los formatos 1 a 7 se siguen leyendo.
+- De 217 a 228 pruebas de dominio. Los 17 flujos de navegador se rehicieron sobre el Panel.
+- No comprobado en teléfono: la columna nueva `water_ml` y la sección "Hoy" en Android.
+
 ## 0.12.0 - 2026-11-13
 
 Entrenamiento serie por serie (primera parte del bloque de entreno).

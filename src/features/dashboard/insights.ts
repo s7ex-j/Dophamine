@@ -298,7 +298,7 @@ function sleepInsight({ sleep }: InsightData, dates: string[]): Insight {
           },
         ]
       : [],
-    ...(!present(values).length ? { empty: "Registra tu sueño en el Diario para verlo aquí." } : {}),
+    ...(!present(values).length ? { empty: "Anota tu sueño en el Panel para verlo aquí." } : {}),
   };
 }
 

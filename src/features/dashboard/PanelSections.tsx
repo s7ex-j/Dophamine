@@ -350,7 +350,7 @@ export function CompositionTile({
           width={300}
         />
       ) : (
-        <Waiting text="Registra tu % de grasa en el Diario para ver su evolución." />
+        <Waiting text="Anota tu % de grasa al registrar tu peso para ver su evolución." />
       )}
     </Tile>
   );
@@ -433,6 +433,7 @@ export function CustomizePanel({
 const COMPLIANCE_ICONS: Record<ComplianceKey, IconName> = {
   calories: "flame-outline",
   protein: "fish-outline",
+  water: "water-outline",
   weight: "scale-outline",
   training: "barbell-outline",
   sleep: "moon-outline",
@@ -575,7 +576,7 @@ export function SleepTile({
           ))}
         </View>
       ) : (
-        <Waiting text="Registra tu sueño en el Diario." />
+        <Waiting text="Anota tu sueño arriba, en Hoy." />
       )}
     </Tile>
   );
