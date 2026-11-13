@@ -254,3 +254,53 @@ describe("sueño en el respaldo del teléfono", () => {
     expect(storeFromTables(tablesFromStore(data)).sleep).toEqual(sleep);
   });
 });
+
+describe("entrenos serie por serie en el respaldo del teléfono", () => {
+  it("las series con tipo, ejercicio y lado pasan por SQLite sin cambios", () => {
+    const sets = [
+      {
+        exerciseName: "Sentadilla con barra",
+        exerciseId: "sentadilla-con-barra",
+        setNumber: 1,
+        type: "warmup" as const,
+        loadKg: 40,
+        reps: 10,
+        rir: null,
+      },
+      {
+        exerciseName: "Sentadilla con barra",
+        exerciseId: "sentadilla-con-barra",
+        setNumber: 2,
+        type: "working" as const,
+        loadKg: 80,
+        reps: 8,
+        rir: 2,
+      },
+      {
+        exerciseName: "Remo con mancuerna",
+        setNumber: 1,
+        type: "working" as const,
+        loadKg: 30,
+        reps: 10,
+        rir: 1,
+        side: "left" as const,
+      },
+    ];
+    const workout = {
+      id: "t2",
+      name: "Full body",
+      startedAt: "2026-11-13T17:00:00.000Z",
+      completedAt: "2026-11-13T18:00:00.000Z",
+      exerciseCount: 2,
+      sessionLogs: [
+        { exerciseName: "Sentadilla con barra", loadKg: 80, reps: 8, rir: 2 },
+        { exerciseName: "Remo con mancuerna", loadKg: 30, reps: 10, rir: 1 },
+      ],
+      sets,
+    };
+    const data = { biometrics: [], wellbeing: [], workouts: [workout] };
+    const back = storeFromTables(tablesFromStore(data)).workouts[0];
+    expect(back.sets).toEqual(sets);
+    expect(back.startedAt).toBe(workout.startedAt);
+  });
+});

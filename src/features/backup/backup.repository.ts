@@ -121,7 +121,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       );
     for (const row of tables.sets)
       await db.runAsync(
-        "INSERT INTO exercise_sets (id, workout_id, exercise_name, set_number, reps, load_kg, rpe) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO exercise_sets (id, workout_id, exercise_name, set_number, reps, load_kg, rpe, set_type, exercise_id, side) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         row.id,
         row.workout_id,
         row.exercise_name,
@@ -129,6 +129,9 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.reps,
         row.load_kg,
         row.rpe,
+        row.set_type ?? null,
+        row.exercise_id ?? null,
+        row.side ?? null,
       );
     for (const row of tables.habits)
       await db.runAsync(

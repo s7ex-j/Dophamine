@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0 - 2026-11-13
+
+Entrenamiento serie por serie (primera parte del bloque de entreno).
+
+- Catálogo propio de 94 ejercicios en español, con músculos principales y secundarios, equipo y patrón de movimiento. Sin imágenes ni textos de terceros. Se busca por nombre, alias o músculo.
+- Entreno en vivo (Entreno → Empezar entreno): un ejercicio a la vez, una fila por serie con carga, repeticiones y RIR. Cada serie trae la carga sugerida. Al marcar una serie arranca el descanso (con +30 s y saltar). Hay series de calentamiento, series extra y cambio de ejercicio por otro del mismo movimiento y músculo. La sesión se guarda mientras se entrena: cerrar la app no la pierde.
+- Carga sugerida por doble progresión: si la vez anterior todas las series llegaron al tope del rango con el RIR pedido, sube un paso (2.5 kg, o 1 kg en ejercicios livianos); si no, repite la carga apuntando a una repetición más en la serie más floja.
+- Resumen al terminar: duración, volumen, series efectivas, récords (1RM estimado, volumen y carga máxima frente a todas las sesiones anteriores) y músculos trabajados.
+- Historial por ejercicio: gráfico del 1RM estimado, la carga máxima o el volumen sesión a sesión, con sus reemplazos del catálogo.
+- Entreno muestra las series por músculo de los últimos 7 días, el historial con duración, series y volumen, y en el editor de rutina se agregan ejercicios desde el catálogo.
+- El respaldo pasa al formato 7 (cada serie con su tipo, ejercicio y lado). Los formatos 1 a 6 se siguen leyendo; las sesiones anteriores conservan su línea por ejercicio.
+- De 200 a 217 pruebas de dominio y de 16 a 17 flujos de navegador.
+- No comprobado en teléfono: las columnas nuevas de `exercise_sets` y la vibración al terminar el descanso.
+
 ## 0.11.0 - 2026-11-13
 
 Panel con más gráficos, cálculo más preciso, sueño y cumplimiento automático.

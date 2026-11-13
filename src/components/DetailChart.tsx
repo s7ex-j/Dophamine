@@ -4,6 +4,9 @@ import Svg, { Circle, Line, Path, Rect, Text as SvgText } from "react-native-svg
 
 import { chartScale } from "@/src/components/chartGeometry";
 import type { Insight, SeriesColor } from "@/src/features/dashboard/insights";
+
+/** Lo que necesita el gráfico: sirve para el Panel y para el historial de un ejercicio. */
+export type ChartData = Pick<Insight, "title" | "unit" | "dates" | "series" | "reference">;
 import { AppTheme } from "@/src/theme";
 
 const HEIGHT = 220;
@@ -35,7 +38,7 @@ const formatTick = (value: number) =>
  * Gráfico de una pantalla de detalle: eje vertical con marcas, fechas abajo,
  * línea de referencia (meta) y, al tocar, el valor del día elegido.
  */
-export function DetailChart({ insight }: { insight: Insight }) {
+export function DetailChart({ insight }: { insight: ChartData }) {
   const [width, setWidth] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const count = insight.dates.length;

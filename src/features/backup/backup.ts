@@ -25,7 +25,10 @@ import { isSleepEntry } from "@/src/features/sleep/sleep";
 // Panel, recordatorios). Todo opcional: los formatos 1 a 4 se leen igual.
 // Formato 6: noches de sueño (`sleep`) y días marcados como incompletos
 // (`partial`). Los formatos 1 a 5 se leen igual.
-export const BACKUP_FORMAT = 6;
+// Formato 7: sesiones de entreno serie por serie (`workouts[].sets`, con tipo de
+// serie, ejercicio del catálogo y lado) e inicio de la sesión. Los formatos 1 a 6
+// se leen igual: sus sesiones conservan una línea por ejercicio.
+export const BACKUP_FORMAT = 7;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 

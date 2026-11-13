@@ -1,0 +1,373 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, Text, TextInput, Vibration, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+
+import { Button, Card, Chips, LinkButton, RowActions, Screen } from "@/src/components/ui";
+import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
+import { alternatives, findExercise, MUSCLE_LABELS } from "@/src/features/exercises/catalog";
+import { weightUnitOf } from "@/src/features/profile/profile";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import { formatClock } from "@/src/features/training/training.plans";
+import { completeSession, getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
+import {
+  addSet,
+  finishSession,
+  personalRecords,
+  readActiveSession,
+  RECORD_LABELS,
+  sessionStats,
+  setsPerMuscle,
+  startSession,
+  swapExercise,
+  type ActiveSession,
+  type CompletedSession,
+  type DraftSet,
+  type PersonalRecord,
+  type SessionStats,
+} from "@/src/features/training/workout";
+import { VIEWER } from "@/src/lib/mode";
+import { formatWeight, weightValue, type WeightUnit } from "@/src/lib/units";
+import { AppTheme } from "@/src/theme";
+
+const KEY = "active_session";
+const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+export default function SessionScreen() {
+  return VIEWER ? <ViewerOnlyNotice what="El entreno en vivo" /> : <SessionContent />;
+}
+
+type Summary = { session: CompletedSession; stats: SessionStats; records: PersonalRecord[] };
+
+// Entreno en vivo: un ejercicio a la vez, serie por serie, con la carga sugerida,
+// descanso automático al marcar cada serie y resumen con récords al terminar.
+// La sesión se guarda mientras se entrena: cerrar la app no la pierde.
+function SessionContent() {
+  const router = useRouter();
+  const [active, setActive] = useState<ActiveSession | null>(null);
+  const [history, setHistory] = useState<CompletedSession[]>([]);
+  const [unit, setUnit] = useState<WeightUnit>("kg");
+  const [index, setIndex] = useState(0);
+  const [swapping, setSwapping] = useState(false);
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [error, setError] = useState("");
+  const loaded = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (loaded.current) return;
+      loaded.current = true;
+      Promise.all([getSetting(KEY), getRoutine(), getSessionHistory(), getNutritionProfile()]).then(
+        ([saved, routine, sessions, profile]) => {
+          const nextUnit = weightUnitOf(profile);
+          setUnit(nextUnit);
+          setHistory(sessions);
+          const resumed = readActiveSession(saved);
+          const session = resumed ?? startSession(routine, sessions, nextUnit, new Date(), newId());
+          setActive(session);
+          if (!resumed) void setSetting(KEY, session);
+        },
+      );
+    }, []),
+  );
+  // Reloj de la sesión y del descanso.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      setRestEndsAt((endsAt) => {
+        if (endsAt === null || current < endsAt) return endsAt;
+        try {
+          Vibration.vibrate(400);
+        } catch {
+          /* Sin vibración: el aviso en pantalla basta. */
+        }
+        return null;
+      });
+    }, 500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const update = (next: ActiveSession) => {
+    setError("");
+    setActive(next);
+    void setSetting(KEY, next);
+  };
+
+  if (summary) return <SummaryView summary={summary} unit={unit} onDone={() => router.back()} />;
+  if (!active) return <Screen />;
+
+  const exercise = active.exercises[Math.min(index, active.exercises.length - 1)];
+  const catalog = findExercise(exercise.name);
+  const setExercise = (next: typeof exercise) =>
+    update({
+      ...active,
+      exercises: active.exercises.map((item, position) => (position === index ? next : item)),
+    });
+  const setSet = (position: number, patch: Partial<DraftSet>) =>
+    setExercise({
+      ...exercise,
+      sets: exercise.sets.map((set, place) => (place === position ? { ...set, ...patch } : set)),
+    });
+  const toggleDone = (position: number) => {
+    const set = exercise.sets[position];
+    // Al marcar una serie sin repeticiones escritas se toma la sugerida.
+    const reps = set.reps || (set.suggestion ? String(set.suggestion.reps) : "");
+    setSet(position, { done: !set.done, reps });
+    if (!set.done && exercise.restSeconds) setRestEndsAt(Date.now() + exercise.restSeconds * 1000);
+  };
+  const finish = async () => {
+    const result = finishSession(active, unit, new Date());
+    if (result.error !== null) return setError(result.error);
+    await completeSession(result.session);
+    await setSetting(KEY, null);
+    setSummary({
+      session: result.session,
+      stats: sessionStats(result.session),
+      records: personalRecords(result.session, history),
+    });
+  };
+  const discard = async () => {
+    await setSetting(KEY, null);
+    router.back();
+  };
+  const elapsed = (now - Date.parse(active.startedAt)) / 1000;
+  const doneCount = (position: number) => active.exercises[position].sets.filter((set) => set.done).length;
+
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
+        <View style={AppTheme.sectionHeader}>
+          <View>
+            <Text style={AppTheme.eyebrow}>{active.routineName.toUpperCase()}</Text>
+            <Text style={AppTheme.restClock}>{formatClock(elapsed)}</Text>
+          </View>
+          <Button title="Terminar" onPress={finish} />
+        </View>
+
+        {restEndsAt !== null ? (
+          <View style={[AppTheme.banner, AppTheme.sectionHeader]}>
+            <View>
+              <Text style={AppTheme.bannerTitle}>Descanso</Text>
+              <Text style={[AppTheme.restClock, { color: AppTheme.colors.text }]}>
+                {formatClock((restEndsAt - now) / 1000)}
+              </Text>
+            </View>
+            <View style={AppTheme.rowActions}>
+              <LinkButton title="+30 s" onPress={() => setRestEndsAt(restEndsAt + 30000)} />
+              <LinkButton title="Saltar" onPress={() => setRestEndsAt(null)} />
+            </View>
+          </View>
+        ) : null}
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {active.exercises.map((item, position) => (
+            <Pressable
+              key={`${item.name}-${position}`}
+              accessibilityRole="button"
+              onPress={() => {
+                setIndex(position);
+                setSwapping(false);
+              }}
+              style={[AppTheme.chip, position === index && AppTheme.chipActive, { paddingHorizontal: 12 }]}
+            >
+              <Text
+                style={[AppTheme.chipText, position === index && AppTheme.chipTextActive]}
+                numberOfLines={1}
+              >
+                {position + 1}. {item.name} · {doneCount(position)}/{item.sets.length}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <Card title={exercise.name}>
+          <Text style={AppTheme.hint}>
+            {exercise.target.sets} × {exercise.target.repsMin}
+            {exercise.target.repsMax !== exercise.target.repsMin ? `–${exercise.target.repsMax}` : ""} reps ·
+            RIR {exercise.target.rir}
+            {catalog ? ` · ${catalog.primary.map((muscle) => MUSCLE_LABELS[muscle]).join(", ")}` : ""}
+          </Text>
+          <View style={AppTheme.rowActions}>
+            <LinkButton title="Calentamiento" onPress={() => setExercise(addSet(exercise, "warmup"))} />
+            <LinkButton
+              title={swapping ? "Cerrar cambio" : "Cambiar"}
+              onPress={() => setSwapping(!swapping)}
+            />
+            <LinkButton title="+ Serie" onPress={() => setExercise(addSet(exercise))} />
+          </View>
+          {swapping ? (
+            <View style={{ gap: 4 }}>
+              {(catalog ? alternatives(catalog) : []).slice(0, 8).map((option) => (
+                <Pressable
+                  key={option.id}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    setExercise(swapExercise(exercise, option.name, option.id));
+                    setSwapping(false);
+                  }}
+                  style={AppTheme.entryRow}
+                >
+                  <Text style={[AppTheme.entryName, { flex: 1 }]}>{option.name}</Text>
+                  <Ionicons name="swap-horizontal" size={18} color={AppTheme.colors.muted} />
+                </Pressable>
+              ))}
+              {!catalog ? (
+                <Text style={AppTheme.hint}>
+                  Este ejercicio no está en el catálogo: no hay reemplazos sugeridos.
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          <View style={[AppTheme.setRow, { borderTopWidth: 0 }]}>
+            <Text style={[AppTheme.setHead, { width: 28 }]}>Serie</Text>
+            <Text style={[AppTheme.setHead, { flex: 1 }]}>Sugerido</Text>
+            <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>{unit}</Text>
+            <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>Reps</Text>
+            <Text style={[AppTheme.setHead, { width: 40, textAlign: "center" }]}>RIR</Text>
+            <View style={{ width: 36 }} />
+          </View>
+          {exercise.sets.map((set, position) => {
+            const number = exercise.sets
+              .slice(0, position + 1)
+              .filter((item) => item.type !== "warmup").length;
+            return (
+              <View key={position} style={[AppTheme.setRow, set.done && AppTheme.setRowDone]}>
+                <Text style={[AppTheme.setNumber, { width: 28 }]}>
+                  {set.type === "warmup" ? "C" : number}
+                </Text>
+                <Text style={[AppTheme.hint, { flex: 1 }]} numberOfLines={1}>
+                  {set.suggestion?.loadKg
+                    ? `${weightValue(set.suggestion.loadKg, unit)} × ${set.suggestion.reps}`
+                    : set.suggestion
+                      ? `× ${set.suggestion.reps}`
+                      : "—"}
+                </Text>
+                <TextInput
+                  accessibilityLabel={`Carga serie ${position + 1}`}
+                  value={set.load}
+                  onChangeText={(load) => setSet(position, { load })}
+                  keyboardType="decimal-pad"
+                  style={[AppTheme.input, AppTheme.setInputBox, AppTheme.setInput]}
+                  placeholderTextColor={AppTheme.colors.muted}
+                />
+                <TextInput
+                  accessibilityLabel={`Repeticiones serie ${position + 1}`}
+                  value={set.reps}
+                  onChangeText={(reps) => setSet(position, { reps })}
+                  keyboardType="number-pad"
+                  placeholder={set.suggestion ? String(set.suggestion.reps) : ""}
+                  style={[AppTheme.input, AppTheme.setInputBox, AppTheme.setInput]}
+                  placeholderTextColor={AppTheme.colors.muted}
+                />
+                <TextInput
+                  accessibilityLabel={`RIR serie ${position + 1}`}
+                  value={set.rir}
+                  onChangeText={(rir) => setSet(position, { rir })}
+                  keyboardType="number-pad"
+                  style={[AppTheme.input, AppTheme.setInput, { width: 40 }]}
+                  placeholderTextColor={AppTheme.colors.muted}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Completar serie ${position + 1}`}
+                  onPress={() => toggleDone(position)}
+                  style={[AppTheme.setCheck, set.done && AppTheme.setCheckDone]}
+                >
+                  <Ionicons
+                    name="checkmark"
+                    size={18}
+                    color={set.done ? AppTheme.colors.onAccent : AppTheme.colors.muted}
+                  />
+                </Pressable>
+              </View>
+            );
+          })}
+          <View style={AppTheme.wizardFooter}>
+            {index > 0 ? (
+              <View style={AppTheme.wizardFooterButton}>
+                <Button title="Anterior" variant="secondary" onPress={() => setIndex(index - 1)} />
+              </View>
+            ) : null}
+            {index < active.exercises.length - 1 ? (
+              <View style={AppTheme.wizardFooterButton}>
+                <Button title="Siguiente" variant="secondary" onPress={() => setIndex(index + 1)} />
+              </View>
+            ) : null}
+          </View>
+        </Card>
+
+        {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}
+        <Text style={AppTheme.hint}>
+          La carga sugerida sale de tu última sesión: si llegaste al tope de repeticiones con el RIR pedido,
+          sube un paso.
+        </Text>
+        <RowActions question="¿Descartar esta sesión sin guardarla?" onDelete={discard} />
+      </ScrollView>
+    </Screen>
+  );
+}
+
+function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: WeightUnit; onDone: () => void }) {
+  const muscles = setsPerMuscle([summary.session]);
+  const top = Math.max(1, ...muscles.map((item) => item.sets));
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={AppTheme.content}>
+        <Text style={AppTheme.eyebrow}>ENTRENO COMPLETO</Text>
+        <Text style={AppTheme.title}>{summary.session.name}</Text>
+        <View style={AppTheme.tileGrid}>
+          {[
+            ["Duración", `${summary.stats.durationMinutes} min`],
+            ["Volumen", formatWeight(summary.stats.volumeKg, unit, 0)],
+            ["Series efectivas", String(summary.stats.workingSets)],
+            ["Ejercicios", String(summary.stats.exercises)],
+          ].map(([label, value]) => (
+            <View key={label} style={AppTheme.tile}>
+              <Text style={AppTheme.tileSubtitle}>{label}</Text>
+              <Text style={AppTheme.tileValue}>{value}</Text>
+            </View>
+          ))}
+        </View>
+        {summary.records.length ? (
+          <Card title={`Récords · ${summary.records.length}`}>
+            {summary.records.map((record) => (
+              <View key={`${record.exerciseName}-${record.kind}`} style={AppTheme.entryRow}>
+                <Ionicons name="trophy-outline" size={20} color={AppTheme.colors.amber} />
+                <View style={{ flex: 1 }}>
+                  <Text style={AppTheme.entryName}>{record.exerciseName}</Text>
+                  <Text style={AppTheme.entryDetail}>{RECORD_LABELS[record.kind]}</Text>
+                </View>
+                <Text style={AppTheme.entryKcal}>
+                  {record.kind === "volume"
+                    ? formatWeight(record.value, unit, 0)
+                    : formatWeight(record.value, unit, 1)}
+                </Text>
+              </View>
+            ))}
+          </Card>
+        ) : null}
+        {muscles.length ? (
+          <Card title="Músculos trabajados">
+            {muscles.map((item) => (
+              <View key={item.muscle} style={{ gap: 4 }}>
+                <View style={AppTheme.legendRow}>
+                  <Text style={AppTheme.legendLabel}>{item.label}</Text>
+                  <Text style={AppTheme.legendValue}>{item.sets} series</Text>
+                </View>
+                <View style={AppTheme.progressTrack}>
+                  <View style={[AppTheme.goalFill, { width: `${(item.sets / top) * 100}%` }]} />
+                </View>
+              </View>
+            ))}
+          </Card>
+        ) : null}
+        <Button title="Listo" onPress={onDone} />
+      </ScrollView>
+    </Screen>
+  );
+}

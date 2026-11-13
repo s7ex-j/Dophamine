@@ -2,6 +2,7 @@ import { localDateKey } from "@/src/lib/dates";
 import type { Food } from "@/src/features/nutrition/foods";
 import type { MealEntry } from "@/src/features/nutrition/meals";
 import type { SleepEntry } from "@/src/features/sleep/sleep";
+import type { LoggedSet } from "@/src/features/training/workout";
 export type Store = {
   biometrics: Array<{
     id: string;
@@ -30,6 +31,9 @@ export type Store = {
     id: string;
     name: string;
     completedAt: string;
+    /** Desde la 0.12.0: inicio de la sesión y cada serie por separado. */
+    startedAt?: string;
+    sets?: LoggedSet[];
     exerciseCount?: number;
     sessionLogs?: Array<{
       exerciseName: string;

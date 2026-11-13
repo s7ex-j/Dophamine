@@ -2,6 +2,7 @@ import { getDatabase } from "@/src/db/database";
 import { localDateKey } from "@/src/lib/dates";
 import { progressionHintFor, type ProgressionHint } from "./progression";
 import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
+import type { CompletedSession } from "./workout";
 
 export type Workout = { id: string; name: string; completedAt: string; exerciseCount: number };
 export type SessionLog = {
@@ -124,4 +125,82 @@ export async function getWorkoutDates(since: string): Promise<string[]> {
   return [...new Set(rows.map((row) => localDateKey(new Date(row.completed_at))))].filter(
     (date) => date >= since,
   );
+}
+
+type SetRowDb = {
+  workout_id: string;
+  exercise_name: string;
+  exercise_id: string | null;
+  set_number: number;
+  set_type: string | null;
+  reps: number | null;
+  load_kg: number | null;
+  rpe: number | null;
+  side: string | null;
+};
+
+/** Guarda una sesión serie por serie. */
+export async function completeSession(session: CompletedSession) {
+  const db = await getDatabase();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(
+      "INSERT INTO workouts (id, name, started_at, completed_at) VALUES (?, ?, ?, ?)",
+      session.id,
+      session.name,
+      session.startedAt,
+      session.completedAt,
+    );
+    for (const set of session.sets)
+      await db.runAsync(
+        "INSERT INTO exercise_sets (id, workout_id, exercise_name, set_number, reps, load_kg, rpe, set_type, exercise_id, side) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        id(),
+        session.id,
+        set.exerciseName,
+        set.setNumber,
+        set.reps,
+        set.loadKg,
+        set.rir === null ? null : Math.min(10, Math.max(1, 10 - set.rir)),
+        set.type,
+        set.exerciseId ?? null,
+        set.side ?? null,
+      );
+  });
+}
+
+/** Las sesiones con todas sus series, de la más reciente a la más antigua. */
+export async function getSessionHistory(limit = 60): Promise<CompletedSession[]> {
+  const db = await getDatabase();
+  const workouts = await db.getAllAsync<{
+    id: string;
+    name: string;
+    started_at: string | null;
+    completed_at: string;
+  }>(
+    "SELECT id, name, started_at, completed_at FROM workouts WHERE completed_at IS NOT NULL ORDER BY completed_at DESC LIMIT ?",
+    limit,
+  );
+  if (!workouts.length) return [];
+  const rows = await db.getAllAsync<SetRowDb>(
+    `SELECT workout_id, exercise_name, exercise_id, set_number, set_type, reps, load_kg, rpe, side FROM exercise_sets
+    WHERE workout_id IN (${workouts.map(() => "?").join(", ")}) ORDER BY rowid`,
+    ...workouts.map((workout) => workout.id),
+  );
+  return workouts.map((workout) => ({
+    id: workout.id,
+    name: workout.name,
+    startedAt: workout.started_at ?? workout.completed_at,
+    completedAt: workout.completed_at,
+    sets: rows
+      .filter((row) => row.workout_id === workout.id)
+      .map((row) => ({
+        exerciseName: row.exercise_name,
+        ...(row.exercise_id ? { exerciseId: row.exercise_id } : {}),
+        setNumber: row.set_number,
+        type: row.set_type === "warmup" || row.set_type === "drop" ? row.set_type : "working",
+        loadKg: row.load_kg,
+        reps: row.reps,
+        rir: row.rpe === null ? null : 10 - row.rpe,
+        ...(row.side === "left" || row.side === "right" ? { side: row.side } : {}),
+      })),
+  }));
 }

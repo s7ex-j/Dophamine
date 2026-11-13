@@ -42,6 +42,9 @@ export type SetRow = {
   reps: number | null;
   load_kg: number | null;
   rpe: number | null;
+  set_type?: string | null;
+  exercise_id?: string | null;
+  side?: string | null;
 };
 export type HabitRow = { id: string; habit_id: string; date: string; completed: number };
 export type SettingRow = { key: string; value: string };
@@ -139,10 +142,13 @@ export function storeFromTables(tables: Tables): Store {
           .filter((set) => set.workout_id === row.id)
           .sort((a, b) => a.set_number - b.set_number);
         const names = [...new Set(sets.map((set) => set.exercise_name))];
+        // Desde la 0.12.0 las series tienen tipo: entonces se guardan todas, no solo una por ejercicio.
+        const detailed = sets.some((set) => set.set_type);
         return {
           id: row.id,
           name: row.name,
           completedAt: row.completed_at as string,
+          ...(detailed && row.started_at ? { startedAt: row.started_at } : {}),
           exerciseCount: names.length,
           sessionLogs: names.map((exerciseName) => {
             const first = sets.find((set) => set.exercise_name === exerciseName) as SetRow;
@@ -153,6 +159,26 @@ export function storeFromTables(tables: Tables): Store {
               rir: first.rpe === null ? null : 10 - first.rpe,
             };
           }),
+          ...(detailed
+            ? {
+                // En el orden en que se hicieron, no agrupadas por número de serie.
+                sets: tables.sets
+                  .filter((set) => set.workout_id === row.id)
+                  .map((set) => ({
+                    exerciseName: set.exercise_name,
+                    ...(set.exercise_id ? { exerciseId: set.exercise_id } : {}),
+                    setNumber: set.set_number,
+                    type:
+                      set.set_type === "warmup" || set.set_type === "drop"
+                        ? set.set_type
+                        : ("working" as const),
+                    loadKg: set.load_kg,
+                    reps: set.reps,
+                    rir: set.rpe === null ? null : 10 - set.rpe,
+                    ...(set.side === "left" || set.side === "right" ? { side: set.side } : {}),
+                  })),
+              }
+            : {}),
         };
       }),
     habits: tables.habits.map((row) => ({
@@ -248,20 +274,33 @@ export function tablesFromStore(store: Store): Tables {
     workouts: store.workouts.map((workout) => ({
       id: workout.id,
       name: workout.name,
-      started_at: workout.completedAt,
+      started_at: workout.startedAt ?? workout.completedAt,
       completed_at: workout.completedAt,
     })),
     sets: store.workouts.flatMap((workout) =>
-      (workout.sessionLogs ?? []).map((log, index) => ({
-        id: `${workout.id}-${index + 1}`,
-        workout_id: workout.id,
-        exercise_name: log.exerciseName,
-        set_number: 1,
-        reps: log.reps,
-        load_kg: log.loadKg,
-        // La tabla solo admite RPE de 1 a 10.
-        rpe: log.rir === null || log.rir === undefined ? null : Math.min(10, Math.max(1, 10 - log.rir)),
-      })),
+      workout.sets
+        ? workout.sets.map((set, index) => ({
+            id: `${workout.id}-${index + 1}`,
+            workout_id: workout.id,
+            exercise_name: set.exerciseName,
+            set_number: set.setNumber,
+            reps: set.reps,
+            load_kg: set.loadKg,
+            rpe: set.rir === null ? null : Math.min(10, Math.max(1, 10 - set.rir)),
+            set_type: set.type,
+            exercise_id: set.exerciseId ?? null,
+            side: set.side ?? null,
+          }))
+        : (workout.sessionLogs ?? []).map((log, index) => ({
+            id: `${workout.id}-${index + 1}`,
+            workout_id: workout.id,
+            exercise_name: log.exerciseName,
+            set_number: 1,
+            reps: log.reps,
+            load_kg: log.loadKg,
+            // La tabla solo admite RPE de 1 a 10.
+            rpe: log.rir === null || log.rir === undefined ? null : Math.min(10, Math.max(1, 10 - log.rir)),
+          })),
     ),
     habits: (store.habits ?? []).map((habit) => ({
       id: `${habit.id}-${habit.date}`,
