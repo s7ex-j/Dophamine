@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useMemo, useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import {
@@ -32,7 +32,13 @@ import {
   type Food,
   type FoodState,
 } from "@/src/features/nutrition/foods";
-import { EntryRow, FoodResult, MacroSplit, slotIcon } from "@/src/features/nutrition/MealSections";
+import {
+  EntryRow,
+  FoodResult,
+  MacroSplit,
+  SaveMealInline,
+  slotIcon,
+} from "@/src/features/nutrition/MealSections";
 import {
   draftFromFood,
   draftFromQuick,
@@ -71,6 +77,12 @@ import {
 import { mealSetupOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import { savedMealTotals, type SavedMeal } from "@/src/features/nutrition/savedMeals";
+import {
+  deleteSavedMeal,
+  getSavedMeals,
+  saveMealFromEntries,
+} from "@/src/features/nutrition/savedMeals.repository";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
@@ -96,6 +108,7 @@ function AddFoodContent() {
   const [logged, setLogged] = useState<MealEntry[]>([]);
   const [online, setOnline] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [query, setQuery] = useState("");
   const [onlineResults, setOnlineResults] = useState<Food[]>([]);
   const [selected, setSelected] = useState<Food | null>(null);
@@ -118,7 +131,9 @@ function AddFoodContent() {
       getMealEntries(date),
       getSetting("favorite_foods"),
       getNutritionProfile(),
-    ]).then(([foods, entries, enabled, today, saved, profile]) => {
+      getSavedMeals(),
+    ]).then(([foods, entries, enabled, today, saved, profile, meals]) => {
+      setSavedMeals(meals);
       setSetup(mealSetupOf(profile));
       if (!params.slot) setSlot(slotForHour(new Date().getHours(), mealSetupOf(profile)));
       setUserFoods(foods);
@@ -366,6 +381,42 @@ function AddFoodContent() {
                   </>
                 ) : (
                   <>
+                    {mode === "search" && !query.trim() && savedMeals.length ? (
+                      <View style={{ gap: 6 }}>
+                        <Text style={AppTheme.label}>Mis comidas</Text>
+                        {savedMeals.map((meal) => {
+                          const totals = savedMealTotals(meal);
+                          return (
+                            <View key={meal.id} style={AppTheme.entryRow}>
+                              <Pressable
+                                accessibilityRole="button"
+                                accessibilityLabel={`Registrar ${meal.name}`}
+                                onPress={async () => {
+                                  await log(meal.items);
+                                  note(`${meal.name} agregada a ${slotName}.`);
+                                }}
+                                style={{ flex: 1, gap: 2 }}
+                              >
+                                <Text style={AppTheme.entryName}>{meal.name}</Text>
+                                <Text style={AppTheme.entryDetail} numberOfLines={1}>
+                                  {totals.kcal} kcal · {Math.round(totals.proteinG)} g prot ·{" "}
+                                  {meal.items.map((item) => item.name).join(", ")}
+                                </Text>
+                              </Pressable>
+                              <IconButton
+                                icon="trash-outline"
+                                label={`Borrar ${meal.name}`}
+                                danger
+                                onPress={async () => {
+                                  await deleteSavedMeal(meal.id);
+                                  load();
+                                }}
+                              />
+                            </View>
+                          );
+                        })}
+                      </View>
+                    ) : null}
                     {mode === "search" && favoriteFoods.length ? (
                       <Text style={AppTheme.label}>Favoritos</Text>
                     ) : null}
@@ -547,6 +598,15 @@ function AddFoodContent() {
               <EntryRow key={entry.id} entry={entry} onRemove={() => deleteMealEntry(entry).then(load)} />
             ))}
             {!inSlot.length ? <Text style={AppTheme.hint}>Aún no registras nada en {slotName}.</Text> : null}
+            {inSlot.length ? (
+              <SaveMealInline
+                label={slotLabel(slot)}
+                onSave={async (name) => {
+                  await saveMealFromEntries(name, inSlot);
+                  load();
+                }}
+              />
+            ) : null}
             <Button title="Listo" variant="secondary" onPress={() => router.back()} />
           </Card>
         ) : null}

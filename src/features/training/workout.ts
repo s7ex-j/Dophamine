@@ -1,6 +1,6 @@
 import { findExercise, MUSCLE_LABELS, type Muscle } from "@/src/features/exercises/catalog";
 import { estimatedOneRepMax } from "@/src/features/training/strength";
-import { restSeconds, type Routine } from "@/src/features/training/training.plans";
+import type { Routine, WorkoutDay } from "@/src/features/training/training.plans";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 
 /**
@@ -98,39 +98,61 @@ export function lastSetsFor(name: string, history: CompletedSession[]): LoggedSe
   return [];
 }
 
-/** Arma la sesión de hoy a partir de la rutina, con la sugerencia de cada serie. */
+/** Un ejercicio listo para entrenar: sus series con la carga sugerida por la última vez. */
+export function sessionExercise(
+  plan: { name: string; sets: number; reps: string; rir: number },
+  history: CompletedSession[],
+  unit: WeightUnit,
+): SessionExercise {
+  const target = { sets: plan.sets, rir: plan.rir, ...parseRepRange(plan.reps) };
+  const suggestion = suggestNext(lastSetsFor(plan.name, history), target);
+  const catalog = findExercise(plan.name);
+  return {
+    name: plan.name,
+    ...(catalog ? { exerciseId: catalog.id } : {}),
+    target,
+    sets: Array.from({ length: Math.max(1, plan.sets) }, () => ({
+      type: "working" as const,
+      load: suggestion.loadKg === null ? "" : weightValue(suggestion.loadKg, unit),
+      reps: "",
+      rir: String(plan.rir),
+      done: false,
+      suggestion,
+    })),
+  };
+}
+
+/**
+ * Arma la sesión a partir del entreno de un día (por defecto, el primero de la
+ * rutina), con la sugerencia de cada serie.
+ */
 export function startSession(
   routine: Routine,
   history: CompletedSession[],
   unit: WeightUnit,
   now: Date,
   id: string,
+  workout: WorkoutDay | null = routine.schedule[0] ?? null,
 ): ActiveSession {
+  const plans = workout ? workout.exercises : routine.exercises;
   return {
     id,
-    routineName: routine.name,
+    routineName: workout?.name ?? routine.name,
     startedAt: now.toISOString(),
-    exercises: routine.exercises.map((exercise) => {
-      const target = { sets: exercise.sets, rir: exercise.rir, ...parseRepRange(exercise.reps) };
-      const suggestion = suggestNext(lastSetsFor(exercise.name, history), target);
-      const catalog = findExercise(exercise.name);
-      return {
-        name: exercise.name,
-        ...(catalog ? { exerciseId: catalog.id } : {}),
-        target,
-        restSeconds: restSeconds(routine.trainingGoal, exercise.rir),
-        sets: Array.from({ length: Math.max(1, exercise.sets) }, () => ({
-          type: "working" as const,
-          load: suggestion.loadKg === null ? "" : weightValue(suggestion.loadKg, unit),
-          reps: "",
-          rir: String(exercise.rir),
-          done: false,
-          suggestion,
-        })),
-      };
-    }),
+    exercises: plans.map((plan) => sessionExercise(plan, history, unit)),
   };
 }
+
+/** Agrega un ejercicio a la sesión en curso (por ejemplo, uno que no estaba en el plan). */
+export const addExerciseToSession = (
+  session: ActiveSession,
+  name: string,
+  history: CompletedSession[],
+  unit: WeightUnit,
+): ActiveSession => ({
+  ...session,
+  exercises: [...session.exercises, sessionExercise({ name, sets: 3, reps: "8–12", rir: 2 }, history, unit)],
+});
 
 /** Agrega una serie al final (o de calentamiento al inicio), copiando la carga de la última. */
 export function addSet(exercise: SessionExercise, type: SetType = "working"): SessionExercise {

@@ -1,0 +1,41 @@
+// Tipos del catálogo, aparte para que los datos generados no importen el catálogo.
+export type Muscle =
+  | "chest"
+  | "lats"
+  | "upperBack"
+  | "frontDelts"
+  | "sideDelts"
+  | "rearDelts"
+  | "biceps"
+  | "triceps"
+  | "forearms"
+  | "abs"
+  | "obliques"
+  | "lowerBack"
+  | "glutes"
+  | "quads"
+  | "hamstrings"
+  | "adductors"
+  | "calves";
+export type Equipment =
+  "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight" | "band" | "kettlebell" | "smith" | "other";
+export type Pattern =
+  | "squat"
+  | "hinge"
+  | "lunge"
+  | "horizontalPush"
+  | "verticalPush"
+  | "horizontalPull"
+  | "verticalPull"
+  | "elbowFlexion"
+  | "elbowExtension"
+  | "shoulderRaise"
+  | "chestFly"
+  | "kneeFlexion"
+  | "kneeExtension"
+  | "hipThrust"
+  | "hipAbduction"
+  | "hipAdduction"
+  | "calfRaise"
+  | "core"
+  | "carry";

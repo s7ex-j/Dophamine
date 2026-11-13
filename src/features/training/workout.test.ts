@@ -103,9 +103,11 @@ describe("sugerencia de carga (doble progresión)", () => {
 });
 
 describe("sesión en curso", () => {
+  const exercises = [{ name: "Hip thrust", sets: 3, reps: "8–12", rir: 2 }];
   const routine = {
     ...DEFAULT_ROUTINES.posterior,
-    exercises: [{ name: "Hip thrust", sets: 3, reps: "8–12", rir: 2 }],
+    exercises,
+    schedule: [{ day: "mon", name: "Glúteo", exercises }],
   };
   const history = [
     session("1", "2026-11-10T18:00:00.000Z", [set({ exerciseName: "Hip thrust", loadKg: 100, reps: 12 })]),
@@ -117,7 +119,6 @@ describe("sesión en curso", () => {
       name: "Hip thrust",
       exerciseId: "hip-thrust",
       target,
-      restSeconds: 90,
     });
     expect(active.exercises[0].sets).toHaveLength(3);
     expect(active.exercises[0].sets[0]).toMatchObject({ load: "102.5", reps: "", rir: "2", done: false });

@@ -31,9 +31,15 @@ import {
 import type { DayCompliance } from "@/src/features/habits/compliance";
 import { getComplianceDays } from "@/src/features/habits/compliance.data";
 import { Onboarding } from "@/src/features/profile/PlanWizard";
+import { weightUnitOf } from "@/src/features/profile/profile";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
+import { StreakCard } from "@/src/features/streak/StreakCard";
+import { WeeklyCard } from "@/src/features/dashboard/WeeklyCard";
+import { getWeeklySummary } from "@/src/features/dashboard/weekly.data";
+import type { WeeklySummary } from "@/src/features/dashboard/weekly";
+import { getStreakSummary, type StreakSummary } from "@/src/features/streak/streak.data";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import type { SleepEntry } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
@@ -53,6 +59,8 @@ export default function DashboardScreen() {
   const [sleep, setSleep] = useState<SleepEntry[]>([]);
   const [layout, setLayout] = useState<PanelLayout>(normalizeLayout(null));
   const [customizing, setCustomizing] = useState(false);
+  const [streak, setStreak] = useState<StreakSummary | null>(null);
+  const [weekly, setWeekly] = useState<WeeklySummary | null>(null);
 
   const load = useCallback(() => {
     Promise.all([
@@ -60,7 +68,11 @@ export default function DashboardScreen() {
       getComplianceDays(1),
       getSleepSince(addDays(localDateKey(), -40)),
       getSetting(LAYOUT_KEY),
-    ]).then(([nextSnapshot, days, nights, savedLayout]) => {
+      getStreakSummary(),
+      getWeeklySummary(),
+    ]).then(([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly]) => {
+      setStreak(nextStreak);
+      setWeekly(nextWeekly);
       setSnapshot(nextSnapshot);
       setCompliance(days[0]?.compliance ?? null);
       setSleep(nights);
@@ -184,8 +196,12 @@ export default function DashboardScreen() {
         {VIEWER ? <ViewerBanner /> : <FoodSearchBar onPress={() => router.push("/add-food")} />}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
+        {streak && !VIEWER ? (
+          <StreakCard summary={streak} onPress={() => router.push("/achievements")} />
+        ) : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
         <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>
+        {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}
         {customizing ? (
           <CustomizePanel
             layout={layout}

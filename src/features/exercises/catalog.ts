@@ -1,49 +1,14 @@
 /**
- * Catálogo de ejercicios, escrito para Dophamine (sin datos ni imágenes de
- * terceros). Cada ejercicio dice qué músculos trabaja, con qué equipo y qué
+ * Catálogo de ejercicios: los nuestros (escritos para Dophamine) más el catálogo
+ * gratuito de RepDB (Exercise data by RepDB, repdb.co), que aporta imágenes e
+ * instrucciones. Cada ejercicio dice qué músculos trabaja, con qué equipo y qué
  * patrón de movimiento sigue: con eso se sugieren reemplazos y se cuentan las
  * series por músculo de la semana.
  */
-export type Muscle =
-  | "chest"
-  | "lats"
-  | "upperBack"
-  | "frontDelts"
-  | "sideDelts"
-  | "rearDelts"
-  | "biceps"
-  | "triceps"
-  | "forearms"
-  | "abs"
-  | "obliques"
-  | "lowerBack"
-  | "glutes"
-  | "quads"
-  | "hamstrings"
-  | "adductors"
-  | "calves";
-export type Equipment =
-  "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight" | "band" | "kettlebell" | "smith";
-export type Pattern =
-  | "squat"
-  | "hinge"
-  | "lunge"
-  | "horizontalPush"
-  | "verticalPush"
-  | "horizontalPull"
-  | "verticalPull"
-  | "elbowFlexion"
-  | "elbowExtension"
-  | "shoulderRaise"
-  | "chestFly"
-  | "kneeFlexion"
-  | "kneeExtension"
-  | "hipThrust"
-  | "hipAbduction"
-  | "hipAdduction"
-  | "calfRaise"
-  | "core"
-  | "carry";
+import type { Equipment, Muscle, Pattern } from "./catalog.types";
+import { OWN_MEDIA, REPDB_EXERCISES } from "./repdb.data";
+
+export type { Equipment, Muscle, Pattern } from "./catalog.types";
 
 export type CatalogExercise = {
   id: string;
@@ -56,6 +21,10 @@ export type CatalogExercise = {
   unilateral?: boolean;
   /** Otros nombres con los que aparece en rutinas. */
   aliases?: string[];
+  /** Id de RepDB para sus imágenes (ver `images.ts`). */
+  media?: string;
+  /** Cómo se hace, paso a paso. */
+  steps?: string[];
 };
 
 export const MUSCLE_LABELS: Record<Muscle, string> = {
@@ -86,7 +55,24 @@ export const EQUIPMENT_LABELS: Record<Equipment, string> = {
   band: "Banda",
   kettlebell: "Kettlebell",
   smith: "Multipower",
+  other: "Otro",
 };
+
+/** Grupos para explorar el catálogo sin saber el nombre del ejercicio. */
+export type MuscleGroup = "chest" | "back" | "shoulders" | "arms" | "legs" | "glutes" | "core";
+export const MUSCLE_GROUPS: { id: MuscleGroup; label: string; muscles: Muscle[] }[] = [
+  { id: "chest", label: "Pecho", muscles: ["chest"] },
+  { id: "back", label: "Espalda", muscles: ["lats", "upperBack", "lowerBack"] },
+  { id: "shoulders", label: "Hombros", muscles: ["frontDelts", "sideDelts", "rearDelts"] },
+  { id: "arms", label: "Brazos", muscles: ["biceps", "triceps", "forearms"] },
+  { id: "legs", label: "Piernas", muscles: ["quads", "hamstrings", "adductors", "calves"] },
+  { id: "glutes", label: "Glúteos", muscles: ["glutes"] },
+  { id: "core", label: "Abdomen", muscles: ["abs", "obliques"] },
+];
+
+/** El grupo al que pertenece un músculo. */
+export const groupOfMuscle = (muscle: Muscle): MuscleGroup =>
+  (MUSCLE_GROUPS.find((group) => group.muscles.includes(muscle)) as (typeof MUSCLE_GROUPS)[number]).id;
 
 type Row = [string, Muscle[], Muscle[], Equipment, Pattern, { unilateral?: boolean; aliases?: string[] }?];
 
@@ -415,8 +401,12 @@ const slug = (text: string) =>
 export const normalizeName = (text: string) =>
   text.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
 
-export const CATALOG: CatalogExercise[] = ROWS.map(
-  ([name, primary, secondary, equipment, pattern, extra]) => ({
+const repdbById = new Map(REPDB_EXERCISES.map((item) => [item.id, item]));
+
+const OWN: CatalogExercise[] = ROWS.map(([name, primary, secondary, equipment, pattern, extra]) => {
+  const media = repdbById.get(OWN_MEDIA[name]);
+  const aliases = [...(extra?.aliases ?? []), ...(media && media.name !== name ? [media.name] : [])];
+  return {
     id: slug(name),
     name,
     primary,
@@ -424,13 +414,55 @@ export const CATALOG: CatalogExercise[] = ROWS.map(
     equipment,
     pattern,
     ...(extra?.unilateral ? { unilateral: true } : {}),
-    ...(extra?.aliases ? { aliases: extra.aliases } : {}),
-  }),
-);
+    ...(aliases.length ? { aliases } : {}),
+    ...(media ? { media: media.id, steps: media.steps } : {}),
+  };
+});
+
+const linked = new Set(Object.values(OWN_MEDIA));
+
+/** Los nuestros primero (con sus ids de siempre) y luego los de RepDB que no repiten ninguno. */
+export const CATALOG: CatalogExercise[] = [
+  ...OWN,
+  ...REPDB_EXERCISES.filter((item) => !linked.has(item.id)).map((item): CatalogExercise => ({
+    id: item.id,
+    name: item.name,
+    primary: item.primary,
+    secondary: item.secondary,
+    equipment: item.equipment,
+    pattern: item.pattern,
+    ...(item.unilateral ? { unilateral: true } : {}),
+    media: item.id,
+    steps: item.steps,
+  })),
+];
+
+const byId = new Map(CATALOG.map((exercise) => [exercise.id, exercise]));
+/** El ejercicio con ese id, o null. */
+export const exerciseById = (id: string | null | undefined): CatalogExercise | null =>
+  (id && byId.get(id)) || null;
+
+/**
+ * Ejercicios de un grupo muscular (por su músculo principal), opcionalmente de
+ * un músculo concreto y con cierto equipo. Los compuestos y los nuestros, primero.
+ */
+export function exercisesInGroup(
+  group: MuscleGroup,
+  options: { muscle?: Muscle; equipment?: Equipment } = {},
+  catalog: CatalogExercise[] = CATALOG,
+): CatalogExercise[] {
+  return catalog.filter(
+    (exercise) =>
+      groupOfMuscle(exercise.primary[0]) === group &&
+      (!options.muscle || exercise.primary.includes(options.muscle)) &&
+      (!options.equipment || exercise.equipment === options.equipment),
+  );
+}
 
 const byName = new Map<string, CatalogExercise>();
 for (const exercise of CATALOG)
-  for (const name of [exercise.name, ...(exercise.aliases ?? [])]) byName.set(normalizeName(name), exercise);
+  for (const name of [exercise.name, ...(exercise.aliases ?? [])])
+    if (!byName.has(normalizeName(name))) byName.set(normalizeName(name), exercise);
 
 /** El ejercicio del catálogo con ese nombre o alias, sin importar tildes ni mayúsculas. */
 export const findExercise = (name: string): CatalogExercise | null => byName.get(normalizeName(name)) ?? null;

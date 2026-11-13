@@ -30,6 +30,7 @@ import {
   getMealEntries,
 } from "@/src/features/nutrition/nutrition.repository";
 import { mealSetupOf, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
+import { saveMealFromEntries } from "@/src/features/nutrition/savedMeals.repository";
 import { weekdayOf } from "@/src/features/reminders/reminders";
 import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
 import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
@@ -374,6 +375,7 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
             changed();
           }}
           onEdit={edit}
+          onSave={(name) => saveMealFromEntries(name, slot.entries)}
         />
       ))}
       {entries.length || totals.kcal ? (

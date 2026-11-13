@@ -34,7 +34,7 @@ La pantalla principal no es un muro de numeros: presenta la energia disponible, 
 - **Registro compacto.** Peso, calorias y macros; no exige catalogar alimento por alimento para empezar a encontrar senales.
 - **TDEE y revision semanal transparentes.** Se activan al reunir historial suficiente, indican si la estimacion esta construyendose, actualizandose o en pausa, y nunca cambian tu objetivo sin aceptacion.
 - **Habitos mensuales.** Plan, proteina, movimiento, descanso y chequeo personal con una vista de consistencia por dia.
-- **Entrenamiento configurable.** Full body, torso/pierna, empuje/tiron, cadena posterior o rutina propia; dias, ejercicios, series, repeticiones y RIR editables.
+- **Entrenamiento por dias.** Cada dia de la semana con su propio entreno (Torso A, Pierna A…), catalogo de casi 600 ejercicios con imagen explorable por grupo muscular, registro serie por serie, mapa muscular, volumen semana a semana y mejores marcas.
 - **Generacion y progresion locales.** La rutina puede adaptarse al objetivo, duracion y equipo; las sugerencias usan las cargas, repeticiones y RIR de sesiones previas.
 - **Bienestar con contexto.** Animo, energia, estres, horas de sueno y una nota privada, con lectura de tendencia reciente.
 - **Privacidad por defecto.** Sin cuentas, anuncios ni telemetria. SQLite en Android/iOS y `localStorage` en la web.
@@ -113,7 +113,7 @@ El orden de lo que falta, con quién hace cada paso y cómo se comprueba, está 
 
 ## Datos de ejercicios, privacidad y licencia
 
-El catalogo inicial no redistribuye imagenes ni GIFs de terceros. El modelo es compatible con [`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset); consulta [NOTICE.md](NOTICE.md) antes de incorporar contenido externo.
+**Exercise data by [RepDB](https://repdb.co) (repdb.co).** Las ilustraciones, instrucciones y parte del catalogo de ejercicios vienen del catalogo gratuito de RepDB, con su propia licencia (no MIT): se usan dentro de la app y no se redistribuyen como dataset. Detalles en [NOTICE.md](NOTICE.md).
 
 Lee [docs/PRIVACY.md](docs/PRIVACY.md) para conocer los limites de privacidad y salud. Dophamine se distribuye bajo licencia [MIT](LICENSE).
 

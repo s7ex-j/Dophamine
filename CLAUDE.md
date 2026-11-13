@@ -15,7 +15,7 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`, con la sección "Hoy" de `src/features/dashboard/TodaySection.tsx` donde se anota todo), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx` y `reminders.tsx` se abren encima |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`, con la sección "Hoy" de `src/features/dashboard/TodaySection.tsx` donde se anota todo), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx`, `catalog.tsx`, `routine.tsx`, `achievements.tsx`, `sobriety.tsx`, `photos.tsx` y `reminders.tsx` se abren encima |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Alimentos y comidas | `src/features/nutrition/` (`foods.ts`, `meals.ts`, `builtin.foods.ts`) y `app/add-food.tsx` |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
@@ -26,7 +26,11 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Gasto inicial del plan | `src/features/profile/expenditure.ts` |
 | Ajustes sueltos (Panel, recordatorios) | `src/features/settings/settings.repository.ts` |
 | Recordatorios | `src/features/reminders/` y `app/reminders.tsx` |
-| Entreno serie por serie | `src/features/training/workout.ts` (sesión, progresión, récords), `src/features/exercises/catalog.ts`, `app/session.tsx`, `app/exercise.tsx` |
+| Entreno serie por serie | `src/features/training/workout.ts` (sesión, progresión, récords), `training.plans.ts` (rutina con un entreno por día), `week.ts` (semana, volumen, mejores marcas, mapa muscular), `app/session.tsx`, `app/exercise.tsx`, `app/routine.tsx` |
+| Catálogo de ejercicios | `src/features/exercises/catalog.ts` (propios + RepDB, grupos musculares), `repdb.data.ts` e `images.ts` (generados por `scripts/import-repdb.py`: no editar a mano), `CatalogBrowser.tsx`. Licencia de RepDB en `NOTICE.md` |
+| Comidas guardadas | `src/features/nutrition/savedMeals.ts` (+ `.repository.ts`, en ajustes) |
+| Racha, Dopi, logros y sobriedad | `src/features/streak/` y `src/features/sobriety/sobriety.ts` |
+| Resumen semanal y fotos de progreso | `src/features/dashboard/weekly.ts`, `src/features/photos/` (imágenes solo en el teléfono) |
 | Ajuste del plan según adherencia, sueño y meta | `src/features/tdee/checkin.ts` |
 | Agua del día | `src/features/water/water.ts` |
 | División de comidas (por nombre o número) | `src/features/nutrition/meals.ts` (`mealSlots`, `mealSetupOf` en `profile.ts`) |

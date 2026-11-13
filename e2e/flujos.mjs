@@ -272,12 +272,40 @@ async function main() {
       "El total del día no es la suma de las comidas.",
     );
     assert(today.weightKg === 79.6, "Guardar comidas borró el peso del día.");
+    await press("Guardar como comida");
+    await fillLabel("Nombre de la comida", "Almuerzo de siempre");
+    await pressLabel("Guardar comida");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings?.saved_meals?.[0]?.items?.length === 2,
+      {},
+      STORE_KEY,
+    );
     await press("Listo");
     await waitText("630 kcal");
   });
 
+  await step("comidas guardadas: repetir una comida entera con un toque", async () => {
+    const date = daysAgo(3);
+    await open(`/add-food?date=${date}&slot=dinner`);
+    await waitText("Mis comidas");
+    await pressLabel("Registrar Almuerzo de siempre");
+    await waitText("Cena · 630 kcal");
+    const current = await store();
+    assert(
+      current.meals.filter((meal) => meal.date === date && meal.slot === "dinner").length === 2,
+      "La comida guardada no registró sus dos alimentos.",
+    );
+    assert(
+      current.biometrics.find((record) => record.date === date)?.caloriesIn === 630,
+      "La comida guardada no sumó al día.",
+    );
+    await open("/");
+    await waitText("Hoy");
+  });
+
   await step("agregar: alimento propio, receta y sugerencias", async () => {
     await pressLabel("Agregar a cena");
+    await waitText("Buscar alimento");
     await press("Nuevo");
     await fill("Nombre", "Yogur e2e");
     await fill("Porción (g)", 200);
@@ -439,13 +467,31 @@ async function main() {
     );
   });
 
-  await step("entreno: rutina con el catálogo, sesión en vivo serie por serie y resumen", async () => {
+  await step("entreno: rutina por día con el catálogo, sesión serie por serie y resumen", async () => {
     await open("/training");
-    await press("Editar mi rutina");
+    await waitText("Músculos esta semana");
+    await pressLabel("Editar rutina");
+    await waitText("Días de entreno");
     await fill("Nombre de la rutina", "Rutina e2e");
-    await fill("Ejercicios", "Sentadilla frontal");
-    await fill("Agregar del catálogo", "remo con barra");
-    await press("Remo con barra");
+    // Se vacía el primer día y se arma con el catálogo.
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const label = await page.evaluate(
+        () =>
+          [...document.querySelectorAll('[aria-label^="Quitar "]')]
+            .map((element) => element.getAttribute("aria-label"))
+            .find(
+              (value) => !/^Quitar (Lunes|Martes|Miércoles|Jueves|Viernes|Sábado|Domingo)$/.test(value),
+            ) ?? null,
+      );
+      if (!label) break;
+      await pressLabel(label);
+    }
+    await press("Agregar ejercicio");
+    await fillLabel("Buscar ejercicio", "sentadilla frontal");
+    await pressLabel("Sentadilla frontal");
+    await fillLabel("Buscar ejercicio", "remo con barra");
+    await pressLabel("Remo con barra");
+    await press("Listo");
     await press("Guardar rutina");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).routines?.[0]?.name === "Rutina e2e",
@@ -453,22 +499,32 @@ async function main() {
       STORE_KEY,
     );
     const routine = (await store()).routines[0];
+    const first = routine.schedule[0];
     assert(
-      routine.exercises.map((exercise) => exercise.name).join() === "Sentadilla frontal,Remo con barra",
-      "El editor no guardó los ejercicios escritos y elegidos del catálogo.",
+      first.exercises.map((exercise) => exercise.name).join() === "Sentadilla frontal,Remo con barra",
+      "El editor no guardó los ejercicios elegidos del catálogo en el día.",
     );
-    await press("Empezar entreno");
+    assert(routine.schedule.length > 1, "Editar un día borró los demás.");
+    await open(`/session?day=${first.day}`);
     await waitText("Sentadilla frontal · 0/3");
+    await waitText("Cómo se hace");
     await fillLabel("Carga serie 1", 60);
     await fillLabel("Repeticiones serie 1", 10);
     await pressLabel("Completar serie 1");
-    await waitText("Descanso");
-    await press("Saltar");
+    // Sin temporizador de descanso: se sigue anotando.
+    assert(
+      !(await page.evaluate(() => document.body.innerText.includes("Descanso"))),
+      "Volvió el temporizador.",
+    );
     // Sin repeticiones escritas se toma la sugerida (el mínimo del rango la primera vez).
     await fillLabel("Carga serie 2", 62.5);
     await pressLabel("Completar serie 2");
     await waitText("Sentadilla frontal · 2/3");
     assert((await store()).settings.active_session, "La sesión en curso no se guarda mientras se entrena.");
+    await press("Agregar otro ejercicio");
+    await fillLabel("Buscar ejercicio", "encogimientos");
+    await pressLabel("Encogimientos de hombros");
+    await waitText("Encogimientos de hombros · 0/3");
     await press("Terminar");
     await waitText("ENTRENO COMPLETO");
     await waitText("Músculos trabajados");
@@ -479,25 +535,55 @@ async function main() {
     assert(sets[0].exerciseId === "sentadilla-frontal", "La serie no quedó enlazada al catálogo.");
     assert(current.settings.active_session === null, "La sesión terminada sigue abierta.");
     await press("Listo");
+    await open("/training");
     await waitText("Historial de sesiones");
+    await waitText("Tus ejercicios");
     await waitText("2 series");
-    await press("Sentadilla frontal");
+    await open("/exercise?name=Sentadilla%20frontal");
     await waitText("Qué trabaja");
     await waitText("Cuádriceps");
+    await waitText("Cómo se hace");
   });
 
   await step("entreno: la segunda sesión sugiere carga y detecta récords", async () => {
-    await open("/session");
+    const { routines } = await store();
+    await open(`/session?day=${routines[0].schedule[0].day}`);
     await waitText("Sentadilla frontal · 0/3");
     // La vez anterior: 60 × 10 y 62.5 × 8, sin llegar al tope de 12 → repite 62.5 buscando 9.
     await waitText("62.5 × 9");
     await fillLabel("Carga serie 1", 70);
     await fillLabel("Repeticiones serie 1", 8);
     await pressLabel("Completar serie 1");
-    await press("Saltar");
     await press("Terminar");
     await waitText("Récords");
     await waitText("1RM estimado");
+  });
+
+  await step("catálogo: explorar por grupo muscular sin saber el nombre", async () => {
+    await open("/catalog");
+    await pressLabel("Grupo Espalda");
+    await waitText("Dorsales");
+    await press("Cualquier equipo");
+    await pressLabel("Dominadas");
+    await waitText("Cómo se hace");
+    await waitText("Exercise data by RepDB");
+  });
+
+  await step("más → racha, logros y sobriedad", async () => {
+    await open("/more");
+    await press("Racha y logros");
+    await waitText("Dopi");
+    await waitText("Racha actual");
+    await open("/sobriety");
+    await fill("Hábito", "Tabaco");
+    await fill("Días que ya llevas", 10);
+    await press("Empezar a contar");
+    await waitText("SIN TABACO");
+    await waitText("Próximo hito: 14 días");
+    const { settings } = await store();
+    assert(settings.sobriety?.[0]?.name === "Tabaco", "No se guardó el contador de sobriedad.");
+    await open("/achievements");
+    await waitText("7 días sin tabaco");
   });
 
   await step("más → bienestar: guardar un chequeo", async () => {
