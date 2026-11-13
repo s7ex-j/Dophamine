@@ -25,6 +25,8 @@ import {
   ingredientsFromDrafts,
   isMealEntry,
   legacyDraft,
+  rescaleEntry,
+  toggleId,
   slotForHour,
   suggestionsFor,
   totalsOf,
@@ -367,5 +369,27 @@ describe("crudo y cocido", () => {
     const dishes = ["Lomo saltado", "Arroz con pollo", "Ají de gallina", "Hamburguesa", "Pizza", "Ceviche"];
     const found = BUILTIN_FOODS.filter((item) => dishes.some((dish) => item.name.includes(dish)));
     expect(found.map((item) => item.name)).toEqual([]);
+  });
+});
+
+describe("editar una entrada", () => {
+  const original = entry("1", "lunch", rice, 200);
+
+  it("recalcula desde el alimento con otra cantidad", () => {
+    const edited = rescaleEntry(original, 100, rice);
+    expect(edited).toMatchObject({ id: "1", slot: "lunch", grams: 100, kcal: 130 });
+  });
+
+  it("escala proporcionalmente si el alimento ya no existe", () => {
+    const edited = rescaleEntry(original, 300, null);
+    expect(edited.kcal).toBe(Math.round(original.kcal * 1.5));
+    expect(edited.grams).toBe(300);
+    const quick = { ...original, grams: undefined };
+    expect(rescaleEntry(quick, 300, null)).toBe(quick);
+  });
+
+  it("marca y desmarca favoritos", () => {
+    expect(toggleId([], "a")).toEqual(["a"]);
+    expect(toggleId(["a", "b"], "a")).toEqual(["b"]);
   });
 });

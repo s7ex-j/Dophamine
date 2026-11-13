@@ -47,3 +47,8 @@ export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
       sleepHours: entry.sleepHours ?? null,
     }));
 }
+
+/** Fechas con al menos un chequeo de bienestar desde `since`. */
+export async function getWellbeingDates(since: string): Promise<string[]> {
+  return [...new Set(readStore().wellbeing.map((entry) => entry.date))].filter((date) => date >= since);
+}

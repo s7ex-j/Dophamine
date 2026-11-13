@@ -19,6 +19,8 @@ export type DailyBiometrics = {
   muscleMassKg?: number | null;
   waterPct?: number | null;
   boneMassKg?: number | null;
+  /** La persona marcó que no registró todo lo que comió ese día. */
+  partial?: boolean;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -36,6 +38,7 @@ type Row = {
   muscle_mass_kg: number | null;
   water_pct: number | null;
   bone_mass_kg: number | null;
+  partial: number | null;
 };
 
 const today = () => localDateKey();
@@ -52,6 +55,7 @@ const fromRow = (row: Row): DailyBiometrics => ({
   muscleMassKg: row.muscle_mass_kg,
   waterPct: row.water_pct,
   boneMassKg: row.bone_mass_kg,
+  partial: row.partial === 1,
 });
 
 /** Guarda el pesaje y la composición de un día sin tocar lo comido. */
@@ -115,4 +119,16 @@ export async function getBiometricsWindow(days: number): Promise<DailyBiometrics
 
 export async function getRecentBiometrics(): Promise<DailyBiometrics[]> {
   return getBiometricsWindow(7);
+}
+
+/** Marca o desmarca un día como incompleto (no se registró todo lo comido). */
+export async function setDayPartial(date: string, partial: boolean) {
+  const db = await getDatabase();
+  await db.runAsync(
+    `INSERT INTO daily_biometrics (id, date, partial) VALUES (?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET partial = excluded.partial, updated_at = CURRENT_TIMESTAMP`,
+    id(),
+    date,
+    partial ? 1 : 0,
+  );
 }

@@ -1,4 +1,5 @@
 import { getDatabase } from "@/src/db/database";
+import { localDateKey } from "@/src/lib/dates";
 import { progressionHintFor, type ProgressionHint } from "./progression";
 import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
 
@@ -112,4 +113,15 @@ export async function getProgressionHints(routine: Routine): Promise<Progression
     if (hint) hints.push(hint);
   }
   return hints;
+}
+
+/** Fechas locales (AAAA-MM-DD) con al menos una sesión registrada desde `since`. */
+export async function getWorkoutDates(since: string): Promise<string[]> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<{ completed_at: string }>(
+    "SELECT completed_at FROM workouts WHERE completed_at IS NOT NULL",
+  );
+  return [...new Set(rows.map((row) => localDateKey(new Date(row.completed_at))))].filter(
+    (date) => date >= since,
+  );
 }

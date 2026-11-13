@@ -105,3 +105,11 @@ export async function setOnlineLookup(enabled: boolean) {
   store.settings = { ...store.settings, onlineLookup: enabled };
   writeStore(store);
 }
+
+/** Reemplaza una entrada (cantidad, momento del día o alimento) y recalcula su día. */
+export async function updateMealEntry(entry: MealEntry) {
+  const store = readStore();
+  store.meals = (store.meals ?? []).map((item) => (item.id === entry.id ? entry : item));
+  writeStore(store);
+  await syncTotals(entry.date);
+}

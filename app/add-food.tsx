@@ -9,6 +9,7 @@ import {
   Card,
   Chips,
   ChoiceControl,
+  IconButton,
   IconTabs,
   Input,
   RowActions,
@@ -41,6 +42,7 @@ import {
   slotForHour,
   slotLabel,
   suggestionsFor,
+  toggleId,
   totalsOf,
   type MealDraft,
   type MealEntry,
@@ -64,6 +66,7 @@ import {
   OFF_ATTRIBUTION,
   searchOnline,
 } from "@/src/features/nutrition/openfoodfacts";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
@@ -90,6 +93,7 @@ function AddFoodContent() {
   const [history, setHistory] = useState<MealEntry[]>([]);
   const [logged, setLogged] = useState<MealEntry[]>([]);
   const [online, setOnline] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [onlineResults, setOnlineResults] = useState<Food[]>([]);
   const [selected, setSelected] = useState<Food | null>(null);
@@ -105,14 +109,21 @@ function AddFoodContent() {
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
 
   const load = useCallback(() => {
-    Promise.all([getUserFoods(), getMealHistory(), getOnlineLookup(), getMealEntries(date)]).then(
-      ([foods, entries, enabled, today]) => {
-        setUserFoods(foods);
-        setHistory(entries);
-        setOnline(enabled);
-        setLogged(today);
-      },
-    );
+    Promise.all([
+      getUserFoods(),
+      getMealHistory(),
+      getOnlineLookup(),
+      getMealEntries(date),
+      getSetting("favorite_foods"),
+    ]).then(([foods, entries, enabled, today, saved]) => {
+      setUserFoods(foods);
+      setHistory(entries);
+      setOnline(enabled);
+      setLogged(today);
+      setFavorites(
+        Array.isArray(saved) ? saved.filter((item): item is string => typeof item === "string") : [],
+      );
+    });
   }, [date]);
   useFocusEffect(load);
 
@@ -125,6 +136,15 @@ function AddFoodContent() {
   }, [allFoods, query, usage, onlineResults]);
   const suggestions = useMemo(() => suggestionsFor(slot, usage, allFoods), [slot, usage, allFoods]);
   const mine = userFoods.filter((food) => food.source !== "off");
+  const favoriteFoods = favorites.flatMap((id) => {
+    const food = allFoods.find((item) => item.id === id);
+    return food ? [food] : [];
+  });
+  const toggleFavorite = async (id: string) => {
+    const next = toggleId(favorites, id);
+    setFavorites(next);
+    await setSetting("favorite_foods", next);
+  };
   const inSlot = logged.filter((entry) => entry.slot === slot);
   const note = (text: string, error = false) => setMessage({ text, error });
   const slotName = slotLabel(slot).toLowerCase();
@@ -249,6 +269,13 @@ function AddFoodContent() {
 
         {selected && preview ? (
           <Card title={selected.name}>
+            <View style={AppTheme.rowActions}>
+              <IconButton
+                icon={favorites.includes(selected.id) ? "star" : "star-outline"}
+                label={favorites.includes(selected.id) ? "Quitar de favoritos" : "Agregar a favoritos"}
+                onPress={() => toggleFavorite(selected.id)}
+              />
+            </View>
             {other && selected.state ? (
               <ChoiceControl
                 value={selected.state}
@@ -337,6 +364,14 @@ function AddFoodContent() {
                   </>
                 ) : (
                   <>
+                    {mode === "search" && favoriteFoods.length ? (
+                      <Text style={AppTheme.label}>Favoritos</Text>
+                    ) : null}
+                    {mode === "search"
+                      ? favoriteFoods.map((food) => (
+                          <FoodResult key={`fav-${food.id}`} food={food} onPress={() => choose(food)} />
+                        ))
+                      : null}
                     {mode === "search" && suggestions.length ? (
                       <Text style={AppTheme.label}>Habituales en {slotName}</Text>
                     ) : null}

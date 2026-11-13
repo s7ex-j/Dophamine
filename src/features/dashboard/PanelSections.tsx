@@ -2,10 +2,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Switch, Text, View } from "react-native";
 
-import { LineChart, MiniBar } from "@/src/components/charts";
+import { LineChart, MiniBar, Ring } from "@/src/components/charts";
+import { ConsistencyGrid } from "@/src/components/DetailChart";
 import { ChoiceControl, IconButton, type IconName } from "@/src/components/ui";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { compositionSeries, latestComposition } from "@/src/features/composition/composition";
+import {
+  COMPLIANCE_ITEMS,
+  complianceScore,
+  type ComplianceKey,
+  type DayCompliance,
+} from "@/src/features/habits/compliance";
+import { loggingLevel } from "@/src/features/dashboard/insights";
+import { SLEEP_GOAL_MINUTES, sleepMinutes, sleepSummary, type SleepEntry } from "@/src/features/sleep/sleep";
+import { formatDuration } from "@/src/lib/time";
 import { nutritionGrid, type GridKey, type WeekDay } from "@/src/features/dashboard/dashboard";
 import { PANEL_SECTIONS, type PanelLayout, type PanelSection } from "@/src/features/dashboard/layout";
 import {
@@ -354,6 +364,9 @@ const SECTION_ICONS: Record<PanelSection, IconName> = {
   goal: "flag-outline",
   composition: "body-outline",
   habits: "checkmark-done-outline",
+  macros: "pie-chart-outline",
+  sleep: "moon-outline",
+  consistency: "calendar-outline",
 };
 
 /** Ordenar y ocultar secciones del Panel. */
@@ -414,5 +427,187 @@ export function CustomizePanel({
         </View>
       ))}
     </View>
+  );
+}
+
+const COMPLIANCE_ICONS: Record<ComplianceKey, IconName> = {
+  calories: "flame-outline",
+  protein: "fish-outline",
+  weight: "scale-outline",
+  training: "barbell-outline",
+  sleep: "moon-outline",
+  wellbeing: "happy-outline",
+};
+
+/** Los seis compromisos de hoy, marcados solos con lo que ya registraste. */
+export function ComplianceCard({ compliance, onPress }: { compliance: DayCompliance; onPress: () => void }) {
+  const score = complianceScore(compliance);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[AppTheme.card, AppTheme.iconRow, { gap: 16 }]}
+    >
+      <Ring value={score / COMPLIANCE_ITEMS.length} size={84} stroke={9} color={AppTheme.colors.accent}>
+        <Text style={[AppTheme.ringNumber, { fontSize: 22 }]}>{score}</Text>
+        <Text style={AppTheme.ringLabel}>de {COMPLIANCE_ITEMS.length}</Text>
+      </Ring>
+      <View style={{ flex: 1, gap: 8 }}>
+        <Text style={AppTheme.tileTitle}>Cumplimiento de hoy</Text>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          {COMPLIANCE_ITEMS.map((item) => {
+            const done = compliance[item.key];
+            return (
+              <View
+                key={item.key}
+                accessibilityLabel={`${item.label}: ${done ? "cumplido" : "pendiente"}`}
+                style={[AppTheme.complianceChip, done && AppTheme.complianceChipDone]}
+              >
+                <Ionicons
+                  name={COMPLIANCE_ICONS[item.key]}
+                  size={14}
+                  color={done ? AppTheme.colors.onAccent : AppTheme.colors.muted}
+                />
+                <Text style={[AppTheme.complianceText, done && { color: AppTheme.colors.onAccent }]}>
+                  {item.label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+const DAY_LETTERS = ["D", "L", "M", "X", "J", "V", "S"];
+const letterOf = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  return DAY_LETTERS[new Date(year, month - 1, day).getDay()];
+};
+
+/** Calorías de los últimos 7 días repartidas en macros, contra la meta. */
+export function MacrosTile({
+  week,
+  profile,
+  onPress,
+}: {
+  week: WeekDay[];
+  profile: NutritionProfile;
+  onPress: () => void;
+}) {
+  const logged = week.filter((day) => (day.record?.caloriesIn ?? 0) > 0);
+  const average = logged.length
+    ? Math.round(logged.reduce((sum, day) => sum + (day.record?.caloriesIn ?? 0), 0) / logged.length)
+    : 0;
+  const scale = Math.max(profile.calorieTarget, ...week.map((day) => day.record?.caloriesIn ?? 0)) || 1;
+  return (
+    <Tile
+      title="Macros"
+      subtitle="Últimos 7 días"
+      icon="pie-chart-outline"
+      value={average ? String(average) : "—"}
+      unit={average ? "kcal/día" : undefined}
+      onPress={onPress}
+    >
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4, height: 56 }}>
+        {week.map((day) => {
+          const record = day.record;
+          const parts = record
+            ? [
+                { value: record.fatsG * 9, color: AppTheme.colors.fats },
+                { value: record.carbsG * 4, color: AppTheme.colors.carbs },
+                { value: record.proteinG * 4, color: AppTheme.colors.protein },
+              ]
+            : [];
+          return (
+            <View key={day.key} style={{ flex: 1, height: "100%", justifyContent: "flex-end" }}>
+              {parts.map((part, index) => (
+                <View
+                  key={index}
+                  style={{ height: `${(part.value / scale) * 100}%`, backgroundColor: part.color }}
+                />
+              ))}
+              {!parts.length ? (
+                <View style={{ height: 3, borderRadius: 2, backgroundColor: AppTheme.colors.border }} />
+              ) : null}
+            </View>
+          );
+        })}
+      </View>
+    </Tile>
+  );
+}
+
+/** Horas dormidas en las últimas 7 noches. */
+export function SleepTile({
+  sleep,
+  dates,
+  onPress,
+}: {
+  sleep: SleepEntry[];
+  dates: string[];
+  onPress: () => void;
+}) {
+  const byDate = new Map(
+    sleep.map((entry) => [entry.date, sleepMinutes(entry.bedtime, entry.wakeTime) ?? 0]),
+  );
+  const summary = sleepSummary(sleep, 7);
+  return (
+    <Tile
+      title="Sueño"
+      subtitle={summary.averageBedtime ? `Te acuestas ~${summary.averageBedtime}` : "Últimas 7 noches"}
+      icon="moon-outline"
+      value={summary.averageMinutes ? formatDuration(summary.averageMinutes) : "—"}
+      onPress={onPress}
+    >
+      {summary.nights ? (
+        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6, height: 56 }}>
+          {dates.map((date) => (
+            <View key={date} style={{ flex: 1, alignItems: "center", gap: 3 }}>
+              <MiniBar
+                value={byDate.get(date) ?? 0}
+                target={SLEEP_GOAL_MINUTES}
+                color={AppTheme.colors.violet}
+              />
+              <Text style={AppTheme.weekGridDay}>{letterOf(date)}</Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Waiting text="Registra tu sueño en el Diario." />
+      )}
+    </Tile>
+  );
+}
+
+/** Las últimas 5 semanas: cuánto registraste cada día. */
+export function ConsistencyTile({
+  records,
+  sleep,
+  dates,
+  onPress,
+}: {
+  records: DailyBiometrics[];
+  sleep: SleepEntry[];
+  dates: string[];
+  onPress: () => void;
+}) {
+  const byDate = new Map(records.map((record) => [record.date, record]));
+  const slept = new Set(sleep.map((entry) => entry.date));
+  const levels = dates.map((date) => loggingLevel(byDate.get(date), slept.has(date)));
+  const logged = levels.filter((level) => level >= 2).length;
+  return (
+    <Tile
+      title="Constancia"
+      subtitle="Últimas 5 semanas"
+      icon="calendar-outline"
+      value={`${logged}`}
+      unit={`de ${dates.length} días`}
+      onPress={onPress}
+      wide
+    >
+      <ConsistencyGrid levels={levels} dates={dates} />
+    </Tile>
   );
 }

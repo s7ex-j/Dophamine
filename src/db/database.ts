@@ -88,6 +88,14 @@ export async function initializeDatabase() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE INDEX IF NOT EXISTS meal_entries_date_idx ON meal_entries(date DESC);
+    CREATE TABLE IF NOT EXISTS sleep_entries (
+      id TEXT PRIMARY KEY NOT NULL,
+      date TEXT NOT NULL UNIQUE,
+      bedtime TEXT NOT NULL,
+      wake_time TEXT NOT NULL,
+      quality INTEGER,
+      source TEXT NOT NULL DEFAULT 'manual'
+    );
     CREATE TABLE IF NOT EXISTS weekly_reviews (
       id TEXT PRIMARY KEY NOT NULL,
       date TEXT NOT NULL,
@@ -120,6 +128,11 @@ export async function initializeDatabase() {
       DROP TABLE weekly_reviews_old;
       CREATE INDEX IF NOT EXISTS weekly_reviews_date_idx ON weekly_reviews(date DESC);
     `);
+  try {
+    await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN partial INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    /* Ya existe. */
+  }
   try {
     await db.execAsync(
       "ALTER TABLE wellbeing_entries ADD COLUMN sleep_hours REAL CHECK(sleep_hours BETWEEN 0 AND 24)",

@@ -377,6 +377,17 @@ export const AppTheme = {
     },
     ringNumber: { color: "#F1F5F2", fontSize: 30, fontWeight: "700" },
     ringLabel: { color: "#8B968F", fontSize: 12 },
+    complianceChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      backgroundColor: "#1E2622",
+    },
+    complianceChipDone: { backgroundColor: "#34D399" },
+    complianceText: { color: "#8B968F", fontSize: 12, fontWeight: "700" },
     scannerFrame: { height: 260, borderRadius: 8, overflow: "hidden", backgroundColor: "#000000" },
     optionList: { gap: 10 },
     optionCard: {

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.11.0 - 2026-11-13
+
+Panel con más gráficos, cálculo más preciso, sueño y cumplimiento automático.
+
+- Pantallas de detalle: cada tarjeta del Panel abre un gráfico con rangos de 1 semana a 1 año, eje con valores y el dato de cualquier día al tocarlo. Peso (pesajes y tendencia, meta y fecha estimada de llegada), gasto, balance energético, calorías y macros apiladas, composición (grasa y masa magra), sueño y constancia.
+- Panel ampliado: tarjetas nuevas de macros de la semana, sueño y constancia (las últimas 5 semanas en un calendario).
+- "Cumplimiento de hoy" reemplaza a "Adherencia de hoy". Ya no se marca a mano: calorías dentro de ±10 %, proteína al 90 %, pesaje, entreno (o día de descanso de la rutina), 7 h de sueño y chequeo de bienestar se marcan solos con lo registrado. En Más → Hábitos se ve el cumplimiento de 7, 28 u 84 días, con porcentaje y racha de cada compromiso.
+- Sueño: hora de acostarse, de despertar y calidad en el Diario, con duración, promedio, hora media, regularidad y deuda de sueño.
+- Cálculo del gasto más preciso:
+  - La energía de cada kilo cambiado sale de la composición medida (la grasa aporta unas 9400 kcal/kg y la masa magra unas 1800) en lugar de 7700 fijas.
+  - Un pesaje con un salto de agua (por el % de agua de la balanza o un cambio brusco de peso) pesa menos en la tendencia.
+  - El ritmo semanal sale de una recta ajustada a toda la tendencia, no de sus extremos.
+  - Los días marcados como incompletos ("No registré todo lo que comí") no cuentan para la ingesta media.
+  - El gasto muestra un margen aproximado (±).
+- Editar un alimento ya registrado: cantidad, crudo o cocido, y momento del día. Un registro rápido se edita por sus calorías y macros.
+- Alimentos favoritos, al inicio de la búsqueda.
+- El respaldo pasa al formato 6 (sueño y días incompletos). Los formatos 1 a 5 se siguen leyendo.
+- De 172 a 200 pruebas de dominio y de 15 a 16 flujos de navegador.
+- No comprobado en teléfono: la tabla nueva `sleep_entries`, la columna `partial` y los gráficos de detalle en Android.
+
 ## 0.10.0 - 2026-11-12
 
 Rediseño en modo oscuro, cálculo inicial más preciso y recordatorios de comidas.

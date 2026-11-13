@@ -64,3 +64,13 @@ export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
     note: row.note,
   }));
 }
+
+/** Fechas con al menos un chequeo de bienestar desde `since`. */
+export async function getWellbeingDates(since: string): Promise<string[]> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<{ date: string }>(
+    "SELECT DISTINCT date FROM wellbeing_entries WHERE date >= ?",
+    since,
+  );
+  return rows.map((row) => row.date);
+}

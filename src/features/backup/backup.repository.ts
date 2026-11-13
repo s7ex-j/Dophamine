@@ -10,6 +10,7 @@ import {
   type BiometricsRow,
   type FoodRow,
   type MealRow,
+  type SleepRow,
   type HabitRow,
   type ReviewRow,
   type SetRow,
@@ -37,6 +38,7 @@ export async function downloadBackup(): Promise<void> {
     reviews: await db.getAllAsync<ReviewRow>("SELECT * FROM weekly_reviews ORDER BY date DESC, rowid DESC"),
     foods: await db.getAllAsync<FoodRow>("SELECT id, data, barcode FROM foods ORDER BY rowid"),
     meals: await db.getAllAsync<MealRow>("SELECT * FROM meal_entries ORDER BY date, rowid"),
+    sleep: await db.getAllAsync<SleepRow>("SELECT * FROM sleep_entries ORDER BY date"),
   });
   const file = new File(Paths.cache, backupFileName());
   if (file.exists) file.delete();
@@ -73,6 +75,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       "weekly_reviews",
       "foods",
       "meal_entries",
+      "sleep_entries",
     ])
       await db.runAsync(`DELETE FROM ${table}`);
     // Todos los ajustes vienen del respaldo (plan, rutina, búsqueda en línea, Panel, recordatorios).
@@ -81,8 +84,8 @@ export async function restoreBackup(backup: Backup): Promise<void> {
     for (const row of tables.biometrics)
       await db.runAsync(
         `INSERT INTO daily_biometrics
-          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg, partial)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         row.id,
         row.date,
         row.weight_kg,
@@ -94,6 +97,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.muscle_mass_kg,
         row.water_pct,
         row.bone_mass_kg,
+        row.partial ?? 0,
       );
     for (const row of tables.wellbeing)
       await db.runAsync(
@@ -156,6 +160,16 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.protein_g,
         row.carbs_g,
         row.fats_g,
+      );
+    for (const row of tables.sleep ?? [])
+      await db.runAsync(
+        "INSERT INTO sleep_entries (id, date, bedtime, wake_time, quality, source) VALUES (?, ?, ?, ?, ?, ?)",
+        row.id,
+        row.date,
+        row.bedtime,
+        row.wake_time,
+        row.quality,
+        row.source,
       );
     for (const row of tables.reviews)
       await db.runAsync(

@@ -15,7 +15,7 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx` y `wellbeing.tsx` se abren encima, desde Más |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`), Diario (`biometrics`), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx` y `reminders.tsx` se abren encima |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Alimentos y comidas | `src/features/nutrition/` (`foods.ts`, `meals.ts`, `builtin.foods.ts`) y `app/add-food.tsx` |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
@@ -26,6 +26,8 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Gasto inicial del plan | `src/features/profile/expenditure.ts` |
 | Ajustes sueltos (Panel, recordatorios) | `src/features/settings/settings.repository.ts` |
 | Recordatorios | `src/features/reminders/` y `app/reminders.tsx` |
+| Sueño y cumplimiento del día | `src/features/sleep/`, `src/features/habits/compliance.ts` |
+| Gráficos de detalle del Panel | `src/features/dashboard/insights.ts` (datos) y `src/components/DetailChart.tsx` (dibujo), en `app/insight.tsx` |
 | Página de presentación | `web/` (proyecto aparte: Vite, React 19, Tailwind 4) |
 | Publicar | `docs/RELEASING.md`, `.github/workflows/` |
 

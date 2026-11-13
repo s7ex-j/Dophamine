@@ -21,6 +21,7 @@ export type BiometricsRow = {
   muscle_mass_kg: number | null;
   water_pct: number | null;
   bone_mass_kg: number | null;
+  partial?: number | null;
 };
 export type WellbeingRow = {
   id: string;
@@ -65,7 +66,16 @@ export type MealRow = {
   carbs_g: number;
   fats_g: number;
 };
+export type SleepRow = {
+  id: string;
+  date: string;
+  bedtime: string;
+  wake_time: string;
+  quality: number | null;
+  source: string;
+};
 export type Tables = {
+  sleep?: SleepRow[];
   foods: FoodRow[];
   meals: MealRow[];
   biometrics: BiometricsRow[];
@@ -106,6 +116,7 @@ export function storeFromTables(tables: Tables): Store {
       muscleMassKg: row.muscle_mass_kg,
       waterPct: row.water_pct,
       boneMassKg: row.bone_mass_kg,
+      ...(row.partial === 1 ? { partial: true } : {}),
     })),
     // La web guarda los chequeos del más reciente al más antiguo.
     wellbeing: [...tables.wellbeing]
@@ -175,6 +186,14 @@ export function storeFromTables(tables: Tables): Store {
       carbsG: row.carbs_g,
       fatsG: row.fats_g,
     })),
+    sleep: (tables.sleep ?? []).map((row) => ({
+      id: row.id,
+      date: row.date,
+      bedtime: row.bedtime,
+      wakeTime: row.wake_time,
+      quality: row.quality,
+      source: row.source === "health" ? "health" : "manual",
+    })),
     settings: {
       onlineLookup: tables.settings.find((row) => row.key === ONLINE_KEY)?.value === "on",
       // El resto de ajustes (orden del Panel, recordatorios) viaja tal cual, como JSON.
@@ -213,6 +232,7 @@ export function tablesFromStore(store: Store): Tables {
       muscle_mass_kg: record.muscleMassKg ?? null,
       water_pct: record.waterPct ?? null,
       bone_mass_kg: record.boneMassKg ?? null,
+      partial: record.partial ? 1 : 0,
     })),
     // El respaldo no trae la hora del chequeo: se reconstruye una que conserve el orden.
     wellbeing: store.wellbeing.map((entry, index) => ({
@@ -274,6 +294,14 @@ export function tablesFromStore(store: Store): Tables {
       protein_g: entry.proteinG,
       carbs_g: entry.carbsG,
       fats_g: entry.fatsG,
+    })),
+    sleep: (store.sleep ?? []).map((entry) => ({
+      id: entry.id,
+      date: entry.date,
+      bedtime: entry.bedtime,
+      wake_time: entry.wakeTime,
+      quality: entry.quality,
+      source: entry.source,
     })),
   };
 }

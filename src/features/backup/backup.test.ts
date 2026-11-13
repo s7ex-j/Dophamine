@@ -29,7 +29,13 @@ const store = {
 describe("respaldo", () => {
   it("lo que se exporta se puede volver a leer igual", () => {
     const backup = buildBackup(store, new Date("2026-11-11T12:00:00Z"));
-    expect(parseBackup(JSON.stringify(backup)).data).toEqual({ ...store, reviews: [], foods: [], meals: [] });
+    expect(parseBackup(JSON.stringify(backup)).data).toEqual({
+      ...store,
+      reviews: [],
+      foods: [],
+      meals: [],
+      sleep: [],
+    });
     expect(backupFileName(new Date("2026-11-11T12:00:00Z"))).toBe("dophamine-respaldo-2026-11-11.json");
   });
 
@@ -58,7 +64,7 @@ describe("respaldo", () => {
     const v1 = { app: "dophamine", format: 1, exportedAt: "2026-11-11T12:00:00.000Z", data: store };
     const leido = parseBackup(JSON.stringify(v1));
     expect(leido.format).toBe(1);
-    expect(leido.data).toEqual({ ...store, reviews: [], foods: [], meals: [] });
+    expect(leido.data).toEqual({ ...store, reviews: [], foods: [], meals: [], sleep: [] });
   });
 
   it("lee un respaldo del formato 2 y conserva la composición corporal del formato 3", () => {
@@ -87,7 +93,7 @@ describe("respaldo", () => {
     };
     const backup = buildBackup({ ...store, reviews: [review] });
     expect(backup.format).toBe(BACKUP_FORMAT);
-    expect(BACKUP_FORMAT).toBe(5);
+    expect(BACKUP_FORMAT).toBe(6);
     expect(parseBackup(JSON.stringify(backup)).data.reviews).toEqual([review]);
     const malo = { ...backup, data: { ...store, reviews: [{ ...review, decision: "quizá" }] } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/revisiones/);
@@ -141,5 +147,25 @@ describe("respaldo formato 5", () => {
     expect(parseBackup(JSON.stringify(buildBackup(data))).data.settings).toEqual(settings);
     const malo = { ...buildBackup(data), data: { ...data, settings: "roto" } };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/ajustes/);
+  });
+});
+
+describe("respaldo formato 6", () => {
+  it("conserva el sueño y rechaza una noche dañada", () => {
+    const night = {
+      id: "n1",
+      date: "2026-11-12",
+      bedtime: "23:30",
+      wakeTime: "07:00",
+      quality: 4,
+      source: "manual",
+    };
+    const data = { biometrics: [], wellbeing: [], workouts: [], sleep: [night] };
+    expect(parseBackup(JSON.stringify(buildBackup(data as never))).data.sleep).toEqual([night]);
+    const malo = {
+      ...buildBackup(data as never),
+      data: { ...data, sleep: [{ ...night, bedtime: "nunca" }] },
+    };
+    expect(() => parseBackup(JSON.stringify(malo))).toThrow(/sueño/);
   });
 });

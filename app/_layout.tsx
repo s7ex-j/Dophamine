@@ -40,6 +40,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         {/* Pantallas que se abren encima de las pestañas, con botón de volver. */}
         <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar alimento" }} />
+        <Stack.Screen name="insight" options={{ headerShown: true, title: "Análisis" }} />
+        <Stack.Screen name="edit-entry" options={{ headerShown: true, title: "Editar alimento" }} />
         <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
         <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
