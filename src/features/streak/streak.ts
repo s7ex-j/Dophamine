@@ -66,12 +66,9 @@ export type AchievementInput = {
   weighIns: number;
   workouts: number;
   goalReached: boolean;
-  /** Mejor racha de cada hábito de sobriedad, en días. */
-  sobriety: Array<{ name: string; best: number }>;
 };
 
 const STREAK_GOALS = [3, 7, 30, 100, 365];
-const SOBER_GOALS = [7, 30, 90, 365];
 
 /** Los logros: cada uno con lo que pide y si ya se consiguió. */
 export function achievements(input: AchievementInput): Achievement[] {
@@ -99,14 +96,6 @@ export function achievements(input: AchievementInput): Achievement[] {
     { id: "train-50", title: "50 entrenos", detail: "Termina 50 sesiones.", unlocked: input.workouts >= 50 },
     { id: "goal", title: "Peso meta", detail: "Llega a tu peso meta.", unlocked: input.goalReached },
   ];
-  for (const habit of input.sobriety)
-    for (const days of SOBER_GOALS)
-      list.push({
-        id: `sober-${habit.name}-${days}`,
-        title: `${days} días sin ${habit.name.toLowerCase()}`,
-        detail: `Sostén ${days} días seguidos.`,
-        unlocked: habit.best >= days,
-      });
   return list;
 }
 

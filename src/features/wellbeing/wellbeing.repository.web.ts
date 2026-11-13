@@ -37,9 +37,9 @@ export async function saveWellbeingEntry({
 export async function getLatestMood(): Promise<number | null> {
   return readStore().wellbeing[0]?.mood ?? null;
 }
-export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
+export async function getRecentWellbeingEntries(limit = 14): Promise<WellbeingEntry[]> {
   return readStore()
-    .wellbeing.slice(0, 14)
+    .wellbeing.slice(0, limit)
     .map((entry) => ({
       ...entry,
       energy: entry.energy ?? null,

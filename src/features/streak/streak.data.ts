@@ -1,8 +1,6 @@
 import { getBiometricsWindow } from "@/src/features/biometrics/biometrics.repository";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { goalProgress } from "@/src/features/profile/profile";
-import { getSetting } from "@/src/features/settings/settings.repository";
-import { bestDays, readHabits, SOBRIETY_KEY, type SoberHabit } from "@/src/features/sobriety/sobriety";
 import {
   achievements,
   bestStreak,
@@ -16,7 +14,7 @@ import {
 import { getSessionHistory, getWorkoutDates } from "@/src/features/training/training.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 
-// Junta lo registrado (comida, peso, entrenos y sobriedad) para la racha, Dopi y
+// Junta lo registrado (comida, peso y entrenos) para la racha, Dopi y
 // los logros. Usa repositorios que ya tienen versión SQLite y web.
 
 export type StreakSummary = {
@@ -26,17 +24,15 @@ export type StreakSummary = {
   stage: PetStage;
   mood: PetMood;
   achievements: Achievement[];
-  habits: SoberHabit[];
 };
 
 export async function getStreakSummary(now = new Date()): Promise<StreakSummary> {
   const today = localDateKey(now);
-  const [records, workoutDates, sessions, profile, saved] = await Promise.all([
+  const [records, workoutDates, sessions, profile] = await Promise.all([
     getBiometricsWindow(800),
     getWorkoutDates(addDays(today, -800)),
     getSessionHistory(1000),
     getNutritionProfile(),
-    getSetting(SOBRIETY_KEY),
   ]);
   const dates = [
     ...records
@@ -50,20 +46,17 @@ export async function getStreakSummary(now = new Date()): Promise<StreakSummary>
   const weighIns = records.filter((record) => record.weightKg).length;
   // Los registros vienen del más reciente al más antiguo.
   const latest = records.find((record) => record.weightKg)?.weightKg ?? null;
-  const habits = readHabits(saved);
   return {
     current,
     best,
     loggedToday,
     stage: petStage(best),
     mood: petMood(loggedToday, current, best),
-    habits,
     achievements: achievements({
       best,
       weighIns,
       workouts: sessions.length,
       goalReached: Boolean(profile && goalProgress(profile, latest)?.reached),
-      sobriety: habits.map((habit) => ({ name: habit.name, best: bestDays(habit, now) })),
     }),
   };
 }

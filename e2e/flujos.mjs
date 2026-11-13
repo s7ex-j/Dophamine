@@ -471,7 +471,7 @@ async function main() {
     await open("/training");
     await waitText("Músculos esta semana");
     await pressLabel("Editar rutina");
-    await waitText("Días de entreno");
+    await waitText("¿Qué días entrenas?");
     await fill("Nombre de la rutina", "Rutina e2e");
     // Se vacía el primer día y se arma con el catálogo.
     for (let attempt = 0; attempt < 12; attempt += 1) {
@@ -531,7 +531,7 @@ async function main() {
     const current = await store();
     const sets = current.workouts[0].sets;
     assert(sets.length === 2, "No se guardaron las dos series hechas.");
-    assert(sets[1].loadKg === 62.5 && sets[1].reps === 8, "La serie sin repeticiones no tomó la sugerida.");
+    assert(sets[1].loadKg === 62.5 && sets[1].reps === 12, "La serie sin repeticiones no tomó la sugerida.");
     assert(sets[0].exerciseId === "sentadilla-frontal", "La serie no quedó enlazada al catálogo.");
     assert(current.settings.active_session === null, "La sesión terminada sigue abierta.");
     await press("Listo");
@@ -549,8 +549,8 @@ async function main() {
     const { routines } = await store();
     await open(`/session?day=${routines[0].schedule[0].day}`);
     await waitText("Sentadilla frontal · 0/3");
-    // La vez anterior: 60 × 10 y 62.5 × 8, sin llegar al tope de 12 → repite 62.5 buscando 9.
-    await waitText("62.5 × 9");
+    // Ejercicio nuevo = 3 × 12. La vez anterior: 60 × 10 y 62.5 × 12 (el tope) → sube a 65 × 12.
+    await waitText("65 × 12");
     await fillLabel("Carga serie 1", 70);
     await fillLabel("Repeticiones serie 1", 8);
     await pressLabel("Completar serie 1");
@@ -569,21 +569,50 @@ async function main() {
     await waitText("Exercise data by RepDB");
   });
 
-  await step("más → racha, logros y sobriedad", async () => {
+  await step("entreno: plantilla PPL de 6 días y cardio en un día", async () => {
+    await open("/routine");
+    await waitText("¿Qué días entrenas?");
+    await press("Usar una plantilla");
+    await waitText("Empuje / tirón / pierna (6 días)");
+    await page.evaluate(() => {
+      const card = [...document.querySelectorAll("div")].find(
+        (node) =>
+          node.innerText?.startsWith("Empuje / tirón / pierna (6 días)") &&
+          node.innerText.includes("Usar esta"),
+      );
+      [...card.querySelectorAll("div")].find((node) => node.innerText === "Usar esta").click();
+    });
+    await waitText("Empuje A");
+    await press("Cardio");
+    await press("Agregar ejercicio");
+    await fillLabel("Buscar ejercicio", "correr");
+    await pressLabel("Correr");
+    await press("Listo");
+    await press("Guardar rutina");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).routines?.[0]?.schedule?.length === 6,
+      {},
+      STORE_KEY,
+    );
+    const { schedule } = (await store()).routines[0];
+    assert(
+      schedule.map((day) => day.day).join() === "mon,tue,wed,thu,fri,sat",
+      "La PPL de 6 días no quedó de lunes a sábado.",
+    );
+    assert(schedule[0].focus.includes("cardio"), "No se guardó el cardio como enfoque del lunes.");
+    const run = schedule[0].exercises.at(-1);
+    assert(
+      run.name === "Correr" && run.sets === 1 && run.reps === "20",
+      "El cardio no se agregó en minutos.",
+    );
+  });
+
+  await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");
     await waitText("Dopi");
     await waitText("Racha actual");
-    await open("/sobriety");
-    await fill("Hábito", "Tabaco");
-    await fill("Días que ya llevas", 10);
-    await press("Empezar a contar");
-    await waitText("SIN TABACO");
-    await waitText("Próximo hito: 14 días");
-    const { settings } = await store();
-    assert(settings.sobriety?.[0]?.name === "Tabaco", "No se guardó el contador de sobriedad.");
-    await open("/achievements");
-    await waitText("7 días sin tabaco");
+    await waitText("Logros");
   });
 
   await step("más → bienestar: guardar un chequeo", async () => {
@@ -591,12 +620,22 @@ async function main() {
     await open("/more");
     await press("Bienestar");
     await waitText("Chequeo de hoy");
-    await press("Guardar chequeo");
+    await pressLabel("Bien");
+    await pressLabel("Mucha");
+    await pressLabel("Poco");
+    await press("trabajo");
+    await press("Listo");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).wellbeing.length === 1,
       {},
       STORE_KEY,
     );
+    const [entry] = (await store()).wellbeing;
+    assert(
+      entry.mood === 4 && entry.energy === 5 && entry.stress === 2 && entry.note === "#trabajo",
+      "El chequeo breve no guardó las respuestas.",
+    );
+    await waitText("Ya hiciste tu chequeo de hoy");
   });
 
   await step("respaldo: descargar, borrar todo y restaurar", async () => {

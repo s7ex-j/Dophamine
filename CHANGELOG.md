@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.15.0 - 2026-11-13
+
+Semana de entreno a medida, bienestar con Dopi y un algoritmo que tiene en cuenta el entreno (y se puede ver por dentro).
+
+- Entreno:
+  - Editor de semana en tres pasos: qué días entrenas; plantilla o armarla tú; y cada día con su enfoque (pecho, espalda, hombros, bíceps, tríceps, antebrazo, piernas, glúteos, abdomen y cardio, combinables) y sus ejercicios. Un ejercicio nuevo trae 3 × 12 (el cardio, 20 minutos), todo ajustable.
+  - Plantillas nuevas, recomendadas según tu experiencia y los días que puedes: full body (3 días), torso/pierna (4), PPL de 3 días, híbrida PPL + torso/pierna (5: lunes a miércoles PPL, jueves descanso, viernes torso, sábado pierna) y PPL de 6 días (lunes y jueves empuje, martes y viernes tirón, miércoles y sábado pierna).
+  - Brazos se separa en bíceps, tríceps y antebrazo, en el catálogo y en el editor.
+  - Cardio en el catálogo (19 ejercicios de RepDB): se anota en minutos y se puede sumar a cualquier día.
+  - Sesión sin reloj corriendo: muestra a qué hora empezaste (editable, por si empezaste antes de abrirla) y guarda la hora de fin.
+  - Mapa muscular rediseñado: silueta de frente y espalda con cada músculo dibujado.
+- Algoritmo:
+  - La energía del entreno sale de lo registrado: hora de inicio y fin, minutos de cardio y el MET de cada ejercicio.
+  - En la revisión: en volumen, si se hizo menos de la mitad de los entrenos planeados no se suben calorías; mientras el gasto real se construye, avisa cuánto difiere el entreno real del previsto.
+  - "Cómo se calcula" (Estrategia → Más detalle): el algoritmo en seis pasos con tus números y su fórmula: gasto inicial, tendencia, energía por kilo, gasto real, entreno y revisión.
+- Bienestar:
+  - Dopi pregunta en el Panel, una vez al día, "¿Cómo va tu día?": tres preguntas de un toque (ánimo, energía, estrés) y, si quieres, qué influyó. "Ahora no" lo esconde hasta mañana.
+  - La pantalla de Bienestar muestra tu evolución en un gráfico, patrones con tus datos (ánimo y sueño, energía y entreno, lo que aparece en tus días bajos) y el historial con emojis.
+- Se quita Sobriedad: volverá con más trabajo de fondo.
+- La hoja de ruta se reescribe con el estado real y lo pendiente separado en: Expo Go, APK propio, necesita servidor y descartado.
+- De 256 a 275 pruebas de dominio y de 20 a 21 flujos de navegador.
+- No comprobado en teléfono: el editor de semana, el chequeo de Dopi, la sesión con cardio y "Cómo se calcula".
+
 ## 0.14.0 - 2026-11-13
 
 Entreno por días con catálogo ilustrado, comidas guardadas, racha con Dopi, sobriedad, resumen semanal y fotos de progreso.
@@ -114,7 +137,7 @@ Registro de alimentos por comida.
 - El respaldo en el teléfono usa la API nueva de archivos de Expo (`File`, `Paths`).
 - En el visor web, Análisis se abre desde Más y Estrategia en lugar de ser una pestaña.
 - La prueba de navegador de Bienestar ahora llega desde Más, como en el teléfono.
-- Comprobado: tipos, 97 pruebas de dominio, 11 flujos de navegador, `expo-doctor` 20/20 y el empaquetado de JavaScript para Android (`expo export --platform android`). No comprobado: la app ejecutándose en un teléfono.
+- Comprobado: tipos, 97 pruebas de dominio, 11 flujos de navegador, `expo-doctor` 20/20 y el empaquetado de JavaScript para Android (`expo export --platform android`). No comprobado: la app ejecutándose en un teléfono. (Actualización: desde la 0.9.0 Jharol usa la app en Expo Go en su teléfono Android, así que esta base quedó comprobada en un teléfono.)
 
 ## 0.7.0 - 2026-11-11
 

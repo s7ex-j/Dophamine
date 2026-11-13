@@ -1,5 +1,6 @@
 import { findExercise, MUSCLE_LABELS, type Muscle } from "@/src/features/exercises/catalog";
 import { estimatedOneRepMax } from "@/src/features/training/strength";
+import { formatTime, parseTime } from "@/src/lib/time";
 import type { Routine, WorkoutDay } from "@/src/features/training/training.plans";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 
@@ -323,7 +324,8 @@ export function setsPerMuscle(
   for (const set of sessions.flatMap((session) => session.sets)) {
     if (set.type === "warmup") continue;
     const exercise = findExercise(set.exerciseName);
-    if (!exercise) continue;
+    // El cardio se cuenta en minutos, no como series de un músculo.
+    if (!exercise || exercise.cardio) continue;
     for (const muscle of exercise.primary) totals.set(muscle, (totals.get(muscle) ?? 0) + 1);
     for (const muscle of exercise.secondary) totals.set(muscle, (totals.get(muscle) ?? 0) + 0.5);
   }
@@ -334,6 +336,27 @@ export function setsPerMuscle(
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+ * Corrige la hora de inicio ("18:05") si empezaste antes de abrirla. Se toma
+ * el mismo día de la sesión; si esa hora todavía no llega, se deja como estaba.
+ */
+export function withStartTime(session: ActiveSession, time: string, now: Date): ActiveSession {
+  const minutes = parseTime(time);
+  if (minutes === null) return session;
+  const start = new Date(session.startedAt);
+  start.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+  return start.getTime() > now.getTime() ? session : { ...session, startedAt: start.toISOString() };
+}
+
+/** Hora local de inicio y de fin ("18:05") de una sesión. */
+export const sessionClock = (session: Pick<CompletedSession, "startedAt" | "completedAt">) => {
+  const local = (iso: string) => {
+    const date = new Date(iso);
+    return formatTime(date.getHours() * 60 + date.getMinutes());
+  };
+  return { start: local(session.startedAt), end: local(session.completedAt) };
+};
 
 /** Lee una sesión en curso guardada. Devuelve null si no sirve. */
 export function readActiveSession(value: unknown): ActiveSession | null {

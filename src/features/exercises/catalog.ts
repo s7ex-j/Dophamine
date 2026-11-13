@@ -25,6 +25,10 @@ export type CatalogExercise = {
   media?: string;
   /** Cómo se hace, paso a paso. */
   steps?: string[];
+  /** Cardio: se registra en minutos, no en carga y repeticiones. */
+  cardio?: boolean;
+  /** Gasto en MET (1 = reposo). Sirve para estimar la energía del entreno. */
+  met?: number;
 };
 
 export const MUSCLE_LABELS: Record<Muscle, string> = {
@@ -59,15 +63,19 @@ export const EQUIPMENT_LABELS: Record<Equipment, string> = {
 };
 
 /** Grupos para explorar el catálogo sin saber el nombre del ejercicio. */
-export type MuscleGroup = "chest" | "back" | "shoulders" | "arms" | "legs" | "glutes" | "core";
+export type MuscleGroup =
+  "chest" | "back" | "shoulders" | "biceps" | "triceps" | "forearms" | "legs" | "glutes" | "core" | "cardio";
 export const MUSCLE_GROUPS: { id: MuscleGroup; label: string; muscles: Muscle[] }[] = [
   { id: "chest", label: "Pecho", muscles: ["chest"] },
   { id: "back", label: "Espalda", muscles: ["lats", "upperBack", "lowerBack"] },
   { id: "shoulders", label: "Hombros", muscles: ["frontDelts", "sideDelts", "rearDelts"] },
-  { id: "arms", label: "Brazos", muscles: ["biceps", "triceps", "forearms"] },
+  { id: "biceps", label: "Bíceps", muscles: ["biceps"] },
+  { id: "triceps", label: "Tríceps", muscles: ["triceps"] },
+  { id: "forearms", label: "Antebrazo", muscles: ["forearms"] },
   { id: "legs", label: "Piernas", muscles: ["quads", "hamstrings", "adductors", "calves"] },
   { id: "glutes", label: "Glúteos", muscles: ["glutes"] },
   { id: "core", label: "Abdomen", muscles: ["abs", "obliques"] },
+  { id: "cardio", label: "Cardio", muscles: [] },
 ];
 
 /** El grupo al que pertenece un músculo. */
@@ -416,6 +424,7 @@ const OWN: CatalogExercise[] = ROWS.map(([name, primary, secondary, equipment, p
     ...(extra?.unilateral ? { unilateral: true } : {}),
     ...(aliases.length ? { aliases } : {}),
     ...(media ? { media: media.id, steps: media.steps } : {}),
+    ...(media?.met ? { met: media.met } : {}),
   };
 });
 
@@ -434,6 +443,8 @@ export const CATALOG: CatalogExercise[] = [
     ...(item.unilateral ? { unilateral: true } : {}),
     media: item.id,
     steps: item.steps,
+    ...(item.cardio ? { cardio: true } : {}),
+    ...(item.met ? { met: item.met } : {}),
   })),
 ];
 
@@ -453,7 +464,9 @@ export function exercisesInGroup(
 ): CatalogExercise[] {
   return catalog.filter(
     (exercise) =>
-      groupOfMuscle(exercise.primary[0]) === group &&
+      (group === "cardio"
+        ? exercise.cardio
+        : !exercise.cardio && groupOfMuscle(exercise.primary[0]) === group) &&
       (!options.muscle || exercise.primary.includes(options.muscle)) &&
       (!options.equipment || exercise.equipment === options.equipment),
   );

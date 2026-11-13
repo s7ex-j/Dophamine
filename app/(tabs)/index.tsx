@@ -36,6 +36,9 @@ import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSec
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { StreakCard } from "@/src/features/streak/StreakCard";
+import { DopiCheckIn } from "@/src/features/wellbeing/DopiCheckIn";
+import { DISMISS_KEY, shouldOfferCheckIn } from "@/src/features/wellbeing/wellbeing";
+import { getWellbeingDates } from "@/src/features/wellbeing/wellbeing.repository";
 import { WeeklyCard } from "@/src/features/dashboard/WeeklyCard";
 import { getWeeklySummary } from "@/src/features/dashboard/weekly.data";
 import type { WeeklySummary } from "@/src/features/dashboard/weekly";
@@ -61,6 +64,7 @@ export default function DashboardScreen() {
   const [customizing, setCustomizing] = useState(false);
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [weekly, setWeekly] = useState<WeeklySummary | null>(null);
+  const [offerCheckIn, setOfferCheckIn] = useState(false);
 
   const load = useCallback(() => {
     Promise.all([
@@ -70,7 +74,10 @@ export default function DashboardScreen() {
       getSetting(LAYOUT_KEY),
       getStreakSummary(),
       getWeeklySummary(),
-    ]).then(([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly]) => {
+      getWellbeingDates(localDateKey()),
+      getSetting(DISMISS_KEY),
+    ]).then(([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly, checked, dismissed]) => {
+      setOfferCheckIn(shouldOfferCheckIn(localDateKey(), checked.includes(localDateKey()), dismissed));
       setStreak(nextStreak);
       setWeekly(nextWeekly);
       setSnapshot(nextSnapshot);
@@ -199,6 +206,7 @@ export default function DashboardScreen() {
         {streak && !VIEWER ? (
           <StreakCard summary={streak} onPress={() => router.push("/achievements")} />
         ) : null}
+        {offerCheckIn && !VIEWER ? <DopiCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
         <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>
         {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}

@@ -22,10 +22,13 @@ const COVER: Record<MuscleGroup, string> = {
   chest: "bench-press",
   back: "lat-pulldown",
   shoulders: "dumbbell-shoulder-press",
-  arms: "bicep-curl",
+  biceps: "bicep-curl",
+  triceps: "tricep-pushdown",
+  forearms: "dumbbell-wrist-curl",
   legs: "squat",
   glutes: "hip-thrust",
   core: "plank",
+  cardio: "rowing-machine",
 };
 const PAGE = 40;
 
@@ -38,14 +41,17 @@ export function CatalogBrowser({
   onPick,
   onOpen,
   picked = [],
+  focus,
 }: {
   onPick?: (exercise: CatalogExercise) => void;
   onOpen?: (exercise: CatalogExercise) => void;
   /** Nombres ya agregados: se marcan con un visto. */
   picked?: string[];
+  /** Grupos del día que se está armando: se abre en el primero y van primero en la cuadrícula. */
+  focus?: MuscleGroup[];
 }) {
   const [query, setQuery] = useState("");
-  const [group, setGroup] = useState<MuscleGroup | null>(null);
+  const [group, setGroup] = useState<MuscleGroup | null>(focus?.[0] ?? null);
   const [muscle, setMuscle] = useState<Muscle | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [limit, setLimit] = useState(PAGE);
@@ -82,28 +88,30 @@ export function CatalogBrowser({
 
       {!query.trim() && !group ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-          {MUSCLE_GROUPS.map((item) => (
-            <Pressable
-              key={item.id}
-              accessibilityRole="button"
-              accessibilityLabel={`Grupo ${item.label}`}
-              onPress={() => choose(item.id)}
-              style={{
-                width: "31.5%",
-                backgroundColor: AppTheme.colors.surface,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: AppTheme.colors.border,
-                padding: 8,
-                gap: 6,
-                alignItems: "center",
-              }}
-            >
-              <ExerciseImage media={COVER[item.id]} size={72} />
-              <Text style={AppTheme.tileTitle}>{item.label}</Text>
-              <Text style={AppTheme.hint}>{exercisesInGroup(item.id).length}</Text>
-            </Pressable>
-          ))}
+          {[...MUSCLE_GROUPS]
+            .sort((a, b) => Number(focus?.includes(b.id) ?? 0) - Number(focus?.includes(a.id) ?? 0))
+            .map((item) => (
+              <Pressable
+                key={item.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Grupo ${item.label}`}
+                onPress={() => choose(item.id)}
+                style={{
+                  width: "31.5%",
+                  backgroundColor: AppTheme.colors.surface,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: AppTheme.colors.border,
+                  padding: 8,
+                  gap: 6,
+                  alignItems: "center",
+                }}
+              >
+                <ExerciseImage media={COVER[item.id]} size={72} />
+                <Text style={AppTheme.tileTitle}>{item.label}</Text>
+                <Text style={AppTheme.hint}>{exercisesInGroup(item.id).length}</Text>
+              </Pressable>
+            ))}
         </View>
       ) : null}
 

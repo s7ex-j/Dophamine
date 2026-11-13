@@ -13,6 +13,11 @@ import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { getLatestMood } from "@/src/features/wellbeing/wellbeing.repository";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { checkInDaysOf, type NutritionProfile } from "@/src/features/profile/profile";
+import { trainingNetMet } from "@/src/features/profile/expenditure";
+import { trainingLoad, type TrainingLoad } from "@/src/features/training/energy";
+import { getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
+import { weekdayId } from "@/src/features/training/week";
+import type { CheckInContext } from "@/src/features/tdee/checkin";
 
 export type DashboardSnapshot = {
   weightKg: number | null;
@@ -32,14 +37,22 @@ export type DashboardSnapshot = {
   records: DailyBiometrics[];
   lastReview: WeeklyReview | null;
   reviewDue: boolean;
+  /** Entreno del periodo de revisión, real y previsto. */
+  training: (TrainingLoad & NonNullable<CheckInContext["training"]>) | null;
+  /** Días del periodo de revisión (3 o 7). */
+  period: number;
+  /** Sueño medio del periodo, en minutos. */
+  sleepMinutes: number | null;
 };
 export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
-  const [latest, records, mood, profile, reviews] = await Promise.all([
+  const [latest, records, mood, profile, reviews, sessions, routine] = await Promise.all([
     getLatestBiometrics(),
     getBiometricsWindow(42),
     getLatestMood(),
     getNutritionProfile(),
     getWeeklyReviews(1),
+    getSessionHistory(60),
+    getRoutine(),
   ]);
   // El contexto de la revisión: lo comido y lo dormido en el periodo (3 o 7 días).
   const period = checkInDaysOf(profile);
@@ -47,6 +60,31 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   const nights = await getSleepSince(since);
   const lastReview = reviews[0] ?? null;
   const analysis = analyzeMetabolism(records);
+  const sleepMinutes = nights.length ? sleepSummary(nights, period).averageMinutes : null;
+  // Entreno del periodo: lo hecho (horario real y MET) frente a lo que dice la rutina.
+  const today = localDateKey();
+  const weightKg =
+    analysis.points.at(-1)?.trendKg ?? records.find((record) => record.weightKg)?.weightKg ?? null;
+  let training: DashboardSnapshot["training"] = null;
+  if (weightKg) {
+    const done = trainingLoad(sessions, since, today, weightKg, (session) =>
+      localDateKey(new Date(session.completedAt)),
+    );
+    const planned = Array.from({ length: period }, (_, index) => addDays(since, index)).filter((date) => {
+      const [year, month, day] = date.split("-").map(Number);
+      return routine.days.includes(weekdayId(new Date(year, month - 1, day)));
+    }).length;
+    const minutes = profile?.sessionMinutes ?? routine.sessionMinutes;
+    training = {
+      ...done,
+      done: done.sessions,
+      planned,
+      kcalPerDay: Math.round(done.kcal / period),
+      plannedKcalPerDay: Math.round(
+        (trainingNetMet(profile?.trainingType) * weightKg * planned * minutes) / 60 / period,
+      ),
+    };
+  }
   return {
     weightKg: records.find((record) => record.weightKg)?.weightKg ?? latest?.weightKg ?? null,
     trendKg: analysis.points.at(-1)?.trendKg ?? null,
@@ -61,12 +99,16 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     checkIn: profile
       ? contextualCheckIn(analysis, profile, {
           recent: records.filter((record) => record.date >= since),
-          sleepMinutes: nights.length ? sleepSummary(nights, period).averageMinutes : null,
+          sleepMinutes,
+          training,
         })
       : null,
     recentRecords: [...records].slice(0, 7).reverse(),
     records,
     lastReview,
     reviewDue: isReviewDue(lastReview, undefined, checkInDaysOf(profile)),
+    training,
+    period,
+    sleepMinutes,
   };
 }

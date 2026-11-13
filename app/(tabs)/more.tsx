@@ -57,11 +57,6 @@ export default function MoreScreen() {
                 onPress={() => router.push("/achievements")}
               />
               <NavRow
-                title="Sobriedad"
-                detail="Días sin un vicio que quieres dejar, en privado"
-                onPress={() => router.push("/sobriety")}
-              />
-              <NavRow
                 title="Fotos de progreso"
                 detail="Compara tu cuerpo entre dos fechas"
                 onPress={() => router.push("/photos")}

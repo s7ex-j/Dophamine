@@ -68,7 +68,7 @@ describe("catálogo con RepDB", () => {
     const back = exercisesInGroup("back");
     expect(back.length).toBeGreaterThan(40);
     expect(back.every((item) => groupOfMuscle(item.primary[0]) === "back")).toBe(true);
-    const cableBiceps = exercisesInGroup("arms", { muscle: "biceps", equipment: "cable" });
+    const cableBiceps = exercisesInGroup("biceps", { equipment: "cable" });
     expect(cableBiceps.length).toBeGreaterThan(0);
     expect(cableBiceps.every((item) => item.equipment === "cable" && item.primary.includes("biceps"))).toBe(
       true,

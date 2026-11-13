@@ -47,9 +47,16 @@ export type Store = {
   routines?: Array<{
     id: string;
     name: string;
-    variant: "full_body" | "upper_lower" | "posterior" | "push_pull_legs" | "custom";
+    variant: "full_body" | "upper_lower" | "posterior" | "push_pull_legs" | "ppl6" | "hybrid" | "custom";
     days: string[];
     exercises: Array<{ name: string; sets: number; reps: string; rir: number }>;
+    /** Desde la 0.14.0: un entreno por día. */
+    schedule?: Array<{
+      day: string;
+      name: string;
+      exercises: Array<{ name: string; sets: number; reps: string; rir: number }>;
+      focus?: string[];
+    }>;
     accent: string;
     gymProfile: "full_gym" | "home" | "limited";
     trainingGoal: "strength" | "hypertrophy" | "general";

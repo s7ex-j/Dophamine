@@ -52,6 +52,8 @@ const activityIndex: Record<DailyActivity, number> = { low: 0, light: 1, moderat
 const neatFactor: Record<DailyActivity, number> = { low: 1.2, light: 1.35, moderate: 1.5, high: 1.7 };
 // Gasto neto del entrenamiento en kcal por kg y hora (MET por encima del reposo).
 const netMet: Record<TrainingType, number> = { strength: 3.5, mixed: 5, cardio: 6.5 };
+/** MET neto del tipo de entreno declarado en la evaluación. */
+export const trainingNetMet = (type: TrainingType | undefined) => netMet[type ?? "strength"];
 
 export function mifflinStJeor(input: Pick<ExpenditureInput, "sex" | "age" | "heightCm" | "weightKg">) {
   return 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + (input.sex === "male" ? 5 : -161);

@@ -320,7 +320,7 @@ images = {}
 names = set(name.lower() for name in OWN)
 linked = set(OWN.values())
 for item in data:
-    if item["category"] not in ("strength", "olympic", "plyometrics"):
+    if item["category"] not in ("strength", "olympic", "plyometrics", "cardio"):
         continue
     flat = item.get("images", {}).get("flat", {})
     primary = []
@@ -356,7 +356,9 @@ for item in data:
             "primary": primary,
             "secondary": secondary,
             "equipment": equipment_of(item.get("equipment")),
-            "pattern": pattern_of(item, primary),
+            "pattern": "cardio" if item["category"] == "cardio" else pattern_of(item, primary),
+            "cardio": item["category"] == "cardio",
+            "met": item.get("met") or None,
             "unilateral": bool(item.get("is_unilateral")),
             "steps": [step.strip() for step in item.get("instructions_es", []) if step.strip()],
         }
@@ -384,6 +386,10 @@ lines = [
     "  equipment: Equipment;",
     "  pattern: Pattern;",
     "  unilateral: boolean;",
+    "  /** Se registra en minutos, no en carga y repeticiones. */",
+    "  cardio: boolean;",
+    "  /** Gasto del ejercicio en MET (1 = en reposo), según RepDB. */",
+    "  met: number | null;",
     "  steps: string[];",
     "};",
     "",

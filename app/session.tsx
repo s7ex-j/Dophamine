@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
@@ -11,7 +11,7 @@ import { ExerciseImage } from "@/src/features/exercises/ExerciseImage";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
-import { formatClock, workoutFor } from "@/src/features/training/training.plans";
+import { workoutFor } from "@/src/features/training/training.plans";
 import { completeSession, getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
 import {
   addExerciseToSession,
@@ -21,6 +21,7 @@ import {
   readActiveSession,
   RECORD_LABELS,
   sessionStats,
+  sessionClock,
   setsPerMuscle,
   startSession,
   swapExercise,
@@ -29,6 +30,7 @@ import {
   type DraftSet,
   type PersonalRecord,
   type SessionStats,
+  withStartTime,
 } from "@/src/features/training/workout";
 import { VIEWER } from "@/src/lib/mode";
 import { formatWeight, weightValue, type WeightUnit } from "@/src/lib/units";
@@ -57,7 +59,8 @@ function SessionContent() {
   const [swapping, setSwapping] = useState(false);
   const [adding, setAdding] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
-  const [now, setNow] = useState(Date.now());
+  const [editingStart, setEditingStart] = useState(false);
+  const [startText, setStartText] = useState("");
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState("");
   const loaded = useRef(false);
@@ -89,12 +92,6 @@ function SessionContent() {
       );
     }, [params.day]),
   );
-  // Reloj de la sesión.
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const update = (next: ActiveSession) => {
     setError("");
     setActive(next);
@@ -137,7 +134,8 @@ function SessionContent() {
     await setSetting(KEY, null);
     router.back();
   };
-  const elapsed = (now - Date.parse(active.startedAt)) / 1000;
+  const startedAt = sessionClock({ startedAt: active.startedAt, completedAt: active.startedAt }).start;
+  const cardio = Boolean(catalog?.cardio);
   const doneCount = (position: number) => active.exercises[position].sets.filter((set) => set.done).length;
 
   return (
@@ -146,7 +144,36 @@ function SessionContent() {
         <View style={AppTheme.sectionHeader}>
           <View>
             <Text style={AppTheme.eyebrow}>{active.routineName.toUpperCase()}</Text>
-            <Text style={AppTheme.restClock}>{formatClock(elapsed)}</Text>
+            {editingStart ? (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <TextInput
+                  accessibilityLabel="Hora de inicio"
+                  value={startText}
+                  onChangeText={setStartText}
+                  placeholder="18:05"
+                  placeholderTextColor={AppTheme.colors.muted}
+                  style={[AppTheme.input, { width: 90 }]}
+                />
+                <LinkButton
+                  title="Guardar"
+                  onPress={() => {
+                    update(withStartTime(active, startText, new Date()));
+                    setEditingStart(false);
+                  }}
+                />
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={AppTheme.tileTitle}>Empezaste a las {startedAt}</Text>
+                <LinkButton
+                  title="Cambiar"
+                  onPress={() => {
+                    setStartText(startedAt);
+                    setEditingStart(true);
+                  }}
+                />
+              </View>
+            )}
           </View>
           <Button title="Terminar" onPress={finish} />
         </View>
@@ -237,9 +264,9 @@ function SessionContent() {
           <View style={[AppTheme.setRow, { borderTopWidth: 0 }]}>
             <Text style={[AppTheme.setHead, { width: 28 }]}>Serie</Text>
             <Text style={[AppTheme.setHead, { flex: 1 }]}>Sugerido</Text>
-            <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>{unit}</Text>
-            <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>Reps</Text>
-            <Text style={[AppTheme.setHead, { width: 40, textAlign: "center" }]}>RIR</Text>
+            {cardio ? null : <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>{unit}</Text>}
+            <Text style={[AppTheme.setHead, AppTheme.setInputBox]}>{cardio ? "Min" : "Reps"}</Text>
+            {cardio ? null : <Text style={[AppTheme.setHead, { width: 40, textAlign: "center" }]}>RIR</Text>}
             <View style={{ width: 36 }} />
           </View>
           {exercise.sets.map((set, position) => {
@@ -258,16 +285,18 @@ function SessionContent() {
                       ? `× ${set.suggestion.reps}`
                       : "—"}
                 </Text>
+                {cardio ? null : (
+                  <TextInput
+                    accessibilityLabel={`Carga serie ${position + 1}`}
+                    value={set.load}
+                    onChangeText={(load) => setSet(position, { load })}
+                    keyboardType="decimal-pad"
+                    style={[AppTheme.input, AppTheme.setInputBox, AppTheme.setInput]}
+                    placeholderTextColor={AppTheme.colors.muted}
+                  />
+                )}
                 <TextInput
-                  accessibilityLabel={`Carga serie ${position + 1}`}
-                  value={set.load}
-                  onChangeText={(load) => setSet(position, { load })}
-                  keyboardType="decimal-pad"
-                  style={[AppTheme.input, AppTheme.setInputBox, AppTheme.setInput]}
-                  placeholderTextColor={AppTheme.colors.muted}
-                />
-                <TextInput
-                  accessibilityLabel={`Repeticiones serie ${position + 1}`}
+                  accessibilityLabel={`${cardio ? "Minutos" : "Repeticiones"} serie ${position + 1}`}
                   value={set.reps}
                   onChangeText={(reps) => setSet(position, { reps })}
                   keyboardType="number-pad"
@@ -275,14 +304,16 @@ function SessionContent() {
                   style={[AppTheme.input, AppTheme.setInputBox, AppTheme.setInput]}
                   placeholderTextColor={AppTheme.colors.muted}
                 />
-                <TextInput
-                  accessibilityLabel={`RIR serie ${position + 1}`}
-                  value={set.rir}
-                  onChangeText={(rir) => setSet(position, { rir })}
-                  keyboardType="number-pad"
-                  style={[AppTheme.input, AppTheme.setInput, { width: 40 }]}
-                  placeholderTextColor={AppTheme.colors.muted}
-                />
+                {cardio ? null : (
+                  <TextInput
+                    accessibilityLabel={`RIR serie ${position + 1}`}
+                    value={set.rir}
+                    onChangeText={(rir) => setSet(position, { rir })}
+                    keyboardType="number-pad"
+                    style={[AppTheme.input, AppTheme.setInput, { width: 40 }]}
+                    placeholderTextColor={AppTheme.colors.muted}
+                  />
+                )}
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Completar serie ${position + 1}`}
@@ -353,7 +384,10 @@ function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: Weight
         <Text style={AppTheme.title}>{summary.session.name}</Text>
         <View style={AppTheme.tileGrid}>
           {[
-            ["Duración", `${summary.stats.durationMinutes} min`],
+            [
+              "Horario",
+              `${sessionClock(summary.session).start}–${sessionClock(summary.session).end} · ${summary.stats.durationMinutes} min`,
+            ],
             ["Volumen", formatWeight(summary.stats.volumeKg, unit, 0)],
             ["Series efectivas", String(summary.stats.workingSets)],
             ["Ejercicios", String(summary.stats.exercises)],
