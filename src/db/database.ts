@@ -128,6 +128,13 @@ export async function initializeDatabase() {
       DROP TABLE weekly_reviews_old;
       CREATE INDEX IF NOT EXISTS weekly_reviews_date_idx ON weekly_reviews(date DESC);
     `);
+  // Desde la 0.12.0 cada serie guarda su tipo, el ejercicio del catálogo y el lado.
+  for (const column of ["set_type TEXT", "exercise_id TEXT", "side TEXT"])
+    try {
+      await db.execAsync(`ALTER TABLE exercise_sets ADD COLUMN ${column}`);
+    } catch {
+      /* Ya existe. */
+    }
   try {
     await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN partial INTEGER NOT NULL DEFAULT 0");
   } catch {

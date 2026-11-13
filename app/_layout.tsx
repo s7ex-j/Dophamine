@@ -42,6 +42,8 @@ export default function RootLayout() {
         <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar alimento" }} />
         <Stack.Screen name="insight" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="edit-entry" options={{ headerShown: true, title: "Editar alimento" }} />
+        <Stack.Screen name="session" options={{ headerShown: true, title: "Entreno en curso" }} />
+        <Stack.Screen name="exercise" options={{ headerShown: true, title: "Ejercicio" }} />
         <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
         <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />

@@ -416,11 +416,13 @@ async function main() {
     );
   });
 
-  await step("entreno: editar la rutina y guardar una sesión", async () => {
+  await step("entreno: rutina con el catálogo, sesión en vivo serie por serie y resumen", async () => {
     await open("/training");
     await press("Editar mi rutina");
     await fill("Nombre de la rutina", "Rutina e2e");
     await fill("Ejercicios", "Sentadilla frontal");
+    await fill("Agregar del catálogo", "remo con barra");
+    await press("Remo con barra");
     await press("Guardar rutina");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).routines?.[0]?.name === "Rutina e2e",
@@ -429,21 +431,50 @@ async function main() {
     );
     const routine = (await store()).routines[0];
     assert(
-      routine.exercises.length === 1 && routine.exercises[0].name === "Sentadilla frontal",
-      "El editor no guardó el ejercicio tal como se escribió.",
+      routine.exercises.map((exercise) => exercise.name).join() === "Sentadilla frontal,Remo con barra",
+      "El editor no guardó los ejercicios escritos y elegidos del catálogo.",
     );
-    await press("Registrar cargas y reps");
-    await fill("Kg", 60);
-    await fill("Reps", 8);
+    await press("Empezar entreno");
+    await waitText("Sentadilla frontal · 0/3");
+    await fillLabel("Carga serie 1", 60);
+    await fillLabel("Repeticiones serie 1", 10);
+    await pressLabel("Completar serie 1");
     await waitText("Descanso");
-    await press("Guardar sesión y series");
-    await page.waitForFunction(
-      (key) => JSON.parse(localStorage.getItem(key)).workouts.length === 1,
-      {},
-      STORE_KEY,
-    );
-    const log = (await store()).workouts[0].sessionLogs[0];
-    assert(log.loadKg === 60 && log.reps === 8, "La sesión no guardó carga y repeticiones.");
+    await press("Saltar");
+    // Sin repeticiones escritas se toma la sugerida (el mínimo del rango la primera vez).
+    await fillLabel("Carga serie 2", 62.5);
+    await pressLabel("Completar serie 2");
+    await waitText("Sentadilla frontal · 2/3");
+    assert((await store()).settings.active_session, "La sesión en curso no se guarda mientras se entrena.");
+    await press("Terminar");
+    await waitText("ENTRENO COMPLETO");
+    await waitText("Músculos trabajados");
+    const current = await store();
+    const sets = current.workouts[0].sets;
+    assert(sets.length === 2, "No se guardaron las dos series hechas.");
+    assert(sets[1].loadKg === 62.5 && sets[1].reps === 8, "La serie sin repeticiones no tomó la sugerida.");
+    assert(sets[0].exerciseId === "sentadilla-frontal", "La serie no quedó enlazada al catálogo.");
+    assert(current.settings.active_session === null, "La sesión terminada sigue abierta.");
+    await press("Listo");
+    await waitText("Historial de sesiones");
+    await waitText("2 series");
+    await press("Sentadilla frontal");
+    await waitText("Qué trabaja");
+    await waitText("Cuádriceps");
+  });
+
+  await step("entreno: la segunda sesión sugiere carga y detecta récords", async () => {
+    await open("/session");
+    await waitText("Sentadilla frontal · 0/3");
+    // La vez anterior: 60 × 10 y 62.5 × 8, sin llegar al tope de 12 → repite 62.5 buscando 9.
+    await waitText("62.5 × 9");
+    await fillLabel("Carga serie 1", 70);
+    await fillLabel("Repeticiones serie 1", 8);
+    await pressLabel("Completar serie 1");
+    await press("Saltar");
+    await press("Terminar");
+    await waitText("Récords");
+    await waitText("1RM estimado");
   });
 
   await step("más → bienestar: guardar un chequeo", async () => {
@@ -476,7 +507,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 6, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 7, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);

@@ -1,29 +1,29 @@
 import { useCallback, useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 import { Screen } from "@/src/components/ui";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { PlateCalculator } from "@/src/features/training/PlateCalculator";
-import { buildSessionLogs, type LogDraft } from "@/src/features/training/session";
 import { generateRoutine, type Routine, type TrainingVariant } from "@/src/features/training/training.plans";
+import { getSetting } from "@/src/features/settings/settings.repository";
 import {
-  completeRoutine,
   deleteWorkoutSession,
   getProgressionHints,
-  getRecentWorkouts,
   getRoutine,
+  getSessionHistory,
   saveRoutine,
   type ProgressionHint,
-  type Workout,
 } from "@/src/features/training/training.repository";
+import { readActiveSession, type CompletedSession } from "@/src/features/training/workout";
 import {
   HistoryCard,
+  MusclesWeekCard,
   ProgressionCard,
   RoutineEditor,
   RoutineSummary,
-  SessionCard,
+  StartCard,
 } from "@/src/features/training/TrainingSections";
 import type { WeightUnit } from "@/src/lib/units";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
@@ -39,17 +39,18 @@ export default function TrainingScreen() {
 
 function TrainingScreenContent() {
   const [routine, setRoutine] = useState<Routine | null>(null);
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const router = useRouter();
+  const [sessions, setSessions] = useState<CompletedSession[]>([]);
   const [hints, setHints] = useState<ProgressionHint[]>([]);
   const [editing, setEditing] = useState(false);
-  const [logging, setLogging] = useState(false);
-  const [logs, setLogs] = useState<LogDraft>({});
+  const [resumable, setResumable] = useState(false);
   const [unit, setUnit] = useState<WeightUnit>("kg");
   const load = useCallback(() => {
     getNutritionProfile().then((profile) => setUnit(weightUnitOf(profile)));
-    Promise.all([getRoutine(), getRecentWorkouts()]).then(async ([nextRoutine, nextWorkouts]) => {
+    getSetting("active_session").then((saved) => setResumable(readActiveSession(saved) !== null));
+    Promise.all([getRoutine(), getSessionHistory(30)]).then(async ([nextRoutine, nextSessions]) => {
       setRoutine(nextRoutine);
-      setWorkouts(nextWorkouts);
+      setSessions(nextSessions);
       setHints(await getProgressionHints(nextRoutine));
     });
   }, []);
@@ -102,15 +103,6 @@ function TrainingScreenContent() {
     load();
     Alert.alert("Rutina guardada", "Tu plan se conserva solo en este dispositivo.");
   };
-  const complete = async () => {
-    if (!routine) return;
-    await completeRoutine(routine, buildSessionLogs(routine, logs, unit));
-    setLogging(false);
-    setLogs({});
-    load();
-    Alert.alert("Sesión registrada", `${routine.exercises.length} ejercicios quedaron en tu historial.`);
-  };
-
   const deleteWorkout = async (workoutId: string) => {
     await deleteWorkoutSession(workoutId);
     load();
@@ -127,7 +119,7 @@ function TrainingScreenContent() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>PLAN FLEXIBLE</Text>
+        <Text style={AppTheme.eyebrow}>ENTRENO</Text>
         <Text style={AppTheme.title}>Entrenamiento</Text>
         <RoutineSummary routine={routine} editing={editing} setEditing={setEditing} />
         {editing ? (
@@ -140,18 +132,20 @@ function TrainingScreenContent() {
             save={save}
           />
         ) : null}
-        <SessionCard
-          routine={routine}
-          logging={logging}
-          setLogging={setLogging}
-          logs={logs}
-          setLogs={setLogs}
-          complete={complete}
-          unit={unit}
+        <StartCard routine={routine} resumable={resumable} onStart={() => router.push("/session")} />
+        <MusclesWeekCard
+          sessions={sessions.filter(
+            (session) => Date.now() - Date.parse(session.completedAt) < 7 * 86_400_000,
+          )}
         />
         <ProgressionCard hints={hints} unit={unit} />
+        <HistoryCard
+          sessions={sessions.slice(0, 10)}
+          unit={unit}
+          deleteWorkout={deleteWorkout}
+          openExercise={(name) => router.push({ pathname: "/exercise", params: { name } })}
+        />
         <PlateCalculator unit={unit} />
-        <HistoryCard workouts={workouts} deleteWorkout={deleteWorkout} />
       </ScrollView>
     </Screen>
   );

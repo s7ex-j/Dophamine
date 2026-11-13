@@ -6,7 +6,7 @@ Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 11 de noviembre de 2026 (versión 0.11.0, Expo SDK 58)
+## Estado al 11 de noviembre de 2026 (versión 0.12.0, Expo SDK 58)
 
 Funciona y está publicado en la web: plan inicial, registro diario, tendencia y TDEE, revisión semanal,
 hábitos, entrenamiento con progresión, bienestar, respaldo en archivo (solo web). Desde la 0.5.0: editar
@@ -58,7 +58,7 @@ anteriores: el flujo e2e de "borrar un día" entra con el paso 3, y la comprobac
 
 | # | Quién | Paso | Cómo se comprueba |
 |---|---|---|---|
-| 13 | J | Abrir la 0.11.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático, y Más → Compartir respaldo → cargarlo en la web → restaurarlo en el teléfono. | La app abre con los datos anteriores; lo que falle se anota con captura. |
+| 13 | J | Abrir la 0.12.0 en el teléfono (Expo Go o APK) y recorrer: evaluación inicial, Diario con composición, Estrategia, modo automático, y Más → Compartir respaldo → cargarlo en la web → restaurarlo en el teléfono. | La app abre con los datos anteriores; lo que falle se anota con captura. |
 | 14 | C ✔ | Respaldo en el teléfono (es el paso 7): exportar e importar el archivo con `BACKUP_FORMAT = 3`. | Un respaldo del teléfono se abre en la web y al revés. |
 | 15 | C ✔ | Web como visor: al abrirla sin datos pide un respaldo del teléfono y muestra Panel, Estrategia y Análisis en solo lectura. | La web no permite registrar; todo lo que muestra sale del archivo. |
 | 16 | C ✔ | Registro por comida: entradas por momento del día, 230 alimentos incluidos, alimentos propios, recetas, registro rápido, copiar el día anterior, días sin pesaje, búsqueda en línea opcional y código de barras (0.9.0). | Pruebas de dominio y 4 flujos de navegador. La cámara no se ha probado en un teléfono. |
@@ -98,6 +98,11 @@ semanas estimadas ya estaba desde la 0.6.0.
 - Health Connect (donde Samsung Health, Google Fit y otras apps comparten sueño, pasos, peso y
   composición): importar al Diario. Necesita un APK propio con `react-native-health-connect`; no
   funciona en Expo Go.
+
+**Entreno.** Hechas en la 0.12.0: E1 (catálogo propio y registro serie por serie), E2 (sesión en vivo con
+descanso y cambio de ejercicio) y E3 (resumen con récords, historial por ejercicio, series por músculo).
+Faltan: E4 programas por semanas con descarga, E5 perfiles de gimnasio, E6 mapa muscular con silueta,
+lados izquierdo/derecho en la interfaz y superseries.
 
 **Entreno** (plan por fases E1–E6: base con catálogo y registro serie por serie, sesión en vivo,
 resultados y récords, programas por semanas, gimnasios, mapa muscular). Las imágenes y animaciones de

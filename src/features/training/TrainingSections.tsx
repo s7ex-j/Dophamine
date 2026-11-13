@@ -2,24 +2,24 @@ import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { Button, Card, ChoiceControl, Input, ListRow, RowActions } from "@/src/components/ui";
+import { Ionicons } from "@expo/vector-icons";
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, searchExercises } from "@/src/features/exercises/catalog";
 import { hintDetail } from "@/src/features/training/progression";
-import { RestTimer } from "@/src/features/training/RestTimer";
-import { withLogField, type LogDraft } from "@/src/features/training/session";
+import { sessionStats, setsPerMuscle, type CompletedSession } from "@/src/features/training/workout";
 import {
   formatExerciseLines,
   GOAL_OPTIONS,
   GYM_OPTIONS,
   parseExerciseLines,
-  restSeconds,
   trainingGoalLabel,
   VARIANT_OPTIONS,
   WEEK_DAYS,
   type Routine,
   type TrainingVariant,
 } from "@/src/features/training/training.plans";
-import type { ProgressionHint, Workout } from "@/src/features/training/training.repository";
+import type { ProgressionHint } from "@/src/features/training/training.repository";
 import { localDateKey } from "@/src/lib/dates";
-import type { WeightUnit } from "@/src/lib/units";
+import { formatWeight, type WeightUnit } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
 // Las secciones de la pantalla "Entreno". La pantalla guarda el estado y aquí solo se dibuja.
@@ -150,6 +150,13 @@ export function RoutineEditor({
         ))}
       </View>
       <Button title="Generar propuesta" variant="secondary" onPress={regenerate} />
+      <CatalogPicker
+        onPick={(name) => {
+          const value = `${exerciseText.trim() ? `${exerciseText.trimEnd()}\n` : ""}${name} | 3 | 8–12 | 2`;
+          setExerciseText(value);
+          setRoutine({ ...routine, variant: "custom", exercises: parseExerciseLines(value) });
+        }}
+      />
       <Input
         label="Ejercicios (nombre | series | repeticiones | RIR)"
         value={exerciseText}
@@ -161,73 +168,6 @@ export function RoutineEditor({
         placeholder="Sentadilla | 3 | 8–12 | 2"
       />
       <Button title="Guardar rutina" onPress={save} />
-    </Card>
-  );
-}
-
-export function SessionCard({
-  routine,
-  logging,
-  setLogging,
-  logs,
-  setLogs,
-  complete,
-  unit,
-}: {
-  routine: Routine;
-  logging: boolean;
-  setLogging: (logging: boolean) => void;
-  logs: LogDraft;
-  setLogs: (update: (current: LogDraft) => LogDraft) => void;
-  complete: () => void;
-  unit: WeightUnit;
-}) {
-  return (
-    <Card title="Sesión de hoy">
-      {routine.exercises.map((exercise, index) => (
-        <View key={`${exercise.name}-${index}`} style={AppTheme.sessionExercise}>
-          <ListRow
-            title={exercise.name}
-            detail={`${exercise.sets} series · ${exercise.reps} reps · RIR ${exercise.rir}`}
-          />
-          {logging ? (
-            <View style={AppTheme.sessionLogRow}>
-              <View style={AppTheme.sessionLogRowInput}>
-                <Input
-                  label={unit === "kg" ? "Kg" : "Lb"}
-                  value={logs[exercise.name]?.load ?? ""}
-                  onChangeText={(load) => setLogs((current) => withLogField(current, exercise, "load", load))}
-                  keyboardType="decimal-pad"
-                />
-              </View>
-              <View style={AppTheme.sessionLogRowInput}>
-                <Input
-                  label="Reps"
-                  value={logs[exercise.name]?.reps ?? ""}
-                  onChangeText={(reps) => setLogs((current) => withLogField(current, exercise, "reps", reps))}
-                  keyboardType="number-pad"
-                />
-              </View>
-              <View style={AppTheme.sessionLogRowInput}>
-                <Input
-                  label="RIR"
-                  value={logs[exercise.name]?.rir ?? String(exercise.rir)}
-                  onChangeText={(rir) => setLogs((current) => withLogField(current, exercise, "rir", rir))}
-                  keyboardType="number-pad"
-                />
-              </View>
-            </View>
-          ) : null}
-          {logging ? <RestTimer seconds={restSeconds(routine.trainingGoal, exercise.rir)} /> : null}
-        </View>
-      ))}
-      <Button
-        title={logging ? "Guardar sesión y series" : "Registrar cargas y reps"}
-        onPress={logging ? complete : () => setLogging(true)}
-      />
-      {logging ? (
-        <Button title="Guardar solo como completada" variant="secondary" onPress={complete} />
-      ) : null}
     </Card>
   );
 }
@@ -253,32 +193,156 @@ export function ProgressionCard({ hints, unit }: { hints: ProgressionHint[]; uni
   );
 }
 
-export function HistoryCard({
-  workouts,
-  deleteWorkout,
+/** Botón principal: empezar la sesión de hoy o continuar la que quedó abierta. */
+export function StartCard({
+  routine,
+  resumable,
+  onStart,
 }: {
-  workouts: Workout[];
+  routine: Routine;
+  resumable: boolean;
+  onStart: () => void;
+}) {
+  return (
+    <View style={[AppTheme.card, { gap: 14 }]}>
+      <View style={AppTheme.iconRow}>
+        <View style={[AppTheme.iconChip, { backgroundColor: AppTheme.colors.accentSoft }]}>
+          <Ionicons name="barbell" size={22} color={AppTheme.colors.accent} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={AppTheme.tileTitle}>{routine.name}</Text>
+          <Text style={AppTheme.tileSubtitle}>
+            {routine.exercises.length} ejercicios ·{" "}
+            {routine.exercises.reduce((sum, item) => sum + item.sets, 0)} series
+          </Text>
+        </View>
+      </View>
+      <Button title={resumable ? "Continuar entreno" : "Empezar entreno"} onPress={onStart} />
+    </View>
+  );
+}
+
+/** Series efectivas por músculo en los últimos 7 días. */
+export function MusclesWeekCard({ sessions }: { sessions: CompletedSession[] }) {
+  const muscles = setsPerMuscle(sessions);
+  const top = Math.max(10, ...muscles.map((item) => item.sets));
+  return (
+    <Card title="Series por músculo · 7 días">
+      {muscles.length ? (
+        muscles.map((item) => (
+          <View key={item.muscle} style={{ gap: 4 }}>
+            <View style={AppTheme.legendRow}>
+              <Text style={AppTheme.legendLabel}>{item.label}</Text>
+              <Text style={AppTheme.legendValue}>{item.sets}</Text>
+            </View>
+            <View style={AppTheme.progressTrack}>
+              <View
+                style={[
+                  AppTheme.goalFill,
+                  {
+                    width: `${(item.sets / top) * 100}%`,
+                    backgroundColor: item.sets >= 10 ? AppTheme.colors.accent : AppTheme.colors.blue,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        ))
+      ) : (
+        <Text style={AppTheme.body}>Cuando registres sesiones verás cuántas series hace cada músculo.</Text>
+      )}
+      <Text style={AppTheme.hint}>
+        Una serie cuenta entera para el músculo principal y media para el secundario.
+      </Text>
+    </Card>
+  );
+}
+
+export function HistoryCard({
+  sessions,
+  unit,
+  deleteWorkout,
+  openExercise,
+}: {
+  sessions: CompletedSession[];
+  unit: WeightUnit;
   deleteWorkout: (workoutId: string) => void;
+  openExercise: (name: string) => void;
 }) {
   return (
     <Card title="Historial de sesiones">
-      {workouts.length ? (
-        workouts.map((workout) => (
-          <View key={workout.id}>
-            <ListRow
-              title={workout.name}
-              detail={`${workout.exerciseCount} ejercicios registrados`}
-              value={localDateKey(new Date(workout.completedAt))}
-            />
-            <RowActions
-              question={`¿Borrar la sesión del ${localDateKey(new Date(workout.completedAt))}?`}
-              onDelete={() => deleteWorkout(workout.id)}
-            />
-          </View>
-        ))
+      {sessions.length ? (
+        sessions.map((session) => {
+          const stats = sessionStats(session);
+          const names = [...new Set(session.sets.map((set) => set.exerciseName))];
+          return (
+            <View key={session.id} style={{ gap: 6, paddingTop: 8 }}>
+              <View style={AppTheme.sectionHeader}>
+                <Text style={AppTheme.entryName}>{session.name}</Text>
+                <Text style={AppTheme.entryDetail}>{localDateKey(new Date(session.completedAt))}</Text>
+              </View>
+              <Text style={AppTheme.entryDetail}>
+                {stats.durationMinutes ? `${stats.durationMinutes} min · ` : ""}
+                {stats.workingSets} series · {formatWeight(stats.volumeKg, unit, 0)}
+              </Text>
+              <View style={AppTheme.chipRow}>
+                {names.map((name) => (
+                  <Pressable
+                    key={name}
+                    accessibilityRole="button"
+                    onPress={() => openExercise(name)}
+                    style={AppTheme.badge}
+                  >
+                    <Text style={AppTheme.badgeText}>{name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <RowActions
+                question={`¿Borrar la sesión del ${localDateKey(new Date(session.completedAt))}?`}
+                onDelete={() => deleteWorkout(session.id)}
+              />
+            </View>
+          );
+        })
       ) : (
         <Text style={AppTheme.body}>Tu primera sesión aparecerá aquí.</Text>
       )}
     </Card>
+  );
+}
+
+/** Buscar en el catálogo y agregar un ejercicio a la rutina. */
+function CatalogPicker({ onPick }: { onPick: (name: string) => void }) {
+  const [query, setQuery] = useState("");
+  const results = query.trim() ? searchExercises(query).slice(0, 8) : [];
+  return (
+    <View style={{ gap: 6 }}>
+      <Input
+        label="Agregar del catálogo"
+        value={query}
+        onChangeText={setQuery}
+        placeholder="sentadilla, remo, bíceps…"
+      />
+      {results.map((exercise) => (
+        <Pressable
+          key={exercise.id}
+          accessibilityRole="button"
+          onPress={() => {
+            onPick(exercise.name);
+            setQuery("");
+          }}
+          style={AppTheme.entryRow}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={AppTheme.entryName}>{exercise.name}</Text>
+            <Text style={AppTheme.entryDetail}>
+              {exercise.primary.map((muscle) => MUSCLE_LABELS[muscle]).join(", ")} ·{" "}
+              {EQUIPMENT_LABELS[exercise.equipment]}
+            </Text>
+          </View>
+          <Ionicons name="add" size={20} color={AppTheme.colors.accent} />
+        </Pressable>
+      ))}
+    </View>
   );
 }
