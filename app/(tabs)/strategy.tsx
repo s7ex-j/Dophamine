@@ -83,6 +83,11 @@ export default function StrategyScreen() {
         <ReviewHistoryCard reviews={reviews} />
         <Card title="Más detalle">
           <NavRow
+            title="Cómo se calcula"
+            detail="El algoritmo paso a paso, con tus números"
+            onPress={() => router.push("/algorithm")}
+          />
+          <NavRow
             title="Análisis"
             detail="Tendencia, ingesta y adherencia de las últimas semanas"
             onPress={() => router.push("/analysis")}

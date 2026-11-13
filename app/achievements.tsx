@@ -1,13 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 
-import { Button, Card, NavRow, ProgressBar, Screen } from "@/src/components/ui";
+import { Button, Card, ProgressBar, Screen } from "@/src/components/ui";
 import { Dopi } from "@/src/features/streak/Dopi";
 import { shareText } from "@/src/features/streak/streak";
 import { getStreakSummary, type StreakSummary } from "@/src/features/streak/streak.data";
-import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 const days = (value: number) => `${value} ${value === 1 ? "día" : "días"}`;
@@ -23,7 +22,6 @@ async function share(message: string) {
 
 // Racha de registro, Dopi y logros, con la opción de compartirlos.
 export default function AchievementsScreen() {
-  const router = useRouter();
   const [summary, setSummary] = useState<StreakSummary | null>(null);
   useFocusEffect(
     useCallback(() => {
@@ -106,15 +104,6 @@ export default function AchievementsScreen() {
           ))}
         </Card>
 
-        {VIEWER ? null : (
-          <Card title="Sobriedad">
-            <NavRow
-              title={summary.habits.length ? `${summary.habits.length} en curso` : "Contar días sin un vicio"}
-              detail="Alcohol, tabaco, azúcar… lo que quieras dejar. Privado, solo en tu teléfono."
-              onPress={() => router.push("/sobriety")}
-            />
-          </Card>
-        )}
         <Text style={AppTheme.hint}>
           Compartir abre el menú de tu teléfono con un texto; nada se envía si tú no lo mandas.
         </Text>

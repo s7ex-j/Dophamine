@@ -18,15 +18,22 @@ import type { MetabolicAnalysis, WeeklyCheckIn } from "@/src/features/tdee/tdee"
  *    sostiene o se sube): dormir poco aumenta el hambre y la pérdida de músculo.
  * 3. Meta de peso: al acercarse, el ritmo baja; al llegar, se propone pasar a
  *    mantenimiento.
+ * 4. Entreno: en volumen, si se hizo menos de la mitad de las sesiones
+ *    planeadas, no se suben calorías (sin estímulo, el extra va sobre todo a
+ *    grasa). Mientras el gasto se construye, avisa cuánto difiere el entreno
+ *    real del que se usó para el cálculo inicial.
  */
 export type CheckInContext = {
   /** Registros del periodo de revisión (los últimos 3 o 7 días). */
   recent: DailyBiometrics[];
   /** Horas promedio de sueño del periodo, en minutos; null si no hay registros. */
   sleepMinutes: number | null;
+  /** Entreno del periodo: sesiones hechas y planeadas, y kcal netas por día reales y previstas. */
+  training?: { done: number; planned: number; kcalPerDay: number; plannedKcalPerDay: number } | null;
 };
 
-export type CheckInReason = "adherence" | "sleep" | "approachingGoal" | "goalReached" | "fastCorrection";
+export type CheckInReason =
+  "adherence" | "sleep" | "approachingGoal" | "goalReached" | "fastCorrection" | "training";
 export type ContextualCheckIn = WeeklyCheckIn & { reasons: CheckInReason[] };
 
 /** Ingesta promedio de los días completos con comida del periodo. */
@@ -51,6 +58,15 @@ export function taperFactor(remainingKg: number, weeklyRateKg: number): number {
   return weeksLeft >= 4 ? 1 : Math.max(0.5, weeksLeft / 4);
 }
 
+/** Frase sobre el entreno real frente al previsto, mientras el gasto se construye. */
+function trainingNote(training: CheckInContext["training"]): string {
+  if (!training || !training.planned) return "";
+  const diff = Math.round(training.kcalPerDay - training.plannedKcalPerDay);
+  const sessions = ` Entrenaste ${training.done} de ${training.planned} sesiones planeadas`;
+  if (Math.abs(diff) < 40) return `${sessions}, en línea con lo que se usó para tu cálculo inicial.`;
+  return `${sessions}: unas ${Math.abs(diff)} kcal por día ${diff > 0 ? "más" : "menos"} de lo previsto. Tu gasto real lo irá reflejando.`;
+}
+
 export function contextualCheckIn(
   analysis: MetabolicAnalysis,
   profile: NutritionProfile,
@@ -68,7 +84,7 @@ export function contextualCheckIn(
     const message =
       analysis.status === "holding"
         ? `Estimación en pausa: registra al menos 4 días de comida y 1 pesaje esta semana. Ahora llevas ${analysis.nutritionDaysLast7} y ${analysis.weightDaysLast7}.`
-        : `Construyendo tu estimación: ${analysis.loggedDays}/10 días de comida y al menos 14 días de tendencia.`;
+        : `Construyendo tu estimación: ${analysis.loggedDays}/10 días de comida y al menos 14 días de tendencia.${trainingNote(context.training)}`;
     return {
       status: analysis.status,
       ready: false,
@@ -134,6 +150,19 @@ export function contextualCheckIn(
     reasons.push("sleep");
   }
 
+  // 4. Entreno: en volumen, sin el entreno planeado no se suman calorías.
+  const training = context.training;
+  if (
+    profile.goal === "gain" &&
+    delta > 0 &&
+    training &&
+    training.planned > 0 &&
+    training.done < training.planned / 2
+  ) {
+    delta = 0;
+    reasons.push("training");
+  }
+
   const parts: string[] = [];
   if (Math.abs(delta) < 25)
     parts.push(
@@ -151,6 +180,10 @@ export function contextualCheckIn(
     parts.push("Estás cerca de tu meta: el ritmo baja para llegar sin pasarte.");
   if (reasons.includes("fastCorrection"))
     parts.push("Tu ritmo real está lejos del buscado, así que el ajuste es mayor de lo habitual.");
+  if (reasons.includes("training") && training)
+    parts.push(
+      `No subo calorías porque entrenaste ${training.done} de ${training.planned} sesiones: sin el estímulo del entreno, el extra se iría sobre todo a grasa.`,
+    );
   return {
     status: "updating",
     ready: true,

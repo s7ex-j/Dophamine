@@ -11,6 +11,10 @@ export type RepdbExercise = {
   equipment: Equipment;
   pattern: Pattern;
   unilateral: boolean;
+  /** Se registra en minutos, no en carga y repeticiones. */
+  cardio: boolean;
+  /** Gasto del ejercicio en MET (1 = en reposo), según RepDB. */
+  met: number | null;
   steps: string[];
 };
 
@@ -118,6 +122,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba en el suelo con los brazos extendidos por encima de la cabeza y las piernas estiradas.",
@@ -134,6 +140,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba con las rodillas flexionadas y los pies anclados.",
@@ -150,6 +158,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "machine",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de abdominales y sujeta las manijas.",
@@ -167,6 +177,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Acuéstate de lado con las piernas apiladas.",
@@ -183,6 +195,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Túmbate de lado con las piernas estiradas y apiladas, apoyando la cabeza sobre el brazo inferior.",
@@ -199,6 +213,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Ponte erguido con las manos en las caderas y los pies juntos.",
@@ -216,6 +232,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Coloca una banda elástica alrededor de tus tobillos o justo encima de tus rodillas.",
@@ -233,6 +251,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de abducción de cadera con los apoyos contra la parte externa de los muslos.",
@@ -249,6 +269,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco o silla con una banda elástica alrededor de tus rodillas.",
@@ -265,6 +287,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "hipAdduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de aducción de cadera con la espalda contra el respaldo.",
@@ -282,6 +306,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAdduction",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Acuéstate de lado con la pierna inferior recta.",
@@ -299,6 +325,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAdduction",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate de lado con la pierna inferior estirada y la superior cruzada por encima, con el pie apoyado en el suelo.",
@@ -315,6 +343,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "hipAdduction",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ancla una banda elástica a un poste firme a la altura del tobillo.",
@@ -331,6 +361,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "other",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Coloca un disco de canto en el suelo.",
@@ -347,6 +379,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate de lado con las caderas y rodillas flexionadas a unos 45 grados y los pies juntos uno sobre otro.",
@@ -364,6 +398,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate de lado con las rodillas dobladas y apiladas una sobre la otra.",
@@ -380,6 +416,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate de lado con las caderas y las rodillas flexionadas unos 45 y 90 grados, los talones juntos y las rodillas apiladas.",
@@ -396,6 +434,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "dumbbell",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco inclinado con mancuernas sobre el pecho.",
@@ -413,6 +453,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Sostén las mancuernas e inclínate hacia adelante desde las caderas.",
@@ -429,6 +471,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca ambas poleas aproximadamente a la altura de los hombros y sitúate en el centro, entre las dos torres de polea.",
@@ -446,6 +490,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "machine",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta el asiento para que las empuñaduras queden a la altura de los hombros y siéntate de cara a la máquina con el pecho contra la almohadilla.",
@@ -463,6 +509,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "cable",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate entre dos columnas de cable con los agarres enganchados a las poleas altas.",
@@ -479,6 +527,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "dumbbell",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco con las mancuernas sobre el pecho y las palmas mirándose entre sí.",
@@ -494,6 +544,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "dumbbell",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco declinado sosteniendo mancuernas sobre el pecho.",
@@ -509,6 +561,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "machine",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de aperturas y ajusta el asiento para que las palancas queden a la altura del pecho.",
@@ -526,6 +580,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings", "sideDelts"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Párate con los pies al ancho de las caderas y agarra la barra con un agarre ancho.",
@@ -543,6 +599,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Colócate de pie con un agarre ancho de arrancada sobre una barra sostenida a la altura de los muslos y los pies a la anchura de las caderas aproximadamente.",
@@ -560,6 +618,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes", "abs"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra con agarre prono y rota hacia atrás a través de los brazos hasta quedar invertido.",
@@ -570,12 +630,50 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "air-bike",
+    name: "Bicicleta de aire",
+    primary: ["hamstrings", "quads"],
+    secondary: ["glutes", "lats", "chest", "abs"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Siéntate en la bicicleta de aire y sujeta los manillares móviles.",
+      "Coloca los pies en los pedales y contrae el core.",
+      "Empuja y jala los manillares mientras pedaleas a un ritmo constante.",
+      "Impulsa con brazos y piernas para mantener la potencia.",
+      "Continúa durante la duración o distancia deseada.",
+    ],
+  },
+  {
+    id: "stationary-bike",
+    name: "Bicicleta estática",
+    primary: ["quads"],
+    secondary: ["calves", "glutes", "hamstrings"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Ajusta la altura del sillín para que la rodilla quede ligeramente flexionada en el punto más bajo del pedaleo, siéntate y apoya la parte anterior de los pies en los pedales.",
+      "Sujeta el manillar con un agarre relajado y siéntate erguido, con la espalda neutra y los hombros bajos.",
+      "Empuja un pedal hacia abajo y hacia delante mientras el otro sube, manteniendo el esfuerzo en las piernas en lugar de tirar del manillar.",
+      "Sigue pedaleando en un círculo suave y regular a una cadencia constante, respirando al ritmo del pedaleo.",
+      "Ajusta la resistencia para sostener el esfuerzo que buscas y continúa durante el tiempo o la distancia deseados.",
+    ],
+  },
+  {
     id: "bird-dog",
     name: "Bird-Dog",
     primary: ["lowerBack", "abs"],
     secondary: ["glutes"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza a cuatro patas con la columna en posición neutra.",
@@ -592,6 +690,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "obliques", "rearDelts"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Comienza a cuatro patas con las manos bajo los hombros y las rodillas bajo las caderas.",
@@ -608,6 +708,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie con una barra sobre la parte superior de la espalda.",
@@ -624,6 +726,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "band",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Pisa una banda elástica con ambos pies y pásala por la nuca.",
@@ -640,6 +744,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies separados al ancho de las caderas y las manos detrás de la cabeza.",
@@ -656,6 +762,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "smith",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca la barra a la altura de la espalda alta, métete debajo y apóyala sobre los trapecios; desengánchala con los pies al ancho de las caderas.",
@@ -666,12 +774,51 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "burpees",
+    name: "Burpees",
+    primary: ["glutes", "chest", "quads"],
+    secondary: ["frontDelts", "abs", "triceps"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Mantente en pie con los pies a la anchura de los hombros.",
+      "Baja en sentadilla y apoya las manos en el suelo delante de ti.",
+      "Salta o lleva los pies atrás a la posición de plank y haz una flexión.",
+      "Salta o lleva los pies adelante hasta las manos.",
+      "Levántate y salta explosivamente con los brazos arriba.",
+    ],
+  },
+  {
+    id: "walking",
+    name: "Caminar",
+    primary: ["calves", "quads"],
+    secondary: ["glutes", "hamstrings", "abs"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 3.5,
+    unilateral: false,
+    steps: [
+      "Ponte erguido, con el peso sobre la parte media de los pies y los hombros relajados, sin llevarlos hacia atrás.",
+      "Da un paso al frente y apoya primero el talón, luego rueda sobre el pie y empuja con la almohadilla y los dedos.",
+      "Mantén al menos un pie en el suelo en todo momento — en cuanto ambos se despegan estás corriendo, no caminando.",
+      "Deja que los brazos oscilen con naturalidad desde el hombro, brazo contrario a pierna contraria, con los codos ligeramente flexionados.",
+      "Mira al frente en lugar de a los pies y respira con un ritmo constante y sostenible.",
+      "Continúa el tiempo o la distancia deseados, eligiendo un ritmo al que todavía podrías mantener una conversación.",
+    ],
+  },
+  {
     id: "sandbag-carry",
     name: "Caminata con saco de arena",
     primary: ["glutes", "quads"],
     secondary: ["biceps", "lowerBack", "abs"],
     equipment: "other",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: false,
     steps: [
       "Colócate sobre un saco de arena, agáchate y rodéalo con ambos brazos, con las manos o los antebrazos entrelazados por debajo.",
@@ -689,6 +836,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "obliques", "quads", "abs"],
     equipment: "dumbbell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: false,
     steps: [
       "Párate erguido con una mancuerna en cada mano, los brazos extendidos a los lados.",
@@ -705,6 +854,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "quads", "triceps"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Empieza en cuadrupedia con las manos bajo los hombros y las rodillas bajo las caderas.",
@@ -715,12 +866,33 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "incline-treadmill-walk",
+    name: "Caminata en cinta inclinada",
+    primary: ["glutes", "quads"],
+    secondary: ["calves", "hamstrings"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Arranca la banda a velocidad de caminata lenta, súbete y luego eleva la inclinación hasta la pendiente que buscas.",
+      "Camina con una zancada larga y deliberada, rodando del talón a la punta y empujando la banda hacia atrás en cada paso.",
+      "Mantente erguido e inclínate hacia la cuesta desde los tobillos, sin doblarte hacia delante por la cintura.",
+      "Mantén al menos un pie sobre la banda en todo momento — camina la cuesta, no la trotes.",
+      "Deja que los brazos se balanceen con naturalidad o apóyalos suavemente en los raíles para equilibrarte, sin descargar el peso en ellos.",
+      "Sostén la pendiente durante el tiempo deseado, luego bájala y camina en llano unos minutos para terminar.",
+    ],
+  },
+  {
     id: "banded-lateral-walk",
     name: "Caminata lateral con banda",
     primary: ["glutes"],
     secondary: ["quads"],
     equipment: "band",
     pattern: "carry",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una banda circular alrededor de las piernas por encima de las rodillas (o en los tobillos para una versión más difícil).",
@@ -738,6 +910,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["quads"],
     equipment: "band",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una banda elástica alrededor de la parte baja de las piernas, justo por encima de los tobillos.",
@@ -754,6 +928,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "De pie, sujeta la barra con agarre a la anchura de los hombros a la altura de los muslos.",
@@ -765,12 +941,51 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "treadmill-running",
+    name: "Carrera en cinta",
+    primary: ["calves", "quads"],
+    secondary: ["glutes", "hamstrings", "abs"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Súbete a la cinta con un pie sobre cada raíl lateral, arranca la banda a velocidad de caminata y pisa cuando ya esté en movimiento.",
+      "Sube progresivamente hasta tu ritmo de carrera, apoyando el pie bajo la cadera en lugar de estirar la zancada hacia delante.",
+      "Corre erguido con los hombros relajados, los codos flexionados unos noventa grados y los brazos balanceándose adelante y atrás, no cruzando el cuerpo.",
+      "Mira al frente y mantente en el centro de la banda en lugar de dejarte llevar hacia el rodillo trasero.",
+      "Sostén el ritmo durante el tiempo o la distancia deseados, luego baja la velocidad y camina unos minutos antes de bajarte.",
+    ],
+  },
+  {
+    id: "cycling",
+    name: "Ciclismo",
+    primary: ["quads"],
+    secondary: ["calves", "glutes", "hamstrings"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Ajusta el sillín para que la rodilla quede solo ligeramente flexionada cuando el pedal esté en el punto más bajo de la pedalada.",
+      "Siéntate en el sillín con las manos en el manillar, los codos ligeramente flexionados y los hombros relajados.",
+      "Coloca los metatarsos sobre los ejes de los pedales.",
+      "Empuja cada pedal hacia abajo y hacia delante, y luego deja que suba y pase por arriba en un círculo suave.",
+      "Mantén una cadencia constante y elige una marcha que te permita pedalear sin rebotar en el sillín.",
+      "Pedalea durante el tiempo o la distancia previstos, bajando el ritmo en los últimos minutos para volver a la calma.",
+    ],
+  },
+  {
     id: "clean",
     name: "Clean",
     primary: ["glutes", "quads"],
     secondary: ["frontDelts", "lowerBack", "hamstrings", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Colócate sobre una barra cargada con los pies a la anchura de las caderas.",
@@ -787,6 +1002,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "upperBack", "triceps"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Lleva la barra cargada desde el suelo hasta los hombros como en un clean.",
@@ -803,6 +1020,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "quads", "abs", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Colócate con dos kettlebells en el suelo entre los pies, separados a la anchura de las caderas, y flexiona las caderas para agarrar un asa con cada mano.",
@@ -819,6 +1038,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies a la anchura de las caderas y una mancuerna en cada mano, colgando a los costados.",
@@ -836,6 +1057,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "forearms", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Ponte de pie con dos pesas rusas en el suelo entre tus pies, con las asas ligeramente giradas hacia adentro.",
@@ -853,6 +1076,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos extendidos sobre la cabeza; manos y pies ligeramente elevados.",
@@ -869,6 +1094,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "upperBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra una barra de dominadas con las palmas hacia delante, un poco más abierto que la anchura de los hombros, o con las palmas hacia ti para una versión más fácil.",
@@ -885,6 +1112,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "abs", "upperBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 4.5,
     unilateral: false,
     steps: [
       "Agarra la barra de dominadas con las palmas mirando hacia afuera, a la anchura de los hombros.",
@@ -895,12 +1124,33 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "running",
+    name: "Correr",
+    primary: ["calves", "quads"],
+    secondary: ["glutes", "hamstrings", "abs"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Empieza con un trote suave y sube hasta tu ritmo durante los primeros minutos, en lugar de salir directamente a la velocidad objetivo.",
+      "Apoya el pie bajo la cadera, no por delante del cuerpo, y mantén el contacto con el suelo corto y silencioso.",
+      "Corre erguido desde la cadera, con una ligera inclinación desde los tobillos y sin doblarte por la cintura.",
+      "Flexiona los codos unos noventa grados y lleva los brazos adelante y atrás, sin cruzarlos sobre el pecho.",
+      "Respira con ritmo y mantén sueltos los hombros, la mandíbula y las manos.",
+      "Sostén el ritmo el tiempo o la distancia deseados, luego trota y camina unos minutos para terminar.",
+    ],
+  },
+  {
     id: "cable-crunch",
     name: "Crunch con cable",
     primary: ["abs"],
     secondary: ["obliques"],
     equipment: "cable",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Arrodíllate frente a una máquina de cable con el accesorio de cuerda en la parte superior.",
@@ -917,6 +1167,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas dobladas y las manos ligeramente detrás de las orejas.",
@@ -932,6 +1184,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba con las manos detrás de la cabeza y las piernas elevadas.",
@@ -948,6 +1202,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Asegura los pies en la parte superior del banco declinado.",
@@ -964,6 +1220,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "other",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba y coloca las piernas de modo que la cadera no pueda ayudar: apoya los pies contra una pared o un cajón, o mantén las piernas en alto con las rodillas flexionadas.",
@@ -980,6 +1238,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca el domo de equilibrio en el suelo con el lado abombado hacia arriba, siéntate sobre él y échate hacia atrás hasta que la zona lumbar quede apoyada en el domo.",
@@ -997,6 +1257,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las rodillas dobladas y las manos detrás de la cabeza.",
@@ -1013,6 +1275,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos a los lados.",
@@ -1030,6 +1294,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "abs", "upperBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 4.5,
     unilateral: false,
     steps: [
       "Agarra un par de anillas de gimnasia con agarre neutro, palmas enfrentadas entre sí.",
@@ -1040,12 +1306,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "battle-ropes",
+    name: "Cuerdas de batalla",
+    primary: ["frontDelts", "sideDelts", "lats"],
+    secondary: ["forearms", "quads", "abs", "upperBack"],
+    equipment: "other",
+    pattern: "cardio",
+    cardio: true,
+    met: 10.3,
+    unilateral: false,
+    steps: [
+      "Ancla las cuerdas a un punto fijo y agarra un extremo en cada mano.",
+      "Da unos pasos atrás para que las cuerdas tengan tensión moderada.",
+      "Baja a una media sentadilla con los pies a la anchura de los hombros.",
+      "Mueve cada brazo arriba y abajo rápidamente generando ondas en las cuerdas.",
+      "Continúa durante el intervalo de trabajo indicado.",
+    ],
+  },
+  {
     id: "spider-curl",
     name: "Curl araña",
     primary: ["biceps"],
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo en un banco inclinado con los brazos colgando rectos hacia abajo.",
@@ -1063,6 +1349,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una barra con agarre supino a la anchura de los hombros.",
@@ -1078,6 +1366,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando la barra Z con agarre supino en las partes anguladas.",
@@ -1093,6 +1383,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Sujeta una barra Z con las manos en las curvas internas, palmas arriba.",
@@ -1109,6 +1401,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie frente a una polea baja con una barra recta o barra Z.",
@@ -1125,6 +1419,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lowerBack"],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie sujetando el peso a la altura de los muslos con agarre supino.",
@@ -1141,6 +1437,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies separados aproximadamente al ancho de los hombros y sujeta la pesa rusa por el asa con ambas manos, de modo que cuelgue delante de tus muslos.",
@@ -1158,6 +1456,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies separados aproximadamente al ancho de los hombros y sujeta la pesa rusa por el asa con ambas manos, de modo que cuelgue delante de tus muslos.",
@@ -1175,6 +1475,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco inclinado a 45 grados con mancuernas a los lados.",
@@ -1191,6 +1493,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con una mancuerna en cada mano.",
@@ -1208,6 +1512,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta la barra con un agarre supino con las manos más juntas que la anchura de los hombros.",
@@ -1224,6 +1530,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando una pesa rusa en cada mano por el asa, con las palmas mirando hacia adelante.",
@@ -1240,6 +1548,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "De pie, sostén una pesa rusa en una mano.",
@@ -1257,6 +1567,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo mancuernas a los lados, palmas hacia adelante.",
@@ -1272,6 +1584,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina y ajusta el rodillo a la longitud de tus brazos.",
@@ -1288,6 +1602,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "bodyweight",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta las correas del entrenador de suspensión a una longitud media.",
@@ -1305,6 +1621,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en un banco con las piernas separadas y sujeta una mancuerna en una mano.",
@@ -1321,6 +1639,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en un banco con los pies bien separados, sujetando una kettlebell con una mano.",
@@ -1337,6 +1657,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "glutes"],
     equipment: "bodyweight",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba con los talones en los soportes del entrenador de suspensión, rodillas flexionadas a 90 grados.",
@@ -1353,6 +1675,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta las mancuernas a los lados con las palmas enfrentadas.",
@@ -1368,6 +1692,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Engancha una cuerda a la polea baja y párate frente a la máquina.",
@@ -1384,6 +1710,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con los antebrazos sobre los muslos, palmas hacia arriba.",
@@ -1400,6 +1728,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con los antebrazos sobre los muslos, palmas hacia arriba.",
@@ -1416,6 +1746,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Engancha una barra recta corta a una polea baja y siéntate en un banco plano mirando hacia la polea, con los pies apoyados en el suelo.",
@@ -1433,6 +1765,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con los antebrazos sobre los muslos, palmas hacia arriba.",
@@ -1449,6 +1783,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en un banco con el antebrazo sobre el muslo, palma hacia arriba.",
@@ -1465,6 +1801,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco sujetando una mancuerna en cada mano, con los antebrazos apoyados sobre los muslos, palmas hacia arriba.",
@@ -1481,6 +1819,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con los antebrazos sobre los muslos, palmas hacia abajo.",
@@ -1497,6 +1837,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con el antebrazo sobre el muslo, palma hacia abajo.",
@@ -1513,6 +1855,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves"],
     equipment: "band",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Coloca una banda elástica alrededor de un tobillo y ancla el otro extremo bajo el pie de apoyo o en un punto fijo delante de ti.",
@@ -1529,6 +1873,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves"],
     equipment: "machine",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Acuéstate boca abajo en la máquina de curl de piernas tumbado.",
@@ -1546,6 +1892,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "glutes"],
     equipment: "bodyweight",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba en el suelo con los talones y la parte inferior de las pantorrillas sobre la pelota de estabilidad y los brazos estirados para hacer equilibrio.",
@@ -1562,6 +1910,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves"],
     equipment: "machine",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta el respaldo y el cojín de tobillo para que las rodillas queden alineadas con el pivote de la máquina.",
@@ -1578,6 +1928,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves"],
     equipment: "machine",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo en la máquina de curl de piernas con los tobillos bajo el rodillo.",
@@ -1594,6 +1946,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el banco Scott con los brazos apoyados en el pad.",
@@ -1610,6 +1964,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate y ajusta el asiento para que las axilas queden en la parte superior del almohadillado.",
@@ -1626,6 +1982,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con una mancuerna en cada mano, los brazos a los costados y las palmas hacia adelante.",
@@ -1642,6 +2000,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate y sostén la barra con agarre prono.",
@@ -1657,6 +2017,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Sujeta una barra Z con agarre prono.",
@@ -1672,6 +2034,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Sujeta las mancuernas con agarre prono a los costados.",
@@ -1687,6 +2051,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una pesa rusa en cada mano, agarrando las asas en posición neutra (palmas hacia el cuerpo).",
@@ -1703,6 +2069,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta una mancuerna en cada mano con agarre neutro.",
@@ -1719,6 +2087,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco inclinado con mancuernas en agarre neutro.",
@@ -1735,6 +2105,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco Scott con una mancuerna en cada mano.",
@@ -1752,6 +2124,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate con los pies al ancho de las caderas y sostén una mancuerna al costado con la palma hacia dentro.",
@@ -1768,6 +2142,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "glutes"],
     equipment: "machine",
     pattern: "kneeFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Arrodíllate sobre una colchoneta con los tobillos anclados bajo un soporte fijo.",
@@ -1785,6 +2161,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco predicador con el pecho contra la almohadilla, sujetando una barra con agarre supino al ancho de los hombros.",
@@ -1802,6 +2180,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en un banco predicador y apoya la parte posterior de un brazo, a lo largo, sobre el pad.",
@@ -1819,6 +2199,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta el asiento para que las axilas descansen contra la parte superior del pad y la parte superior de los brazos quede plana sobre él.",
@@ -1835,6 +2217,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies a la anchura de las caderas, sujetando una mancuerna en cada mano a los lados del cuerpo con las palmas hacia delante.",
@@ -1851,6 +2235,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies aproximadamente al ancho de las caderas, los brazos extendidos a los lados y una mancuerna en cada mano con las palmas hacia delante.",
@@ -1867,6 +2253,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos extendidos hacia el techo y las rodillas a 90 grados.",
@@ -1883,6 +2271,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos apuntando al techo y las caderas y rodillas flexionadas a 90 grados.",
@@ -1899,6 +2289,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "quads", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Coloca dos pesas rusas en el suelo entre tus pies.",
@@ -1915,6 +2307,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings", "quads", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Coloca dos pesas rusas en el suelo entre tus pies.",
@@ -1931,6 +2325,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra con agarre prono, ligeramente más ancho que el ancho de los hombros.",
@@ -1946,6 +2342,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "obliques", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra la barra con las manos una delante de la otra, con las palmas enfrentadas, y cuélgate con los brazos estirados y el cuerpo girado de lado.",
@@ -1963,6 +2361,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre prono, brazos completamente extendidos.",
@@ -1979,6 +2379,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuelga un disco del cinturón de lastre y ajústalo a la cintura de modo que el peso quede suelto entre las piernas; también puedes sujetar la carga entre los pies.",
@@ -1995,6 +2397,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta la barra de dominadas en pronación, con las manos más separadas que los hombros, y cuélgate con los brazos extendidos y las piernas juntas.",
@@ -2011,6 +2415,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra la barra más ancha que la anchura de los hombros con las palmas mirando hacia afuera.",
@@ -2027,6 +2433,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "rearDelts", "upperBack"],
     equipment: "machine",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las rodillas en el pad de la máquina de dominadas asistidas.",
@@ -2043,6 +2451,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "rearDelts", "upperBack"],
     equipment: "band",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Engancha una banda elástica en la barra de dominadas e introduce un pie en ella.",
@@ -2059,6 +2469,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de la barra de dominadas con las manos a la anchura de los hombros o más juntas, palmas mirando hacia afuera.",
@@ -2074,6 +2486,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra la barra de dominadas con un agarre en pronación más ancho que los hombros.",
@@ -2091,6 +2505,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra las barras paralelas con las palmas enfrentadas.",
@@ -2108,6 +2524,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra con agarre supino a la anchura de los hombros.",
@@ -2123,6 +2541,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con los brazos completamente extendidos.",
@@ -2140,6 +2560,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Usa un cajón o salta para colocarte en la parte superior de una dominada.",
@@ -2157,6 +2579,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando una barra con agarre supino, con las manos al ancho de los hombros.",
@@ -2174,6 +2598,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco y agárralo firmemente detrás de la cabeza.",
@@ -2190,6 +2616,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate de lado junto a un banco plano y coloca la pierna de arriba sobre él, con la rodilla o el borde interno del pie apoyado en el banco.",
@@ -2207,6 +2635,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate de lado junto a un banco plano y coloca la cara interna de la pierna o del pie de arriba sobre él, con la rodilla de arriba ligeramente flexionada o estirada.",
@@ -2224,6 +2654,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "calfRaise",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Flexiona las caderas y apoya las manos en el suelo delante de ti, con la cadera alta y las piernas casi rectas.",
@@ -2240,6 +2672,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Carga los soportes de discos y sube a la plataforma con los metatarsos en el borde y los talones al aire.",
@@ -2256,6 +2690,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "calfRaise",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Ponte de pie sobre una pierna y levanta el otro pie del suelo con la rodilla flexionada.",
@@ -2272,6 +2708,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate en la máquina de elevación de pantorrillas con los metatarsos sobre la plataforma.",
@@ -2289,6 +2727,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las piernas rectas y las manos bajo la zona lumbar o sujetando una superficie estable detrás de la cabeza.",
@@ -2305,6 +2745,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre prono.",
@@ -2321,6 +2763,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en la silla romana con la espalda plana contra el respaldo y los antebrazos en los apoyos.",
@@ -2337,6 +2781,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra con agarre prono y los brazos completamente extendidos.",
@@ -2353,6 +2799,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en la silla romana con la espalda plana contra el respaldo y los antebrazos en los apoyos.",
@@ -2369,6 +2817,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca una barra en la parte alta de la espalda como en una sentadilla.",
@@ -2385,6 +2835,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "dumbbell",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando una mancuerna en cada mano a los costados.",
@@ -2402,6 +2854,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "calfRaise",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies separados al ancho de las caderas sobre una superficie plana.",
@@ -2418,6 +2872,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate en el borde de una plataforma o máquina de elevación de talones.",
@@ -2434,6 +2890,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en la máquina hack squat con los hombros bajo los apoyos.",
@@ -2451,6 +2909,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "calfRaise",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Ponte de pie, erguido, con los pies separados aproximadamente al ancho de las caderas y los brazos relajados a los costados.",
@@ -2468,6 +2928,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de elevación de talones con los pads apoyados en los muslos.",
@@ -2484,6 +2946,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "smith",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de espaldas a la barra dentro de la máquina Smith, con la barra un poco por debajo de la cadera.",
@@ -2501,6 +2965,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "calfRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en el extremo de un banco plano con una pierna estirada y el talón apoyado en el suelo.",
@@ -2518,6 +2984,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "chest", "abs"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una barra con agarre prono a la altura de los muslos.",
@@ -2534,6 +3002,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando la barra Z con agarre prono en las curvas internas, con los brazos colgando frente a los muslos.",
@@ -2550,6 +3020,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "chest"],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate de espaldas a una polea baja con un agarre.",
@@ -2566,6 +3038,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con las mancuernas a los costados, palmas frente a los muslos.",
@@ -2581,6 +3055,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "chest"],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Engancha una barra recta a la polea baja y colócate de espaldas a la máquina, con el cable pasando por delante de las piernas.",
@@ -2597,6 +3073,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "machine",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ajusta la altura del asiento para que el eje de la almohadilla quede alineado con tu hombro y carga solo el lado que vas a trabajar.",
@@ -2613,6 +3091,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con una mancuerna en cada mano a los lados.",
@@ -2630,6 +3110,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate con mancuernas a los costados.",
@@ -2645,6 +3127,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Párate erguido con los brazos colgando a los lados.",
@@ -2661,6 +3145,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "machine",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta la altura del asiento para que el eje de giro de las almohadillas quede alineado con la punta de tus hombros al sentarte.",
@@ -2677,6 +3163,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate de lado a una polea baja y agarra el asa con la mano más alejada de la máquina.",
@@ -2693,6 +3181,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Túmbate de lado sobre un banco plano usando el brazo inferior para apoyar la cabeza o sujetar el borde del banco.",
@@ -2703,12 +3193,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "elliptical-trainer",
+    name: "Elíptica",
+    primary: ["glutes", "quads"],
+    secondary: ["calves", "hamstrings", "lats", "chest", "triceps"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Súbete a las plataformas de una en una sujetándote al poste central fijo hasta estar estable, y luego toma un manillar móvil con cada mano.",
+      "Pon los pedales en marcha hacia delante manteniendo el pie entero apoyado en la plataforma, sin levantar el talón.",
+      "Empuja un manillar hacia delante mientras avanza el pie del lado contrario, y tira del otro hacia atrás, de modo que brazos y piernas trabajen en oposición.",
+      "Mantente erguido con la cadera sobre los pedales y el core activo, en lugar de dejarte caer hacia atrás sobre los manillares.",
+      "Ajusta la resistencia y la rampa para sostener una zancada fluida y continúa durante el tiempo o la distancia deseados.",
+    ],
+  },
+  {
     id: "single-leg-hip-thrust",
     name: "Empuje de cadera a una pierna",
     primary: ["glutes"],
     secondary: ["hamstrings", "quads"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Siéntate en el suelo de espaldas a un banco plano y apoya la parte alta de la espalda en su borde, justo debajo de los omóplatos.",
@@ -2726,6 +3236,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "quads"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Siéntate en el suelo de espaldas a un banco plano y apoya la parte alta de la espalda en su borde, justo debajo de los omóplatos.",
@@ -2743,6 +3255,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "band",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ancla una banda en la parte baja de un poste firme, a la altura de tus caderas estando de rodillas, y pásala alrededor de las caderas. Arrodíllate de espaldas al poste, con el torso erguido y las rodillas al ancho de las caderas, lo bastante adelante para que la banda quede tensa.",
@@ -2759,6 +3273,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "band",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una banda de bucle justo por encima de tus rodillas y siéntate en el suelo con la parte superior de tu espalda contra un banco.",
@@ -2775,6 +3291,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "quads"],
     equipment: "kettlebell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con la parte superior de tu espalda apoyada en un banco, las rodillas flexionadas y los pies planos.",
@@ -2791,6 +3309,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "quads"],
     equipment: "dumbbell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con la parte superior de la espalda contra un banco, rodillas flexionadas, pies planos y una mancuerna sobre tus caderas.",
@@ -2807,6 +3327,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "quads"],
     equipment: "machine",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga los soportes de discos por igual y siéntate en la máquina con la parte alta de la espalda contra el respaldo y los pies planos en la plataforma.",
@@ -2823,6 +3345,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs", "triceps"],
     equipment: "machine",
     pattern: "calfRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga el trineo y colócate detrás, sujetando las barras verticales con las manos aproximadamente a la altura del pecho.",
@@ -2840,6 +3364,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sostén una barra a lo largo de los brazos con agarre en pronación.",
@@ -2856,6 +3382,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una barra detrás de la espalda con agarre prono.",
@@ -2872,6 +3400,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta la barra Z frente a ti.",
@@ -2887,6 +3417,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "kettlebell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies al ancho de las caderas, sosteniendo una kettlebell en cada mano con las palmas hacia tu cuerpo.",
@@ -2904,6 +3436,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta mancuernas a los costados.",
@@ -2919,6 +3453,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ajusta un banco inclinado a unos 30 grados.",
@@ -2935,6 +3471,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "smith",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate erguido dentro de una máquina Smith con la barra a la altura de los muslos.",
@@ -2952,6 +3490,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "machine",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Carga los soportes de discos por igual y súbete a la plataforma de la máquina, de espaldas al bastidor.",
@@ -2968,6 +3508,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Siéntate en un banco plano, agárrate a los bordes junto a las caderas o justo detrás de ellas e inclina el torso ligeramente hacia atrás.",
@@ -2984,6 +3526,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lats", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre prono y los brazos estirados.",
@@ -3000,6 +3544,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Comienza en plancha alta con las espinillas o el dorso de los pies sobre un balón de estabilidad.",
@@ -3016,6 +3562,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte erguido junto a una silla firme, una pared o una barandilla y apoya una mano ligeramente en ella.",
@@ -3033,6 +3581,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca el domo de equilibrio sobre un suelo plano con el lado abombado hacia arriba, junto a una pared o a un apoyo firme.",
@@ -3044,12 +3594,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "stair-climber",
+    name: "Escaladora de escaleras",
+    primary: ["glutes", "quads"],
+    secondary: ["calves", "hamstrings"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Súbete al escalón inferior con la máquina en su ajuste más lento y sujeta los raíles con suavidad para equilibrarte.",
+      "Sube de escalón en escalón apoyando el pie entero en cada uno, no solo la punta.",
+      "Mantente erguido con el pecho abierto y la cadera bajo los hombros, sin encorvarte sobre la consola.",
+      "Empuja el escalón hacia abajo con el talón del pie adelantado y deja que el glúteo de esa pierna haga el trabajo.",
+      "Ajusta el ritmo para poder sostener la postura y sigue subiendo durante el tiempo o el número de pisos deseados.",
+    ],
+  },
+  {
     id: "barbell-overhead-extension",
     name: "Extensión de barra por encima de la cabeza",
     primary: ["triceps"],
     secondary: [],
     equipment: "barbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Carga una barra con el peso adecuado y ponte de pie o siéntate con la columna neutra.",
@@ -3066,6 +3636,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "kneeExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate en una máquina de extensión de piernas y coloca un pie bajo la almohadilla.",
@@ -3083,6 +3655,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Acuéstate boca abajo en un banco de hiperextensión con las caderas en el borde del pad.",
@@ -3098,6 +3672,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "hamstrings"],
     equipment: "machine",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de extensión de espalda con los pies apoyados en la plataforma y ajusta el rodillo para que quede sobre la parte alta de la espalda, justo por debajo de los omóplatos.",
@@ -3114,6 +3690,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "kneeExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de extensión de piernas con los tobillos detrás del rodillo.",
@@ -3130,6 +3708,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts"],
     equipment: "kettlebell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Inclínate hacia delante flexionando las caderas con la espalda recta y las rodillas ligeramente flexionadas.",
@@ -3147,6 +3727,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "cable",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una manija individual en una polea alta.",
@@ -3164,6 +3746,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando una mancuerna en cada mano con los brazos extendidos por encima de la cabeza.",
@@ -3180,6 +3764,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con una mancuerna sostenida sobre la cabeza con ambas manos.",
@@ -3197,6 +3783,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "machine",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de extensión de tríceps con la espalda apoyada en el respaldo y los brazos apoyados de plano sobre el rodillo, delante del pecho.",
@@ -3213,6 +3801,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca una barra en V en la polea alta.",
@@ -3230,6 +3820,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie o sentado, sostén una mancuerna por encima de la cabeza con ambas manos.",
@@ -3246,6 +3838,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie o siéntate sujetando la barra Z por encima de la cabeza con agarre prono en las curvas internas.",
@@ -3263,6 +3857,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "cable",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Engancha una cuerda a la polea baja y selecciona un peso ligero.",
@@ -3280,6 +3876,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate o siéntate sosteniendo una pesa rusa por las asas (boca abajo) con ambas manos por encima de la cabeza.",
@@ -3297,6 +3895,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "De pie o sentado, sostén una mancuerna en una mano sobre la cabeza con el brazo completamente extendido.",
@@ -3314,6 +3914,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de espaldas al punto de anclaje, sosteniendo las asas del TRX con agarre prono, las palmas hacia abajo.",
@@ -3330,6 +3932,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en un banco y sujeta una mancuerna con las dos manos, estirada por encima del pecho.",
@@ -3347,6 +3951,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "barbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano sujetando una barra Z sobre el pecho con un agarre estrecho.",
@@ -3362,6 +3968,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "squat",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ancla una banda elástica a un poste firme a la altura de la rodilla.",
@@ -3378,6 +3986,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie o siéntate sosteniendo una mancuerna en cada mano con los brazos extendidos hacia adelante.",
@@ -3395,6 +4005,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta las asas del TRX con un agarre prono, las palmas hacia abajo.",
@@ -3411,6 +4023,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra las anillas e inclínate hacia atrás de modo que el cuerpo quede en ángulo.",
@@ -3426,6 +4040,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Engancha una cuerda en una polea alta.",
@@ -3442,6 +4058,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza en posición de plancha alta con las manos a la anchura de los hombros.",
@@ -3458,6 +4076,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en posición de push-up amplia con los brazos extendidos.",
@@ -3474,6 +4094,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza en una plancha alta con las manos más separadas que el ancho de hombros.",
@@ -3491,6 +4113,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Adopta una posición de flexión con las manos directamente bajo los hombros.",
@@ -3507,6 +4131,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Arrodíllate frente a un balón de estabilidad y coloca las espinillas o los pies encima.",
@@ -3524,6 +4150,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 7.0,
     unilateral: false,
     steps: [
       "Comienza en la posición estándar de flexión.",
@@ -3540,6 +4168,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza en posición de push-up con las manos giradas de modo que los dedos apunten hacia atrás.",
@@ -3557,6 +4187,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Adopta la posición de flexión con las manos juntas formando un diamante.",
@@ -3573,6 +4205,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca las manos en dos superficies elevadas como parallettes o bloques.",
@@ -3589,6 +4223,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate frente a una pared y coloca las palmas sobre ella a la altura de los hombros.",
@@ -3606,6 +4242,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza en posición de perro boca abajo con las caderas altas y las manos a la anchura de los hombros.",
@@ -3623,6 +4261,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "abs", "upperBack"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca dos paralelas bajas (parallettes) a la anchura de los hombros y sube a un pino libre sobre ellas.",
@@ -3640,6 +4280,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Comienza en posición de push-up con las rodillas en el suelo.",
@@ -3657,6 +4299,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca las manos sobre un banco o superficie elevada, a la anchura de los hombros.",
@@ -3673,6 +4317,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Da la vuelta al domo de equilibrio para que su plataforma plana quede hacia arriba y coloca las manos sobre la plataforma, aproximadamente al ancho de los hombros.",
@@ -3690,6 +4336,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca los pies en una superficie elevada y las manos en el suelo.",
@@ -3705,6 +4353,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las anillas justo por encima del suelo.",
@@ -3721,6 +4371,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "abs"],
     equipment: "dumbbell",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Párate erguido sosteniendo una mancuerna a un lado.",
@@ -3737,6 +4389,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Siéntate sobre una cadera con las piernas dobladas hacia un lado y la mano de apoyo en el suelo bajo el hombro.",
@@ -3753,6 +4407,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Siéntate o ponte de pie erguido. Coloca la palma de una mano en el lado de la cabeza, por encima de la oreja.",
@@ -3769,6 +4425,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 7.0,
     unilateral: false,
     steps: [
       "Colócate en posición de flexión estándar, manos a la anchura de los hombros.",
@@ -3785,6 +4443,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca ambas manos sobre una pelota de estabilidad y camina con los pies hacia atrás hasta una plancha con los brazos extendidos, el cuerpo en línea recta de la cabeza a los talones.",
@@ -3801,6 +4461,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "obliques"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en plancha alta con las manos algo más abiertas que los hombros y el cuerpo en línea recta.",
@@ -3817,6 +4479,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las piernas extendidas.",
@@ -3834,6 +4498,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes", "chest"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate con las rodillas flexionadas, los pies apoyados y las manos en el suelo detrás de ti, con los dedos hacia los talones.",
@@ -3850,6 +4516,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el borde de un banco, coloca las manos junto a las caderas con los dedos apuntando hacia delante y camina con los pies hacia delante hasta que las piernas queden estiradas.",
@@ -3867,6 +4535,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra las barras paralelas de una estación de fondos, empuja hacia arriba y estira los brazos con los hombros bajos, lejos de las orejas.",
@@ -3884,6 +4554,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Apóyate en las anillas con los brazos bloqueados.",
@@ -3899,6 +4571,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco y coloca las manos en el borde junto a las caderas.",
@@ -3915,6 +4589,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra una barra recta en prono, algo más abierto que la anchura de los hombros, y salta a un apoyo con los brazos estirados encima de ella, con la barra a la altura de las caderas.",
@@ -3931,6 +4607,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "upperBack"],
     equipment: "machine",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sube a la máquina de fondos asistidos con las rodillas en el pad.",
@@ -3947,6 +4625,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes", "rearDelts"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate con las piernas estiradas y las manos en el suelo detrás de las caderas, con los dedos hacia delante.",
@@ -3963,6 +4643,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuelga un disco del cinturón de lastre y ajústalo a la cintura de modo que el peso quede suelto entre las piernas.",
@@ -3979,6 +4661,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra las barras paralelas y súbete a la posición superior con los brazos extendidos.",
@@ -3995,6 +4679,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps", "lowerBack", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra la barra con agarre prono y cuelga.",
@@ -4011,6 +4697,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las rodillas flexionadas e inclínate ligeramente hacia atrás.",
@@ -4027,6 +4715,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "kettlebell",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las rodillas flexionadas y los pies levantados del suelo.",
@@ -4044,6 +4734,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "lats", "obliques"],
     equipment: "other",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de los hombros sosteniendo un slam ball frente a las caderas.",
@@ -4054,12 +4746,33 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "battle-rope-double-slam",
+    name: "Golpe doble con cuerdas de batalla",
+    primary: ["frontDelts", "lats"],
+    secondary: ["forearms", "glutes", "obliques", "quads", "abs", "upperBack"],
+    equipment: "other",
+    pattern: "cardio",
+    cardio: true,
+    met: 10.3,
+    unilateral: false,
+    steps: [
+      "Toma un extremo de la cuerda en cada mano y colócate frente al anclaje, lo bastante atrás como para que las cuerdas queden algo destensadas.",
+      "Separa los pies algo más que la anchura de las caderas y baja a una sentadilla de cuarto, con el pecho alto.",
+      "Sube ambos brazos a la vez, dejando que las cuerdas se eleven por delante mientras extiendes la cadera.",
+      "Golpea ambos extremos contra el suelo al mismo tiempo, flexionando por la cadera y empujando desde los dorsales.",
+      "Aprovecha el rebote para encadenar el siguiente golpe, manteniendo ambos brazos al unísono en lugar de alternarlos.",
+      "Sigue golpeando el tiempo o las repeticiones deseadas.",
+    ],
+  },
+  {
     id: "warrior-one",
     name: "Guerrero i",
     primary: ["glutes", "quads"],
     secondary: ["frontDelts", "lowerBack"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Lleva un pie atrás y gíralo unos cuarenta y cinco grados, apoyando toda la planta.",
@@ -4076,6 +4789,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "sideDelts"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Sepárate en una base amplia con el pie delantero girado noventa grados y el trasero algo hacia dentro.",
@@ -4092,6 +4807,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie sobre una pierna con la rodilla blanda y las caderas niveladas.",
@@ -4108,6 +4825,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga la máquina hack squat y colócate con la espalda y los hombros contra los almohadillados.",
@@ -4125,6 +4844,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "upperBack"],
     equipment: "kettlebell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate erguido con el core contraído, sosteniendo una pesa rusa ligera por las asas (boca abajo) a la altura del pecho.",
@@ -4141,6 +4862,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Colócate a cuatro apoyos con las manos bajo los hombros, las rodillas bajo la cadera y la espalda plana.",
@@ -4158,6 +4881,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "band",
     pattern: "hipAbduction",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Coloca una banda de resistencia justo por encima de tus rodillas y ponte en posición de cuadrupedia, manos bajo los hombros y rodillas bajo las caderas.",
@@ -4174,6 +4899,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "barbell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con la parte superior de la espalda contra un banco y la barra sobre las caderas.",
@@ -4190,6 +4917,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "smith",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca un banco plano dentro de la máquina Smith, paralelo a la barra y situado de forma que la barra quede sobre el pliegue de tu cadera.",
@@ -4206,6 +4935,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Ajusta el banco de modo que el pad quede justo por debajo de los huesos de la cadera y los talones queden bien enganchados detrás del rodillo o del pad.",
@@ -4223,6 +4954,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes", "chest", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie cerca de un poste vertical resistente.",
@@ -4240,6 +4973,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "calves", "chest", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie, erguido, con los pies separados aproximadamente al ancho de las caderas.",
@@ -4257,6 +4992,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Empieza en una plancha alta con las manos en el suelo, algo por debajo de las caderas y ligeramente giradas hacia fuera.",
@@ -4274,6 +5011,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "upperBack"],
     equipment: "machine",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de jalón con los muslos asegurados bajo el pad.",
@@ -4291,6 +5030,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina de jalón con los muslos sujetos bajo los rodillos.",
@@ -4307,6 +5048,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "upperBack"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra recta en una máquina de jalón al pecho.",
@@ -4325,6 +5068,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en una máquina de jalón al pecho y asegura tus muslos bajo la almohadilla.",
@@ -4341,6 +5086,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "upperBack"],
     equipment: "machine",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra en V (mango doble-D) en el cable de jalón al pecho.",
@@ -4358,6 +5105,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sujeta una manija individual al jalón de cable y siéntate con los muslos asegurados bajo el soporte.",
@@ -4374,6 +5123,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "triceps"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate frente a una máquina de cable con una barra recta enganchada a la polea alta.",
@@ -4390,6 +5141,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate frente a una máquina de cable con un accesorio de barra recta.",
@@ -4406,6 +5159,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "hamstrings", "rearDelts"],
     equipment: "kettlebell",
     pattern: "hipAdduction",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies más anchos que los hombros, los dedos ligeramente girados hacia afuera y una pesa rusa en el suelo entre los pies.",
@@ -4423,6 +5178,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando una mancuerna ligera con los brazos estirados, pies aproximadamente al ancho de las caderas.",
@@ -4439,6 +5196,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Comienza con dos pesas rusas en rack sobre los hombros, con los codos apoyados sobre las caderas.",
@@ -4455,6 +5214,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Sostén la barra en el rack frontal con los codos altos.",
@@ -4472,6 +5233,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "quads", "upperBack"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Sostén la barra en posición de rack frontal sobre los hombros.",
@@ -4489,6 +5252,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "quads", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo o empuja hacia arriba en barras paralelas con los brazos rectos.",
@@ -4506,6 +5271,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lats", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre prono, los brazos estirados y los hombros hacia abajo.",
@@ -4522,6 +5289,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lats", "quads", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las anillas aproximadamente a la altura de la cadera y agárralas con los brazos estirados junto al cuerpo.",
@@ -4538,6 +5307,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes", "chest", "abs"],
     equipment: "other",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie con los pies algo más separados que el ancho de los hombros, sujetando un balón medicinal con ambas manos delante del torso.",
@@ -4555,6 +5326,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "rearDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate con las piernas estiradas y las manos en el suelo detrás de las caderas, con los dedos hacia delante.",
@@ -4571,6 +5344,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en plancha alta con las manos bajo los hombros y el cuerpo en línea.",
@@ -4587,6 +5362,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "quads", "triceps"],
     equipment: "kettlebell",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba sosteniendo una kettlebell por encima de la cabeza con una mano.",
@@ -4604,6 +5381,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos abiertos a los lados y las rodillas flexionadas sobre las caderas.",
@@ -4620,6 +5399,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las piernas estiradas y los brazos descansando a lo largo de los costados.",
@@ -4636,6 +5417,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba con los brazos extendidos sobre la cabeza y las piernas rectas.",
@@ -4652,6 +5435,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en un banco plano con los glúteos y la zona lumbar sobre el pad y las piernas extendidas.",
@@ -4668,6 +5453,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["quads", "abs"],
     equipment: "bodyweight",
     pattern: "carry",
+    cardio: false,
+    met: 2.5,
     unilateral: false,
     steps: [
       "Elige una línea recta en el suelo, colócate sobre ella y extiende los brazos a los lados a la altura de los hombros.",
@@ -4685,6 +5472,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "rearDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate con las rodillas flexionadas, los pies apoyados y las manos en el suelo detrás de ti, con los dedos hacia los talones.",
@@ -4701,6 +5490,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes", "hamstrings"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie con los pies al ancho de los hombros, sosteniendo una mancuerna sobre la cabeza con un brazo extendido.",
@@ -4718,6 +5509,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes", "hamstrings"],
     equipment: "kettlebell",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Párate sosteniendo una pesa rusa bloqueada sobre la cabeza con una mano.",
@@ -4729,12 +5522,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "mountain-climbers",
+    name: "Mountain climbers",
+    primary: ["abs"],
+    secondary: ["obliques", "quads"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Comienza en posición de plancha alta.",
+      "Lleva una rodilla hacia el pecho.",
+      "Cambia rápidamente de pierna llevando la otra rodilla hacia adelante.",
+      "Continúa alternando a un ritmo brioso.",
+      "Repite.",
+    ],
+  },
+  {
     id: "muscle-snatch",
     name: "Muscle snatch",
     primary: ["sideDelts", "upperBack"],
     secondary: ["lowerBack", "glutes", "hamstrings"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de las caderas y agarra la barra en ancho con agarre de gancho.",
@@ -4752,6 +5565,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuelga de las anillas con agarre falso, palmas enfrentadas.",
@@ -4768,6 +5583,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps", "chest"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre falso.",
@@ -4785,6 +5602,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "machine",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Selecciona el peso en la pila y ajusta el asiento para que las empuñaduras queden aproximadamente a la altura de los hombros cuando estés sentado.",
@@ -4802,6 +5621,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "machine",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga los discos por igual en el eje y ajusta el asiento para que las empuñaduras queden aproximadamente a la altura de los hombros cuando estés sentado.",
@@ -4813,12 +5634,33 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "rowing-machine",
+    name: "Máquina de remo",
+    primary: ["lats", "quads"],
+    secondary: ["biceps", "lowerBack", "glutes", "hamstrings", "upperBack"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Siéntate en la máquina de remo, sujeta los pies con las correas de las plataformas y agarra la manija en pronación.",
+      "Deslízate hacia delante hasta la posición de ataque: tibias verticales, torso ligeramente por delante de la cadera y brazos estirados hacia el volante.",
+      "Empuja primero con las piernas y desplaza el asiento hacia atrás hasta dejar las rodillas casi estiradas.",
+      "Lleva el torso hacia atrás pasando de la vertical y tira entonces de la manija hasta las costillas bajas, con los codos pasando junto a los costados.",
+      "Invierte el orden en la recuperación — primero los brazos hacia delante, después el torso y por último flexionar las rodillas — y vuelve a deslizarte hasta la posición de ataque para la siguiente palada.",
+      "Continúa durante el tiempo, la distancia o el número de paladas que quieras.",
+    ],
+  },
+  {
     id: "reverse-nordic-curl",
     name: "Nordic curl inverso",
     primary: ["quads"],
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "kneeExtension",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Arrodíllate sobre una almohadilla con las rodillas a la anchura de las caderas, las tibias y el empeine en el suelo y el torso erguido.",
@@ -4836,6 +5678,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "abs", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: false,
     steps: [
       "Lleva dos kettlebells al rack y luego pásalas a bloqueo por encima de la cabeza con press o push press.",
@@ -4853,6 +5697,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "abs", "upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: false,
     steps: [
       "Lleva una mancuerna, en cargada o press, hasta el bloqueo sobre cada hombro.",
@@ -4870,6 +5716,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "obliques", "abs", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: true,
     steps: [
       "Lleva una kettlebell en cargada y press hasta el bloqueo, dejando que la bola se asiente sobre el dorso del antebrazo.",
@@ -4887,6 +5735,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "abs", "upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: true,
     steps: [
       "Lleva una mancuerna, en cargada o press, hasta quedar bloqueada justo encima del hombro.",
@@ -4904,6 +5754,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes", "quads", "abs"],
     equipment: "kettlebell",
     pattern: "core",
+    cardio: false,
+    met: 5.5,
     unilateral: false,
     steps: [
       "Ponte de pie entre dos kettlebells pesadas.",
@@ -4921,6 +5773,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes", "quads", "upperBack"],
     equipment: "kettlebell",
     pattern: "carry",
+    cardio: false,
+    met: 5.5,
     unilateral: true,
     steps: [
       "Colócate junto a una sola kettlebell o mancuerna, con los pies a la anchura de las caderas.",
@@ -4938,6 +5792,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Comienza a cuatro patas con las manos bajo los hombros y las rodillas bajo las caderas.",
@@ -4954,6 +5810,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 3.5,
     unilateral: true,
     steps: [
       "Colócate a cuatro apoyos con las manos bajo los hombros y las rodillas bajo las caderas.",
@@ -4970,6 +5828,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts"],
     equipment: "cable",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Engancha un handle a la polea baja e inclínate hacia adelante desde las caderas.",
@@ -4986,6 +5846,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Inclínate hacia adelante en las caderas sosteniendo una mancuerna en cada mano con los codos doblados a 90 grados.",
@@ -5002,6 +5864,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Arrodíllate sobre una rodilla, apoya en el suelo la mano del mismo lado bajo el hombro y coloca la otra mano en la cadera.",
@@ -5018,6 +5882,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "cable",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Coloca una correa de tobillo en la polea baja y sujétala alrededor de un tobillo.",
@@ -5034,6 +5900,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs"],
     equipment: "machine",
     pattern: "chestFly",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina pec deck y agarra las asas con los brazos abiertos a los lados y los codos ligeramente flexionados.",
@@ -5051,6 +5919,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["chest", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Empieza en perro boca abajo con las caderas altas y las manos a la anchura de los hombros.",
@@ -5067,6 +5937,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "upperBack"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en perro boca abajo con las caderas altas y las manos a la anchura de los hombros.",
@@ -5083,6 +5955,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "upperBack"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate en perro boca abajo con las manos a la anchura de los hombros y las caderas altas.",
@@ -5099,6 +5973,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa en una mano y párate en la pierna contraria.",
@@ -5116,6 +5992,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["quads", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie con los pies a la anchura de las caderas y la barra sobre el medio del pie.",
@@ -5132,6 +6010,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "hamstrings", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate dentro de una barra trampa cargada con los pies a la anchura de los hombros.",
@@ -5149,6 +6029,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "quads"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de los hombros y la pesa rusa entre los pies.",
@@ -5166,6 +6048,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "quads", "upperBack"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies al ancho de las caderas, haz una bisagra de cadera con la espalda recta y sostén las mancuernas abajo, a la altura de las espinillas.",
@@ -5183,6 +6067,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["quads", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate en posición de peso muerto convencional.",
@@ -5199,6 +6085,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies al ancho de las caderas y haz una bisagra de cadera con las piernas casi rectas, sosteniendo una barra abajo, delante de las espinillas, con la espalda plana.",
@@ -5216,6 +6104,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "quads", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie sobre una plataforma pequeña con una barra cargada sobre el medio del pie.",
@@ -5232,6 +6122,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca un pie detrás de modo que solo los dedos toquen el suelo y haz una bisagra de cadera con la espalda recta.",
@@ -5248,6 +6140,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una kettlebell en el suelo junto al pie delantero y lleva el otro pie atrás de modo que solo los dedos toquen el suelo.",
@@ -5264,6 +6158,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca un pie detrás de modo que solo los dedos rocen el suelo y haz una bisagra de cadera con la espalda recta.",
@@ -5280,6 +6176,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo la barra a la altura de las caderas con agarre prono.",
@@ -5296,6 +6194,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Apóyate en una pierna sosteniendo una mancuerna en cada mano frente a los muslos.",
@@ -5313,6 +6213,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "obliques"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "De pie sobre una pierna, sostén una pesa rusa en la mano contraria por el asa.",
@@ -5331,6 +6233,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "obliques"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "De pie sobre una pierna, sostén una mancuerna en la mano contraria.",
@@ -5349,6 +6253,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "obliques"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate sobre una pierna con una ligera flexión de rodilla y los brazos colgando delante de ti.",
@@ -5365,6 +6271,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "band",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Pisa una banda elástica con ambos pies y agarra el extremo superior.",
@@ -5381,6 +6289,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "upperBack"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie, sujeta la barra Z a la altura media del muslo con agarre prono en las curvas internas.",
@@ -5398,6 +6308,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie sujetando mancuernas frente a los muslos con una ligera flexión de rodillas.",
@@ -5415,6 +6327,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes", "upperBack"],
     equipment: "smith",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta la barra de la máquina Smith a la altura de la mitad del muslo y colócate frente a ella con los pies al ancho de las caderas, tan cerca que la barra toque los muslos.",
@@ -5432,6 +6346,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies más anchos que el ancho de los hombros, con los pies apuntando hacia afuera.",
@@ -5448,6 +6364,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con una postura amplia y los pies ligeramente girados hacia afuera, con una pesa rusa en el suelo entre los pies.",
@@ -5465,6 +6383,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lats"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 4.5,
     unilateral: false,
     steps: [
       "Cuélgate de una barra de dominadas con agarre prono a la anchura de los hombros.",
@@ -5481,6 +6401,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las espinillas sobre una pelota suiza y las manos en el suelo en plancha alta.",
@@ -5497,6 +6419,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "abs", "upperBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca las manos en el suelo a la anchura de los hombros aproximadamente y lanza las piernas hasta quedar invertido, una pierna tras otra.",
@@ -5513,6 +6437,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Apoya los antebrazos en el suelo con los codos bajo los hombros.",
@@ -5530,6 +6456,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate en una plancha alta con las manos bajo los hombros y los pies algo más separados que el ancho de las caderas.",
@@ -5547,6 +6475,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Empieza en posición de push-up con los brazos totalmente extendidos.",
@@ -5562,6 +6492,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Comienza en posición de flexión con las manos giradas hacia afuera en el suelo, o sobre paralelas bajas (parallettes).",
@@ -5578,6 +6510,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate de lado junto a un banco plano y coloca la pierna de arriba sobre él, con el borde interno del pie o la parte inferior de la pierna apoyado en el banco.",
@@ -5595,6 +6529,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Coloca un banco detrás de ti y apoya en él el empeine de los pies; luego pon las manos en el suelo bajo los hombros con los brazos estirados.",
@@ -5612,6 +6548,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate a cuatro apoyos con las manos bajo los hombros y las rodillas bajo la cadera.",
@@ -5628,6 +6566,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques", "chest"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las anillas aproximadamente a la altura de las rodillas y agárralas con los brazos estirados bajo los hombros.",
@@ -5644,6 +6584,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca ambos pies en los estribos del TRX.",
@@ -5661,6 +6603,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Apoya los antebrazos en un banco plano, con los codos justo debajo de los hombros.",
@@ -5678,6 +6622,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "rearDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las piernas extendidas al frente.",
@@ -5695,6 +6641,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Acuéstate de lado con el antebrazo en el suelo y el codo bajo el hombro.",
@@ -5711,6 +6659,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Túmbate de lado con el antebrazo en el suelo y el codo bajo el hombro.",
@@ -5727,6 +6677,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate en plancha lateral sobre el antebrazo, con el codo bajo el hombro y los pies apilados.",
@@ -5743,6 +6695,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "sideDelts"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca ambos pies en los soportes del TRX y recuéstate de lado.",
@@ -5760,6 +6714,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca el domo de equilibrio sobre un suelo plano con el lado abombado hacia arriba y arrodíllate detrás de él.",
@@ -5777,6 +6733,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las piernas extendidas frente a ti.",
@@ -5794,6 +6752,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "quads"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Desde una base amplia, flexiona la rodilla delantera y apoya la mano de abajo en el suelo o un bloque por delante de ese pie.",
@@ -5810,6 +6770,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies juntos o a la anchura de las caderas y el peso en los talones.",
@@ -5826,6 +6788,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en la postura de la silla con las rodillas flexionadas, las caderas atrás y las palmas juntas frente al pecho.",
@@ -5842,6 +6806,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "chest"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo con los brazos junto al cuerpo y la frente apoyada en la esterilla.",
@@ -5858,6 +6824,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "abs"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie y pasa el peso a un pie, con esa rodilla ligeramente flexionada.",
@@ -5874,6 +6842,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "quads"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las rodillas flexionadas y los pies apoyados, las manos detrás de los muslos.",
@@ -5890,6 +6860,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte en cuclillas con los pies juntos y apoya las palmas en el suelo a la anchura de los hombros.",
@@ -5906,6 +6878,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Arrodíllate y apoya los antebrazos en el suelo a la anchura de los hombros, con los codos bajo los hombros.",
@@ -5922,6 +6896,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "rearDelts"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo con los brazos junto al cuerpo y la frente en la esterilla.",
@@ -5938,6 +6914,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "upperBack"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie, flexiona ligeramente ambas rodillas y pasa el peso a un pie.",
@@ -5954,6 +6932,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "calves"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie y pasa el peso a un pie.",
@@ -5970,6 +6950,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte erguido con los pies juntos y los brazos abiertos a los lados a la altura de los hombros.",
@@ -5987,6 +6969,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca el domo de equilibrio sobre un suelo plano con el lado abombado hacia arriba y ponte de pie junto a él.",
@@ -6004,6 +6988,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "De pie con los pies a la anchura de las caderas sujetando la barra a la altura de los muslos.",
@@ -6021,6 +7007,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la prensa de piernas con los pies a la anchura de los hombros sobre la plataforma.",
@@ -6037,6 +7025,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Siéntate en la máquina de prensa con un pie sobre la plataforma.",
@@ -6054,6 +7044,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "quads"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el respaldo para que la zona lumbar permanezca apoyada y la pelvis no se redondee al bajar.",
@@ -6070,6 +7062,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "hamstrings", "quads"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el asiento y el respaldo para que la zona lumbar permanezca apoyada en la parte baja del recorrido.",
@@ -6086,6 +7080,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "hamstrings"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el asiento y el respaldo para que la zona lumbar permanezca apoyada durante toda la repetición.",
@@ -6102,6 +7098,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "machine",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la prensa de piernas horizontal con la espalda apoyada en el respaldo y los pies a la anchura de los hombros sobre la plataforma.",
@@ -6117,6 +7115,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sostén un par de mancuernas a la altura de los hombros con las palmas mirando hacia ti.",
@@ -6133,6 +7133,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco a 30 grados de inclinación y siéntate con las mancuernas a la altura de los hombros.",
@@ -6148,6 +7150,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano y agarra la barra con las manos a la anchura de los hombros.",
@@ -6163,6 +7167,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en el banco con los ojos bajo la barra.",
@@ -6179,6 +7185,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano con los pies apoyados en el suelo y agarra las curvas anguladas de la barra Z sobre el pecho.",
@@ -6195,6 +7203,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano y agarra las curvas internas de la barra Z.",
@@ -6210,6 +7220,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques", "abs"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate en un banco plano con los pies apoyados en el suelo y una mancuerna sujeta con una mano a la altura del pecho.",
@@ -6227,6 +7239,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano sosteniendo una mancuerna en cada mano a la altura del pecho.",
@@ -6242,6 +7256,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano y sostén dos mancuernas juntas sobre el pecho.",
@@ -6257,6 +7273,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano y agarra la barra ligeramente más abierta que la anchura de los hombros.",
@@ -6274,6 +7292,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco en declinación. Túmbate y asegura los pies.",
@@ -6289,6 +7309,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco en declinación. Túmbate y asegura los pies.",
@@ -6304,6 +7326,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco en declinación. Asegura los pies y agarra la barra Z.",
@@ -6319,6 +7343,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "smith",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca un banco declinado en la máquina de modo que la barra quede alineada con tu pecho inferior al tumbarte, y engancha las piernas bajo los rodillos.",
@@ -6335,6 +7361,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano. Agarra la barra más ancha que los hombros.",
@@ -6350,6 +7378,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "smith",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco plano dentro de la máquina Smith.",
@@ -6367,6 +7397,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco en inclinación. Agarra la barra con las manos a la anchura de los hombros o más juntas.",
@@ -6382,6 +7414,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta un banco vertical dentro del rack con los pines a la altura aproximada de los hombros cuando estés sentado.",
@@ -6398,6 +7432,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["quads", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con la barra apoyada en los deltoides frontales.",
@@ -6415,6 +7451,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "sideDelts", "quads", "upperBack"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo mancuernas a la altura de los hombros, palmas hacia adelante.",
@@ -6431,6 +7469,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa en posición de rack en un hombro.",
@@ -6448,6 +7488,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en un banco con respaldo sosteniendo mancuernas a la altura de los hombros.",
@@ -6463,6 +7505,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "obliques", "abs", "upperBack"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Colócate de pie con los pies a la anchura de las caderas y sujeta una mancuerna a la altura de un hombro con la palma hacia delante.",
@@ -6480,6 +7524,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate o ponte de pie sujetando mancuernas a la altura de los hombros con las palmas mirando hacia adelante.",
@@ -6497,6 +7543,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "smith",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate de pie dentro de una máquina Smith, con los pies a la anchura de las caderas y la barra a la altura de los hombros.",
@@ -6514,6 +7562,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "smith",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca un banco dentro de la máquina Smith.",
@@ -6531,6 +7581,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "machine",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina con la espalda contra el rodillo.",
@@ -6547,6 +7599,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "machine",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ajusta el asiento para que el agarre de trabajo comience cerca del hombro y apoya firmemente la espalda en el respaldo.",
@@ -6563,6 +7617,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "cable",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta los cables a la altura del pecho y colócate de espaldas a la máquina.",
@@ -6579,6 +7635,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "bodyweight",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta las asas del entrenador de suspensión a la altura de la mitad de la pantorrilla.",
@@ -6595,6 +7653,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "machine",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la máquina con la espalda plana contra el respaldo.",
@@ -6611,6 +7671,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "chest"],
     equipment: "kettlebell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas flexionadas y los pies apoyados.",
@@ -6628,6 +7690,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "kettlebell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba en el suelo con las rodillas flexionadas y los pies apoyados.",
@@ -6644,6 +7708,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en el suelo con una mancuerna en cada mano a la altura del pecho.",
@@ -6659,6 +7725,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate o párate con una barra descansando en la parte alta de los trapecios detrás del cuello.",
@@ -6675,6 +7743,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco inclinado a 30-45 grados.",
@@ -6691,6 +7761,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el banco a 30–45 grados. Agarra la barra Z con las manos en las secciones anguladas.",
@@ -6706,6 +7778,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "hamstrings", "triceps"],
     equipment: "kettlebell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate boca arriba con las rodillas dobladas y los pies planos en el suelo.",
@@ -6723,6 +7797,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en el suelo y colócate bajo una barra en el rack.",
@@ -6738,6 +7814,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en el suelo sujetando una barra Z sobre el pecho.",
@@ -6753,6 +7831,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "kettlebell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas dobladas.",
@@ -6770,6 +7850,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco inclinado y agarra la barra ligeramente más abierta que la anchura de los hombros.",
@@ -6787,6 +7869,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "smith",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta un banco inclinado a 30-45 grados dentro de la máquina Smith.",
@@ -6804,6 +7888,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Inserta un extremo de la barra en el accesorio landmine y carga el extremo libre con un disco.",
@@ -6820,6 +7906,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "abs", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ancla un extremo de la barra en el accesorio landmine y carga el extremo libre.",
@@ -6836,6 +7924,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie con los pies a la anchura de los hombros y la barra a la altura de las clavículas.",
@@ -6852,6 +7942,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate con la barra a la altura de los hombros, pies al ancho de los hombros y el core firme.",
@@ -6868,6 +7960,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "glutes"],
     equipment: "cable",
     pattern: "core",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Coloca la polea a la altura del pecho y toma el agarre con ambas manos, situado de lado respecto a la máquina.",
@@ -6885,6 +7979,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "upperBack"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Lleva dos pesas rusas al rack sobre los hombros.",
@@ -6901,6 +7997,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "upperBack"],
     equipment: "bodyweight",
     pattern: "verticalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies a la anchura de las caderas y las manos en puños relajados a la altura de los hombros, palmas hacia delante y codos bajo las muñecas.",
@@ -6917,6 +8015,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "barbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano y agarra la barra ligeramente más ancha que los hombros.",
@@ -6934,6 +8034,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "sideDelts", "abs", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Limpia una pesa rusa ligera a la posición de rack y luego inclínala para que la bola apunte hacia arriba y el asa quede en la palma.",
@@ -6951,6 +8053,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "other",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate erguido sosteniendo un disco de pesas (o dos apretados juntos) entre las palmas a la altura del pecho.",
@@ -6967,6 +8071,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "kettlebell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, sujeta una kettlebell por el asa con ambas manos a la altura del pecho, con la bola colgando bajo las manos.",
@@ -6983,6 +8089,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie, junta dos mancuernas horizontalmente a la altura del pecho.",
@@ -6999,6 +8107,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "triceps"],
     equipment: "dumbbell",
     pattern: "horizontalPush",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "De pie y erguido, sostén una sola mancuerna en vertical frente al esternón, con el mango entre las palmas planas.",
@@ -7015,6 +8125,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo y coloca ambos pies sobre un balón de estabilidad.",
@@ -7032,6 +8144,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Acuéstate boca arriba con una rodilla flexionada y el pie plano, la otra pierna extendida recta.",
@@ -7048,6 +8162,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Túmbate boca arriba con una rodilla flexionada y ese pie apoyado, y eleva la otra pierna hasta que el muslo quede casi vertical.",
@@ -7064,6 +8180,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las rodillas flexionadas y los pies planos en el suelo.",
@@ -7080,6 +8198,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "band",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las rodillas flexionadas y los pies apoyados en el suelo a la anchura de los hombros.",
@@ -7097,6 +8217,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "barbell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en el suelo con una barra sobre las caderas y las rodillas flexionadas.",
@@ -7113,6 +8235,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las rodillas flexionadas y los pies apoyados, separados a la anchura de las caderas y lo bastante cerca como para rozar los talones con los dedos.",
@@ -7129,6 +8253,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas flexionadas y coloca ambos pies sobre la parte superior de un domo de equilibrio, con el lado abombado hacia arriba.",
@@ -7146,6 +8272,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "triceps"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate en el suelo con las rodillas flexionadas y las manos detrás, los dedos apuntando hacia atrás.",
@@ -7163,6 +8291,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "cable",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una cuerda en la polea baja y ponte de espaldas a la máquina con la cuerda entre las piernas.",
@@ -7179,6 +8309,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "barbell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco con una barra sostenida sobre el pecho.",
@@ -7194,6 +8326,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "barbell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate boca arriba en un banco plano con la cabeza ligeramente fuera del extremo, sosteniendo una barra EZ con agarre pronado.",
@@ -7210,6 +8344,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "barbell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco sosteniendo una barra sobre el pecho con los codos flexionados.",
@@ -7226,6 +8362,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "abs", "triceps"],
     equipment: "barbell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco plano sosteniendo una barra Z con un agarre prono estrecho en las curvas internas.",
@@ -7242,6 +8380,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "other",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate plano en un banco sujetando un disco con ambas manos.",
@@ -7258,6 +8398,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco plano sosteniendo una pesa rusa por las asas con ambas manos sobre el pecho, brazos casi rectos (ligera flexión de codos).",
@@ -7273,6 +8415,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["abs", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas flexionadas y los pies planos.",
@@ -7289,6 +8433,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["triceps"],
     equipment: "dumbbell",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano con una mancuerna sobre el pecho y los brazos extendidos.",
@@ -7305,6 +8451,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Siéntate con las rodillas flexionadas, los pies apoyados y las manos en el suelo detrás de ti.",
@@ -7321,6 +8469,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "sideDelts", "quads", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con dos pesas rusas en rack sobre los hombros, codos hacia abajo y pegados.",
@@ -7339,6 +8489,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "quads", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa en posición de rack en un hombro.",
@@ -7357,6 +8509,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "sideDelts", "obliques", "quads", "triceps"],
     equipment: "dumbbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "De pie con la mancuerna en un hombro, palma hacia adentro (neutro).",
@@ -7374,6 +8528,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Inclínate hacia adelante desde las caderas sujetando mancuernas con los brazos colgando.",
@@ -7391,6 +8547,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lats"],
     equipment: "barbell",
     pattern: "hinge",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca los pines de seguridad en un rack a la altura de las rodillas y apoya una barra cargada sobre ellos.",
@@ -7407,6 +8565,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una barra con un agarre en pronación a la anchura de los hombros.",
@@ -7423,6 +8583,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie, sujeta la barra Z con agarre a la anchura de los hombros en las partes anguladas.",
@@ -7439,6 +8601,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate frente a la máquina de cable y agarra una barra recta o cuerda a la altura de los muslos.",
@@ -7454,6 +8618,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "dumbbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo dos mancuernas frente a los muslos, palmas hacia el cuerpo.",
@@ -7470,6 +8636,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "biceps"],
     equipment: "smith",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca la barra a la altura de las caderas, toma un agarre prono algo más ancho que los hombros y sitúate cerca de ella con los brazos estirados.",
@@ -7486,6 +8654,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "smith",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca un banco inclinado dentro de la máquina Smith mirando hacia la barra, y baja la barra lo suficiente para que tus brazos cuelguen rectos al apoyarte en el respaldo.",
@@ -7502,6 +8672,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["rearDelts", "upperBack"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies al ancho de los hombros, sujetando una barra EZ con un agarre supino al ancho de los hombros.",
@@ -7518,6 +8690,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Inclínate en las caderas con una ligera flexión de rodillas.",
@@ -7534,6 +8708,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "upperBack"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Inclínate en las caderas con la espalda plana hasta que el torso quede casi paralelo al suelo.",
@@ -7550,6 +8726,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sostén una barra Z con agarre prono e inclínate en las caderas a 45 grados.",
@@ -7565,6 +8743,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack"],
     equipment: "kettlebell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta una pesa rusa en cada mano e inclínate hacia adelante desde las caderas.",
@@ -7581,6 +8761,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "lats"],
     equipment: "kettlebell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una pesa rusa justo por fuera de cada pie, con los pies separados a la anchura de las caderas.",
@@ -7598,6 +8780,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "kettlebell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Apoya una mano y una rodilla sobre un banco para sujetarte.",
@@ -7615,6 +8799,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "kettlebell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate boca abajo en un banco inclinado, dejando que tus brazos cuelguen libremente con una kettlebell en cada mano.",
@@ -7631,6 +8817,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una rodilla y una mano en un banco como apoyo.",
@@ -7647,6 +8835,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Túmbate boca abajo en un banco inclinado sujetando una mancuerna con una mano, con el brazo colgando recto hacia abajo.",
@@ -7662,6 +8852,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo en un banco inclinado con las mancuernas colgando por debajo.",
@@ -7677,6 +8869,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies a la anchura de las caderas, sujetando una mancuerna en cada mano a los lados, con las palmas hacia dentro.",
@@ -7694,6 +8888,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "glutes", "rearDelts", "upperBack"],
     equipment: "machine",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga el trineo con dos correas enganchadas y toma un asa en cada mano.",
@@ -7710,6 +8906,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las anillas a la altura de la cadera o el pecho.",
@@ -7726,6 +8924,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Acuéstate boca abajo en un banco elevado con los brazos colgando rectos hacia abajo.",
@@ -7742,6 +8942,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo en un banco inclinado sujetando mancuernas.",
@@ -7758,6 +8960,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "machine",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta el asiento para que las empuñaduras queden a la altura de la parte baja del pecho y siéntate con el pecho contra la almohadilla y los pies bien apoyados.",
@@ -7775,6 +8979,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "upperBack"],
     equipment: "cable",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta la polea a la altura del pecho y conecta una cuerda o un mango doble en D.",
@@ -7792,6 +8998,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "cable",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la estación de remo con los pies en la plataforma.",
@@ -7808,6 +9016,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate a horcajadas sobre la barra en T con los pies al ancho de los hombros.",
@@ -7825,6 +9035,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "upperBack"],
     equipment: "smith",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie dentro de la máquina Smith y agarra la barra con agarre en supinación.",
@@ -7842,6 +9054,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de los hombros y agarra la barra con agarre supinado.",
@@ -7860,6 +9074,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "cable",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Engancha una barra recta o un agarre en V a la polea baja.",
@@ -7876,6 +9092,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack"],
     equipment: "smith",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "De pie dentro de la máquina Smith con los pies al ancho de los hombros.",
@@ -7893,6 +9111,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts", "abs"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra en un rack a la altura de la cintura aproximadamente.",
@@ -7910,6 +9130,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "rearDelts", "abs"],
     equipment: "bodyweight",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca las anillas justo por encima de la cadera.",
@@ -7926,6 +9148,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "rearDelts"],
     equipment: "barbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga una barra y colócala en el suelo.",
@@ -7943,6 +9167,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "obliques", "abs"],
     equipment: "dumbbell",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate en plancha alta con una mano sobre cada una de dos mancuernas, a la anchura de los hombros, y los pies bien separados para mayor estabilidad.",
@@ -7960,6 +9186,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "rearDelts"],
     equipment: "cable",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Siéntate en la estación de remo y coloca los pies en los apoyos.",
@@ -7977,6 +9205,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "bodyweight",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta las asas de un entrenador de suspensión con agarre neutro, las palmas enfrentadas.",
@@ -7993,6 +9223,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "rearDelts"],
     equipment: "cable",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Siéntate en la estación de polea y sujeta el agarre con el brazo de trabajo extendido.",
@@ -8009,6 +9241,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "horizontalPull",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte de pie o siéntate erguido con los hombros relajados.",
@@ -8025,6 +9259,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate en perro boca abajo y eleva una pierna por detrás a perro de tres patas.",
@@ -8041,6 +9277,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en perro boca abajo con las manos a la anchura de los hombros y las caderas altas.",
@@ -8057,6 +9295,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate en plancha alta con las manos bajo los hombros y el cuerpo en línea recta de la cabeza a los talones.",
@@ -8067,12 +9307,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "high-knees",
+    name: "Rodillas altas",
+    primary: ["abs", "quads"],
+    secondary: ["calves"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Mantente erguido con los pies a la anchura de las caderas.",
+      "Lleva una rodilla arriba hacia el pecho bombeando el brazo opuesto.",
+      "Cambia de pierna rápidamente, espejando la acción del brazo.",
+      "Continúa alternando a ritmo rápido.",
+      "Continúa durante el intervalo de trabajo indicado.",
+    ],
+  },
+  {
     id: "wrist-roller",
     name: "Rodillo de muñeca",
     primary: ["forearms"],
     secondary: ["frontDelts"],
     equipment: "other",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra el mango del rodillo con los codos flexionados a los costados y los antebrazos al frente a la altura de la cintura.",
@@ -8090,6 +9350,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las piernas estiradas y los brazos presionando la colchoneta a los lados.",
@@ -8106,6 +9368,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "cable",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ajusta la polea a la altura del codo y agarra el handle.",
@@ -8122,6 +9386,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lats", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Arrodíllate en el suelo y agarra las asas de la rueda a la anchura de los hombros.",
@@ -8138,6 +9404,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lats", "obliques"],
     equipment: "barbell",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Carga discos del mismo tamaño en ambos extremos de la barra y colócala en el suelo.",
@@ -8149,12 +9417,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "jump-rope",
+    name: "Saltar la cuerda",
+    primary: ["calves"],
+    secondary: ["forearms", "quads"],
+    equipment: "other",
+    pattern: "cardio",
+    cardio: true,
+    met: 11.8,
+    unilateral: false,
+    steps: [
+      "Sujeta el mango de la cuerda en cada mano con la cuerda detrás de ti.",
+      "Balancea la cuerda sobre la cabeza y al frente en un arco fluido.",
+      "Salta justo lo suficiente para que la cuerda pase bajo los pies.",
+      "Aterriza suave sobre las puntas, rodillas ligeramente flexionadas.",
+      "Mantén un ritmo constante durante el intervalo indicado.",
+    ],
+  },
+  {
     id: "box-jump",
     name: "Salto al cajón",
     primary: ["glutes", "quads"],
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 7.0,
     unilateral: false,
     steps: [
       "Mantente a unos 30 cm frente a un cajón firme con los pies a la anchura de los hombros.",
@@ -8165,12 +9453,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "jumping-jacks",
+    name: "Saltos de tijera",
+    primary: ["calves", "glutes", "sideDelts"],
+    secondary: ["quads"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Ponte de pie con los pies juntos y los brazos a los lados.",
+      "Simultáneamente, salta abriendo las piernas y levantando los brazos por encima de la cabeza.",
+      "Asegúrate de que tus brazos se junten o casi se junten por encima de tu cabeza.",
+      "Salta juntando los pies de nuevo mientras bajas los brazos a los lados.",
+      "Mantén un movimiento continuo y rítmico.",
+    ],
+  },
+  {
     id: "pistol-squat",
     name: "Sentadilla a una pierna (pistol)",
     primary: ["glutes", "quads"],
     secondary: ["hamstrings", "abs"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Mantente sobre una pierna, la otra extendida al frente, brazos al lado para equilibrio.",
@@ -8187,6 +9495,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Colócate de pie frente a un banco y apoya un pie detrás sobre el banco.",
@@ -8203,6 +9513,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una barra sobre la parte alta de la espalda y ponte de pie a unos 60 cm de un banco plano, de espaldas a él.",
@@ -8220,6 +9532,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "kettlebell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Párate de espaldas a un banco, colocando un pie sobre él detrás de ti, con los cordones hacia abajo. Sostén una kettlebell en cada mano a los costados.",
@@ -8237,6 +9551,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "smith",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca un banco detrás de la máquina Smith. Apoya la barra sobre los trapecios.",
@@ -8253,6 +9569,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "band",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una banda elástica justo sobre las rodillas.",
@@ -8269,6 +9587,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "sideDelts", "upperBack"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sostén una barra por encima de la cabeza con un agarre ancho de arrancada y los codos bloqueados.",
@@ -8286,6 +9606,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes"],
     equipment: "kettlebell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies separados al ancho de los hombros, sosteniendo una kettlebell con ambas manos frente a ti.",
@@ -8302,6 +9624,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Pies a la anchura de los hombros, una mancuerna en cada mano a los lados.",
@@ -8318,6 +9642,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Saca la barra del rack y apóyala sobre la parte superior de la espalda.",
@@ -8335,6 +9661,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies separados al ancho de los hombros y los brazos extendidos al frente.",
@@ -8351,6 +9679,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies separados a la anchura de los hombros aproximadamente y las puntas ligeramente hacia fuera, con los brazos estirados al frente para mantener el equilibrio.",
@@ -8367,6 +9697,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 7.0,
     unilateral: false,
     steps: [
       "Mantente con los pies a la anchura de los hombros.",
@@ -8383,6 +9715,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca discos de peso o una cuña bajo los talones, pies al ancho de los hombros.",
@@ -8399,6 +9733,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "hamstrings"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte en una postura amplia con las puntas de los pies ligeramente hacia afuera.",
@@ -8415,6 +9751,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie frente a una caja o banco, con los pies al ancho de los hombros y los brazos extendidos hacia adelante para el equilibrio.",
@@ -8431,6 +9769,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Colócate de espaldas a una caja o banco firme que esté aproximadamente a la altura de las rodillas.",
@@ -8448,6 +9788,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una caja o un banco detrás de ti a una altura en la que los muslos queden aproximadamente paralelos al suelo cuando te sientes en él.",
@@ -8465,6 +9807,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "smith",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ajusta la barra de la máquina Smith a la altura de los hombros y colócate debajo de ella.",
@@ -8482,6 +9826,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate con la espalda contra una pared.",
@@ -8497,6 +9843,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una pelota suiza entre tu zona lumbar y una pared.",
@@ -8513,6 +9861,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte en postura dividida sujetando mancuernas a los costados.",
@@ -8530,6 +9880,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Párate en posición de tijera con un pie adelante y otro atrás.",
@@ -8547,6 +9899,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "smith",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca la barra en los ganchos justo por debajo de la altura de los hombros, métete debajo y apóyala sobre los trapecios altos.",
@@ -8563,6 +9917,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie con un pie bien adelantado y el otro atrás, separados aproximadamente una zancada larga, con las manos en las caderas.",
@@ -8580,6 +9936,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Limpia o coloca la barra en los deltoides frontales con los codos altos.",
@@ -8595,6 +9953,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings", "obliques"],
     equipment: "kettlebell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa en posición de rack en un hombro.",
@@ -8612,6 +9972,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings", "abs"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta una mancuerna en cada mano apoyadas sobre los hombros.",
@@ -8629,6 +9991,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "smith",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca la barra a la altura del pecho alto y métete debajo para que se apoye al frente de los hombros, contra las clavículas.",
@@ -8645,6 +10009,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "kettlebell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sujeta una pesa rusa a la altura del pecho con ambas manos.",
@@ -8660,6 +10026,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "hamstrings", "abs"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies algo más separados que el ancho de los hombros y las puntas ligeramente hacia fuera.",
@@ -8677,6 +10045,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies a la anchura de los hombros y las puntas ligeramente hacia fuera.",
@@ -8693,6 +10063,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca la barra sobre la parte alta de la espalda, agárrala justo por fuera de los hombros y da un paso atrás desde el rack con los pies separados aproximadamente al ancho de los hombros.",
@@ -8710,6 +10082,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca el domo de equilibrio sobre un suelo plano con el lado abombado hacia arriba y sube al centro con ambos pies, separados aproximadamente al ancho de las caderas.",
@@ -8727,6 +10101,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs"],
     equipment: "kettlebell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa a la altura del pecho con ambas manos.",
@@ -8744,6 +10120,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie, sosteniendo una mancuerna en cada mano con los brazos colgando a los lados.",
@@ -8761,6 +10139,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ancla el entrenador de suspensión y sujeta las asas con ambas manos, con los brazos extendidos.",
@@ -8778,6 +10158,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "lowerBack", "hamstrings", "calves"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Colócate de pie con los pies algo más abiertos que los hombros y las puntas hacia fuera.",
@@ -8794,6 +10176,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie sobre una pierna, flexiona la otra rodilla y sujeta ese pie por detrás con la mano del mismo lado.",
@@ -8811,6 +10195,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca el domo de equilibrio sobre un suelo plano con el lado abombado hacia arriba y sube al centro con ambos pies, separados aproximadamente al ancho de las caderas.",
@@ -8828,6 +10214,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "obliques"],
     equipment: "dumbbell",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Pies a la anchura de los hombros, sostén una mancuerna en una mano a la altura del hombro.",
@@ -8844,6 +10232,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate con los pies más anchos que el ancho de los hombros y los pies apuntando hacia afuera.",
@@ -8861,6 +10251,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "hamstrings"],
     equipment: "dumbbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies más anchos que los hombros y las puntas giradas hacia afuera unos 30 grados.",
@@ -8878,6 +10270,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca la barra sobre tus trapecios superiores.",
@@ -8894,6 +10288,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Párate mirando hacia el punto de anclaje, sosteniendo las asas con las palmas enfrentadas y los brazos extendidos.",
@@ -8910,6 +10306,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra en un rack aproximadamente a la altura de la cintura, acércate y engánchala en el pliegue de los codos, con los antebrazos cruzados o las manos entrelazadas delante del pecho.",
@@ -8927,6 +10325,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra en un rack a la altura aproximada de las costillas inferiores, pon el pliegue de los codos bajo la barra y entrelaza las manos delante del pecho.",
@@ -8944,6 +10344,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["upperBack"],
     equipment: "band",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate sosteniendo una banda elástica ligera con ambas manos, brazos extendidos al frente a la altura de los hombros.",
@@ -8954,12 +10356,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "ski-erg",
+    name: "SkiErg",
+    primary: ["lats", "abs", "triceps"],
+    secondary: ["glutes", "hamstrings", "quads"],
+    equipment: "machine",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Ponte frente al SkiErg con los agarres por encima de la cabeza y los pies separados al ancho de las caderas.",
+      "Activa el tronco y lleva los agarres hacia abajo tirando con los dorsales mientras haces una ligera bisagra de cadera.",
+      "Termina con las manos junto a los muslos y las rodillas suavemente flexionadas.",
+      "Deja que los cordones se recojan mientras elevas los brazos y vuelves a erguirte.",
+      "Repite con fluidez manteniendo los talones apoyados y el tronco controlado.",
+    ],
+  },
+  {
     id: "skull-crusher",
     name: "Skull crusher",
     primary: ["triceps"],
     secondary: [],
     equipment: "barbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Acuéstate en un banco plano sosteniendo una barra sobre el pecho con agarre estrecho.",
@@ -8975,6 +10397,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "kettlebell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba en el suelo con las rodillas flexionadas y los pies apoyados, sosteniendo una pesa rusa por las asas con ambas manos, brazos extendidos sobre el pecho.",
@@ -8991,6 +10415,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "dumbbell",
     pattern: "elbowExtension",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate en un banco plano sosteniendo mancuernas sobre el pecho.",
@@ -9006,6 +10432,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings", "quads"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies al ancho de los hombros y la mancuerna en el suelo entre tus pies.",
@@ -9023,6 +10451,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lats", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuelga las anillas aproximadamente a la altura de la cadera y toma una anilla en cada mano, con los pulgares rodeando la anilla.",
@@ -9040,6 +10470,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts", "obliques", "abs"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Haz una cargada con la pesa rusa hasta el hombro y dale la vuelta, de modo que la campana apunte hacia arriba y el asa quede en tu puño.",
@@ -9057,6 +10489,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "obliques", "upperBack"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Haz una cargada con la pesa rusa hasta el hombro, de modo que la campana quede apoyada contra la parte posterior del antebrazo y la parte alta del brazo, con el asa en la palma.",
@@ -9074,6 +10508,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "abs", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Haz una cargada o un press con la pesa rusa hasta que tengas el brazo estirado por encima de la cabeza, con la campana apoyada en la parte posterior del antebrazo.",
@@ -9091,6 +10527,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques", "chest", "abs", "triceps"],
     equipment: "barbell",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca un extremo de la barra en un soporte landmine o en una esquina y ponte de frente al extremo libre en postura escalonada, con los pies separados aproximadamente al ancho de los hombros.",
@@ -9108,6 +10546,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "lowerBack", "obliques", "quads"],
     equipment: "barbell",
     pattern: "squat",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Coloca una barra en un rack a la altura aproximada de las costillas inferiores y pon el pliegue de los codos bajo la barra.",
@@ -9125,6 +10565,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms"],
     equipment: "barbell",
     pattern: "elbowFlexion",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca abajo en un banco inclinado sujetando una barra Z con agarre supino.",
@@ -9142,6 +10584,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "upperBack", "triceps"],
     equipment: "kettlebell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Lleva dos pesas rusas al rack sobre los hombros.",
@@ -9158,6 +10602,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Párate frente a una caja o banco resistente.",
@@ -9175,6 +10621,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "abs"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de frente a un escalón o banco bajo y estable y apoya un pie completamente sobre él.",
@@ -9192,6 +10640,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "calves", "abs"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de frente a un escalón o banco bajo y estable con una pesa rusa en cada mano y los brazos colgando a los costados.",
@@ -9209,6 +10659,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "calves", "abs"],
     equipment: "dumbbell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de frente a un escalón o banco bajo y estable con una mancuerna en cada mano y los brazos colgando a los costados.",
@@ -9226,6 +10678,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["calves", "hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de frente al domo de equilibrio, colocado con el lado abombado hacia arriba sobre un suelo plano.",
@@ -9243,6 +10697,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 3.5,
     unilateral: false,
     steps: [
       "Túmbate boca abajo con los brazos extendidos por encima de la cabeza.",
@@ -9259,6 +10715,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "quads"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de los hombros y la pesa rusa en el suelo por delante.",
@@ -9275,6 +10733,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "obliques"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: true,
     steps: [
       "De pie con los pies a la anchura de los hombros y la pesa rusa en el suelo frente a ti.",
@@ -9292,6 +10752,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "forearms", "sideDelts"],
     equipment: "dumbbell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: true,
     steps: [
       "Párate con los pies al ancho de los hombros, una mancuerna en el suelo ligeramente delante de ti.",
@@ -9309,6 +10771,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "forearms", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Ponte de pie con los pies al ancho de los hombros sujetando dos pesas rusas.",
@@ -9325,6 +10789,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "lowerBack", "upperBack"],
     equipment: "kettlebell",
     pattern: "hinge",
+    cardio: false,
+    met: 8.0,
     unilateral: false,
     steps: [
       "Párate con los pies a la anchura de los hombros y la pesa rusa entre los pies.",
@@ -9336,12 +10802,32 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     ],
   },
   {
+    id: "heel-flicks",
+    name: "Talones a los glúteos",
+    primary: ["hamstrings"],
+    secondary: ["calves", "glutes", "abs"],
+    equipment: "bodyweight",
+    pattern: "cardio",
+    cardio: true,
+    met: 8.0,
+    unilateral: false,
+    steps: [
+      "Ponte erguido con los pies bajo las caderas y los brazos flexionados como al correr.",
+      "Empieza a trotar suavemente en el sitio.",
+      "Lleva un talón rápidamente hacia el glúteo del mismo lado sin impulsar la rodilla hacia delante.",
+      "Cambia de pie con rapidez y sigue alternando a un ritmo uniforme.",
+      "Mantente ligero sobre los antepiés y conserva el torso erguido durante todo el intervalo.",
+    ],
+  },
+  {
     id: "thruster",
     name: "Thruster",
     primary: ["frontDelts", "quads"],
     secondary: ["glutes", "upperBack", "triceps"],
     equipment: "barbell",
     pattern: "verticalPush",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Sostén una barra en posición de rack frontal con los codos altos.",
@@ -9359,6 +10845,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Recuéstate boca arriba con las manos bajo los glúteos.",
@@ -9376,6 +10864,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["forearms", "lats", "obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Cuélgate de una barra con agarre prono y los brazos completamente extendidos, cuerpo quieto.",
@@ -9392,6 +10882,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: [],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con las rodillas flexionadas y los pies apoyados en el suelo, a la anchura de las caderas aproximadamente.",
@@ -9409,6 +10901,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["biceps", "forearms", "abs"],
     equipment: "bodyweight",
     pattern: "verticalPull",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Agarra la cuerda lo más arriba posible con ambas manos.",
@@ -9426,6 +10920,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["sideDelts"],
     equipment: "bodyweight",
     pattern: "shoulderRaise",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Ponte frente al punto de anclaje, sujetando las asas con agarre prono, las palmas hacia abajo.",
@@ -9442,6 +10938,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["obliques"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba con los brazos extendidos por encima de la cabeza y las piernas rectas.",
@@ -9459,6 +10957,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["glutes", "upperBack"],
     equipment: "bodyweight",
     pattern: "hinge",
+    cardio: false,
+    met: 5.0,
     unilateral: false,
     steps: [
       "Túmbate boca arriba, idealmente con una manta doblada bajo los hombros y la cabeza fuera de ella.",
@@ -9475,6 +10975,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["frontDelts", "abs", "triceps"],
     equipment: "other",
     pattern: "hipThrust",
+    cardio: false,
+    met: 6.0,
     unilateral: false,
     steps: [
       "Ponte de pie frente a una pared, a aproximadamente un brazo de distancia, con los pies separados al ancho de los hombros y el balón sujeto a la altura del pecho con ambas manos.",
@@ -9492,6 +10994,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Párate erguido con los pies a la anchura de las caderas.",
@@ -9508,6 +11012,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "abs"],
     equipment: "bodyweight",
     pattern: "hipThrust",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Adelanta un pie a un paso largo con el talón trasero elevado y los dedos apuntando al frente.",
@@ -9524,6 +11030,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "abs"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Colócate en zancada alta con la rodilla delantera sobre el tobillo y el talón trasero elevado.",
@@ -9540,6 +11048,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Párate erguido con los pies separados al ancho de las caderas y las manos en las caderas.",
@@ -9557,6 +11067,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una barra en la parte alta de la espalda y párate erguido.",
@@ -9573,6 +11085,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "De pie, sujeta mancuernas a los costados.",
@@ -9589,6 +11103,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs", "triceps"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa a la altura del hombro con un brazo.",
@@ -9606,6 +11122,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie sosteniendo una kettlebell por sus cuernos a la altura del pecho, con los codos pegados al cuerpo, en la posición de copa.",
@@ -9622,6 +11140,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "dumbbell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Párate sosteniendo mancuernas a los costados.",
@@ -9638,6 +11158,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["lowerBack", "hamstrings"],
     equipment: "barbell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca una barra en la parte alta de la espalda y párate erguido.",
@@ -9654,6 +11176,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "obliques"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de pie y sostén una kettlebell por sus cuernos a la altura del pecho, con los codos pegados (agarre goblet).",
@@ -9670,6 +11194,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Ponte de pie con los pies separados a la altura de las caderas.",
@@ -9686,6 +11212,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "obliques", "triceps"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa a la altura del hombro en un lado.",
@@ -9703,6 +11231,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "smith",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Coloca la barra de modo que descanse sobre los trapecios altos al estar de pie y desengánchala con los pies bajo las caderas.",
@@ -9719,6 +11249,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "abs"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "De pie con los pies al ancho de las caderas y las manos en el pecho.",
@@ -9736,6 +11268,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 7.0,
     unilateral: true,
     steps: [
       "Comienza en una zancada con un pie adelantado.",
@@ -9752,6 +11286,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings", "obliques"],
     equipment: "kettlebell",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Sostén una pesa rusa con ambas manos a la altura del pecho.",
@@ -9769,6 +11305,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["hamstrings"],
     equipment: "bodyweight",
     pattern: "lunge",
+    cardio: false,
+    met: 6.0,
     unilateral: true,
     steps: [
       "Ponte de espaldas al punto de anclaje con las correas del entrenador de suspensión detrás de ti, las manos en la cadera o libres para equilibrarte.",
@@ -9786,6 +11324,8 @@ export const REPDB_EXERCISES: RepdbExercise[] = [
     secondary: ["adductors", "glutes"],
     equipment: "bodyweight",
     pattern: "core",
+    cardio: false,
+    met: 5.0,
     unilateral: true,
     steps: [
       "Sepárate en una base amplia con el pie delantero girado hacia fuera y el trasero algo hacia dentro.",

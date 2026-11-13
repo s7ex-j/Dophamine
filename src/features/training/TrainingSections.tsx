@@ -203,7 +203,13 @@ export function WeekTotals({
   const tiles: Array<[string, string]> = [
     ["Sesiones", `${current.sessions}/${planned}`],
     ["Series", String(current.sets)],
-    ["Volumen", formatWeight(current.volumeKg, unit, 0)],
+    [
+      "Volumen",
+      // En kg, de 10 000 para arriba se muestra en toneladas para que quepa.
+      unit === "kg" && current.volumeKg >= 10000
+        ? `${(current.volumeKg / 1000).toFixed(1)} t`
+        : formatWeight(current.volumeKg, unit, 0),
+    ],
   ];
   return (
     <View style={{ flexDirection: "row", gap: 10 }}>

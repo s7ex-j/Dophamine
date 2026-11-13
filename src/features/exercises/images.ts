@@ -7,6 +7,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/ab-wheel-rollout-start.webp"),
     require("../../../assets/exercises/ab-wheel-rollout-peak.webp"),
   ],
+  "air-bike": [require("../../../assets/exercises/air-bike-main.webp")],
   "archer-pull-ups": [
     require("../../../assets/exercises/archer-pull-ups-start.webp"),
     require("../../../assets/exercises/archer-pull-ups-peak.webp"),
@@ -199,6 +200,11 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
   ],
   "barbell-zercher-hold": [require("../../../assets/exercises/barbell-zercher-hold-main.webp")],
   "barbell-zercher-squat-hold": [require("../../../assets/exercises/barbell-zercher-squat-hold-main.webp")],
+  "battle-rope-double-slam": [
+    require("../../../assets/exercises/battle-rope-double-slam-start.webp"),
+    require("../../../assets/exercises/battle-rope-double-slam-peak.webp"),
+  ],
+  "battle-ropes": [require("../../../assets/exercises/battle-ropes-main.webp")],
   "bear-crawl": [
     require("../../../assets/exercises/bear-crawl-start.webp"),
     require("../../../assets/exercises/bear-crawl-peak.webp"),
@@ -309,6 +315,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/bulgarian-split-squat-start.webp"),
     require("../../../assets/exercises/bulgarian-split-squat-peak.webp"),
   ],
+  burpees: [require("../../../assets/exercises/burpees-main.webp")],
   "cable-bent-over-row": [
     require("../../../assets/exercises/cable-bent-over-row-start.webp"),
     require("../../../assets/exercises/cable-bent-over-row-peak.webp"),
@@ -516,6 +523,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/crunches-start.webp"),
     require("../../../assets/exercises/crunches-peak.webp"),
   ],
+  cycling: [require("../../../assets/exercises/cycling-main.webp")],
   "dancer-pose": [require("../../../assets/exercises/dancer-pose-main.webp")],
   "db-bench-press": [
     require("../../../assets/exercises/db-bench-press-start.webp"),
@@ -808,6 +816,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/dumbbell-wrist-curl-peak.webp"),
   ],
   "eagle-pose": [require("../../../assets/exercises/eagle-pose-main.webp")],
+  "elliptical-trainer": [require("../../../assets/exercises/elliptical-trainer-main.webp")],
   "extended-side-angle": [require("../../../assets/exercises/extended-side-angle-main.webp")],
   "ez-bar-bench-press": [
     require("../../../assets/exercises/ez-bar-bench-press-start.webp"),
@@ -957,6 +966,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/heel-elevated-squat-start.webp"),
     require("../../../assets/exercises/heel-elevated-squat-peak.webp"),
   ],
+  "heel-flicks": [require("../../../assets/exercises/heel-flicks-main.webp")],
   "heel-to-toe-walk": [require("../../../assets/exercises/heel-to-toe-walk-main.webp")],
   "heel-touches": [
     require("../../../assets/exercises/heel-touches-start.webp"),
@@ -970,6 +980,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/high-foot-leg-press-start.webp"),
     require("../../../assets/exercises/high-foot-leg-press-peak.webp"),
   ],
+  "high-knees": [require("../../../assets/exercises/high-knees-main.webp")],
   "high-plank": [require("../../../assets/exercises/high-plank-main.webp")],
   "hip-abduction": [
     require("../../../assets/exercises/hip-abduction-start.webp"),
@@ -1023,6 +1034,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/incline-push-ups-start.webp"),
     require("../../../assets/exercises/incline-push-ups-peak.webp"),
   ],
+  "incline-treadmill-walk": [require("../../../assets/exercises/incline-treadmill-walk-main.webp")],
   "inverted-row": [
     require("../../../assets/exercises/inverted-row-start.webp"),
     require("../../../assets/exercises/inverted-row-peak.webp"),
@@ -1037,9 +1049,14 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/jefferson-curl-start.webp"),
     require("../../../assets/exercises/jefferson-curl-peak.webp"),
   ],
+  "jump-rope": [require("../../../assets/exercises/jump-rope-main.webp")],
   "jump-squat": [
     require("../../../assets/exercises/jump-squat-start.webp"),
     require("../../../assets/exercises/jump-squat-peak.webp"),
+  ],
+  "jumping-jacks": [
+    require("../../../assets/exercises/jumping-jacks-start.webp"),
+    require("../../../assets/exercises/jumping-jacks-peak.webp"),
   ],
   "kb-step-up-to-balance": [
     require("../../../assets/exercises/kb-step-up-to-balance-start.webp"),
@@ -1275,6 +1292,10 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
   "medicine-ball-slam": [
     require("../../../assets/exercises/medicine-ball-slam-start.webp"),
     require("../../../assets/exercises/medicine-ball-slam-peak.webp"),
+  ],
+  "mountain-climbers": [
+    require("../../../assets/exercises/mountain-climbers-start.webp"),
+    require("../../../assets/exercises/mountain-climbers-peak.webp"),
   ],
   "muscle-snatch": [
     require("../../../assets/exercises/muscle-snatch-start.webp"),
@@ -1596,6 +1617,11 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/romanian-deadlift-peak.webp"),
   ],
   "rope-climb": [require("../../../assets/exercises/rope-climb-main.webp")],
+  "rowing-machine": [
+    require("../../../assets/exercises/rowing-machine-start.webp"),
+    require("../../../assets/exercises/rowing-machine-peak.webp"),
+  ],
+  running: [require("../../../assets/exercises/running-main.webp")],
   "russian-twist": [
     require("../../../assets/exercises/russian-twist-start.webp"),
     require("../../../assets/exercises/russian-twist-peak.webp"),
@@ -1764,6 +1790,10 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/sit-ups-peak.webp"),
   ],
   "six-inch-hold": [require("../../../assets/exercises/six-inch-hold-main.webp")],
+  "ski-erg": [
+    require("../../../assets/exercises/ski-erg-start.webp"),
+    require("../../../assets/exercises/ski-erg-peak.webp"),
+  ],
   "skull-crusher": [
     require("../../../assets/exercises/skull-crusher-start.webp"),
     require("../../../assets/exercises/skull-crusher-peak.webp"),
@@ -1894,6 +1924,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/stability-ball-wall-squat-start.webp"),
     require("../../../assets/exercises/stability-ball-wall-squat-peak.webp"),
   ],
+  "stair-climber": [require("../../../assets/exercises/stair-climber-main.webp")],
   "standing-calf-raise": [
     require("../../../assets/exercises/standing-calf-raise-start.webp"),
     require("../../../assets/exercises/standing-calf-raise-peak.webp"),
@@ -1902,6 +1933,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/standing-hip-abduction-start.webp"),
     require("../../../assets/exercises/standing-hip-abduction-peak.webp"),
   ],
+  "stationary-bike": [require("../../../assets/exercises/stationary-bike-main.webp")],
   "step-up-to-balance": [
     require("../../../assets/exercises/step-up-to-balance-start.webp"),
     require("../../../assets/exercises/step-up-to-balance-peak.webp"),
@@ -1968,6 +2000,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/toes-to-bar-start.webp"),
     require("../../../assets/exercises/toes-to-bar-peak.webp"),
   ],
+  "treadmill-running": [require("../../../assets/exercises/treadmill-running-main.webp")],
   "tree-pose": [require("../../../assets/exercises/tree-pose-main.webp")],
   "tricep-kickback": [
     require("../../../assets/exercises/tricep-kickback-start.webp"),
@@ -2038,6 +2071,7 @@ export const EXERCISE_IMAGES: Record<string, ImageSourcePropType[]> = {
     require("../../../assets/exercises/v-ups-start.webp"),
     require("../../../assets/exercises/v-ups-peak.webp"),
   ],
+  walking: [require("../../../assets/exercises/walking-main.webp")],
   "walking-lunge": [
     require("../../../assets/exercises/walking-lunge-start.webp"),
     require("../../../assets/exercises/walking-lunge-peak.webp"),

@@ -38,4 +38,5 @@ export type Pattern =
   | "hipAdduction"
   | "calfRaise"
   | "core"
-  | "carry";
+  | "carry"
+  | "cardio";

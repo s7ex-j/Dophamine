@@ -41,7 +41,7 @@ export type WellbeingEntry = {
   sleepHours: number | null;
   note: string;
 };
-export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
+export async function getRecentWellbeingEntries(limit = 14): Promise<WellbeingEntry[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<{
     id: string;
@@ -52,7 +52,8 @@ export async function getRecentWellbeingEntries(): Promise<WellbeingEntry[]> {
     sleep_hours: number | null;
     note: string;
   }>(
-    "SELECT id, date, mood, energy, stress, sleep_hours, note FROM wellbeing_entries ORDER BY created_at DESC LIMIT 14",
+    "SELECT id, date, mood, energy, stress, sleep_hours, note FROM wellbeing_entries ORDER BY created_at DESC LIMIT ?",
+    limit,
   );
   return rows.map((row) => ({
     id: row.id,

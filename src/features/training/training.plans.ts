@@ -1,10 +1,19 @@
-export type TrainingVariant = "full_body" | "upper_lower" | "posterior" | "push_pull_legs" | "custom";
+import { findExercise, MUSCLE_GROUPS, type MuscleGroup } from "@/src/features/exercises/catalog";
+import { templateById, type TemplateId } from "@/src/features/training/training.templates";
+
+export type TrainingVariant = TemplateId | "custom";
 export type GymProfile = "full_gym" | "home" | "limited";
 export type TrainingGoal = "strength" | "hypertrophy" | "general";
 
 export type ExercisePlan = { name: string; sets: number; reps: string; rir: number };
 /** Lo que se entrena un día de la semana: "Torso A" el lunes, "Pierna A" el martes… */
-export type WorkoutDay = { day: string; name: string; exercises: ExercisePlan[] };
+export type WorkoutDay = {
+  day: string;
+  name: string;
+  exercises: ExercisePlan[];
+  /** Qué se entrena ese día (pecho, espalda… o cardio). Guía el catálogo y el nombre. */
+  focus?: MuscleGroup[];
+};
 export type Routine = {
   id: string;
   name: string;
@@ -30,13 +39,6 @@ export const WEEK_DAYS = [
   { id: "sat", label: "S" },
   { id: "sun", label: "D" },
 ];
-export const VARIANT_OPTIONS: Array<{ value: TrainingVariant; label: string }> = [
-  { value: "full_body", label: "Full body" },
-  { value: "upper_lower", label: "Torso / pierna" },
-  { value: "push_pull_legs", label: "Empuje / tirón / pierna" },
-  { value: "posterior", label: "Cadena posterior" },
-  { value: "custom", label: "Personalizada" },
-];
 export const GYM_OPTIONS: Array<{ value: GymProfile; label: string }> = [
   { value: "full_gym", label: "Gimnasio" },
   { value: "home", label: "Casa" },
@@ -55,203 +57,6 @@ const plan = (names: string[], goal: TrainingGoal = "hypertrophy"): ExercisePlan
     reps: goal === "strength" ? (index < 2 ? "4–6" : "6–10") : goal === "general" ? "8–12" : "8–15",
     rir: index === 0 ? 2 : 1,
   }));
-
-type Template = { name: string; gym: string[]; home: string[] };
-const LEGS: Template = {
-  name: "Pierna",
-  gym: [
-    "Sentadilla con barra",
-    "Peso muerto rumano",
-    "Prensa",
-    "Curl femoral sentado",
-    "Elevación de talones de pie",
-    "Plancha",
-  ],
-  home: [
-    "Sentadilla goblet",
-    "Peso muerto con mancuernas",
-    "Zancadas",
-    "Curl femoral deslizante",
-    "Puente de glúteos",
-    "Plancha",
-  ],
-};
-const TEMPLATES: Record<Exclude<TrainingVariant, "custom">, { days: string[]; sessions: Template[] }> = {
-  full_body: {
-    days: ["mon", "wed", "fri"],
-    sessions: [
-      {
-        name: "Full body A",
-        gym: [
-          "Sentadilla con barra",
-          "Press de banca",
-          "Remo con barra",
-          "Peso muerto rumano",
-          "Elevaciones laterales",
-          "Plancha",
-        ],
-        home: [
-          "Sentadilla goblet",
-          "Flexiones",
-          "Remo con mancuerna",
-          "Peso muerto con mancuernas",
-          "Elevaciones laterales",
-          "Plancha",
-        ],
-      },
-      {
-        name: "Full body B",
-        gym: [
-          "Peso muerto convencional",
-          "Press militar",
-          "Jalón al pecho",
-          "Sentadilla búlgara",
-          "Curl de bíceps",
-          "Extensión de tríceps en polea",
-        ],
-        home: [
-          "Peso muerto a una pierna",
-          "Press de hombros con mancuernas",
-          "Remo invertido",
-          "Sentadilla búlgara",
-          "Curl de bíceps",
-          "Fondos en banco",
-        ],
-      },
-    ],
-  },
-  upper_lower: {
-    days: ["mon", "tue", "thu", "fri"],
-    sessions: [
-      {
-        name: "Torso A",
-        gym: [
-          "Press de banca",
-          "Remo con barra",
-          "Press de hombros con mancuernas",
-          "Jalón al pecho",
-          "Curl de bíceps",
-          "Extensión de tríceps en polea",
-        ],
-        home: [
-          "Flexiones",
-          "Remo con mancuerna",
-          "Press de hombros con mancuernas",
-          "Remo invertido",
-          "Curl de bíceps",
-          "Fondos en banco",
-        ],
-      },
-      { ...LEGS, name: "Pierna A" },
-      {
-        name: "Torso B",
-        gym: [
-          "Press inclinado con mancuernas",
-          "Remo sentado en polea",
-          "Dominadas",
-          "Elevaciones laterales",
-          "Curl martillo",
-          "Press francés",
-        ],
-        home: [
-          "Flexiones en pica",
-          "Remo con mancuerna",
-          "Remo invertido",
-          "Elevaciones laterales",
-          "Curl martillo",
-          "Extensión de tríceps con mancuerna",
-        ],
-      },
-      {
-        name: "Pierna B",
-        gym: [
-          "Peso muerto convencional",
-          "Sentadilla búlgara",
-          "Hip thrust",
-          "Extensión de cuádriceps",
-          "Elevación de talones sentado",
-          "Elevación de piernas colgado",
-        ],
-        home: [
-          "Sentadilla búlgara",
-          "Puente de glúteos",
-          "Peso muerto a una pierna",
-          "Zancadas caminando",
-          "Crunch",
-          "Plancha lateral",
-        ],
-      },
-    ],
-  },
-  push_pull_legs: {
-    days: ["mon", "wed", "fri"],
-    sessions: [
-      {
-        name: "Empuje",
-        gym: [
-          "Press de banca",
-          "Press militar",
-          "Press inclinado con mancuernas",
-          "Elevaciones laterales",
-          "Extensión de tríceps en polea",
-          "Fondos en paralelas",
-        ],
-        home: [
-          "Flexiones",
-          "Press de hombros con mancuernas",
-          "Flexiones en pica",
-          "Elevaciones laterales",
-          "Extensión de tríceps con mancuerna",
-          "Fondos en banco",
-        ],
-      },
-      {
-        name: "Tirón",
-        gym: [
-          "Dominadas",
-          "Remo con barra",
-          "Remo sentado en polea",
-          "Face pull",
-          "Curl de bíceps con barra",
-          "Curl martillo",
-        ],
-        home: [
-          "Remo invertido",
-          "Remo con mancuerna",
-          "Pájaros con mancuernas",
-          "Encogimientos de hombros",
-          "Curl de bíceps",
-          "Curl martillo",
-        ],
-      },
-      LEGS,
-    ],
-  },
-  posterior: {
-    days: ["mon", "wed", "fri"],
-    sessions: [
-      {
-        name: "Cadena posterior",
-        gym: [
-          "Hip thrust",
-          "Peso muerto rumano",
-          "Curl femoral acostado",
-          "Extensión lumbar",
-          "Patada de glúteo en polea",
-          "Plancha",
-        ],
-        home: [
-          "Puente de glúteos",
-          "Peso muerto con mancuernas",
-          "Curl femoral deslizante",
-          "Extensión lumbar",
-          "Peso muerto a una pierna",
-          "Plancha",
-        ],
-      },
-    ],
-  },
-};
 
 const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const byWeek = (a: string, b: string) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b);
@@ -273,35 +78,55 @@ export function generateRoutine(
   input: Pick<Routine, "variant" | "gymProfile" | "trainingGoal" | "sessionMinutes"> &
     Partial<Pick<Routine, "name" | "days">>,
 ): Routine {
-  const variant = input.variant === "custom" ? "full_body" : input.variant;
-  const template = TEMPLATES[variant];
+  const variant: TemplateId = input.variant === "custom" ? "full_body" : input.variant;
+  const template = templateById(variant);
   const count = input.sessionMinutes <= 35 ? 4 : input.sessionMinutes >= 70 ? 6 : 5;
   const days = [...(input.days?.length ? input.days : template.days)].sort(byWeek);
   const schedule = days.map((day, index): WorkoutDay => {
     const session = template.sessions[index % template.sessions.length];
     const names = input.gymProfile === "full_gym" ? session.gym : session.home;
-    return { day, name: session.name, exercises: plan(names.slice(0, count), input.trainingGoal) };
+    return {
+      day,
+      name: session.name,
+      focus: [...session.focus],
+      exercises: plan(names.slice(0, count), input.trainingGoal),
+    };
   });
   return syncRoutine({
     id: `routine-${variant}`,
-    name:
-      input.name ||
-      {
-        full_body: "Full body esencial",
-        upper_lower: "Torso / pierna",
-        push_pull_legs: "Empuje / tirón / pierna",
-        posterior: "Cadena posterior",
-      }[variant],
+    name: input.name || template.label,
     variant,
     days,
     exercises: [],
     schedule,
-    accent: variant === "upper_lower" ? "#D2604B" : variant === "push_pull_legs" ? "#2786D7" : "#167B5B",
+    accent: "#34D399",
     gymProfile: input.gymProfile,
     trainingGoal: input.trainingGoal,
     sessionMinutes: input.sessionMinutes,
   });
 }
+
+/** Nombre de un día a partir de su enfoque: "Pecho + Brazos". */
+export const focusName = (focus: MuscleGroup[]) =>
+  focus.map((id) => MUSCLE_GROUPS.find((group) => group.id === id)?.label ?? id).join(" + ");
+
+/**
+ * Cambia el enfoque de un día. Si el nombre del día era automático (vacío,
+ * "Día N" o el que salía del enfoque anterior), se renombra con el nuevo.
+ */
+export function setDayFocus(routine: Routine, day: string, focus: MuscleGroup[]): Routine {
+  return updateWorkoutDay(routine, day, (workout) => {
+    const auto =
+      !workout.name.trim() ||
+      /^Día \d+$/.test(workout.name) ||
+      workout.name === focusName(workout.focus ?? []);
+    return { ...workout, focus, name: auto && focus.length ? focusName(focus) : workout.name };
+  });
+}
+
+/** Lo que trae un ejercicio nuevo: 3 × 12, o 20 minutos si es cardio. */
+export const defaultPlan = (name: string): ExercisePlan =>
+  findExercise(name)?.cardio ? { name, sets: 1, reps: "20", rir: 0 } : { name, sets: 3, reps: "12", rir: 2 };
 
 /** El entreno de un día de la semana ("mon"…), o null si es de descanso. */
 export const workoutFor = (routine: Routine, day: string): WorkoutDay | null =>
@@ -334,7 +159,7 @@ export const addExerciseToDay = (routine: Routine, day: string, name: string): R
   updateWorkoutDay(routine, day, (workout) =>
     workout.exercises.some((exercise) => exercise.name === name)
       ? workout
-      : { ...workout, exercises: [...workout.exercises, { name, sets: 3, reps: "8–12", rir: 2 }] },
+      : { ...workout, exercises: [...workout.exercises, defaultPlan(name)] },
   );
 
 /** Copia los ejercicios (y el nombre) de un día a otro, reemplazando lo que tenía. */
@@ -344,6 +169,7 @@ export function copyWorkoutDay(routine: Routine, from: string, to: string): Rout
     ? updateWorkoutDay(routine, to, (workout) => ({
         ...workout,
         name: source.name,
+        focus: source.focus ? [...source.focus] : undefined,
         exercises: source.exercises.map((exercise) => ({ ...exercise })),
       }))
     : routine;
@@ -406,6 +232,7 @@ export function normalizeRoutine(value: unknown): Routine {
         .map((item) => ({
           day: item.day as string,
           name: item.name || (candidate.name as string),
+          ...(Array.isArray(item.focus) ? { focus: item.focus } : {}),
           exercises: (item.exercises ?? []).map(toPlan).filter((exercise) => exercise.name),
         }))
     : (candidate.days ?? fallback.days).map((day) => ({
