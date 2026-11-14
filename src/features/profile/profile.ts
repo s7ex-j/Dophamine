@@ -262,3 +262,35 @@ export const adjustModeLabels: Record<AdjustMode, string> = {
 export const mealSetupOf = (
   profile: Pick<NutritionProfile, "mealStyle" | "mealsPerDay"> | null | undefined,
 ) => normalizeMealSetup({ style: profile?.mealStyle, count: profile?.mealsPerDay });
+
+export type GoalEta = {
+  /** Semanas y fecha si sigues al ritmo real de las últimas semanas. Null si no te acercas. */
+  actualWeeks: number | null;
+  actualDate: string | null;
+  /** "toward": vas hacia la meta; "away": te alejas; "flat": casi sin cambio. */
+  direction: "toward" | "away" | "flat";
+};
+
+/**
+ * Cuándo llegarías a la meta al ritmo real (la pendiente de la tendencia), para
+ * comparar con el del plan. Con menos de 0.05 kg/semana se considera estable.
+ */
+export function goalEta(
+  progress: Pick<GoalProgress, "remainingKg" | "reached" | "goalKg" | "currentKg">,
+  weeklyRateKg: number | null,
+  today: string,
+): GoalEta | null {
+  if (progress.reached || weeklyRateKg === null) return null;
+  if (Math.abs(weeklyRateKg) < 0.05) return { actualWeeks: null, actualDate: null, direction: "flat" };
+  const needed = progress.goalKg - progress.currentKg;
+  if (Math.sign(needed) !== Math.sign(weeklyRateKg))
+    return { actualWeeks: null, actualDate: null, direction: "away" };
+  const weeks = Math.ceil(progress.remainingKg / Math.abs(weeklyRateKg));
+  const [year, month, day] = today.split("-").map(Number);
+  const date = new Date(year, month - 1, day + weeks * 7);
+  return {
+    actualWeeks: weeks,
+    actualDate: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+    direction: "toward",
+  };
+}

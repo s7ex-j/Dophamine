@@ -10,6 +10,7 @@ import {
   latestComposition,
 } from "@/src/features/composition/composition";
 import {
+  goalEta,
   goalProgress,
   targetWeeklyRateKg,
   weightUnitOf,
@@ -18,6 +19,7 @@ import {
 import type { MetabolicAnalysis } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
 import { convertWeight, formatWeight } from "@/src/lib/units";
+import { localDateKey } from "@/src/lib/dates";
 import { AppTheme } from "@/src/theme";
 
 // Tarjetas de progreso: meta de peso, tendencia, gasto y composición corporal.
@@ -26,11 +28,15 @@ import { AppTheme } from "@/src/theme";
 export function GoalProgressCard({
   profile,
   trendKg,
+  weeklyRateKg = null,
 }: {
   profile: NutritionProfile;
   trendKg: number | null;
+  /** Ritmo real (pendiente de la tendencia), para estimar la llegada a ese ritmo. */
+  weeklyRateKg?: number | null;
 }) {
   const progress = goalProgress(profile, trendKg);
+  const eta = progress ? goalEta(progress, weeklyRateKg, localDateKey()) : null;
   const unit = weightUnitOf(profile);
   if (!progress) return null;
   return (
@@ -50,6 +56,15 @@ export function GoalProgressCard({
       <View style={AppTheme.goalTrack}>
         <View style={[AppTheme.goalFill, { width: `${progress.percent}%` }]} />
       </View>
+      {eta ? (
+        <Text style={AppTheme.body}>
+          {eta.direction === "toward"
+            ? `Al ritmo real de tus últimas semanas llegarías hacia el ${eta.actualDate} (~${eta.actualWeeks} semanas).`
+            : eta.direction === "away"
+              ? "Al ritmo real de tus últimas semanas te estás alejando de la meta: revisa tu plan o tu registro."
+              : "Tu peso está casi estable: a este ritmo no hay fecha estimada."}
+        </Text>
+      ) : null}
       <View style={AppTheme.goalEnds}>
         <Text style={AppTheme.hint}>Inicio {formatWeight(progress.startKg, unit, 1)}</Text>
         <Text style={AppTheme.hint}>Tendencia {formatWeight(progress.currentKg, unit, 1)}</Text>

@@ -48,6 +48,8 @@ export default function RootLayout() {
         <Stack.Screen name="routine" options={{ headerShown: true, title: "Mi rutina" }} />
         <Stack.Screen name="gyms" options={{ headerShown: true, title: "Dónde entrenas" }} />
         <Stack.Screen name="period" options={{ headerShown: true, title: "Ciclo menstrual" }} />
+        <Stack.Screen name="library" options={{ headerShown: true, title: "Biblioteca" }} />
+        <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
         <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
         <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
         <Stack.Screen name="algorithm" options={{ headerShown: true, title: "Cómo se calcula" }} />

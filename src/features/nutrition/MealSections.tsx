@@ -140,6 +140,9 @@ export function MealCard({
   onRemove,
   onEdit,
   onSave,
+  onCopy,
+  pasteLabel,
+  onPaste,
 }: {
   slot: MealSlot;
   label: string;
@@ -150,6 +153,11 @@ export function MealCard({
   onEdit?: (entry: MealEntry) => void;
   /** Guardar estos alimentos como una comida propia. */
   onSave?: (name: string) => Promise<void>;
+  /** Copiar esta comida para pegarla en otro momento o día. */
+  onCopy?: () => void;
+  /** Hay una comida copiada: su nombre, y pegarla aquí. */
+  pasteLabel?: string | null;
+  onPaste?: () => void;
 }) {
   return (
     <View style={AppTheme.card}>
@@ -161,8 +169,22 @@ export function MealCard({
           <Text style={AppTheme.mealTitle}>{label}</Text>
           <Text style={AppTheme.mealKcal}>{entries.length ? `${kcal} kcal` : "Sin registrar"}</Text>
         </View>
+        {onCopy && entries.length ? (
+          <IconButton icon="copy-outline" label={`Copiar ${label.toLowerCase()}`} onPress={onCopy} />
+        ) : null}
         <IconButton icon="add" label={`Agregar a ${label.toLowerCase()}`} onPress={onAdd} />
       </View>
+      {pasteLabel && onPaste ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Pegar en ${label.toLowerCase()}`}
+          onPress={onPaste}
+          style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 6 }}
+        >
+          <Ionicons name="clipboard-outline" size={16} color={AppTheme.colors.accent} />
+          <Text style={[AppTheme.hint, { color: AppTheme.colors.accent }]}>Pegar aquí: {pasteLabel}</Text>
+        </Pressable>
+      ) : null}
       {entries.map((entry) => (
         <EntryRow
           key={entry.id}
