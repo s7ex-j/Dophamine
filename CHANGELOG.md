@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.18.0 - 2026-11-13
+
+Exportar e importar, ciclo menstrual, recordatorio de pesaje y "la última vez" en cada ejercicio.
+
+- Exportar a CSV (Más → Exportar a CSV): el diario (peso, composición, comida, agua, sueño, entreno, ayuno), cada alimento anotado y cada serie de cada sesión. Se abre en Excel o Google Sheets; solo sale del teléfono si lo compartes.
+- Programas (Mi rutina → Compartir o importar): exportar la rutina en JSON o CSV e importar un programa en cualquiera de los dos. El CSV lleva columnas dia, entreno, ejercicio, series, reps y rir (días en español o inglés, separado por coma o punto y coma), así un entrenador puede armarlo en una hoja de cálculo.
+- Ciclo menstrual (Más → Ciclo menstrual, en perfiles de mujer): anotar inicio y fin del periodo, duración típica del ciclo, fase de hoy, próximo periodo estimado y qué esperar del peso en cada fase (la retención de líquido de la fase lútea). La fase aparece en el Panel. No es un método anticonceptivo.
+- Recordatorio de pesaje diario a la hora que elijas (Más → Recordatorios), aparte de los de comida.
+- En la sesión, cada ejercicio muestra lo que hiciste la última vez; la ficha del ejercicio muestra las últimas 8 veces serie por serie.
+- Micronutrientes queda fuera por ahora: ver la hoja de ruta.
+- De 301 a 314 pruebas de dominio y de 23 a 24 flujos de navegador.
+- No comprobado en teléfono: compartir los CSV, abrir un programa con el selector de archivos, el aviso de pesaje y la pantalla del ciclo.
+
 ## 0.17.0 - 2026-11-13
 
 Entreno avanzado: tipos de serie, lados, superseries, calentamiento, gimnasios y mesociclos con descarga.

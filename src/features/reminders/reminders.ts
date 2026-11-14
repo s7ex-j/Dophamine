@@ -12,6 +12,8 @@ export type ReminderConfig = {
   /** Minutos de anticipación del aviso. */
   leadMinutes: number;
   days: Record<Weekday, MealReminder[]>;
+  /** Aviso diario para pesarse (0.18.0), independiente de las comidas. */
+  weighIn?: { enabled: boolean; time: string };
 };
 export type ScheduledReminder = {
   /** Día de la semana como lo usa el sistema de notificaciones: 1 = domingo … 7 = sábado. */
@@ -129,7 +131,22 @@ export const phraseFor = (dayIndex: number, mealIndex: number) =>
  * aviso cae antes de la medianoche (comida a las 00:03), pasa al día anterior.
  */
 export function remindersToSchedule(config: ReminderConfig): ScheduledReminder[] {
-  if (!config.enabled) return [];
+  const weigh = config.weighIn?.enabled ? parseTime(config.weighIn.time) : null;
+  const weighIns: ScheduledReminder[] =
+    weigh === null
+      ? []
+      : WEEKDAYS.map((day) => ({
+          weekday: SYSTEM_WEEKDAY[day.id],
+          hour: Math.floor(weigh / 60),
+          minute: weigh % 60,
+          title: "Hora de pesarte",
+          body: "Después del baño y antes de comer: así tu tendencia es más fiable.",
+        }));
+  if (!config.enabled) return weighIns;
+  return [...weighIns, ...mealReminders(config)];
+}
+
+function mealReminders(config: ReminderConfig): ScheduledReminder[] {
   return WEEKDAYS.flatMap((day, dayIndex) =>
     sortMeals(config.days[day.id]).flatMap((meal, mealIndex) => {
       const minutes = parseTime(meal.time);
@@ -160,8 +177,11 @@ export function normalizeConfig(value: unknown, newId: () => string): ReminderCo
   if (!isRecord(value)) return fallback;
   const days = isRecord(value.days) ? value.days : {};
   const lead = Number(value.leadMinutes);
+  const weighIn = isRecord(value.weighIn) ? value.weighIn : null;
+  const weighTime = weighIn && typeof weighIn.time === "string" ? normalizeTime(weighIn.time) : null;
   return {
     enabled: value.enabled === true,
+    ...(weighIn ? { weighIn: { enabled: weighIn.enabled === true, time: weighTime ?? "07:00" } } : {}),
     leadMinutes: Number.isFinite(lead) && lead >= 0 && lead <= 60 ? Math.round(lead) : 5,
     days: Object.fromEntries(
       WEEKDAYS.map((day) => {

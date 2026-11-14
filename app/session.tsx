@@ -16,6 +16,8 @@ import { cycleWeek } from "@/src/features/training/cycle";
 import { DEFAULT_GYMS, type GymSetup } from "@/src/features/training/gyms";
 import { getGyms } from "@/src/features/training/gyms.repository";
 import {
+  describeSets,
+  previousTimes,
   nextInSuperset,
   nextSetType,
   SET_TYPE_LABELS,
@@ -162,6 +164,7 @@ function SessionContent() {
   const cardio = Boolean(catalog?.cardio);
   const doneCount = (position: number) => active.exercises[position].sets.filter((set) => set.done).length;
   const labels = supersetLabels(active);
+  const lastTime = previousTimes(exercise.name, history, 1)[0] ?? null;
   const partner = nextInSuperset(active, index);
 
   return (
@@ -247,6 +250,12 @@ function SessionContent() {
                 reps · RIR {exercise.target.rir}
                 {catalog ? ` · ${catalog.primary.map((muscle) => MUSCLE_LABELS[muscle]).join(", ")}` : ""}
               </Text>
+              {lastTime ? (
+                <Text style={AppTheme.hint}>
+                  Última vez ({localDateKey(new Date(lastTime.date)).slice(5)}):{" "}
+                  {describeSets(lastTime.sets, unit)}
+                </Text>
+              ) : null}
               {catalog?.steps?.length ? (
                 <LinkButton
                   title={showSteps ? "Ocultar pasos" : "Cómo se hace"}

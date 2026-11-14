@@ -15,7 +15,7 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 |---|---|
 | Cómo encaja todo, fórmulas y límites | `docs/ARCHITECTURE.md` |
 | Qué sigue | `docs/HOJA_DE_RUTA.md` |
-| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`, con la sección "Hoy" de `src/features/dashboard/TodaySection.tsx` donde se anota todo), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx`, `catalog.tsx`, `routine.tsx`, `achievements.tsx`, `photos.tsx`, `algorithm.tsx`, `measurements.tsx`, `nutrients.tsx`, `gyms.tsx` y `reminders.tsx` se abren encima |
+| Pantallas | `app/(tabs)/*.tsx` (componen secciones; no calculan). Pestañas: Panel (`index`, con la sección "Hoy" de `src/features/dashboard/TodaySection.tsx` donde se anota todo), Estrategia, Entreno, Más. `app/analysis.tsx`, `habits.tsx`, `wellbeing.tsx`, `insight.tsx`, `add-food.tsx`, `edit-entry.tsx`, `session.tsx`, `exercise.tsx`, `catalog.tsx`, `routine.tsx`, `achievements.tsx`, `photos.tsx`, `algorithm.tsx`, `measurements.tsx`, `nutrients.tsx`, `gyms.tsx`, `period.tsx` y `reminders.tsx` se abren encima |
 | Comprobar los flujos en el navegador | `npm run e2e` (`e2e/flujos.mjs`) |
 | Alimentos y comidas | `src/features/nutrition/` (`foods.ts`, `meals.ts`, `builtin.foods.ts`) y `app/add-food.tsx` |
 | Reglas de un dominio | `src/features/<dominio>/<dominio>.ts` + su `.test.ts` |
@@ -26,6 +26,8 @@ Expo SDK 58 + React Native 0.88 + expo-router; web con react-native-web. Repo p�
 | Gasto inicial del plan | `src/features/profile/expenditure.ts` |
 | Metas del día (tipo de plan y reparto semanal) | `src/features/profile/targets.ts`, `DistributionCard.tsx` |
 | Medidas corporales | `src/features/measurements/measurements.ts` (en ajustes) |
+| Ciclo menstrual | `src/features/period/period.ts` (en ajustes), `app/period.tsx` |
+| Exportar CSV e importar/exportar programas | `src/features/export/export.ts`; compartir y abrir archivos en `src/lib/files.ts` (+ `.web.ts`) |
 | Principales aportes y reparto por comida | `src/features/nutrition/insights.ts`, `app/nutrients.tsx` |
 | Días de ayuno (cuentan para la ingesta) | `countsForIntake` en `src/features/biometrics/dailyLog.ts` |
 | Ajustes sueltos (Panel, recordatorios) | `src/features/settings/settings.repository.ts` |

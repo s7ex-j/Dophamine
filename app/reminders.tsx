@@ -75,8 +75,11 @@ function RemindersContent() {
           ),
         ]),
       ) as ReminderConfig["days"],
+      ...(config.weighIn
+        ? { weighIn: { ...config.weighIn, time: normalizeTime(config.weighIn.time) ?? "07:00" } }
+        : {}),
     };
-    if (clean.enabled && remindersAvailable && !(await requestPermission()))
+    if ((clean.enabled || clean.weighIn?.enabled) && remindersAvailable && !(await requestPermission()))
       return setMessage({
         text: "Sin permiso para notificaciones. Actívalo en los ajustes del teléfono.",
         error: true,
@@ -85,11 +88,12 @@ function RemindersContent() {
     setConfig(clean);
     const count = await scheduleReminders(clean);
     setMessage({
-      text: !clean.enabled
-        ? "Guardado. Los recordatorios están apagados."
-        : remindersAvailable
-          ? `Listo: ${count} avisos programados en la semana.`
-          : "Guardado. Los avisos solo suenan en la app del teléfono.",
+      text:
+        !count && !clean.enabled && !clean.weighIn?.enabled
+          ? "Guardado. Los recordatorios están apagados."
+          : remindersAvailable
+            ? `Listo: ${count} avisos programados en la semana.`
+            : "Guardado. Los avisos solo suenan en la app del teléfono.",
       error: false,
     });
   };
@@ -113,6 +117,34 @@ function RemindersContent() {
             onChange={(leadMinutes) => update({ ...config, leadMinutes })}
             options={[5, 10, 15, 30].map((minutes) => ({ value: minutes, label: `${minutes} min` }))}
           />
+        </Card>
+
+        <Card title="Pesaje diario">
+          <View style={AppTheme.sectionHeader}>
+            <Text style={[AppTheme.body, { flex: 1 }]}>Recordarme pesarme cada mañana</Text>
+            <Switch
+              accessibilityLabel="Recordatorio de pesaje"
+              value={Boolean(config.weighIn?.enabled)}
+              onValueChange={(enabled) =>
+                update({ ...config, weighIn: { time: config.weighIn?.time ?? "07:00", enabled } })
+              }
+              trackColor={{ true: AppTheme.colors.accent, false: AppTheme.colors.border }}
+              thumbColor={AppTheme.colors.text}
+            />
+          </View>
+          {config.weighIn?.enabled ? (
+            <TextInput
+              accessibilityLabel="Hora del pesaje"
+              value={config.weighIn.time}
+              onChangeText={(time) => update({ ...config, weighIn: { enabled: true, time } })}
+              placeholder="07:00"
+              placeholderTextColor={AppTheme.colors.muted}
+              style={[AppTheme.input, { width: 100 }]}
+            />
+          ) : null}
+          <Text style={AppTheme.hint}>
+            Pesarte a diario a la misma hora hace la tendencia más fiable; no importa el número de un día.
+          </Text>
         </Card>
 
         <Chips

@@ -4,6 +4,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 
 import { Card, ChoiceControl, NavRow, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
+import { ExportCard } from "@/src/features/export/ExportCard";
 import { getOnlineLookup, setOnlineLookup } from "@/src/features/nutrition/nutrition.repository";
 import { OFF_ATTRIBUTION } from "@/src/features/nutrition/openfoodfacts";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
@@ -66,6 +67,13 @@ export default function MoreScreen() {
                 detail="Qué alimentos aportan más y cómo repartes tus comidas"
                 onPress={() => router.push("/nutrients")}
               />
+              {profile?.sex === "female" ? (
+                <NavRow
+                  title="Ciclo menstrual"
+                  detail="Fase de hoy, próximo periodo y su efecto en el peso"
+                  onPress={() => router.push("/period")}
+                />
+              ) : null}
               <NavRow
                 title="Fotos de progreso"
                 detail="Compara tu cuerpo entre dos fechas"
@@ -128,6 +136,7 @@ export default function MoreScreen() {
         ) : (
           <BackupCard onRestored={load} />
         )}
+        <ExportCard />
         <Card title="Privacidad">
           <Text style={AppTheme.body}>
             Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica; lo

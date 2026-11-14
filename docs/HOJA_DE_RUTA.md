@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 13 de noviembre de 2026 (versión 0.17.0, Expo SDK 58)
+## Estado al 13 de noviembre de 2026 (versión 0.18.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -50,12 +50,12 @@ Todo esto se puede hacer y probar con Expo Go y en la web. Orden propuesto:
 | 3 | C ✔ | Calorías por día de la semana y tipos de plan (equilibrado, bajo en carbohidratos, keto, alto en proteína). | Hecho en la 0.16.0. |
 | 4 | C ✔ | Días de ayuno y alcohol como dato aparte. | Hecho en la 0.16.0. |
 | 5 | C ✔ | Principales aportes por nutriente y reparto por momento del día. | Hecho en la 0.16.0. |
-| 6 | C | Micronutrientes y explorador de nutrientes. | Necesita ampliar la base incluida con micros (USDA, dominio público) y leer los de Open Food Facts. Trabajo de datos grande. |
-| 7 | C | Seguimiento del ciclo menstrual (opcional en la evaluación), con sus fases en el gráfico de peso. | Solo en el teléfono. |
+| 6 | — | Micronutrientes: fuera por ahora (ver «Descartado»). | |
+| 7 | C ✔ | Seguimiento del ciclo menstrual: fase de hoy, próximo periodo y su efecto en el peso. | Hecho en la 0.18.0. Pendiente: marcar las fases en el gráfico de peso. |
 | 8 | C ✔ | Entreno: lados izquierdo/derecho, superseries, parciales, myo-reps y drop sets. | Hecho en la 0.17.0. |
 | 9 | C ✔ | Calentamiento sugerido y perfiles de gimnasio con su equipo, barra y salto de carga. | Hecho en la 0.17.0. |
 | 10 | C ✔ | Mesociclos de 4–8 semanas con semana de descarga automática. | Hecho en la 0.17.0. |
-| 11 | C | Exportar a CSV (para un entrenador) e importar/exportar programas en JSON/CSV. | Se comparte con la hoja del sistema. |
+| 11 | C ✔ | Exportar a CSV e importar/exportar programas en JSON o CSV. | Hecho en la 0.18.0. |
 | 12 | C | Importar una receta desde una URL, como opción que se enciende (igual que Open Food Facts). | Lee el `schema.org/Recipe` de la página; sale a internet solo si se activa. |
 | 13 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
 
@@ -83,6 +83,11 @@ Chocan con "sin cuentas ni servidor"; solo si el proyecto crece y se decide cóm
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
 
 ## Descartado
+
+- Micronutrientes (por ahora, decisión de Jharol, 13 nov 2026): los alimentos incluidos tienen solo calorías y
+  macros escritos a mano; agregar vitaminas y minerales exige rehacer la base desde USDA (cientos de valores por
+  alimento), y los productos de Open Food Facts casi nunca los traen completos. Con datos a medias, el total del
+  día engañaría más de lo que ayuda. Se reconsidera si aparece una fuente libre y completa.
 
 - Descripción de comidas en lenguaje natural con IA: Jharol pidió quitarla (12 nov 2026) y necesitaría
   enviar el texto a un servicio. Podría volver como un lector simple en el teléfono ("2 huevos y 1 pan").
