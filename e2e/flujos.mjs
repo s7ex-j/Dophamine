@@ -685,6 +685,59 @@ async function main() {
     );
   });
 
+  await step("exportar CSV, importar programa, ciclo y pesaje", async () => {
+    const downloads = mkdtempSync(join(tmpdir(), "dophamine-csv-"));
+    const session = await page.createCDPSession();
+    await session.send("Page.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
+    await open("/more");
+    await press("Diario (peso, comida, sueño)");
+    for (
+      let attempt = 0;
+      attempt < 40 && !readdirSync(downloads).some((name) => name.endsWith(".csv"));
+      attempt += 1
+    )
+      await new Promise((done) => setTimeout(done, 100));
+    const csvName = readdirSync(downloads).find((name) => name.endsWith(".csv"));
+    assert(csvName, "No se descargó el CSV del diario.");
+    const csv = readFileSync(join(downloads, csvName), "utf8");
+    assert(csv.replace(/^﻿/, "").startsWith("fecha,peso_kg"), "El CSV no tiene el encabezado esperado.");
+
+    const program = join(downloads, "programa.csv");
+    writeFileSync(
+      program,
+      [
+        "dia;entreno;ejercicio;series;reps",
+        "lunes;Pecho;Press de banca;4;8",
+        "jueves;Pierna;Prensa;3;12",
+      ].join(String.fromCharCode(10)),
+    );
+    await open("/routine");
+    await waitText("¿Qué días entrenas?");
+    const [chooser] = await Promise.all([page.waitForFileChooser(), press("Importar programa (JSON o CSV)")]);
+    await chooser.accept([program]);
+    await waitText("Programa cargado: 2 días");
+    await press("Guardar rutina");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).routines?.[0]?.days?.join() === "mon,thu",
+      {},
+      STORE_KEY,
+    );
+
+    await open("/period");
+    await press("Empezó hoy");
+    await waitText("DÍA 1");
+    assert((await store()).settings.menstrual_periods?.length === 1, "No se guardó el inicio del periodo.");
+
+    await open("/reminders");
+    await pressLabel("Recordatorio de pesaje");
+    await press("Guardar recordatorios");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings?.meal_reminders?.weighIn?.enabled === true,
+      {},
+      STORE_KEY,
+    );
+  });
+
   await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");

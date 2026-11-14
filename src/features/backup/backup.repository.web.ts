@@ -7,6 +7,11 @@ export const backupAvailable = true;
 export const backupPlace = "este navegador";
 export const exportLabel = "Descargar respaldo";
 
+/** Todos los datos, con la misma forma que el almacén (para exportar). */
+export async function readAllData() {
+  return readStore();
+}
+
 export async function downloadBackup(): Promise<void> {
   const contenido = JSON.stringify(buildBackup(readStore()), null, 2);
   const url = URL.createObjectURL(new Blob([contenido], { type: "application/json" }));

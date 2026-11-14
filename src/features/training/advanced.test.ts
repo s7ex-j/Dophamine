@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { cycleWeek, deloadLoad, deloadPlan, readCycle } from "@/src/features/training/cycle";
 import { activeGym, DEFAULT_GYMS, readGyms, roundLoad, warmupSets } from "@/src/features/training/gyms";
 import {
+  describeSets,
+  previousTimes,
   nextInSuperset,
   nextSetType,
   readSetType,
@@ -211,5 +213,15 @@ describe("mesociclos", () => {
       deload: true,
     });
     expect(readCycle({ weeks: 1, startDate: "2026-11-02" })).toBeNull();
+  });
+});
+
+describe("la última vez", () => {
+  it("muestra las series anteriores de un ejercicio, la más reciente primero", () => {
+    const older = { ...history[0], id: "0", completedAt: "2026-11-03T19:00:00.000Z" };
+    const times = previousTimes("Sentadilla con barra", [older, ...history]);
+    expect(times.map((item) => item.date.slice(0, 10))).toEqual(["2026-11-10", "2026-11-03"]);
+    expect(describeSets(times[0].sets, "kg")).toBe("100×8 · 100×8 · 100×8");
+    expect(previousTimes("Curl martillo", history)).toEqual([]);
   });
 });

@@ -13,6 +13,7 @@ import {
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { ExerciseImage } from "@/src/features/exercises/ExerciseImage";
+import { describeSets, previousTimes } from "@/src/features/training/sets";
 import { getSessionHistory } from "@/src/features/training/training.repository";
 import { exerciseProgress, type CompletedSession } from "@/src/features/training/workout";
 import { localDateKey } from "@/src/lib/dates";
@@ -111,6 +112,18 @@ export default function ExerciseScreen() {
             <Text style={AppTheme.tileValue}>{progress.length}</Text>
           </View>
         </View>
+        {previousTimes(name, sessions, 8).length ? (
+          <Card title="Últimas veces">
+            {previousTimes(name, sessions, 8).map((item) => (
+              <View key={item.date} style={AppTheme.legendRow}>
+                <Text style={AppTheme.legendLabel}>{localDateKey(new Date(item.date))}</Text>
+                <Text style={[AppTheme.legendValue, { flex: 1, textAlign: "right" }]}>
+                  {describeSets(item.sets, unit)}
+                </Text>
+              </View>
+            ))}
+          </Card>
+        ) : null}
         {catalog?.steps?.length ? (
           <Card title="Cómo se hace">
             {catalog.steps.map((step, number) => (

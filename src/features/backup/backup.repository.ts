@@ -26,9 +26,10 @@ export const backupAvailable = true;
 export const backupPlace = "este teléfono";
 export const exportLabel = "Compartir respaldo";
 
-export async function downloadBackup(): Promise<void> {
+/** Todos los datos, con la misma forma que el almacén web (para exportar). */
+export async function readAllData() {
   const db = await getDatabase();
-  const store = storeFromTables({
+  return storeFromTables({
     biometrics: await db.getAllAsync<BiometricsRow>("SELECT * FROM daily_biometrics ORDER BY date"),
     wellbeing: await db.getAllAsync<WellbeingRow>("SELECT * FROM wellbeing_entries"),
     workouts: await db.getAllAsync<WorkoutRow>("SELECT * FROM workouts"),
@@ -40,6 +41,10 @@ export async function downloadBackup(): Promise<void> {
     meals: await db.getAllAsync<MealRow>("SELECT * FROM meal_entries ORDER BY date, rowid"),
     sleep: await db.getAllAsync<SleepRow>("SELECT * FROM sleep_entries ORDER BY date"),
   });
+}
+
+export async function downloadBackup(): Promise<void> {
+  const store = await readAllData();
   const file = new File(Paths.cache, backupFileName());
   if (file.exists) file.delete();
   file.create();

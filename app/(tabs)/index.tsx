@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { IconButton, Screen } from "@/src/components/ui";
@@ -37,6 +37,14 @@ import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { StreakCard } from "@/src/features/streak/StreakCard";
 import { DopiCheckIn } from "@/src/features/wellbeing/DopiCheckIn";
+import {
+  cycleStatus,
+  PERIODS_KEY,
+  PHASE_LABELS,
+  PHASE_NOTES,
+  readPeriods,
+  type CycleStatus,
+} from "@/src/features/period/period";
 import { DISMISS_KEY, shouldOfferCheckIn } from "@/src/features/wellbeing/wellbeing";
 import { getWellbeingDates } from "@/src/features/wellbeing/wellbeing.repository";
 import { WeeklyCard } from "@/src/features/dashboard/WeeklyCard";
@@ -65,6 +73,7 @@ export default function DashboardScreen() {
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [weekly, setWeekly] = useState<WeeklySummary | null>(null);
   const [offerCheckIn, setOfferCheckIn] = useState(false);
+  const [period, setPeriod] = useState<CycleStatus | null>(null);
 
   const load = useCallback(() => {
     Promise.all([
@@ -76,15 +85,19 @@ export default function DashboardScreen() {
       getWeeklySummary(),
       getWellbeingDates(localDateKey()),
       getSetting(DISMISS_KEY),
-    ]).then(([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly, checked, dismissed]) => {
-      setOfferCheckIn(shouldOfferCheckIn(localDateKey(), checked.includes(localDateKey()), dismissed));
-      setStreak(nextStreak);
-      setWeekly(nextWeekly);
-      setSnapshot(nextSnapshot);
-      setCompliance(days[0]?.compliance ?? null);
-      setSleep(nights);
-      setLayout(normalizeLayout(savedLayout));
-    });
+      getSetting(PERIODS_KEY),
+    ]).then(
+      ([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly, checked, dismissed, periods]) => {
+        setPeriod(cycleStatus(readPeriods(periods), localDateKey()));
+        setOfferCheckIn(shouldOfferCheckIn(localDateKey(), checked.includes(localDateKey()), dismissed));
+        setStreak(nextStreak);
+        setWeekly(nextWeekly);
+        setSnapshot(nextSnapshot);
+        setCompliance(days[0]?.compliance ?? null);
+        setSleep(nights);
+        setLayout(normalizeLayout(savedLayout));
+      },
+    );
   }, []);
   useEffect(load, [load]);
   useFocusEffect(load);
@@ -207,6 +220,18 @@ export default function DashboardScreen() {
           <StreakCard summary={streak} onPress={() => router.push("/achievements")} />
         ) : null}
         {offerCheckIn && !VIEWER ? <DopiCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
+        {period ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push("/period")}
+            style={[AppTheme.card, { gap: 4, paddingVertical: 10 }]}
+          >
+            <Text style={AppTheme.tileTitle}>
+              Ciclo: día {period.day} · {PHASE_LABELS[period.phase]}
+            </Text>
+            <Text style={AppTheme.tileSubtitle}>{PHASE_NOTES[period.phase]}</Text>
+          </Pressable>
+        ) : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
         <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>
         {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}

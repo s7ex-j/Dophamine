@@ -36,6 +36,8 @@ import type { GymSetup } from "@/src/features/training/gyms";
 import { getGyms } from "@/src/features/training/gyms.repository";
 import { weekStart } from "@/src/features/training/week";
 import { localDateKey } from "@/src/lib/dates";
+import { parseProgram, programCsv, programJson } from "@/src/features/export/export";
+import { pickTextFile, shareTextFile } from "@/src/lib/files";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
@@ -63,6 +65,7 @@ function RoutineEditor() {
   const [day, setDay] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [gym, setGym] = useState<GymSetup | null>(null);
+  const [fileMessage, setFileMessage] = useState("");
   useEffect(() => {
     getGyms().then(({ active }) => setGym(active));
     Promise.all([getRoutine(), getNutritionProfile()]).then(([saved, nextProfile]) => {
@@ -298,6 +301,46 @@ function RoutineEditor() {
         ) : null}
 
         <Button title="Guardar rutina" onPress={save} />
+
+        <Text style={AppTheme.sectionTitle}>Compartir o importar</Text>
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Exportar JSON"
+              variant="secondary"
+              onPress={() =>
+                shareTextFile(`programa-${routine.name}.json`, programJson(routine), "application/json")
+              }
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Exportar CSV"
+              variant="secondary"
+              onPress={() => shareTextFile(`programa-${routine.name}.csv`, programCsv(routine), "text/csv")}
+            />
+          </View>
+        </View>
+        <Button
+          title="Importar programa (JSON o CSV)"
+          variant="secondary"
+          onPress={async () => {
+            const text = await pickTextFile();
+            if (!text) return;
+            const result = parseProgram(text);
+            if (result.error !== null) return setFileMessage(result.error);
+            change(result.routine);
+            setDay(result.routine.days[0] ?? null);
+            setFileMessage(
+              `Programa cargado: ${result.routine.schedule.length} días. Revísalo y toca "Guardar rutina" para quedártelo.`,
+            );
+          }}
+        />
+        {fileMessage ? <Text style={AppTheme.body}>{fileMessage}</Text> : null}
+        <Text style={AppTheme.hint}>
+          CSV con columnas: dia, entreno, ejercicio, series, reps, rir (los días en español o inglés). Los
+          ejercicios que no estén en el catálogo se guardan igual, sin imagen.
+        </Text>
       </ScrollView>
 
       <Modal visible={picking} animationType="slide" onRequestClose={() => setPicking(false)}>

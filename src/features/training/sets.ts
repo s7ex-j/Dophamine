@@ -2,6 +2,7 @@ import type { Equipment } from "@/src/features/exercises/catalog";
 import { warmupSets, type GymSetup } from "@/src/features/training/gyms";
 import type {
   ActiveSession,
+  CompletedSession,
   DraftSet,
   LoggedSet,
   SessionExercise,
@@ -146,3 +147,31 @@ export function withWarmup(
   }));
   return sets.length ? { ...exercise, sets: [...sets, ...exercise.sets] } : exercise;
 }
+
+/**
+ * Las veces anteriores que se hizo un ejercicio, de la más reciente a la más
+ * antigua, con sus series (sin calentamiento). Para verlo mientras se entrena.
+ */
+export function previousTimes(
+  name: string,
+  history: CompletedSession[],
+  limit = 5,
+): Array<{ date: string; sets: LoggedSet[] }> {
+  return [...history]
+    .sort((a, b) => b.completedAt.localeCompare(a.completedAt))
+    .map((session) => ({
+      date: session.completedAt,
+      sets: session.sets.filter((set) => set.exerciseName === name && set.type !== "warmup"),
+    }))
+    .filter((item) => item.sets.length)
+    .slice(0, limit);
+}
+
+/** "60×10 · 62.5×8" (en la unidad elegida). */
+export const describeSets = (sets: LoggedSet[], unit: WeightUnit) =>
+  sets
+    .map(
+      (set) =>
+        `${set.loadKg ? `${weightValue(set.loadKg, unit)}×` : ""}${set.reps ?? "—"}${set.side ? (set.side === "left" ? "I" : "D") : ""}`,
+    )
+    .join(" · ");

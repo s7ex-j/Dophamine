@@ -143,3 +143,13 @@ describe("configuración guardada", () => {
     expect(weekdayOf(new Date(2026, 10, 15))).toBe("sun");
   });
 });
+
+describe("recordatorio de pesaje", () => {
+  it("avisa todos los días a la hora elegida, aunque los de comida estén apagados", () => {
+    const config = { ...defaultConfig(() => "x"), enabled: false, weighIn: { enabled: true, time: "6:45" } };
+    const scheduled = remindersToSchedule(normalizeConfig(config, () => "x"));
+    expect(scheduled).toHaveLength(7);
+    expect(scheduled[0]).toMatchObject({ weekday: 2, hour: 6, minute: 45, title: "Hora de pesarte" });
+    expect(remindersToSchedule({ ...config, weighIn: { enabled: false, time: "06:45" } })).toEqual([]);
+  });
+});
