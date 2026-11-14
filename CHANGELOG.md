@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.19.0 - 2026-11-13
+
+Fecha estimada al ritmo real, copiar y pegar comidas y días, biblioteca con recetas editables y borrado preciso.
+
+- Meta: además de las semanas al ritmo del plan, la fecha a la que llegarías al ritmo real de tus últimas semanas (Panel y Estrategia), o un aviso si te estás alejando.
+- Copiar y pegar: el botón de copiar en cada comida y "Copiar el día" en Hoy; luego "Pegar aquí" en cualquier comida de cualquier día, o "Pegar el día" en otra fecha.
+- Biblioteca (Más → Biblioteca): favoritos, alimentos propios, recetas y comidas guardadas en un solo lugar. Las recetas se editan (gramos de cada ingrediente, quitar uno, porciones); lo ya anotado no cambia.
+- Borrar datos (Más → Borrar datos): por rango de fechas y por tipo (peso y composición, comidas, sueño, entrenos, bienestar), con el conteo antes de confirmar; o todas las series de un ejercicio. Todo en una sola operación.
+- Hoja de ruta reorganizada con el alcance revisado (offline primero, APK liviano): qué está hecho, qué queda, qué necesita el APK y qué se descarta.
+- De 314 a 326 pruebas de dominio y de 24 a 25 flujos de navegador.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0 se ha recorrido en un teléfono físico.
+
 ## 0.18.0 - 2026-11-13
 
 Exportar e importar, ciclo menstrual, recordatorio de pesaje y "la última vez" en cada ejercicio.

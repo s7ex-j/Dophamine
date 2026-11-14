@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNutritionProfile, withCalorieTarget } from "@/src/features/profile/profile";
+import { goalEta, buildNutritionProfile, withCalorieTarget } from "@/src/features/profile/profile";
 
 describe("buildNutritionProfile", () => {
   it("aplica Mifflin-St Jeor, el factor de actividad y reparte los macros", () => {
@@ -79,5 +79,24 @@ describe("withCalorieTarget", () => {
       goal: "lose",
     });
     expect(withCalorieTarget(heavy, 1200).carbsTarget).toBe(0);
+  });
+});
+
+describe("fecha estimada al ritmo real", () => {
+  const progress = { remainingKg: 3, reached: false, goalKg: 72, currentKg: 75 };
+
+  it("al ritmo real de bajada llega en semanas y fecha", () => {
+    expect(goalEta(progress, -0.5, "2026-11-13")).toEqual({
+      actualWeeks: 6,
+      actualDate: "2026-12-25",
+      direction: "toward",
+    });
+  });
+
+  it("si sube en vez de bajar, o está estable, no hay fecha", () => {
+    expect(goalEta(progress, 0.3, "2026-11-13")?.direction).toBe("away");
+    expect(goalEta(progress, -0.02, "2026-11-13")?.direction).toBe("flat");
+    expect(goalEta(progress, null, "2026-11-13")).toBeNull();
+    expect(goalEta({ ...progress, reached: true }, -0.5, "2026-11-13")).toBeNull();
   });
 });

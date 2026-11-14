@@ -80,7 +80,11 @@ export default function StrategyScreen() {
         </Card>
         {VIEWER ? null : <DistributionCard profile={profile} onChanged={load} />}
         <CheckInCard snapshot={snapshot} controls={controls} />
-        <GoalProgressCard profile={profile} trendKg={snapshot.trendKg} />
+        <GoalProgressCard
+          profile={profile}
+          trendKg={snapshot.trendKg}
+          weeklyRateKg={snapshot.analysis.weeklyRateKg}
+        />
         <ExpenditureCard analysis={snapshot.analysis} />
         <ReviewHistoryCard reviews={reviews} />
         <Card title="Más detalle">

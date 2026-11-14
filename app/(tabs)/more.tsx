@@ -63,6 +63,11 @@ export default function MoreScreen() {
                 onPress={() => router.push("/measurements")}
               />
               <NavRow
+                title="Biblioteca"
+                detail="Favoritos, alimentos propios, recetas y comidas guardadas"
+                onPress={() => router.push("/library")}
+              />
+              <NavRow
                 title="Nutrientes"
                 detail="Qué alimentos aportan más y cómo repartes tus comidas"
                 onPress={() => router.push("/nutrients")}
@@ -137,6 +142,15 @@ export default function MoreScreen() {
           <BackupCard onRestored={load} />
         )}
         <ExportCard />
+        {VIEWER ? null : (
+          <Card title="Borrar datos">
+            <NavRow
+              title="Por fechas o por ejercicio"
+              detail="Peso, comidas, sueño, entrenos o bienestar de un rango; o todas las series de un ejercicio"
+              onPress={() => router.push("/cleanup")}
+            />
+          </Card>
+        )}
         <Card title="Privacidad">
           <Text style={AppTheme.body}>
             Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica; lo

@@ -25,6 +25,7 @@ import { leanMassKg } from "@/src/features/composition/composition";
 import { DaySummary, MealCard } from "@/src/features/nutrition/MealSections";
 import { groupBySlot, totalsOf, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
 import {
+  addMealEntries,
   copyDay,
   deleteDayMeals,
   deleteMealEntry,
@@ -32,6 +33,16 @@ import {
 } from "@/src/features/nutrition/nutrition.repository";
 import { mealSetupOf, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { saveMealFromEntries } from "@/src/features/nutrition/savedMeals.repository";
+import {
+  CLIPBOARD_KEY,
+  clipboardKcal,
+  copyMeal,
+  copyWholeDay,
+  pastePlan,
+  readClipboard,
+  type Clipboard,
+} from "@/src/features/nutrition/clipboard";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { weekdayOf } from "@/src/features/reminders/reminders";
 import { targetsForWeekday } from "@/src/features/profile/targets";
 import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
@@ -64,6 +75,7 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
   const [form, setForm] = useState<BodyForm>(emptyForm);
   const [sleepForm, setSleepForm] = useState({ bedtime: "", wakeTime: "", quality: 0 });
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
 
@@ -76,7 +88,9 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         getRecentBiometrics(),
         getSleepSince(current),
         getRoutine(),
-      ]).then(([record, meals, before, rows, nights, nextRoutine]) => {
+        getSetting(CLIPBOARD_KEY),
+      ]).then(([record, meals, before, rows, nights, nextRoutine, copied]) => {
+        setClipboard(readClipboard(copied));
         const night = nights.find((entry) => entry.date === current) ?? null;
         setDay(record);
         setEntries(meals);
@@ -99,6 +113,21 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
     setMessage(null);
     setEditor(null);
   }, [date]);
+
+  const copy = async (next: Clipboard | null, text: string) => {
+    if (!next) return;
+    await setSetting(CLIPBOARD_KEY, next);
+    setClipboard(next);
+    setMessage({ text, error: false });
+  };
+  const paste = async (slot?: string) => {
+    if (!clipboard) return;
+    const plan = pastePlan(clipboard, slot);
+    for (const item of plan) await addMealEntries(date, item.slot, item.drafts);
+    changed(`Pegado: ${clipboard.label} (${clipboardKcal(clipboard)} kcal).`);
+  };
+  const mealPaste =
+    clipboard?.kind === "meal" ? `${clipboard.label} · ${clipboardKcal(clipboard)} kcal` : null;
 
   const changed = (text?: string) => {
     load(date);
@@ -354,6 +383,19 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
       ) : null}
 
+      <View style={[AppTheme.rowActions, { flexWrap: "wrap" }]}>
+        {entries.length ? (
+          <LinkButton
+            title="Copiar el día"
+            onPress={() =>
+              copy(copyWholeDay(entries, date), 'Día copiado: ve a otro día y toca "Pegar el día".')
+            }
+          />
+        ) : null}
+        {clipboard?.kind === "day" && clipboard.from !== date ? (
+          <LinkButton title={`Pegar el día ${clipboard.label.slice(5)}`} onPress={() => paste()} />
+        ) : null}
+      </View>
       {!entries.length && previous > 0 ? (
         <View style={AppTheme.rowActions}>
           <LinkButton
@@ -379,6 +421,14 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
           }}
           onEdit={edit}
           onSave={(name) => saveMealFromEntries(name, slot.entries)}
+          onCopy={() =>
+            copy(
+              copyMeal(slot.entries, `${slot.label} del ${date.slice(5)}`),
+              `${slot.label} copiado: toca "Pegar aquí" en otra comida o en otro día.`,
+            )
+          }
+          pasteLabel={mealPaste}
+          onPaste={() => paste(slot.id)}
         />
       ))}
       {entries.length || totals.kcal ? (

@@ -738,6 +738,88 @@ async function main() {
     );
   });
 
+  await step("copiar y pegar comidas, biblioteca con receta editable y borrar un ejercicio", async () => {
+    const today = dateKey();
+    await page.evaluate(
+      (key, date) => {
+        const data = JSON.parse(localStorage.getItem(key));
+        data.meals = [
+          ...(data.meals ?? []).filter((entry) => entry.date !== date),
+          {
+            id: "cp1",
+            date,
+            slot: "lunch",
+            name: "Arroz",
+            grams: 200,
+            kcal: 260,
+            proteinG: 5,
+            carbsG: 56,
+            fatsG: 1,
+          },
+          {
+            id: "cp2",
+            date,
+            slot: "lunch",
+            name: "Pollo",
+            grams: 150,
+            kcal: 248,
+            proteinG: 46,
+            carbsG: 0,
+            fatsG: 5,
+          },
+        ];
+        localStorage.setItem(key, JSON.stringify(data));
+      },
+      STORE_KEY,
+      today,
+    );
+    await open("/");
+    await waitText("Hoy");
+    await pressLabel("Copiar almuerzo");
+    await waitText("copiado");
+    await press("‹");
+    await waitText("Ayer");
+    await pressLabel("Pegar en cena");
+    await page.waitForFunction(
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).meals.filter(
+          (entry) => entry.date === date && entry.slot === "dinner",
+        ).length === 2,
+      {},
+      STORE_KEY,
+      daysAgo(1),
+    );
+
+    await open("/library");
+    await press("Recetas");
+    await waitText("Cena e2e");
+    await press("Editar");
+    await press("Guardar receta");
+    await waitText("porciones de");
+
+    await open("/cleanup");
+    await waitText("Un ejercicio");
+    const before = (await store()).workouts.flatMap((workout) => workout.sets ?? []);
+    const name = before[0]?.exerciseName;
+    assert(name, "No hay series para probar el borrado.");
+    await page.evaluate((target) => {
+      const row = [...document.querySelectorAll("div")].find(
+        (node) => node.innerText?.startsWith(target) && node.innerText.includes("Borrar este ejercicio"),
+      );
+      [...row.querySelectorAll("div")].find((node) => node.innerText === "Borrar este ejercicio").click();
+    }, name);
+    await press("Sí, borrar");
+    await page.waitForFunction(
+      (key, target) =>
+        !JSON.parse(localStorage.getItem(key)).workouts.some((workout) =>
+          (workout.sets ?? []).some((set) => set.exerciseName === target),
+        ),
+      {},
+      STORE_KEY,
+      name,
+    );
+  });
+
   await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");

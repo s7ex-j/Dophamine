@@ -1,3 +1,4 @@
+import { localDateKey } from "@/src/lib/dates";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Switch, Text, View } from "react-native";
@@ -19,6 +20,7 @@ import { formatDuration } from "@/src/lib/time";
 import { nutritionGrid, type GridKey, type WeekDay } from "@/src/features/dashboard/dashboard";
 import { PANEL_SECTIONS, type PanelLayout, type PanelSection } from "@/src/features/dashboard/layout";
 import {
+  goalEta,
   goalProgress,
   targetWeeklyRateKg,
   weightUnitOf,
@@ -285,6 +287,7 @@ export function GoalTile({
   const unit = weightUnitOf(profile);
   const progress = goalProgress(profile, trendKg);
   const target = trendKg ? targetWeeklyRateKg(profile, trendKg) : null;
+  const eta = progress ? goalEta(progress, analysis.weeklyRateKg, localDateKey()) : null;
   return (
     <Tile
       title="Meta"
@@ -310,6 +313,11 @@ export function GoalTile({
               ? "¡Meta alcanzada!"
               : `Faltan ${formatWeight(progress.remainingKg, unit, 1)}${progress.weeksLeft ? ` · ~${progress.weeksLeft} sem` : ""}`}
           </Text>
+          {eta?.direction === "toward" && eta.actualWeeks ? (
+            <Text style={AppTheme.tileSubtitle}>Al ritmo real: ~{eta.actualWeeks} sem</Text>
+          ) : eta?.direction === "away" ? (
+            <Text style={[AppTheme.tileSubtitle, { color: AppTheme.colors.warning }]}>Te estás alejando</Text>
+          ) : null}
         </>
       ) : (
         <Waiting text={target === 0 ? "Objetivo: peso estable" : "Define una meta en Estrategia."} />

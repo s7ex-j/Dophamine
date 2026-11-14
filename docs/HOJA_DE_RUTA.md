@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 13 de noviembre de 2026 (versión 0.18.0, Expo SDK 58)
+## Estado al 13 de noviembre de 2026 (versión 0.19.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -41,23 +41,27 @@ particular, imágenes de ejercicios, fotos de progreso, compartir logros y el ed
 
 ## Etapa 1 — Completar en Expo Go (sin código nativo propio)
 
-Todo esto se puede hacer y probar con Expo Go y en la web. Orden propuesto:
+Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK liviano).
 
 | # | Quién | Paso | Notas |
 |---|---|---|---|
-| 1 | J | Recorrer la 0.15.0 en el teléfono: chequeo de Dopi, editor de semana (plantilla y armada a mano), sesión con cardio, "Cómo se calcula". | Lo que falle se anota con captura. |
-| 2 | C ✔ | Medidas corporales (brazo, cintura, cadera, pecho, muslo, cuello) con gráfico y % de grasa por perímetros. | Hecho en la 0.16.0. |
-| 3 | C ✔ | Calorías por día de la semana y tipos de plan (equilibrado, bajo en carbohidratos, keto, alto en proteína). | Hecho en la 0.16.0. |
-| 4 | C ✔ | Días de ayuno y alcohol como dato aparte. | Hecho en la 0.16.0. |
-| 5 | C ✔ | Principales aportes por nutriente y reparto por momento del día. | Hecho en la 0.16.0. |
-| 6 | — | Micronutrientes: fuera por ahora (ver «Descartado»). | |
-| 7 | C ✔ | Seguimiento del ciclo menstrual: fase de hoy, próximo periodo y su efecto en el peso. | Hecho en la 0.18.0. Pendiente: marcar las fases en el gráfico de peso. |
-| 8 | C ✔ | Entreno: lados izquierdo/derecho, superseries, parciales, myo-reps y drop sets. | Hecho en la 0.17.0. |
-| 9 | C ✔ | Calentamiento sugerido y perfiles de gimnasio con su equipo, barra y salto de carga. | Hecho en la 0.17.0. |
-| 10 | C ✔ | Mesociclos de 4–8 semanas con semana de descarga automática. | Hecho en la 0.17.0. |
-| 11 | C ✔ | Exportar a CSV e importar/exportar programas en JSON o CSV. | Hecho en la 0.18.0. |
-| 12 | C | Importar una receta desde una URL, como opción que se enciende (igual que Open Food Facts). | Lee el `schema.org/Recipe` de la página; sale a internet solo si se activa. |
-| 13 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
+| 1 | J | **Probar en un teléfono físico.** Desde la 0.9.0 cada versión se declara "no comprobada en teléfono". Recorrer las pantallas nuevas (0.14–0.19) en Expo Go o en un APK de prueba. | Lo más urgente: lo que falle se anota con captura. |
+| 2 | J | Decidir si se quitan el **registro rápido** y la **búsqueda en Open Food Facts**: la lista de alcance los marca como descartados, pero existen desde la 0.9.0. | Ver «En revisión». |
+| 3 | C | Marcar las fases del ciclo en el gráfico de peso. | |
+| 4 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
+
+Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol,
+principales aportes, lados/superseries/parciales/myo-reps, calentamiento, gimnasios, mesociclos con
+descarga, exportar CSV, importar/exportar programas JSON/CSV, ciclo menstrual (funciona sin APK),
+recordatorio de pesaje, fecha estimada a la meta al ritmo real, copiar y pegar comidas y días,
+biblioteca con recetas editables y borrado por fechas o por ejercicio.
+
+**Ya estaba antes de esta lista:** recetas propias (0.9.0, editables desde la 0.19.0), sugerencias por
+momento del día (0.9.0: "historial inteligente" por comida, que es el equivalente por hora), copiar el día
+anterior (0.9.0) y fecha estimada a la meta al ritmo del plan (0.11.0).
+
+**Plate view: no hace falta.** En Agregar se pueden sumar varios alimentos a la misma comida en una sola
+pantalla, con el total de esa comida a la vista; cada uno se puede editar o quitar ahí mismo.
 
 ## Etapa 2 — APK propio (EAS), al final
 
@@ -68,30 +72,36 @@ Necesitan código nativo que Expo Go no trae. Se hacen todas juntas cuando se pa
 - Sueño automático por uso del teléfono (último uso de noche, primero de la mañana): permiso de uso de
   apps de Android en un módulo propio. No existe en iPhone.
 - Pasos diarios (desde Health Connect; el contador de Expo Go no da el historial en Android).
+- Respaldo automático en el Drive o iCloud de la persona (OAuth), como sincronización sin servidor propio.
 - Widgets de pantalla de inicio y de bloqueo.
 - Dictado de comidas con reconocimiento de voz propio (hoy ya se puede dictar con el micrófono del teclado).
 - Lectura de etiquetas nutricionales con la cámara (reconocimiento de texto en el teléfono).
 - Publicar en Google Play (ver `docs/RELEASING.md`).
 
-## Etapa 3 — Necesita un servidor (se evalúa más adelante)
+## Etapa 3 — Solo si el proyecto crece
 
-Chocan con "sin cuentas ni servidor"; solo si el proyecto crece y se decide cómo pagarlo y protegerlo.
-
-- Sincronización cifrada de extremo a extremo opcional (podría hacerse sin servidor propio guardando el
-  respaldo cifrado en el Drive/iCloud de la persona).
-- Biblioteca de programas hecha por la comunidad (necesita moderación).
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
+
+## En revisión
+
+- **Registro rápido** (calorías y macros sin alimento) y **búsqueda en Open Food Facts** (opcional, apagada por
+  defecto): la lista de alcance de Jharol del 13 nov 2026 los marca como descartados («empeora el tracking» y
+  «offline primero»), pero ya existen. No se quitan hasta que Jharol lo confirme; quitarlos no borra lo ya
+  anotado.
 
 ## Descartado
 
-- Micronutrientes (por ahora, decisión de Jharol, 13 nov 2026): los alimentos incluidos tienen solo calorías y
-  macros escritos a mano; agregar vitaminas y minerales exige rehacer la base desde USDA (cientos de valores por
-  alimento), y los productos de Open Food Facts casi nunca los traen completos. Con datos a medias, el total del
-  día engañaría más de lo que ayuda. Se reconsidera si aparece una fuente libre y completa.
+Decisión de Jharol, 13 nov 2026 (offline primero y APK liviano):
 
-- Descripción de comidas en lenguaje natural con IA: Jharol pidió quitarla (12 nov 2026) y necesitaría
-  enviar el texto a un servicio. Podría volver como un lector simple en el teléfono ("2 huevos y 1 pan").
+- Base de datos externa grande (USDA completa): pesaría demasiado.
+- Fotos de comida con IA, descripción en lenguaje natural y dictado propio: necesitan un servidor.
+- Importar recetas desde una URL: necesita red.
+- Micronutrientes, explorador de nutrientes y su reparto en el día: demasiados datos y una app más pesada; los
+  alimentos incluidos solo tienen calorías y macros, y Open Food Facts casi nunca trae los micros completos.
 - Videos de técnica y programas comerciales (por ejemplo, de Jeff Nippard): son contenido con licencia.
+- Sincronización cifrada propia y biblioteca de la comunidad: necesitan servidor (el respaldo en el Drive de la
+  persona queda en la Etapa 2).
+- Plate view: ver arriba.
 - Cuentas obligatorias, anuncios o telemetría.
 - Cambiar el objetivo calórico sin que la persona lo haya decidido: o acepta cada propuesta, o eligió el
   modo automático, que siempre avisa y se puede deshacer.
