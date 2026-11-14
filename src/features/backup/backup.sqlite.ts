@@ -174,7 +174,10 @@ export function storeFromTables(tables: Tables): Store {
                     ...(set.exercise_id ? { exerciseId: set.exercise_id } : {}),
                     setNumber: set.set_number,
                     type:
-                      set.set_type === "warmup" || set.set_type === "drop"
+                      set.set_type === "warmup" ||
+                      set.set_type === "drop" ||
+                      set.set_type === "myo" ||
+                      set.set_type === "partial"
                         ? set.set_type
                         : ("working" as const),
                     loadKg: set.load_kg,

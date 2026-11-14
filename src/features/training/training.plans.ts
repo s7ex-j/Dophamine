@@ -1,5 +1,6 @@
 import { findExercise, MUSCLE_GROUPS, type MuscleGroup } from "@/src/features/exercises/catalog";
 import { templateById, type TemplateId } from "@/src/features/training/training.templates";
+import { readCycle, type Cycle } from "@/src/features/training/cycle";
 
 export type TrainingVariant = TemplateId | "custom";
 export type GymProfile = "full_gym" | "home" | "limited";
@@ -24,6 +25,8 @@ export type Routine = {
   exercises: ExercisePlan[];
   /** Un entreno por día. */
   schedule: WorkoutDay[];
+  /** Mesociclo opcional: semanas del bloque y si la última es de descarga. */
+  cycle?: Cycle;
   accent: string;
   gymProfile: GymProfile;
   trainingGoal: TrainingGoal;
@@ -248,6 +251,7 @@ export function normalizeRoutine(value: unknown): Routine {
     trainingGoal: candidate.trainingGoal ?? "hypertrophy",
     sessionMinutes: candidate.sessionMinutes ?? 50,
     schedule,
+    cycle: readCycle(candidate.cycle) ?? undefined,
   } as Routine);
 }
 

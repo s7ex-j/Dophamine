@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 13 de noviembre de 2026 (versión 0.16.0, Expo SDK 58)
+## Estado al 13 de noviembre de 2026 (versión 0.17.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -52,9 +52,9 @@ Todo esto se puede hacer y probar con Expo Go y en la web. Orden propuesto:
 | 5 | C ✔ | Principales aportes por nutriente y reparto por momento del día. | Hecho en la 0.16.0. |
 | 6 | C | Micronutrientes y explorador de nutrientes. | Necesita ampliar la base incluida con micros (USDA, dominio público) y leer los de Open Food Facts. Trabajo de datos grande. |
 | 7 | C | Seguimiento del ciclo menstrual (opcional en la evaluación), con sus fases en el gráfico de peso. | Solo en el teléfono. |
-| 8 | C | Entreno: lados izquierdo/derecho en la sesión (el dato ya existe), superseries, series parciales y myo-reps. | |
-| 9 | C | Entreno: calentamiento sugerido por carga de trabajo y perfiles de gimnasio (casa, trabajo, comercial, viaje) con su equipo y discos. | El catálogo ya tiene equipo por ejercicio. |
-| 10 | C | Periodización: mesociclos de 4–6 semanas con descarga automática (menos series y carga la última semana). | |
+| 8 | C ✔ | Entreno: lados izquierdo/derecho, superseries, parciales, myo-reps y drop sets. | Hecho en la 0.17.0. |
+| 9 | C ✔ | Calentamiento sugerido y perfiles de gimnasio con su equipo, barra y salto de carga. | Hecho en la 0.17.0. |
+| 10 | C ✔ | Mesociclos de 4–8 semanas con semana de descarga automática. | Hecho en la 0.17.0. |
 | 11 | C | Exportar a CSV (para un entrenador) e importar/exportar programas en JSON/CSV. | Se comparte con la hoja del sistema. |
 | 12 | C | Importar una receta desde una URL, como opción que se enciende (igual que Open Food Facts). | Lee el `schema.org/Recipe` de la página; sale a internet solo si se activa. |
 | 13 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
@@ -97,4 +97,5 @@ Chocan con "sin cuentas ni servidor"; solo si el proyecto crece y se decide cóm
 Historial inteligente por momento del día (sugerencias por comida, 0.9.0), fecha estimada para llegar a la
 meta (0.11.0), tonelaje por sesión, por ejercicio y por semana (0.12.0–0.14.0), web como visor (0.7.0),
 comidas guardadas (0.14.0), gasto ajustado por el entreno real (0.15.0), medidas corporales, macros por
-día, tipos de plan, ayuno, alcohol y principales aportes (0.16.0).
+día, tipos de plan, ayuno, alcohol y principales aportes (0.16.0), lados, superseries, calentamiento,
+gimnasios y mesociclos con descarga (0.17.0).

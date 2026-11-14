@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { IconButton, Screen } from "@/src/components/ui";
@@ -32,6 +33,8 @@ import {
   weekStart,
 } from "@/src/features/training/week";
 import { readActiveSession, type CompletedSession } from "@/src/features/training/workout";
+import { cycleWeek } from "@/src/features/training/cycle";
+import { getGyms } from "@/src/features/training/gyms.repository";
 import { localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import type { WeightUnit } from "@/src/lib/units";
@@ -51,9 +54,11 @@ function TrainingScreenContent() {
   const [resumable, setResumable] = useState(false);
   const [unit, setUnit] = useState<WeightUnit>("kg");
   const [selected, setSelected] = useState(() => weekdayId(new Date()));
+  const [gymName, setGymName] = useState("");
   const load = useCallback(() => {
     getNutritionProfile().then((profile) => setUnit(weightUnitOf(profile)));
     getSetting("active_session").then((saved) => setResumable(readActiveSession(saved) !== null));
+    getGyms().then(({ active }) => setGymName(active.name));
     Promise.all([getRoutine(), getSessionHistory(200)]).then(([nextRoutine, nextSessions]) => {
       setRoutine(nextRoutine);
       setSessions(nextSessions);
@@ -75,6 +80,7 @@ function TrainingScreenContent() {
   const weeks = weeklyVolume(sessions, today, 8);
   const monday = weekStart(today);
   const thisWeek = sessions.filter((session) => localDateKey(new Date(session.completedAt)) >= monday);
+  const cycle = routine.cycle ? cycleWeek(routine.cycle, localDateKey(today)) : null;
   const openExercise = (name: string) => router.push({ pathname: "/exercise", params: { name } });
 
   return (
@@ -93,6 +99,25 @@ function TrainingScreenContent() {
             />
             <IconButton icon="create-outline" label="Editar rutina" onPress={() => router.push("/routine")} />
           </View>
+        </View>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Dónde entrenas"
+            onPress={() => router.push("/gyms")}
+            style={[AppTheme.chip, { flexDirection: "row", gap: 6, alignItems: "center" }]}
+          >
+            <Ionicons name="location-outline" size={14} color={AppTheme.colors.accent} />
+            <Text style={AppTheme.chipText}>{gymName || "Gimnasio"}</Text>
+          </Pressable>
+          {cycle ? (
+            <View style={[AppTheme.chip, cycle.isDeload && { borderColor: AppTheme.colors.amber }]}>
+              <Text style={AppTheme.chipText}>
+                Semana {cycle.week} de {cycle.total}
+                {cycle.isDeload ? " · descarga" : cycle.deloadNext ? " · descarga la próxima" : ""}
+              </Text>
+            </View>
+          ) : null}
         </View>
         <WeekStrip week={week} selected={selected} onSelect={setSelected} />
         <DayWorkoutCard

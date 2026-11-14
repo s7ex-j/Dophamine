@@ -42,6 +42,7 @@ export function CatalogBrowser({
   onOpen,
   picked = [],
   focus,
+  equipment: available,
 }: {
   onPick?: (exercise: CatalogExercise) => void;
   onOpen?: (exercise: CatalogExercise) => void;
@@ -49,19 +50,27 @@ export function CatalogBrowser({
   picked?: string[];
   /** Grupos del día que se está armando: se abre en el primero y van primero en la cuadrícula. */
   focus?: MuscleGroup[];
+  /** Equipo del gimnasio activo: con él aparece "Solo lo que tengo". */
+  equipment?: Equipment[];
 }) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<MuscleGroup | null>(focus?.[0] ?? null);
   const [muscle, setMuscle] = useState<Muscle | null>(null);
   const [equipment, setEquipment] = useState<Equipment | null>(null);
   const [limit, setLimit] = useState(PAGE);
+  const [onlyMine, setOnlyMine] = useState(Boolean(available));
+  // El peso corporal siempre está disponible.
+  const usable = (item: CatalogExercise) =>
+    !onlyMine || !available || item.equipment === "bodyweight" || available.includes(item.equipment);
 
   const current = MUSCLE_GROUPS.find((item) => item.id === group);
   const inGroup = group ? exercisesInGroup(group, { muscle: muscle ?? undefined }) : [];
   const equipmentOptions = [...new Set(inGroup.map((item) => item.equipment))];
-  const list = query.trim()
-    ? searchExercises(query)
-    : inGroup.filter((item) => !equipment || item.equipment === equipment);
+  const list = (
+    query.trim()
+      ? searchExercises(query)
+      : inGroup.filter((item) => !equipment || item.equipment === equipment)
+  ).filter(usable);
   const choose = (next: MuscleGroup | null) => {
     setGroup(next);
     setMuscle(null);
@@ -163,9 +172,23 @@ export function CatalogBrowser({
 
       {query.trim() || group ? (
         <View style={{ gap: 2 }}>
-          <Text style={AppTheme.hint}>
-            {list.length} {list.length === 1 ? "ejercicio" : "ejercicios"}
-          </Text>
+          <View style={[AppTheme.sectionHeader, { alignItems: "center" }]}>
+            <Text style={AppTheme.hint}>
+              {list.length} {list.length === 1 ? "ejercicio" : "ejercicios"}
+            </Text>
+            {available ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: onlyMine }}
+                onPress={() => setOnlyMine(!onlyMine)}
+                style={[AppTheme.chip, onlyMine && AppTheme.chipActive]}
+              >
+                <Text style={[AppTheme.chipText, onlyMine && AppTheme.chipTextActive]}>
+                  Solo lo que tengo
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
           {list.slice(0, limit).map((exercise) => {
             const added = picked.includes(exercise.name);
             return (

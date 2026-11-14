@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.17.0 - 2026-11-13
+
+Entreno avanzado: tipos de serie, lados, superseries, calentamiento, gimnasios y mesociclos con descarga.
+
+- Tipos de serie: tocar el número de una serie la cambia entre efectiva, calentamiento (C), drop set (D), myo-reps (M) y parciales (P). Todas menos el calentamiento suman al volumen.
+- Lados: "Por lado" separa cada serie en izquierda y derecha (I/D). El resumen compara el volumen de cada lado y avisa si la diferencia pasa del 10 %.
+- Superseries: "Superserie con el siguiente" une ejercicios seguidos (A1, A2…); el botón de abajo salta al siguiente del grupo.
+- Calentamiento sugerido según la primera serie efectiva: con barra, barra vacía y 40, 60 y 80 %; con mancuernas o máquina, 50 y 75 %. Cargas redondeadas al equipo.
+- Dónde entrenas (Entreno → chip del gimnasio): perfiles con su equipo, el peso de la barra y el salto mínimo de carga (Gimnasio, Casa y Viaje de inicio, y los que agregues). El activo filtra el catálogo ("Solo lo que tengo"), los reemplazos y redondea las cargas sugeridas.
+- Mesociclos (Mi rutina → paso 4): bloques de 4, 5, 6 u 8 semanas que se repiten; la última es de descarga (la mitad de las series, 10 % menos de carga y 2 repeticiones más en reserva). Entreno muestra en qué semana vas.
+- De 290 a 301 pruebas de dominio y de 22 a 23 flujos de navegador.
+- No comprobado en teléfono: la sesión con lados y superseries, la pantalla de gimnasios y el mesociclo.
+
 ## 0.16.0 - 2026-11-13
 
 Medidas corporales, tipos de plan y calorías por día, ayuno, alcohol aparte y de dónde salen tus nutrientes.

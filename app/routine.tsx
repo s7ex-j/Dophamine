@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 
-import { Button, ChoiceControl, Input, LinkButton, OptionList, Screen } from "@/src/components/ui";
+import { Button, Chips, ChoiceControl, Input, LinkButton, OptionList, Screen } from "@/src/components/ui";
 import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import { findExercise, MUSCLE_GROUPS, type MuscleGroup } from "@/src/features/exercises/catalog";
 import { CatalogBrowser } from "@/src/features/exercises/CatalogBrowser";
@@ -31,6 +31,11 @@ import {
   recommendTemplates,
   type TemplateId,
 } from "@/src/features/training/training.templates";
+import { cycleWeek } from "@/src/features/training/cycle";
+import type { GymSetup } from "@/src/features/training/gyms";
+import { getGyms } from "@/src/features/training/gyms.repository";
+import { weekStart } from "@/src/features/training/week";
+import { localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
@@ -57,7 +62,9 @@ function RoutineEditor() {
   const [mode, setMode] = useState<"template" | "own">("own");
   const [day, setDay] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
+  const [gym, setGym] = useState<GymSetup | null>(null);
   useEffect(() => {
+    getGyms().then(({ active }) => setGym(active));
     Promise.all([getRoutine(), getNutritionProfile()]).then(([saved, nextProfile]) => {
       setRoutine(saved);
       setProfile(nextProfile);
@@ -249,6 +256,47 @@ function RoutineEditor() {
           );
         })}
 
+        <Text style={AppTheme.sectionTitle}>4. Mesociclo (opcional)</Text>
+        <OptionList
+          value={routine.cycle ? "on" : "off"}
+          onChange={(value) =>
+            setRoutine({
+              ...routine,
+              cycle:
+                value === "on" ? { weeks: 5, deload: true, startDate: weekStart(new Date()) } : undefined,
+            })
+          }
+          options={[
+            {
+              value: "off",
+              label: "Sin bloques",
+              detail: "La misma semana se repite siempre.",
+              icon: "repeat-outline",
+            },
+            {
+              value: "on",
+              label: "Por bloques con descarga",
+              detail: "Bloques de varias semanas; la última es más suave para recuperarte.",
+              icon: "trending-up-outline",
+            },
+          ]}
+        />
+        {routine.cycle ? (
+          <View style={{ gap: 8 }}>
+            <Text style={AppTheme.label}>Semanas por bloque</Text>
+            <Chips
+              value={routine.cycle.weeks}
+              onChange={(weeks) => setRoutine({ ...routine, cycle: { ...routine.cycle!, weeks } })}
+              options={[4, 5, 6, 8].map((value) => ({ value, label: `${value}` }))}
+            />
+            <Text style={AppTheme.hint}>
+              Vas en la semana {cycleWeek(routine.cycle, localDateKey()).week} de {routine.cycle.weeks}. La
+              última es de descarga: la mitad de las series, 10 % menos de carga y más repeticiones en
+              reserva.
+            </Text>
+          </View>
+        ) : null}
+
         <Button title="Guardar rutina" onPress={save} />
       </ScrollView>
 
@@ -261,6 +309,7 @@ function RoutineEditor() {
           <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
             <CatalogBrowser
               key={day ?? "none"}
+              equipment={gym?.equipment}
               focus={workout?.focus}
               picked={workout?.exercises.map((exercise) => exercise.name) ?? []}
               onPick={(exercise) => day && change(addExerciseToDay(routine, day, exercise.name))}
