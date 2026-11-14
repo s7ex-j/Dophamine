@@ -146,7 +146,3 @@ export function muscleLoads(sessions: CompletedSession[]): MuscleLoad[] {
     };
   });
 }
-
-/** Ejercicios de una sesión que están en el catálogo con imagen (para miniaturas). */
-export const mediaOf = (names: string[]) =>
-  names.map((name) => findExercise(name)?.media ?? null).filter((media): media is string => Boolean(media));

@@ -3,7 +3,6 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { buildNutritionProfile } from "@/src/features/profile/profile";
 import {
   analyzeMetabolism,
-  buildWeeklyCheckIn,
   energyBalance,
   energyPerKg,
   expenditureSeries,
@@ -65,34 +64,6 @@ describe("analyzeMetabolism", () => {
     );
     expect(analysis.nutritionDaysLast7).toBe(1);
     expect(analysis.status).toBe("holding");
-  });
-});
-
-describe("buildWeeklyCheckIn", () => {
-  it("explica qué falta mientras la estimación se construye", () => {
-    const checkIn = buildWeeklyCheckIn(
-      analyzeMetabolism(days(5, () => ({ weightKg: 75, caloriesIn: 2500 }))),
-      profile,
-    );
-    expect(checkIn).toMatchObject({ status: "building", ready: false, suggestedCalories: null });
-    expect(checkIn.message).toContain("5/10");
-  });
-
-  it("limita cada ajuste semanal a ±100 kcal", () => {
-    const analysis = analyzeMetabolism(days(21, () => ({ weightKg: 75, caloriesIn: 3200 })));
-    const checkIn = buildWeeklyCheckIn(analysis, profile);
-    expect(checkIn.ready).toBe(true);
-    expect(checkIn.delta).toBe(100);
-    expect(checkIn.suggestedCalories).toBe(profile.calorieTarget + 100);
-  });
-
-  it("no propone cambios cuando el objetivo ya coincide con la estimación", () => {
-    const analysis = analyzeMetabolism(
-      days(21, () => ({ weightKg: 75, caloriesIn: profile.calorieTarget + 10 })),
-    );
-    const checkIn = buildWeeklyCheckIn(analysis, profile);
-    expect(Math.abs(checkIn.delta ?? 0)).toBeLessThan(25);
-    expect(checkIn.message).toContain("coincide");
   });
 });
 

@@ -86,9 +86,16 @@ async function main() {
   const store = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), STORE_KEY);
   const seed = (data) =>
     page.evaluate((key, value) => localStorage.setItem(key, JSON.stringify(value)), STORE_KEY, data);
+  // Abre una ruta. A veces la red del servidor local no se aquieta a tiempo:
+  // se reintenta una vez esperando solo el documento, y luego el contenido.
   const open = async (path) => {
-    await page.goto(`${base}${path}`, { waitUntil: "networkidle0" });
-    await page.waitForFunction(() => document.body.innerText.trim().length > 20);
+    try {
+      await page.goto(`${base}${path}`, { waitUntil: "networkidle0", timeout: 20000 });
+    } catch (error) {
+      if (!String(error).includes("timeout")) throw error;
+      await page.goto(`${base}${path}`, { waitUntil: "domcontentloaded", timeout: 30000 });
+    }
+    await page.waitForFunction(() => document.body.innerText.trim().length > 20, { timeout: 15000 });
   };
   const waitText = async (text) => {
     try {

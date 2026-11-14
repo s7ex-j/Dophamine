@@ -63,29 +63,6 @@ export function Button({
     </Pressable>
   );
 }
-export function SegmentedControl({
-  value,
-  onChange,
-  options,
-}: {
-  value: number;
-  onChange: (value: number) => void;
-  options: number[];
-}) {
-  return (
-    <View style={AppTheme.segmented}>
-      {options.map((option) => (
-        <Pressable
-          key={option}
-          onPress={() => onChange(option)}
-          style={[AppTheme.segment, option === value && AppTheme.segmentActive]}
-        >
-          <Text style={[AppTheme.segmentText, option === value && AppTheme.segmentTextActive]}>{option}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
 export function ChoiceControl<T extends string>({
   value,
   onChange,

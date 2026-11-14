@@ -93,8 +93,6 @@ export type MealEntry = {
 
 export type MealDraft = Omit<MealEntry, "id" | "date" | "slot">;
 
-/** Los momentos de la configuración por defecto (4 con nombre). */
-export const MEAL_SLOTS = mealSlots(DEFAULT_MEAL_SETUP);
 export const slotLabel = (slot: MealSlot) =>
   NAMED[slot]?.label ?? NUMBERED.find((item) => item.id === slot)?.label ?? slot;
 
@@ -276,3 +274,20 @@ export function rescaleEntry(entry: MealEntry, grams: number, food: Food | null)
 /** Agrega o quita un id de una lista (favoritos). */
 export const toggleId = (ids: string[], id: string) =>
   ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id];
+
+/** Un registro rápido (sin alimento detrás) es una estimación: sus números los escribió la persona. */
+export const isEstimate = (entry: MealEntry) => !entry.foodId;
+
+/** Qué parte de las calorías del día salió de registros rápidos (0 a 1). */
+export function estimatedShare(entries: MealEntry[]): number {
+  const total = entries.reduce((sum, entry) => sum + entry.kcal, 0);
+  if (total <= 0) return 0;
+  return entries.filter(isEstimate).reduce((sum, entry) => sum + entry.kcal, 0) / total;
+}
+
+/**
+ * Si más de la mitad de las calorías del día son estimadas, conviene marcarlo
+ * como incompleto: así no distorsiona el cálculo del gasto.
+ */
+export const suggestPartial = (entries: MealEntry[], partial: boolean | undefined) =>
+  !partial && estimatedShare(entries) > 0.5;

@@ -17,7 +17,6 @@ import {
   type NutritionProfile,
 } from "@/src/features/profile/profile";
 import type { MetabolicAnalysis } from "@/src/features/tdee/tdee";
-import { trendColumns } from "@/src/features/tdee/trendChart";
 import { convertWeight, formatWeight } from "@/src/lib/units";
 import { localDateKey } from "@/src/lib/dates";
 import { AppTheme } from "@/src/theme";
@@ -70,51 +69,6 @@ export function GoalProgressCard({
         <Text style={AppTheme.hint}>Tendencia {formatWeight(progress.currentKg, unit, 1)}</Text>
         <Text style={AppTheme.hint}>Meta {formatWeight(progress.goalKg, unit, 1)}</Text>
       </View>
-    </Card>
-  );
-}
-
-export function TrendCard({ analysis, profile }: { analysis: MetabolicAnalysis; profile: NutritionProfile }) {
-  const unit = weightUnitOf(profile);
-  const points = analysis.points.slice(-14);
-  const columns = trendColumns(points);
-  const last = points.at(-1);
-  const target = last ? targetWeeklyRateKg(profile, last.trendKg) : null;
-  const rate = (kg: number) =>
-    `${kg > 0 ? "+" : kg < 0 ? "−" : ""}${Math.abs(convertWeight(kg, "kg", unit)).toFixed(2)} ${unit}/sem`;
-  return (
-    <Card title="Tendencia de peso">
-      {points.length >= 2 && last ? (
-        <>
-          <View style={AppTheme.chart}>
-            <View style={AppTheme.chartBars}>
-              {columns.map((column) => (
-                <View key={column.date} style={AppTheme.chartColumn}>
-                  <View style={[AppTheme.chartBar, { height: `${column.trendPct}%` }]} />
-                  <View style={[AppTheme.chartDot, { bottom: `${column.weightPct}%` }]} />
-                </View>
-              ))}
-            </View>
-          </View>
-          <View style={AppTheme.chartLabels}>
-            <Text style={AppTheme.hint}>{points[0].date.slice(5)}</Text>
-            <Text style={AppTheme.hint}>{last.date.slice(5)}</Text>
-          </View>
-          <ListRow
-            title="Tendencia"
-            detail={`Pesaje más reciente: ${formatWeight(last.weightKg, unit, 1)}`}
-            value={formatWeight(last.trendKg, unit, 1)}
-          />
-          <ListRow
-            title="Ritmo real"
-            detail={target === null ? "Últimas semanas" : `Meta: ${rate(target)}`}
-            value={analysis.weeklyRateKg === null ? "En espera" : rate(analysis.weeklyRateKg)}
-          />
-          <Text style={AppTheme.hint}>Barra: tu tendencia. Punto: el pesaje de ese día.</Text>
-        </>
-      ) : (
-        <Text style={AppTheme.body}>Registra tu peso al menos dos días para ver la tendencia.</Text>
-      )}
     </Card>
   );
 }

@@ -29,14 +29,13 @@ La pantalla principal no es un muro de numeros: presenta la energia disponible, 
 
 ## Que incluye
 
-- **Dashboard de decision diaria.** Energia consumida/restante, objetivo, macros, consistencia y un siguiente paso accionable desde la primera pantalla.
-- **Plan nutricional inicial.** Estima BMR con Mifflin-St Jeor, aplica actividad y objetivo, y propone calorias y macronutrientes de referencia.
-- **Registro compacto.** Peso, calorias y macros; no exige catalogar alimento por alimento para empezar a encontrar senales.
-- **TDEE y revision semanal transparentes.** Se activan al reunir historial suficiente, indican si la estimacion esta construyendose, actualizandose o en pausa, y nunca cambian tu objetivo sin aceptacion.
-- **Habitos mensuales.** Plan, proteina, movimiento, descanso y chequeo personal con una vista de consistencia por dia.
-- **Entrenamiento por dias.** Cada dia de la semana con su propio entreno (Torso A, Pierna A…), catalogo de casi 600 ejercicios con imagen explorable por grupo muscular, registro serie por serie, mapa muscular, volumen semana a semana y mejores marcas.
-- **Generacion y progresion locales.** La rutina puede adaptarse al objetivo, duracion y equipo; las sugerencias usan las cargas, repeticiones y RIR de sesiones previas.
-- **Bienestar con contexto.** Animo, energia, estres, horas de sueno y una nota privada, con lectura de tendencia reciente.
+- **Panel como centro.** Todo se anota desde "Hoy": peso y composicion, comidas por momento del dia, sueno, agua, ayuno y dia incompleto; debajo, el progreso con graficos de 1 semana a 1 ano y un resumen de la semana pasada.
+- **Plan inicial completo.** Evaluacion por pasos (cuerpo, composicion, actividad, entreno, ingesta, meta, comidas por nombre o por numero) y gasto inicial con varias formulas.
+- **Gasto real y revision cada 3 o 7 dias.** Tendencia de peso suavizada, gasto observado con margen y ajustes que miran cumplimiento, sueno, entreno y cercania a la meta. "Como se calcula" lo muestra paso a paso con tus numeros. Nunca cambia el objetivo sin tu decision.
+- **Comida.** 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas editables, codigo de barras y busqueda opcional en Open Food Facts, comidas guardadas, copiar y pegar comidas y dias, alcohol aparte, tipos de plan y calorias por dia.
+- **Entreno.** Semana con un entreno por dia, plantillas por experiencia, catalogo de ~610 ejercicios con imagen, sesion serie por serie con carga sugerida, superseries, lados, calentamiento, gimnasios, mesociclos con descarga, mapa muscular y mejores marcas.
+- **Seguimiento.** Medidas corporales, fotos de progreso (solo en el telefono), ciclo menstrual, bienestar con chequeo diario de Dopi, racha y logros.
+- **Tus datos.** Respaldo en archivo entre telefono y web, exportar a CSV, importar programas y borrar por fechas o por ejercicio.
 - **Privacidad por defecto.** Sin cuentas, anuncios ni telemetria. SQLite en Android/iOS y `localStorage` en la web.
 
 ## Filosofia

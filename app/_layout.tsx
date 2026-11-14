@@ -1,19 +1,41 @@
-import { Stack } from "expo-router";
+import { Stack, type ErrorBoundaryProps } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+import { ErrorScreen } from "@/src/components/ErrorScreen";
 import { initializeDatabase } from "@/src/db/database";
 import { configureNotifications } from "@/src/features/reminders/scheduler";
 import { AppTheme } from "@/src/theme";
 
+/** Si una pantalla falla, se muestra un aviso con "Reintentar" en lugar de una pantalla en blanco. */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <ErrorScreen message={`${error.name}: ${error.message}`} onRetry={retry} />;
+}
+
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     configureNotifications();
-    initializeDatabase().finally(() => setReady(true));
-  }, []);
+    // Si la base de datos no abre, mejor decirlo que seguir y fallar en cada pantalla.
+    initializeDatabase()
+      .then(() => setReady(true))
+      .catch((error: unknown) => setFailure(error instanceof Error ? error.message : String(error)));
+  }, [attempt]);
+
+  if (failure)
+    return (
+      <ErrorScreen
+        message={failure}
+        onRetry={() => {
+          setFailure(null);
+          setAttempt(attempt + 1);
+        }}
+      />
+    );
 
   if (!ready) {
     return (

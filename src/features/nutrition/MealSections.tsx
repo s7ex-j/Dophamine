@@ -5,7 +5,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Ring, StackBar } from "@/src/components/charts";
 import { IconButton, LinkButton, type IconName } from "@/src/components/ui";
 import { stateLabels, type Food, type Nutrients } from "@/src/features/nutrition/foods";
-import type { MealEntry, MealSlot } from "@/src/features/nutrition/meals";
+import { isEstimate, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
 import { AppTheme } from "@/src/theme";
 
 // Piezas de las comidas del Panel y de "Agregar alimento". Solo dibujan.
@@ -218,9 +218,24 @@ export function EntryRow({
         onPress={onPress}
         style={{ flex: 1, gap: 2 }}
       >
-        <Text style={AppTheme.entryName} numberOfLines={1}>
-          {entry.name}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Text style={[AppTheme.entryName, { flexShrink: 1 }]} numberOfLines={1}>
+            {entry.name}
+          </Text>
+          {isEstimate(entry) ? (
+            <View
+              accessibilityLabel="Estimado"
+              style={{
+                borderRadius: 6,
+                paddingHorizontal: 6,
+                paddingVertical: 1,
+                backgroundColor: AppTheme.colors.surface2,
+              }}
+            >
+              <Text style={[AppTheme.hint, { fontSize: 11, color: AppTheme.colors.amber }]}>estimado</Text>
+            </View>
+          ) : null}
+        </View>
         <Text style={AppTheme.entryDetail}>
           {entry.grams ? `${entry.grams} g · ` : ""}P {entry.proteinG} · C {entry.carbsG} · G {entry.fatsG}
         </Text>

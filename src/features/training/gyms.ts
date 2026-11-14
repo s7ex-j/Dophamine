@@ -71,8 +71,6 @@ export const activeGym = (gyms: GymSetup[], activeId: unknown) =>
 export const roundLoad = (kg: number, incrementKg: number) =>
   Math.max(0, Math.round(Math.round(kg / incrementKg) * incrementKg * 100) / 100);
 
-export const hasEquipment = (gym: GymSetup, equipment: Equipment) => gym.equipment.includes(equipment);
-
 /**
  * Series de calentamiento antes de la primera serie efectiva. Con barra empieza
  * con la barra vacía y sube por porcentajes (40, 60 y 80 %); con mancuernas o
