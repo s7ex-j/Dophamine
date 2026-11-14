@@ -1,3 +1,4 @@
+import { countsForIntake } from "@/src/features/biometrics/dailyLog";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { convertWeight, type WeightUnit } from "@/src/lib/units";
 import { compositionChange } from "@/src/features/composition/composition";
@@ -112,10 +113,10 @@ export function analyzeMetabolism(records: DailyBiometrics[]): MetabolicAnalysis
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
   const points = trendPoints(ordered);
   // Un día marcado como incompleto no representa lo que se comió: no cuenta para la media.
-  const intakeDays = ordered.filter((record) => record.caloriesIn > 0 && !record.partial);
+  const intakeDays = ordered.filter(countsForIntake);
   const partialDays = ordered.filter((record) => record.partial).length;
   const lastSeven = ordered.slice(-7);
-  const nutritionDaysLast7 = lastSeven.filter((record) => record.caloriesIn > 0 && !record.partial).length;
+  const nutritionDaysLast7 = lastSeven.filter(countsForIntake).length;
   const weightDaysLast7 = lastSeven.filter((record) => (record.weightKg ?? 0) > 0).length;
   const spanDays = points.length > 1 ? dayDifference(points[0].date, points[points.length - 1].date) : 0;
   const density = energyPerKg(ordered);
@@ -239,7 +240,7 @@ export function energyBalance(
 ): Array<{ date: string; intake: number; balance: number }> {
   if (!tdee) return [];
   return [...records]
-    .filter((record) => record.caloriesIn > 0 && !record.partial)
+    .filter(countsForIntake)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(-days)
     .map((record) => ({ date: record.date, intake: record.caloriesIn, balance: record.caloriesIn - tdee }));

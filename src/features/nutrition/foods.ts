@@ -19,7 +19,14 @@ export type FoodSource =
 export type FoodState = "raw" | "cooked";
 export const stateLabels: Record<FoodState, string> = { raw: "Crudo", cooked: "Cocido" };
 
-export type Nutrients = { kcal: number; proteinG: number; carbsG: number; fatsG: number };
+export type Nutrients = {
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatsG: number;
+  /** Gramos de alcohol (7 kcal/g). Va aparte: no es un macronutriente. Solo se guarda si hay. */
+  alcoholG?: number;
+};
 export type RecipeIngredient = { foodId: string; name: string; grams: number } & Nutrients;
 
 export type Food = {
@@ -55,15 +62,20 @@ export function nutrientsFor(food: Pick<Food, "per100">, grams: number): Nutrien
     proteinG: round1(food.per100.proteinG * factor),
     carbsG: round1(food.per100.carbsG * factor),
     fatsG: round1(food.per100.fatsG * factor),
+    ...(food.per100.alcoholG ? { alcoholG: round1(food.per100.alcoholG * factor) } : {}),
   };
 }
 
-export const sumNutrients = (items: Nutrients[]): Nutrients => ({
-  kcal: Math.round(items.reduce((total, item) => total + item.kcal, 0)),
-  proteinG: round1(items.reduce((total, item) => total + item.proteinG, 0)),
-  carbsG: round1(items.reduce((total, item) => total + item.carbsG, 0)),
-  fatsG: round1(items.reduce((total, item) => total + item.fatsG, 0)),
-});
+export function sumNutrients(items: Nutrients[]): Nutrients {
+  const alcoholG = round1(items.reduce((total, item) => total + (item.alcoholG ?? 0), 0));
+  return {
+    kcal: Math.round(items.reduce((total, item) => total + item.kcal, 0)),
+    proteinG: round1(items.reduce((total, item) => total + item.proteinG, 0)),
+    carbsG: round1(items.reduce((total, item) => total + item.carbsG, 0)),
+    fatsG: round1(items.reduce((total, item) => total + item.fatsG, 0)),
+    ...(alcoholG > 0 ? { alcoholG } : {}),
+  };
+}
 
 /** Texto en minúsculas y sin tildes, para que "plátano" y "platano" sean lo mismo al buscar. */
 export const normalizeText = (text: string) =>
@@ -133,8 +145,8 @@ export const emptyCustomFood = (): CustomFoodForm => ({
 const amount = (text: string) => (Number(text) > 0 ? Number(text) : 0);
 
 /** 4 kcal por gramo de proteína y de carbohidrato, 9 por gramo de grasa. */
-export const caloriesFromMacros = (proteinG: number, carbsG: number, fatsG: number) =>
-  Math.round(proteinG * 4 + carbsG * 4 + fatsG * 9);
+export const caloriesFromMacros = (proteinG: number, carbsG: number, fatsG: number, alcoholG = 0) =>
+  Math.round(proteinG * 4 + carbsG * 4 + fatsG * 9 + alcoholG * 7);
 
 export type CustomFoodResult = { food: Food; error: null } | { food: null; error: string };
 

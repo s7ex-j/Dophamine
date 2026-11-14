@@ -65,6 +65,17 @@ describe("revisión con contexto", () => {
     expect(averageIntake(partial)).toBe(2300);
   });
 
+  it("un día de ayuno marcado cuenta como ingesta real, aunque sea 0", () => {
+    const week = recent.map((record, index) =>
+      index === 0 ? { ...record, caloriesIn: 0, fasting: true } : record,
+    );
+    // 6 días a 2300 y un ayuno: la media baja a 1971.
+    expect(Math.round(averageIntake(week) as number)).toBe(1971);
+    // Sin marcarlo, un día en 0 no cuenta: pudo ser un olvido.
+    const forgot = recent.map((record, index) => (index === 0 ? { ...record, caloriesIn: 0 } : record));
+    expect(averageIntake(forgot)).toBe(2300);
+  });
+
   it("con poco sueño no profundiza el déficit", () => {
     const checkIn = contextualCheckIn(analysis, profile, { recent, sleepMinutes: 360 });
     expect(checkIn.delta).toBe(0);

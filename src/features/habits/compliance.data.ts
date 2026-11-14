@@ -1,3 +1,4 @@
+import { targetsForWeekday } from "@/src/features/profile/targets";
 import { getBiometricsWindow } from "@/src/features/biometrics/biometrics.repository";
 import { dayCompliance, type DayCompliance } from "@/src/features/habits/compliance";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
@@ -33,7 +34,11 @@ export async function getComplianceDays(
   const lastWeight =
     [...records].sort((a, b) => b.date.localeCompare(a.date)).find((record) => record.weightKg)?.weightKg ??
     null;
-  const targets = { calories: profile?.calorieTarget ?? 0, protein: profile?.proteinTarget ?? 0 };
+  const targets = (weekday: string) => {
+    if (!profile) return { calories: 0, protein: 0 };
+    const day = targetsForWeekday(profile, weekday, routine.days);
+    return { calories: day.calories, protein: day.protein };
+  };
   return Array.from({ length: days }, (_, index) => {
     const date = addDays(since, index);
     const [year, month, day] = date.split("-").map(Number);
@@ -48,7 +53,7 @@ export async function getComplianceDays(
           wellbeingDone: checked.has(date),
         },
         {
-          ...targets,
+          ...targets(weekdayOf(new Date(year, month - 1, day))),
           // Agua: la meta del día, con el entrenamiento si toca.
           water: waterTargetMl(
             lastWeight,

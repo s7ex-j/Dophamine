@@ -30,7 +30,7 @@ import { isSleepEntry } from "@/src/features/sleep/sleep";
 // se leen igual: sus sesiones conservan una línea por ejercicio.
 // Formato 8: agua del día (`waterMl`) y configuración de comidas del plan
 // (`mealStyle`, `mealsPerDay`). Los formatos 1 a 7 se leen igual.
-export const BACKUP_FORMAT = 8;
+export const BACKUP_FORMAT = 9;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 

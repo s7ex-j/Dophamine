@@ -21,6 +21,8 @@ export type DailyBiometrics = {
   boneMassKg?: number | null;
   /** La persona marcó que no registró todo lo que comió ese día. */
   partial?: boolean;
+  /** Día de ayuno: lo comido (aunque sea 0) es real y cuenta para la ingesta media. */
+  fasting?: boolean;
   /** Agua tomada en el día, en ml. */
   waterMl?: number;
 };
@@ -41,6 +43,7 @@ type Row = {
   water_pct: number | null;
   bone_mass_kg: number | null;
   partial: number | null;
+  fasting?: number | null;
   water_ml: number | null;
 };
 
@@ -59,6 +62,7 @@ const fromRow = (row: Row): DailyBiometrics => ({
   waterPct: row.water_pct,
   boneMassKg: row.bone_mass_kg,
   partial: row.partial === 1,
+  fasting: row.fasting === 1,
   waterMl: row.water_ml ?? 0,
 });
 
@@ -126,6 +130,17 @@ export async function getRecentBiometrics(): Promise<DailyBiometrics[]> {
 }
 
 /** Marca o desmarca un día como incompleto (no se registró todo lo comido). */
+export async function setDayFasting(date: string, fasting: boolean) {
+  const db = await getDatabase();
+  await db.runAsync(
+    `INSERT INTO daily_biometrics (id, date, fasting) VALUES (?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET fasting = excluded.fasting, updated_at = CURRENT_TIMESTAMP`,
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    date,
+    fasting ? 1 : 0,
+  );
+}
+
 export async function setDayPartial(date: string, partial: boolean) {
   const db = await getDatabase();
   await db.runAsync(

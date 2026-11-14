@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.16.0 - 2026-11-13
+
+Medidas corporales, tipos de plan y calorías por día, ayuno, alcohol aparte y de dónde salen tus nutrientes.
+
+- Medidas corporales (Más → Medidas corporales): cintura, cadera, pecho, brazo, muslo y cuello, con gráfico por medida, cambio desde la primera, cintura ÷ altura y % de grasa estimado por perímetros (fórmula de la Marina de EE. UU., aproximada).
+- Reparto de tus calorías (Estrategia):
+  - Tipo de plan: equilibrado, bajo en carbohidratos, keto o alto en proteína. Cambia carbos y grasas (y la proteína en "alto en proteína") sin cambiar las calorías.
+  - Durante la semana: igual todos los días, más en días de entreno (+100 a +400 kcal; los de descanso bajan lo justo) o a mano por día. El promedio semanal sigue siendo tu objetivo, el que ajusta la revisión.
+  - "Hoy" y el cumplimiento usan las metas de ese día y avisan si es día de entreno o de descanso.
+- Días de ayuno: un interruptor en "Hoy". Un día de ayuno cuenta para la ingesta media aunque se coma 0; un día vacío sin marcar no cuenta (pudo ser un olvido).
+- Alcohol como dato aparte: cerveza, vinos y destilados traen sus gramos de alcohol (7 kcal/g, fuera de los macros); el registro rápido acepta alcohol y el resumen del día lo muestra.
+- Nutrientes (Más → Nutrientes): los alimentos que más aportan de calorías, proteína, carbos, grasas o alcohol en 7, 30 o 90 días, cómo repartes las calorías y la proteína en el día y cuántas comidas llegan a 20 g de proteína.
+- El respaldo pasa al formato 9 (alcohol por comida y días de ayuno). Los formatos 1 a 8 se siguen leyendo.
+- De 275 a 290 pruebas de dominio y de 21 a 22 flujos de navegador.
+- No comprobado en teléfono: las columnas nuevas `alcohol_g` y `fasting`, y las pantallas de Medidas y Nutrientes.
+
 ## 0.15.0 - 2026-11-13
 
 Semana de entreno a medida, bienestar con Dopi y un algoritmo que tiene en cuenta el entreno (y se puede ver por dentro).

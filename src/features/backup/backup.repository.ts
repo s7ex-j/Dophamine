@@ -84,8 +84,8 @@ export async function restoreBackup(backup: Backup): Promise<void> {
     for (const row of tables.biometrics)
       await db.runAsync(
         `INSERT INTO daily_biometrics
-          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg, partial, water_ml)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          (id, date, weight_kg, calories_in, protein_g, carbs_g, fats_g, body_fat_pct, muscle_mass_kg, water_pct, bone_mass_kg, partial, water_ml, fasting)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         row.id,
         row.date,
         row.weight_kg,
@@ -99,6 +99,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.bone_mass_kg,
         row.partial ?? 0,
         row.water_ml ?? 0,
+        row.fasting ?? 0,
       );
     for (const row of tables.wellbeing)
       await db.runAsync(
@@ -153,7 +154,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       );
     for (const row of tables.meals)
       await db.runAsync(
-        "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         row.id,
         row.date,
         row.slot,
@@ -164,6 +165,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.protein_g,
         row.carbs_g,
         row.fats_g,
+        row.alcohol_g ?? 0,
       );
     for (const row of tables.sleep ?? [])
       await db.runAsync(

@@ -36,7 +36,7 @@ export async function getStreakSummary(now = new Date()): Promise<StreakSummary>
   ]);
   const dates = [
     ...records
-      .filter((record) => record.weightKg || record.caloriesIn > 0 || record.proteinG > 0)
+      .filter((record) => record.weightKg || record.caloriesIn > 0 || record.proteinG > 0 || record.fasting)
       .map((record) => record.date),
     ...workoutDates,
   ];

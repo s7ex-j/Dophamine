@@ -10,6 +10,7 @@ import {
   getBiometricsByDate,
   getRecentBiometrics,
   saveDayBody,
+  setDayFasting,
   setDayPartial,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
@@ -32,6 +33,7 @@ import {
 import { mealSetupOf, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { saveMealFromEntries } from "@/src/features/nutrition/savedMeals.repository";
 import { weekdayOf } from "@/src/features/reminders/reminders";
+import { targetsForWeekday } from "@/src/features/profile/targets";
 import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
 import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import type { Routine } from "@/src/features/training/training.plans";
@@ -136,7 +138,10 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         fatsG: day?.fatsG ?? 0,
       };
   const [year, month, dayOfMonth] = date.split("-").map(Number);
-  const trainingDay = routine?.days.includes(weekdayOf(new Date(year, month - 1, dayOfMonth))) ?? false;
+  const weekday = weekdayOf(new Date(year, month - 1, dayOfMonth));
+  const trainingDay = routine?.days.includes(weekday) ?? false;
+  // Metas del día: el reparto semanal y el tipo de plan las cambian sin mover el promedio.
+  const dayTargets = targetsForWeekday(profile, weekday, routine?.days ?? []);
   const waterTarget = waterTargetMl(
     day?.weightKg ?? lastWeight,
     trainingDay ? (routine?.sessionMinutes ?? 0) : 0,
@@ -182,15 +187,13 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         </Pressable>
       </View>
 
-      <DaySummary
-        totals={totals}
-        targets={{
-          calories: profile.calorieTarget,
-          protein: profile.proteinTarget,
-          carbs: profile.carbsTarget,
-          fats: profile.fatsTarget,
-        }}
-      />
+      {dayTargets.offset ? (
+        <Text style={[AppTheme.hint, { paddingHorizontal: 4 }]}>
+          {trainingDay ? "Día de entreno" : "Día de descanso"}: {dayTargets.offset > 0 ? "+" : "−"}
+          {Math.abs(dayTargets.offset)} kcal frente a tu promedio de {profile.calorieTarget}.
+        </Text>
+      ) : null}
+      <DaySummary totals={totals} targets={dayTargets} />
 
       <View style={AppTheme.quickRow}>
         <QuickTile
@@ -393,6 +396,19 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
           />
         </View>
       ) : null}
+      <View style={[AppTheme.sectionHeader, { paddingHorizontal: 4 }]}>
+        <Text style={AppTheme.hint}>Día de ayuno (lo comido, aunque sea nada, cuenta)</Text>
+        <Switch
+          accessibilityLabel="Día de ayuno"
+          value={Boolean(day?.fasting)}
+          onValueChange={async (fasting) => {
+            await setDayFasting(date, fasting);
+            changed();
+          }}
+          trackColor={{ true: AppTheme.colors.violet, false: AppTheme.colors.border }}
+          thumbColor={AppTheme.colors.text}
+        />
+      </View>
       {hasData(day) || entries.length ? (
         <RowActions
           question={`¿Borrar todo lo registrado el ${date}?`}

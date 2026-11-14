@@ -506,6 +506,13 @@ function AddFoodContent() {
                   fats={quick.fats}
                   onChange={(field, value) => setQuick({ ...quick, [field]: value })}
                 />
+                <Input
+                  label="Alcohol (g), si es una bebida"
+                  value={quick.alcohol ?? ""}
+                  onChangeText={(alcohol) => setQuick({ ...quick, alcohol })}
+                  keyboardType="decimal-pad"
+                  placeholder="0"
+                />
                 <Button title={`Agregar a ${slotName}`} onPress={addQuick} />
               </Card>
             ) : null}

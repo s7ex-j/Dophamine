@@ -22,6 +22,7 @@ export type BiometricsRow = {
   water_pct: number | null;
   bone_mass_kg: number | null;
   partial?: number | null;
+  fasting?: number | null;
   water_ml?: number | null;
 };
 export type WellbeingRow = {
@@ -69,6 +70,7 @@ export type MealRow = {
   protein_g: number;
   carbs_g: number;
   fats_g: number;
+  alcohol_g?: number | null;
 };
 export type SleepRow = {
   id: string;
@@ -121,6 +123,7 @@ export function storeFromTables(tables: Tables): Store {
       waterPct: row.water_pct,
       boneMassKg: row.bone_mass_kg,
       ...(row.partial === 1 ? { partial: true } : {}),
+      ...(row.fasting === 1 ? { fasting: true } : {}),
       ...(row.water_ml ? { waterMl: row.water_ml } : {}),
     })),
     // La web guarda los chequeos del más reciente al más antiguo.
@@ -213,6 +216,7 @@ export function storeFromTables(tables: Tables): Store {
       proteinG: row.protein_g,
       carbsG: row.carbs_g,
       fatsG: row.fats_g,
+      ...(row.alcohol_g ? { alcoholG: row.alcohol_g } : {}),
     })),
     sleep: (tables.sleep ?? []).map((row) => ({
       id: row.id,
@@ -261,6 +265,7 @@ export function tablesFromStore(store: Store): Tables {
       water_pct: record.waterPct ?? null,
       bone_mass_kg: record.boneMassKg ?? null,
       partial: record.partial ? 1 : 0,
+      fasting: record.fasting ? 1 : 0,
       water_ml: record.waterMl ?? 0,
     })),
     // El respaldo no trae la hora del chequeo: se reconstruye una que conserve el orden.
@@ -336,6 +341,7 @@ export function tablesFromStore(store: Store): Tables {
       protein_g: entry.proteinG,
       carbs_g: entry.carbsG,
       fats_g: entry.fatsG,
+      alcohol_g: entry.alcoholG ?? 0,
     })),
     sleep: (store.sleep ?? []).map((entry) => ({
       id: entry.id,

@@ -112,7 +112,15 @@ export function draftFromFood(food: Food, grams: number): MealDraft {
 }
 
 // Registro rápido: calorías y macros sin alimento, para cuando no vale la pena buscar.
-export type QuickForm = { name: string; kcal: string; protein: string; carbs: string; fats: string };
+export type QuickForm = {
+  name: string;
+  kcal: string;
+  protein: string;
+  carbs: string;
+  fats: string;
+  /** Gramos de alcohol, opcional. */
+  alcohol?: string;
+};
 export const emptyQuick = (): QuickForm => ({ name: "", kcal: "", protein: "", carbs: "", fats: "" });
 
 export function draftFromQuick(
@@ -122,10 +130,18 @@ export function draftFromQuick(
   const proteinG = amount(form.protein);
   const carbsG = amount(form.carbs);
   const fatsG = amount(form.fats);
-  const kcal = amount(form.kcal) || caloriesFromMacros(proteinG, carbsG, fatsG);
+  const alcoholG = amount(form.alcohol ?? "");
+  const kcal = amount(form.kcal) || caloriesFromMacros(proteinG, carbsG, fatsG, alcoholG);
   if (kcal <= 0) return { draft: null, error: "Escribe las calorías o al menos un macronutriente." };
   return {
-    draft: { name: form.name.trim() || "Registro rápido", kcal, proteinG, carbsG, fatsG },
+    draft: {
+      name: form.name.trim() || "Registro rápido",
+      kcal,
+      proteinG,
+      carbsG,
+      fatsG,
+      ...(alcoholG ? { alcoholG } : {}),
+    },
     error: null,
   };
 }

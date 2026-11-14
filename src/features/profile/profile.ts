@@ -60,6 +60,13 @@ export type NutritionProfile = {
   /** Cómo se dividen las comidas del día (0.13.0). Sin valor: 4 con nombre. */
   mealStyle?: "named" | "numbered";
   mealsPerDay?: number;
+  /** Tipo de plan y reparto semanal de calorías (0.16.0). Sin valor: igual todos los días. */
+  dietType?: "balanced" | "low_carb" | "keto" | "high_protein";
+  calorieSchedule?: "even" | "training" | "custom";
+  /** kcal de más en los días de entreno (en "training"). */
+  trainingDayExtra?: number;
+  /** kcal de más o de menos por día ("mon"…), en "custom". */
+  customDayOffsets?: Record<string, number>;
 };
 
 export type PlanInput = Pick<NutritionProfile, "age" | "sex" | "heightCm" | "activity" | "goal"> &

@@ -607,6 +607,46 @@ async function main() {
     );
   });
 
+  await step("seguimiento: medidas, reparto semanal, nutrientes y ayuno", async () => {
+    await open("/measurements");
+    await waitText("Medir hoy");
+    await fillLabel("Cintura en cm", 82);
+    await fillLabel("Cuello en cm", 37);
+    await press("Guardar medidas");
+    await waitText("Guardado");
+    let current = await store();
+    assert(current.settings.body_measurements?.[0]?.waistCm === 82, "No se guardaron las medidas.");
+    await waitText("% de grasa estimado");
+    await open("/strategy");
+    await waitText("Reparto de tus calorías");
+    await press("Más en días de entreno");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).profile?.calorieSchedule === "training",
+      {},
+      STORE_KEY,
+    );
+    await press("Keto");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).profile?.dietType === "keto",
+      {},
+      STORE_KEY,
+    );
+    await open("/nutrients");
+    await waitText("Principales aportes");
+    await waitText("Cómo repartes el día");
+    await open("/");
+    await waitText("Hoy");
+    await pressLabel("Día de ayuno");
+    await page.waitForFunction(
+      (key, date) =>
+        JSON.parse(localStorage.getItem(key)).biometrics.find((record) => record.date === date)?.fasting ===
+        true,
+      {},
+      STORE_KEY,
+      dateKey(),
+    );
+  });
+
   await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");
@@ -655,7 +695,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 8, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 9, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);

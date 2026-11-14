@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 13 de noviembre de 2026 (versión 0.15.0, Expo SDK 58)
+## Estado al 13 de noviembre de 2026 (versión 0.16.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -46,10 +46,10 @@ Todo esto se puede hacer y probar con Expo Go y en la web. Orden propuesto:
 | # | Quién | Paso | Notas |
 |---|---|---|---|
 | 1 | J | Recorrer la 0.15.0 en el teléfono: chequeo de Dopi, editor de semana (plantilla y armada a mano), sesión con cardio, "Cómo se calcula". | Lo que falle se anota con captura. |
-| 2 | C | Medidas corporales (brazo, cintura, cadera, pecho, muslo) con gráfico. | Nueva tabla o registro en el día. |
-| 3 | C | Macros por día de la semana y tipos de plan (equilibrado, bajo en carbohidratos, keto). | Cambia el objetivo del día; el gasto no cambia. |
-| 4 | C | Días de ayuno y alcohol como dato aparte (gramos de alcohol, 7 kcal/g, fuera de los macros). | |
-| 5 | C | Principales aportes por macro y reparto por momento del día (nutrient timing). | Sale de lo ya registrado. |
+| 2 | C ✔ | Medidas corporales (brazo, cintura, cadera, pecho, muslo, cuello) con gráfico y % de grasa por perímetros. | Hecho en la 0.16.0. |
+| 3 | C ✔ | Calorías por día de la semana y tipos de plan (equilibrado, bajo en carbohidratos, keto, alto en proteína). | Hecho en la 0.16.0. |
+| 4 | C ✔ | Días de ayuno y alcohol como dato aparte. | Hecho en la 0.16.0. |
+| 5 | C ✔ | Principales aportes por nutriente y reparto por momento del día. | Hecho en la 0.16.0. |
 | 6 | C | Micronutrientes y explorador de nutrientes. | Necesita ampliar la base incluida con micros (USDA, dominio público) y leer los de Open Food Facts. Trabajo de datos grande. |
 | 7 | C | Seguimiento del ciclo menstrual (opcional en la evaluación), con sus fases en el gráfico de peso. | Solo en el teléfono. |
 | 8 | C | Entreno: lados izquierdo/derecho en la sesión (el dato ya existe), superseries, series parciales y myo-reps. | |
@@ -96,4 +96,5 @@ Chocan con "sin cuentas ni servidor"; solo si el proyecto crece y se decide cóm
 
 Historial inteligente por momento del día (sugerencias por comida, 0.9.0), fecha estimada para llegar a la
 meta (0.11.0), tonelaje por sesión, por ejercicio y por semana (0.12.0–0.14.0), web como visor (0.7.0),
-comidas guardadas (0.14.0) y gasto ajustado por el entreno real (0.15.0).
+comidas guardadas (0.14.0), gasto ajustado por el entreno real (0.15.0), medidas corporales, macros por
+día, tipos de plan, ayuno, alcohol y principales aportes (0.16.0).

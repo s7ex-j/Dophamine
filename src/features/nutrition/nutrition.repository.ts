@@ -25,6 +25,7 @@ type EntryRow = {
   protein_g: number;
   carbs_g: number;
   fats_g: number;
+  alcohol_g?: number | null;
 };
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -40,6 +41,7 @@ const fromRow = (row: EntryRow): MealEntry => ({
   proteinG: row.protein_g,
   carbsG: row.carbs_g,
   fatsG: row.fats_g,
+  ...(row.alcohol_g ? { alcoholG: row.alcohol_g } : {}),
 });
 
 export const newFoodId = (prefix: "c" | "r") => `${prefix}:${newId()}`;
@@ -94,7 +96,7 @@ async function insertEntries(entries: MealEntry[]) {
   const db = await getDatabase();
   for (const entry of entries)
     await db.runAsync(
-      "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       entry.id,
       entry.date,
       entry.slot,
@@ -105,6 +107,7 @@ async function insertEntries(entries: MealEntry[]) {
       entry.proteinG,
       entry.carbsG,
       entry.fatsG,
+      entry.alcoholG ?? 0,
     );
 }
 
@@ -174,7 +177,7 @@ export async function setOnlineLookup(enabled: boolean) {
 export async function updateMealEntry(entry: MealEntry) {
   const db = await getDatabase();
   await db.runAsync(
-    "UPDATE meal_entries SET slot = ?, food_id = ?, name = ?, grams = ?, kcal = ?, protein_g = ?, carbs_g = ?, fats_g = ? WHERE id = ?",
+    "UPDATE meal_entries SET slot = ?, food_id = ?, name = ?, grams = ?, kcal = ?, protein_g = ?, carbs_g = ?, fats_g = ?, alcohol_g = ? WHERE id = ?",
     entry.slot,
     entry.foodId ?? null,
     entry.name,
@@ -183,6 +186,7 @@ export async function updateMealEntry(entry: MealEntry) {
     entry.proteinG,
     entry.carbsG,
     entry.fatsG,
+    entry.alcoholG ?? 0,
     entry.id,
   );
   await syncTotals(entry.date);
