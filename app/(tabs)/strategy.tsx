@@ -6,6 +6,7 @@ import { Button, Card, ListRow, NavRow, Screen } from "@/src/components/ui";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { ExpenditureCard, GoalProgressCard } from "@/src/features/dashboard/ProgressSections";
 import { Onboarding } from "@/src/features/profile/PlanWizard";
+import { DistributionCard } from "@/src/features/profile/DistributionCard";
 import {
   activityLabels,
   adjustModeLabels,
@@ -77,6 +78,7 @@ export default function StrategyScreen() {
             <Button title="Editar plan" variant="secondary" onPress={() => setEditing(true)} />
           )}
         </Card>
+        {VIEWER ? null : <DistributionCard profile={profile} onChanged={load} />}
         <CheckInCard snapshot={snapshot} controls={controls} />
         <GoalProgressCard profile={profile} trendKg={snapshot.trendKg} />
         <ExpenditureCard analysis={snapshot.analysis} />

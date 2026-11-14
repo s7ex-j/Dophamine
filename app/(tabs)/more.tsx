@@ -57,6 +57,16 @@ export default function MoreScreen() {
                 onPress={() => router.push("/achievements")}
               />
               <NavRow
+                title="Medidas corporales"
+                detail="Cintura, cadera, pecho, brazo, muslo y cuello"
+                onPress={() => router.push("/measurements")}
+              />
+              <NavRow
+                title="Nutrientes"
+                detail="Qué alimentos aportan más y cómo repartes tus comidas"
+                onPress={() => router.push("/nutrients")}
+              />
+              <NavRow
                 title="Fotos de progreso"
                 detail="Compara tu cuerpo entre dos fechas"
                 onPress={() => router.push("/photos")}

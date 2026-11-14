@@ -49,6 +49,8 @@ export default function RootLayout() {
         <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
         <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
         <Stack.Screen name="algorithm" options={{ headerShown: true, title: "Cómo se calcula" }} />
+        <Stack.Screen name="measurements" options={{ headerShown: true, title: "Medidas corporales" }} />
+        <Stack.Screen name="nutrients" options={{ headerShown: true, title: "Nutrientes" }} />
         <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
         <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />

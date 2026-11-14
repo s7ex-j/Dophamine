@@ -1,3 +1,4 @@
+import { countsForIntake } from "@/src/features/biometrics/dailyLog";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
 import { addDays } from "@/src/lib/dates";
@@ -42,7 +43,7 @@ export function weeklySummary(input: {
     list.flatMap((record) => (record.weightKg ? [record.weightKg] : []));
   const avgWeight = average(weights(week));
   const avgBefore = average(weights(before));
-  const eaten = week.filter((record) => record.caloriesIn > 0 && !record.partial);
+  const eaten = week.filter(countsForIntake);
   const avgKcal = average(eaten.map((record) => record.caloriesIn));
   const nights = input.sleep
     .filter((entry) => inRange(entry.date, start, end))
@@ -52,7 +53,9 @@ export function weeklySummary(input: {
     });
   const avgSleep = average(nights);
   const logged = new Set([
-    ...week.filter((record) => record.weightKg || record.caloriesIn > 0).map((record) => record.date),
+    ...week
+      .filter((record) => record.weightKg || record.caloriesIn > 0 || record.fasting)
+      .map((record) => record.date),
     ...input.workoutDates.filter((date) => inRange(date, start, end)),
   ]);
   return {

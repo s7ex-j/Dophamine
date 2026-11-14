@@ -66,6 +66,11 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
             </View>
           </View>
         ))}
+        {totals.alcoholG ? (
+          <Text style={AppTheme.hint}>
+            Alcohol: {totals.alcoholG} g ({Math.round(totals.alcoholG * 7)} kcal, fuera de los macros)
+          </Text>
+        ) : null}
       </View>
     </View>
   );

@@ -13,6 +13,7 @@ import {
   normalizeText,
   nutrientsFor,
   searchFoods,
+  sumNutrients,
   type Food,
 } from "./foods";
 import {
@@ -65,12 +66,14 @@ describe("alimentos básicos incluidos", () => {
   });
 
   it("sus calorías cuadran con sus macros", () => {
-    // El alcohol aporta calorías que no son macros y la cocoa es casi toda fibra.
-    const exceptions = ["Cerveza", "Vino tinto", "Pisco o destilado 40°", "Cocoa en polvo sin azúcar"];
+    // El alcohol cuenta a 7 kcal/g; la cocoa es casi toda fibra.
+    const exceptions = ["Cocoa en polvo sin azúcar"];
     const off = BUILTIN_FOODS.filter((item) => {
       if (exceptions.includes(item.name)) return false;
-      const { kcal, proteinG, carbsG, fatsG } = item.per100;
-      return Math.abs(kcal - caloriesFromMacros(proteinG, carbsG, fatsG)) > Math.max(25, kcal * 0.25);
+      const { kcal, proteinG, carbsG, fatsG, alcoholG } = item.per100;
+      return (
+        Math.abs(kcal - caloriesFromMacros(proteinG, carbsG, fatsG, alcoholG)) > Math.max(25, kcal * 0.25)
+      );
     });
     expect(off.map((item) => item.name)).toEqual([]);
   });
@@ -436,5 +439,23 @@ describe("configuración de comidas", () => {
     const slots = slotsForDay(entries, { style: "named", count: 3 });
     expect(slots.map((slot) => slot.label)).toEqual(["Desayuno", "Almuerzo", "Cena", "Comida 2"]);
     expect(isMealEntry(entry("3", "meal6", rice, 50))).toBe(true);
+  });
+});
+
+describe("alcohol", () => {
+  it("las bebidas alcohólicas traen su alcohol y suma aparte de los macros", () => {
+    const beer = BUILTIN_FOODS.find((item) => item.name === "Cerveza")!;
+    expect(beer.per100.alcoholG).toBe(3.9);
+    const can = nutrientsFor(beer, 355);
+    expect(can.alcoholG).toBeCloseTo(13.8, 1);
+    expect(sumNutrients([can, can]).alcoholG).toBeCloseTo(27.6, 1);
+    // Sin alcohol no aparece el campo.
+    expect(sumNutrients([{ kcal: 100, proteinG: 1, carbsG: 1, fatsG: 1 }])).not.toHaveProperty("alcoholG");
+    expect(caloriesFromMacros(0, 0, 0, 10)).toBe(70);
+  });
+
+  it("el registro rápido acepta gramos de alcohol", () => {
+    const { draft } = draftFromQuick({ ...emptyQuick(), name: "Pisco sour", alcohol: "14", carbs: "12" });
+    expect(draft).toMatchObject({ kcal: 146, alcoholG: 14, carbsG: 12 });
   });
 });

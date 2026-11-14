@@ -281,6 +281,8 @@ const ROWS: Row[] = [
   ["Cerveza", 43, 0.5, 3.6, 0, 355, "lata"],
   ["Vino tinto", 85, 0.1, 2.6, 0, 150, "copa"],
   ["Pisco o destilado 40°", 231, 0, 0, 0, 45, "medida"],
+  ["Vino blanco", 82, 0.1, 2.6, 0, 150, "copa"],
+  ["Cerveza sin alcohol", 21, 0.3, 4.5, 0, 355, "lata"],
 
   // Suplementos
   ["Proteína de suero en polvo", 400, 80, 8, 6, 30, "scoop"],
@@ -289,6 +291,14 @@ const ROWS: Row[] = [
   ["Barra de cereal", 390, 6, 70, 10, 25, "barra"],
   ["Creatina monohidrato", 0, 0, 0, 0, 5, "dosis"],
 ];
+
+// Gramos de alcohol por 100 g (≈ grados × 0.79). Sus calorías ya están en kcal.
+const ALCOHOL: Record<string, number> = {
+  Cerveza: 3.9,
+  "Vino tinto": 10.6,
+  "Vino blanco": 10.3,
+  "Pisco o destilado 40°": 33.4,
+};
 
 const slug = (text: string) =>
   text
@@ -307,6 +317,6 @@ export const BUILTIN_FOODS: Food[] = ROWS.map(
     ...(servingLabel ? { servingLabel } : {}),
     ...(state ? { state } : {}),
     ...(pair ? { pair } : {}),
-    per100: { kcal, proteinG, carbsG, fatsG },
+    per100: { kcal, proteinG, carbsG, fatsG, ...(ALCOHOL[name] ? { alcoholG: ALCOHOL[name] } : {}) },
   }),
 );

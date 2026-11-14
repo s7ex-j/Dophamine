@@ -20,6 +20,7 @@ export type DailyBiometrics = {
   boneMassKg?: number | null;
   /** La persona marcó que no registró todo lo que comió ese día. */
   partial?: boolean;
+  fasting?: boolean;
   /** Agua tomada en el día, en ml. */
   waterMl?: number;
 };
@@ -39,6 +40,7 @@ const normalize = (record: Partial<DailyBiometrics> & { id: string; date: string
   waterPct: record.waterPct ?? null,
   boneMassKg: record.boneMassKg ?? null,
   partial: record.partial === true,
+  fasting: record.fasting === true,
   waterMl: record.waterMl ?? 0,
 });
 
@@ -101,6 +103,12 @@ export async function getRecentBiometrics() {
 }
 
 /** Marca o desmarca un día como incompleto (no se registró todo lo comido). */
+export async function setDayFasting(date: string, fasting: boolean) {
+  const store = readStore();
+  dayIn(store, date).fasting = fasting;
+  writeStore(store);
+}
+
 export async function setDayPartial(date: string, partial: boolean) {
   const store = readStore();
   dayIn(store, date).partial = partial;

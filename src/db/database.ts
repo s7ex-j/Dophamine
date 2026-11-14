@@ -145,6 +145,17 @@ export async function initializeDatabase() {
   } catch {
     /* Ya existe. */
   }
+  // 0.16.0: alcohol por entrada y días de ayuno.
+  try {
+    await db.execAsync("ALTER TABLE meal_entries ADD COLUMN alcohol_g REAL NOT NULL DEFAULT 0");
+  } catch {
+    /* Ya existe. */
+  }
+  try {
+    await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN fasting INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    /* Ya existe. */
+  }
   try {
     await db.execAsync(
       "ALTER TABLE wellbeing_entries ADD COLUMN sleep_hours REAL CHECK(sleep_hours BETWEEN 0 AND 24)",

@@ -56,3 +56,10 @@ export function buildBodyInput(form: BodyForm, unit: WeightUnit): BodyInputResul
 /** Un día cuenta como "con datos" si tiene pesaje, composición o algo comido. */
 export const hasData = (record: DailyBiometrics | null) =>
   Boolean(record && (record.weightKg || record.caloriesIn || record.proteinG || record.bodyFatPct));
+
+/**
+ * Un día cuenta para la ingesta media si se comió algo o si se marcó como
+ * ayuno (entonces lo comido, aunque sea 0, es real). Un día incompleto no cuenta.
+ */
+export const countsForIntake = (record: Pick<DailyBiometrics, "caloriesIn" | "partial" | "fasting">) =>
+  (record.caloriesIn > 0 || record.fasting === true) && !record.partial;

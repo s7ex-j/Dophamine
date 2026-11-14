@@ -17,6 +17,7 @@ export type Store = {
     waterPct?: number | null;
     boneMassKg?: number | null;
     partial?: boolean;
+    fasting?: boolean;
     waterMl?: number;
   }>;
   wellbeing: Array<{
@@ -90,6 +91,10 @@ export type Store = {
     initialExpenditure?: number;
     mealStyle?: "named" | "numbered";
     mealsPerDay?: number;
+    dietType?: "balanced" | "low_carb" | "keto" | "high_protein";
+    calorieSchedule?: "even" | "training" | "custom";
+    trainingDayExtra?: number;
+    customDayOffsets?: Record<string, number>;
   };
   reviews?: Array<{
     id: string;

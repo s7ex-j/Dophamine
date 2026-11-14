@@ -1,3 +1,4 @@
+import { countsForIntake } from "@/src/features/biometrics/dailyLog";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import {
   checkInDaysOf,
@@ -38,7 +39,7 @@ export type ContextualCheckIn = WeeklyCheckIn & { reasons: CheckInReason[] };
 
 /** Ingesta promedio de los días completos con comida del periodo. */
 export function averageIntake(records: DailyBiometrics[]): number | null {
-  const days = records.filter((record) => record.caloriesIn > 0 && !record.partial);
+  const days = records.filter(countsForIntake);
   return days.length ? days.reduce((sum, record) => sum + record.caloriesIn, 0) / days.length : null;
 }
 

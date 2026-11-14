@@ -134,6 +134,35 @@ describe("respaldo entre el teléfono y la web", () => {
     expect(storeFromTables(tablesFromStore(store))).toEqual(store);
   });
 
+  it("conserva el alcohol de cada comida y los días de ayuno (formato 9)", () => {
+    const withExtras: Store = {
+      ...store,
+      biometrics: [
+        ...store.biometrics,
+        { id: "ayuno", date: "2026-11-12", weightKg: null, caloriesIn: 0, proteinG: 0, fasting: true },
+      ],
+      meals: [
+        ...(store.meals ?? []),
+        {
+          id: "cerveza",
+          date: "2026-11-12",
+          slot: "dinner",
+          foodId: "b:cerveza",
+          name: "Cerveza",
+          grams: 355,
+          kcal: 153,
+          proteinG: 1.8,
+          carbsG: 12.8,
+          fatsG: 0,
+          alcoholG: 13.8,
+        },
+      ],
+    };
+    const back = storeFromTables(tablesFromStore(withExtras));
+    expect(back.biometrics.find((record) => record.id === "ayuno")?.fasting).toBe(true);
+    expect(back.meals?.find((entry) => entry.id === "cerveza")?.alcoholG).toBe(13.8);
+  });
+
   it("lo que exporta el teléfono pasa la validación del respaldo", () => {
     const exported = buildBackup(storeFromTables(tablesFromStore(store)));
     expect(parseBackup(JSON.stringify(exported)).data).toEqual(store);
