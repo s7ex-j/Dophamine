@@ -2,6 +2,8 @@ import { findExercise, MUSCLE_LABELS, type Muscle } from "@/src/features/exercis
 import { estimatedOneRepMax } from "@/src/features/training/strength";
 import { formatTime, parseTime } from "@/src/lib/time";
 import type { Routine, WorkoutDay } from "@/src/features/training/training.plans";
+import { deloadLoad, deloadPlan } from "@/src/features/training/cycle";
+import { roundLoad } from "@/src/features/training/gyms";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 
 /**
@@ -9,7 +11,7 @@ import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
  * cada serie, el cierre de la sesión y los récords. Módulo puro; guardar es de
  * `training.repository`.
  */
-export type SetType = "warmup" | "working" | "drop";
+export type SetType = "warmup" | "working" | "drop" | "myo" | "partial";
 export type Side = "left" | "right";
 
 /** Una serie ya guardada. Los pesos en kg. */
@@ -52,11 +54,17 @@ export type SessionExercise = {
   note?: string;
   /** Descanso sugerido entre series, en segundos. */
   restSeconds?: number;
+  /** Se registra por lado: cada serie tiene su versión izquierda y derecha. */
+  bySide?: boolean;
+  /** Superserie: los ejercicios con el mismo grupo se hacen alternados. */
+  group?: string;
 };
 export type ActiveSession = {
   id: string;
   routineName: string;
   startedAt: string;
+  /** Sesión de una semana de descarga. */
+  deload?: boolean;
   exercises: SessionExercise[];
 };
 
@@ -100,13 +108,26 @@ export function lastSetsFor(name: string, history: CompletedSession[]): LoggedSe
 }
 
 /** Un ejercicio listo para entrenar: sus series con la carga sugerida por la última vez. */
+export type SessionOptions = {
+  /** Semana de descarga del mesociclo: la mitad de las series y 10 % menos de carga. */
+  deload?: boolean;
+  /** Salto mínimo de carga del gimnasio activo, para redondear la sugerencia. */
+  incrementKg?: number;
+};
+
 export function sessionExercise(
-  plan: { name: string; sets: number; reps: string; rir: number },
+  input: { name: string; sets: number; reps: string; rir: number },
   history: CompletedSession[],
   unit: WeightUnit,
+  options: SessionOptions = {},
 ): SessionExercise {
+  const plan = options.deload ? deloadPlan(input) : input;
   const target = { sets: plan.sets, rir: plan.rir, ...parseRepRange(plan.reps) };
-  const suggestion = suggestNext(lastSetsFor(plan.name, history), target);
+  const base = suggestNext(lastSetsFor(plan.name, history), target);
+  let loadKg = base.loadKg;
+  if (loadKg !== null && options.deload) loadKg = deloadLoad(loadKg);
+  if (loadKg !== null && options.incrementKg) loadKg = roundLoad(loadKg, options.incrementKg);
+  const suggestion = { ...base, loadKg };
   const catalog = findExercise(plan.name);
   return {
     name: plan.name,
@@ -134,13 +155,15 @@ export function startSession(
   now: Date,
   id: string,
   workout: WorkoutDay | null = routine.schedule[0] ?? null,
+  options: SessionOptions = {},
 ): ActiveSession {
   const plans = workout ? workout.exercises : routine.exercises;
   return {
     id,
     routineName: workout?.name ?? routine.name,
     startedAt: now.toISOString(),
-    exercises: plans.map((plan) => sessionExercise(plan, history, unit)),
+    ...(options.deload ? { deload: true } : {}),
+    exercises: plans.map((plan) => sessionExercise(plan, history, unit, options)),
   };
 }
 

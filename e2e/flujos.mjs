@@ -607,6 +607,44 @@ async function main() {
     );
   });
 
+  await step("entreno: calentamiento, tipos de serie, lados, superserie y gimnasios", async () => {
+    await open("/session?day=mon");
+    await waitText("Press de banca");
+    await fillLabel("Carga serie 1", 60);
+    await press("Calentamiento");
+    const sets = async () => (await store()).settings.active_session.exercises[0].sets;
+    let current = await sets();
+    assert(
+      current
+        .filter((set) => set.type === "warmup")
+        .map((set) => set.load)
+        .join() === "20,25,35,47.5",
+      "El calentamiento no salió de la carga de trabajo.",
+    );
+    await pressLabel("Tipo de la serie 5: Efectiva");
+    current = await sets();
+    assert(current[4].type === "warmup", "Tocar el número no cambió el tipo de la serie.");
+    await press("Por lado");
+    const exercise = (await store()).settings.active_session.exercises[0];
+    assert(
+      exercise.bySide && exercise.sets.length === current.length * 2,
+      "No se separaron las series por lado.",
+    );
+    await press("Superserie con el siguiente");
+    await waitText("A1.");
+    await waitText("Ir a A2");
+    await press("Borrar");
+    await press("Sí, borrar");
+    await open("/gyms");
+    await waitText("Dónde entrenas");
+    await press("Usar este");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings?.active_gym === "casa",
+      {},
+      STORE_KEY,
+    );
+  });
+
   await step("seguimiento: medidas, reparto semanal, nutrientes y ayuno", async () => {
     await open("/measurements");
     await waitText("Medir hoy");

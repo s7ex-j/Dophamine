@@ -12,6 +12,21 @@ import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { workoutFor } from "@/src/features/training/training.plans";
+import { cycleWeek } from "@/src/features/training/cycle";
+import { DEFAULT_GYMS, type GymSetup } from "@/src/features/training/gyms";
+import { getGyms } from "@/src/features/training/gyms.repository";
+import {
+  nextInSuperset,
+  nextSetType,
+  SET_TYPE_LABELS,
+  setMark,
+  sideBalance,
+  supersetLabels,
+  toggleSides,
+  toggleSuperset,
+  withWarmup,
+} from "@/src/features/training/sets";
+import { localDateKey } from "@/src/lib/dates";
 import { completeSession, getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
 import {
   addExerciseToSession,
@@ -62,6 +77,7 @@ function SessionContent() {
   const [editingStart, setEditingStart] = useState(false);
   const [startText, setStartText] = useState("");
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [gym, setGym] = useState<GymSetup>(DEFAULT_GYMS[0]);
   const [error, setError] = useState("");
   const loaded = useRef(false);
 
@@ -69,27 +85,35 @@ function SessionContent() {
     useCallback(() => {
       if (loaded.current) return;
       loaded.current = true;
-      Promise.all([getSetting(KEY), getRoutine(), getSessionHistory(), getNutritionProfile()]).then(
-        ([saved, routine, sessions, profile]) => {
-          const nextUnit = weightUnitOf(profile);
-          setUnit(nextUnit);
-          setHistory(sessions);
-          const resumed = readActiveSession(saved);
-          const workout = params.day ? workoutFor(routine, params.day) : null;
-          const session =
-            resumed ??
-            startSession(
-              routine,
-              sessions,
-              nextUnit,
-              new Date(),
-              newId(),
-              workout ?? routine.schedule[0] ?? null,
-            );
-          setActive(session);
-          if (!resumed) void setSetting(KEY, session);
-        },
-      );
+      Promise.all([
+        getSetting(KEY),
+        getRoutine(),
+        getSessionHistory(),
+        getNutritionProfile(),
+        getGyms(),
+      ]).then(([saved, routine, sessions, profile, gyms]) => {
+        const nextUnit = weightUnitOf(profile);
+        setUnit(nextUnit);
+        setHistory(sessions);
+        setGym(gyms.active);
+        // Semana de descarga del mesociclo y salto de carga del gimnasio activo.
+        const deload = routine.cycle ? cycleWeek(routine.cycle, localDateKey()).isDeload : false;
+        const resumed = readActiveSession(saved);
+        const workout = params.day ? workoutFor(routine, params.day) : null;
+        const session =
+          resumed ??
+          startSession(
+            routine,
+            sessions,
+            nextUnit,
+            new Date(),
+            newId(),
+            workout ?? routine.schedule[0] ?? null,
+            { deload, incrementKg: gyms.active.incrementKg },
+          );
+        setActive(session);
+        if (!resumed) void setSetting(KEY, session);
+      });
     }, [params.day]),
   );
   const update = (next: ActiveSession) => {
@@ -137,6 +161,8 @@ function SessionContent() {
   const startedAt = sessionClock({ startedAt: active.startedAt, completedAt: active.startedAt }).start;
   const cardio = Boolean(catalog?.cardio);
   const doneCount = (position: number) => active.exercises[position].sets.filter((set) => set.done).length;
+  const labels = supersetLabels(active);
+  const partner = nextInSuperset(active, index);
 
   return (
     <Screen>
@@ -178,6 +204,15 @@ function SessionContent() {
           <Button title="Terminar" onPress={finish} />
         </View>
 
+        {active.deload ? (
+          <View style={AppTheme.banner}>
+            <Text style={AppTheme.bannerTitle}>Semana de descarga</Text>
+            <Text style={AppTheme.body}>
+              La mitad de las series, 10 % menos de carga y 2 repeticiones más en reserva. Es para
+              recuperarte.
+            </Text>
+          </View>
+        ) : null}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {active.exercises.map((item, position) => (
             <Pressable
@@ -194,7 +229,7 @@ function SessionContent() {
                 style={[AppTheme.chipText, position === index && AppTheme.chipTextActive]}
                 numberOfLines={1}
               >
-                {position + 1}. {item.name} · {doneCount(position)}/{item.sets.length}
+                {labels[position] || position + 1}. {item.name} · {doneCount(position)}/{item.sets.length}
               </Text>
             </Pressable>
           ))}
@@ -229,17 +264,48 @@ function SessionContent() {
               ))}
             </View>
           ) : null}
-          <View style={AppTheme.rowActions}>
-            <LinkButton title="Calentamiento" onPress={() => setExercise(addSet(exercise, "warmup"))} />
+          <View style={[AppTheme.rowActions, { flexWrap: "wrap" }]}>
+            {cardio ? null : (
+              <LinkButton
+                title="Calentamiento"
+                onPress={() =>
+                  setExercise(
+                    exercise.sets.some((set) => set.type === "warmup")
+                      ? addSet(exercise, "warmup")
+                      : withWarmup(exercise, catalog?.equipment ?? "barbell", gym, unit),
+                  )
+                }
+              />
+            )}
             <LinkButton
               title={swapping ? "Cerrar cambio" : "Cambiar"}
               onPress={() => setSwapping(!swapping)}
             />
             <LinkButton title="+ Serie" onPress={() => setExercise(addSet(exercise))} />
+            {cardio ? null : (
+              <LinkButton
+                title={exercise.bySide ? "Sin lados" : "Por lado"}
+                onPress={() => setExercise(toggleSides(exercise))}
+              />
+            )}
+            {index < active.exercises.length - 1 ? (
+              <LinkButton
+                title={
+                  exercise.group && exercise.group === active.exercises[index + 1].group
+                    ? "Separar del siguiente"
+                    : "Superserie con el siguiente"
+                }
+                onPress={() => update(toggleSuperset(active, index))}
+              />
+            ) : null}
           </View>
+          <Text style={AppTheme.hint}>
+            Toca el número de una serie para cambiar su tipo: efectiva, calentamiento (C), drop set (D),
+            myo-reps (M) o parciales (P).
+          </Text>
           {swapping ? (
             <View style={{ gap: 4 }}>
-              {(catalog ? alternatives(catalog) : []).slice(0, 8).map((option) => (
+              {(catalog ? alternatives(catalog, gym.equipment) : []).slice(0, 8).map((option) => (
                 <Pressable
                   key={option.id}
                   accessibilityRole="button"
@@ -272,12 +338,22 @@ function SessionContent() {
           {exercise.sets.map((set, position) => {
             const number = exercise.sets
               .slice(0, position + 1)
-              .filter((item) => item.type !== "warmup").length;
+              .filter((item) => item.type !== "warmup" && item.side !== "right").length;
             return (
               <View key={position} style={[AppTheme.setRow, set.done && AppTheme.setRowDone]}>
-                <Text style={[AppTheme.setNumber, { width: 28 }]}>
-                  {set.type === "warmup" ? "C" : number}
-                </Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Tipo de la serie ${position + 1}: ${SET_TYPE_LABELS[set.type]}`}
+                  onPress={() => setSet(position, { type: nextSetType(set.type) })}
+                  style={{ width: 28 }}
+                >
+                  <Text
+                    style={[AppTheme.setNumber, set.type !== "working" && { color: AppTheme.colors.amber }]}
+                  >
+                    {setMark(set.type, number)}
+                    {set.side ? (set.side === "left" ? "I" : "D") : ""}
+                  </Text>
+                </Pressable>
                 <Text style={[AppTheme.hint, { flex: 1 }]} numberOfLines={1}>
                   {set.suggestion?.loadKg
                     ? `${weightValue(set.suggestion.loadKg, unit)} × ${set.suggestion.reps}`
@@ -335,7 +411,15 @@ function SessionContent() {
                 <Button title="Anterior" variant="secondary" onPress={() => setIndex(index - 1)} />
               </View>
             ) : null}
-            {index < active.exercises.length - 1 ? (
+            {partner !== null ? (
+              <View style={AppTheme.wizardFooterButton}>
+                <Button
+                  title={`Ir a ${labels[partner]}`}
+                  variant="secondary"
+                  onPress={() => setIndex(partner)}
+                />
+              </View>
+            ) : index < active.exercises.length - 1 ? (
               <View style={AppTheme.wizardFooterButton}>
                 <Button title="Siguiente" variant="secondary" onPress={() => setIndex(index + 1)} />
               </View>
@@ -359,6 +443,7 @@ function SessionContent() {
           </View>
           <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
             <CatalogBrowser
+              equipment={gym.equipment}
               picked={active.exercises.map((item) => item.name)}
               onPick={(option) => {
                 if (active.exercises.some((item) => item.name === option.name)) return;
@@ -376,6 +461,10 @@ function SessionContent() {
 
 function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: WeightUnit; onDone: () => void }) {
   const muscles = setsPerMuscle([summary.session]);
+  const balances = [...new Set(summary.session.sets.map((set) => set.exerciseName))].flatMap((name) => {
+    const balance = sideBalance(summary.session.sets.filter((set) => set.exerciseName === name));
+    return balance ? [{ name, balance }] : [];
+  });
   const top = Math.max(1, ...muscles.map((item) => item.sets));
   return (
     <Screen>
@@ -411,6 +500,19 @@ function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: Weight
                   {record.kind === "volume"
                     ? formatWeight(record.value, unit, 0)
                     : formatWeight(record.value, unit, 1)}
+                </Text>
+              </View>
+            ))}
+          </Card>
+        ) : null}
+        {balances.length ? (
+          <Card title="Izquierda y derecha">
+            {balances.map(({ name, balance }) => (
+              <View key={name} style={AppTheme.legendRow}>
+                <Text style={[AppTheme.legendLabel, { flex: 1 }]}>{name}</Text>
+                <Text style={AppTheme.legendValue}>
+                  I {formatWeight(balance.left, unit, 0)} · D {formatWeight(balance.right, unit, 0)}
+                  {balance.differencePct >= 10 ? ` · ${balance.differencePct} % de diferencia` : ""}
                 </Text>
               </View>
             ))}

@@ -1,3 +1,4 @@
+import { readSetType } from "./sets";
 import { getDatabase } from "@/src/db/database";
 import { localDateKey } from "@/src/lib/dates";
 import { progressionHintFor, type ProgressionHint } from "./progression";
@@ -196,7 +197,7 @@ export async function getSessionHistory(limit = 60): Promise<CompletedSession[]>
         exerciseName: row.exercise_name,
         ...(row.exercise_id ? { exerciseId: row.exercise_id } : {}),
         setNumber: row.set_number,
-        type: row.set_type === "warmup" || row.set_type === "drop" ? row.set_type : "working",
+        type: readSetType(row.set_type),
         loadKg: row.load_kg,
         reps: row.reps,
         rir: row.rpe === null ? null : 10 - row.rpe,
