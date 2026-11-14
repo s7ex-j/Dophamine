@@ -23,7 +23,13 @@ import {
 } from "@/src/features/biometrics/dailyLog";
 import { leanMassKg } from "@/src/features/composition/composition";
 import { DaySummary, MealCard } from "@/src/features/nutrition/MealSections";
-import { groupBySlot, totalsOf, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
+import {
+  groupBySlot,
+  suggestPartial,
+  totalsOf,
+  type MealEntry,
+  type MealSlot,
+} from "@/src/features/nutrition/meals";
 import {
   addMealEntries,
   copyDay,
@@ -431,6 +437,21 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
           onPaste={() => paste(slot.id)}
         />
       ))}
+      {suggestPartial(entries, day?.partial) ? (
+        <View style={[AppTheme.banner, { gap: 6 }]}>
+          <Text style={AppTheme.body}>
+            Más de la mitad de las calorías de este día son estimadas. Si no estás seguro de los números,
+            márcalo como incompleto: así no altera el cálculo de tu gasto.
+          </Text>
+          <LinkButton
+            title="Marcar como incompleto"
+            onPress={async () => {
+              await setDayPartial(date, true);
+              changed("Día marcado como incompleto.");
+            }}
+          />
+        </View>
+      ) : null}
       {entries.length || totals.kcal ? (
         <View style={[AppTheme.sectionHeader, { paddingHorizontal: 4 }]}>
           <Text style={AppTheme.hint}>No registré todo lo que comí este día</Text>

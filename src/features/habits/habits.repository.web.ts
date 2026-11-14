@@ -12,11 +12,3 @@ export async function toggleHabit(habitId: string, date = dateKey()) {
   writeStore(store);
   return completed;
 }
-export async function getHabitEntries(habits: Habit[], days: number): Promise<HabitEntry[]> {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days + 1);
-  const after = dateKey(cutoff);
-  return (readStore().habits ?? []).filter(
-    (entry) => habits.some((habit) => habit.id === entry.id) && entry.date >= after,
-  );
-}

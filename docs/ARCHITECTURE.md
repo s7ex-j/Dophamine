@@ -1,80 +1,95 @@
 # Arquitectura de Dophamine
 
+Estado de la 0.20.0. Para qué archivo tocar en cada caso, ver el mapa de `CLAUDE.md`.
+
 ## Mapa del repositorio
 
 ```
-app/                    rutas (expo-router). Cada pantalla compone secciones; no calcula.
-  (tabs)/index.tsx        Hoy          analysis.tsx   Análisis
-  (tabs)/biometrics.tsx   Registro     training.tsx   Entreno
-  (tabs)/habits.tsx       Hábitos      wellbeing.tsx  Bienestar
+app/                      rutas (expo-router). Cada pantalla compone secciones; no calcula.
+  (tabs)/index.tsx          Panel: "Hoy" (todo se anota aquí) y el progreso
+  (tabs)/strategy.tsx       Estrategia: plan, reparto de calorías, revisión, "Cómo se calcula"
+  (tabs)/training.tsx       Entreno: semana, entreno del día, mapa muscular, volumen
+  (tabs)/more.tsx           Más: secciones, respaldo, exportar, borrar datos
+  *.tsx                     pantallas que se abren encima (agregar, sesión, rutina, catálogo…)
 src/features/<dominio>/
-  <dominio>.ts            reglas puras, con su .test.ts al lado
-  <dominio>.repository.ts       lectura y escritura en SQLite (Android, iOS)
-  <dominio>.repository.web.ts   lo mismo sobre localStorage (web)
-  *Sections.tsx, *Card.tsx      piezas de interfaz de ese dominio
-src/db/                 conexión SQLite y almacén web (única capa que conoce la persistencia)
-src/lib/dates.ts        clave de día local (AAAA-MM-DD)
-src/components/         piezas de interfaz compartidas
-src/theme.ts            colores, espaciado y tipografía
-web/                    página de presentación (Vite + React + Tailwind), independiente de la app
+  <dominio>.ts              reglas puras, con su .test.ts al lado
+  <dominio>.repository.ts   SQLite (Android, iOS)
+  <dominio>.repository.web.ts  lo mismo sobre localStorage (web)
+  *Sections.tsx, *Card.tsx  piezas de interfaz de ese dominio
+src/db/                   conexión SQLite y almacén web: la única capa que conoce la persistencia
+src/lib/                  fechas locales, horas, unidades, archivos (compartir y abrir)
+src/components/           piezas compartidas: ui, gráficos, mapa muscular, pantalla de error
+assets/exercises/         ilustraciones de RepDB (generadas por scripts/import-repdb.py)
+e2e/flujos.mjs            recorridos en Chrome sin ventana contra la web exportada
+web/                      página de presentación (Vite + React + Tailwind), independiente de la app
 ```
 
-Se publica todo junto en GitHub Pages: la página de presentación en `/Dophamine/` y la app en
-`/Dophamine/app/` (`.github/workflows/deploy-web.yml`).
+Se publica en GitHub Pages: la presentación en `/Dophamine/` y la app (visor) en `/Dophamine/app/`.
 
-## Capas
+## Capas y plataformas
 
-`app/` contiene rutas y composicion de pantallas. `src/features/` contiene las reglas de cada dominio. `src/db/` es la unica capa que conoce el mecanismo de persistencia. Esa separacion permite que la misma aplicacion funcione en web y movil sin mezclar `localStorage`, SQLite y logica visual.
+- `app/` dibuja; `src/features/` decide; `src/db/` guarda. Una pantalla no hace cuentas.
+- Cada repositorio tiene dos versiones con las mismas funciones: SQLite en el teléfono y `localStorage` en la
+  web. Lo que no es una tabla (ajustes, comidas guardadas, gimnasios, ciclo, medidas, portapapeles) vive en
+  `app_settings` como JSON, que ya tiene las dos versiones y viaja en el respaldo.
+- La web publicada es un visor de solo lectura (`src/lib/mode.web.ts`). La app completa se abre en la web
+  solo para desarrollo y pruebas.
+- Si una pantalla falla, `ErrorBoundary` (en `app/_layout.tsx`) muestra un aviso con "Reintentar"; si la
+  base no abre, se dice en lugar de seguir.
 
-## Persistencia
+## Cálculo de calorías
 
-Android e iOS usan SQLite mediante Expo SQLite. La web usa un adaptador de `localStorage` con el mismo contrato de repositorio. No existe backend, cuenta ni sincronizacion remota en esta version.
+En la app, Estrategia → "Cómo se calcula" muestra estos pasos con los números de la persona
+(`src/features/tdee/explain.ts`).
 
-## Plan inicial
+1. **Gasto inicial** (`profile/expenditure.ts`): basal (Mifflin-St Jeor, o Katch-McArdle con % de grasa) ×
+   actividad + MET del entreno × peso × horas, promediado con la ecuación del IOM y, si se conoce, con lo que
+   la persona come con el peso estable.
+2. **Tendencia** (`tdee/tdee.ts`): media móvil exponencial del peso (28 %; 10 % si un pesaje parece agua). El
+   ritmo es la pendiente de una recta ajustada a toda la tendencia.
+3. **Energía por kilo**: 7700 kcal/kg, o según la composición medida (grasa ~9400, masa magra ~1800).
+4. **Gasto real**: ingesta media − cambio de peso × energía por kilo, con margen. Se activa con 14 días de
+   tendencia y 10 de comida. Los días incompletos no cuentan; los de ayuno sí, aunque sean 0.
+5. **Entreno** (`training/energy.ts`): hora de inicio y fin de cada sesión, minutos de cardio y MET de cada
+   ejercicio. Ya está dentro del gasto real; mientras se construye, se compara con lo previsto.
+6. **Revisión cada 3 o 7 días** (`tdee/checkin.ts`): objetivo = gasto real + ajuste de la meta, con pasos de
+   ±50 o ±100 kcal (×1.5 si el ritmo va muy lejos). No cambia si lo comido se apartó más de 10 % de la meta,
+   no recorta con menos de 7 h de sueño, no sube en volumen sin la mitad de los entrenos, y baja el ritmo cerca
+   de la meta. En modo colaborativo propone; en automático aplica, avisa y se puede deshacer.
 
-El perfil calcula BMR con Mifflin-St Jeor. Despues aplica un factor de actividad y una correccion segun objetivo para proponer energia y reparto de macros. Es un punto de inicio ajustable, no una prescripcion.
+Las metas de cada día (`profile/targets.ts`) reparten ese objetivo según el tipo de plan y la semana (más en
+días de entreno o a mano) sin cambiar el promedio semanal.
 
-## Tendencia y TDEE
+## Entreno
 
-El analisis ordena las mediciones por fecha y suaviza el peso con una media exponencial ponderada. Cuando hay al menos 14 dias de rango y 10 dias con ingesta valida, estima:
+- Rutina con un entreno por día (`training/training.plans.ts`), plantillas recomendadas por experiencia
+  (`training.templates.ts`) y mesociclos con descarga (`cycle.ts`).
+- Catálogo (`exercises/catalog.ts`): 94 ejercicios propios más ~520 de RepDB, con imagen e instrucciones.
+- Sesión serie por serie (`workout.ts`): doble progresión (sube un paso si todas las series llegaron al tope
+  con el RIR pedido; si no, una repetición más en la más floja), tipos de serie, lados, superseries y
+  calentamiento (`sets.ts`), cargas redondeadas al gimnasio activo (`gyms.ts`).
+- Semana, volumen, mejores marcas y mapa muscular (`week.ts`).
 
-```text
-TDEE aproximado = ingesta promedio - (cambio semanal de tendencia / 7 * 7700)
-```
+## Respaldo, exportar y borrar
 
-El valor 7700 kcal/kg es una aproximacion energetica. La recomendacion semanal compara el ritmo observado con un ritmo objetivo conservador y limita los ajustes a 100 kcal. No usa algoritmos propietarios ni sustituye criterio profesional.
-
-## Estado de la estimacion y revision semanal
-
-La interfaz no presenta una cifra de TDEE como certeza. El dominio comunica uno de tres estados:
-
-- **Construyendo:** aun no hay 14 dias de rango y 10 dias de ingesta valida.
-- **Actualizando:** existen los datos historicos y, en los siete dias recientes, hay al menos cuatro dias de ingesta y un pesaje.
-- **En pausa:** existe una estimacion anterior, pero la semana reciente no contiene suficiente registro para actualizarla con responsabilidad.
-
-Cuando el estado es actualizando, Dophamine compara el TDEE aproximado con la meta actual y propone un cambio de como maximo 100 kcal. La persona debe aceptar expresamente la propuesta; no se modifica ningun objetivo de forma automatica.
-
-## Entrenamiento y progresion
-
-Una rutina contiene estructura, dias, entorno de entrenamiento, objetivo, duracion, ejercicios, series, rango de repeticiones y RIR. El generador solo usa reglas locales y catalogos propios; no consulta ningun servicio remoto. La sesion guarda una carga, repeticiones y RIR de trabajo por ejercicio y conserva los datos por serie en SQLite.
-
-La sugerencia de progresion se basa en el ultimo registro del mismo ejercicio: al alcanzar el extremo superior del rango con el RIR objetivo o mayor, recomienda aumentar un paso de carga; en caso contrario propone repetir y mejorar una repeticion. Es una sugerencia visible y modificable, no una prescripcion ni una sustitucion de tecnica profesional.
-
-## Respaldo
-
-`src/features/backup/backup.ts` arma y valida el archivo de respaldo y no toca ninguna API de plataforma, por eso tiene pruebas propias. `backup.repository.web.ts` descarga y restaura el archivo en el navegador; `backup.repository.ts` (Android e iOS) declara `backupAvailable = false` hasta que exista la exportacion desde SQLite. La pantalla solo muestra la tarjeta de respaldo donde esta disponible.
+- `backup/backup.ts` arma y valida el respaldo (formato 9, lee del 1 al 8). En el teléfono se comparte con
+  la hoja del sistema y se restaura en una transacción; en la web se descarga y se carga.
+- `export/export.ts`: CSV del diario, las comidas y las series, y programas en JSON o CSV.
+- `cleanup/cleanup.ts`: borrar por fechas y tipo, o un ejercicio, sobre una copia de los datos que se
+  restaura de una vez.
 
 ## Convenciones
 
-- Un archivo `algo.web.ts` reemplaza a `algo.ts` en la version web; ambos exponen las mismas funciones.
-- Los calculos que alimentan un grafico viven en el dominio (por ejemplo `tdee/trendChart.ts`) y la pantalla solo dibuja. Asi se pueden probar sin interfaz.
-- El dia de un registro es siempre el del reloj del dispositivo: se obtiene con `localDateKey()` (`src/lib/dates.ts`). No se usa `toISOString()` ni `date('now')` de SQLite para eso, porque ambos devuelven el dia en UTC.
-- El formato lo decide Prettier (`npm run format`); CI falla si un archivo no esta formateado.
+- El día de un registro es el del reloj del dispositivo: `localDateKey()` (`src/lib/dates.ts`). Nunca
+  `toISOString()` ni `date('now')`, que dan el día en UTC.
+- El formato lo decide Prettier (`npm run format`); CI falla si un archivo no está formateado.
+- Lo que cambia la forma de los datos sube `BACKUP_FORMAT` y conserva la lectura del formato anterior.
+- Las columnas nuevas de SQLite se agregan con `ALTER TABLE` dentro de `try` en `src/db/database.ts`.
 
-## Limites actuales
+## Límites actuales
 
-- No hay base de alimentos, lector de codigos ni registro por comida.
-- No hay sincronizacion, autenticacion ni respaldo en nube. El respaldo en archivo existe solo en la web.
-- La biblioteca de ejercicios no incorpora medios de terceros.
-- La estimacion necesita adherencia y mediciones suficientes; en caso contrario la interfaz comunica que aun no hay senal suficiente.
-- No hay periodizacion automatica, bloques de descarga ni temporizador de descansos todavia; se consideran extensiones separadas porque requieren un modelo de ciclos y controles de sesion mas detallados.
+- Todo lo nativo (SQLite, cámara, notificaciones, archivos, fotos) compila y pasa los tipos, pero desde la
+  0.14.0 no se ha recorrido en un teléfono físico.
+- Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera.
+- Los alimentos incluidos tienen calorías y macros, no micronutrientes.
+- Health Connect, pasos, widgets y sueño automático esperan al APK propio (ver la hoja de ruta).

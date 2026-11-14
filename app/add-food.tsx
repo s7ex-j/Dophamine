@@ -338,10 +338,10 @@ function AddFoodContent() {
               }}
               options={[
                 { value: "search", label: "Buscar", icon: "search" },
-                { value: "quick", label: "Rápido", icon: "flash-outline" },
-                { value: "new", label: "Nuevo", icon: "create-outline" },
                 { value: "barcode", label: "Código", icon: "barcode-outline" },
+                { value: "new", label: "Nuevo", icon: "create-outline" },
                 { value: "recipe", label: "Receta", icon: "book-outline" },
+                { value: "quick", label: "Rápido", icon: "flash-outline" },
               ]}
             />
 

@@ -196,15 +196,6 @@ export const DEFAULT_ROUTINES = {
     sessionMinutes: 50,
   }),
 };
-export function routineForVariant(variant: Exclude<TrainingVariant, "custom">): Routine {
-  return generateRoutine({
-    variant,
-    gymProfile: "full_gym",
-    trainingGoal: "hypertrophy",
-    sessionMinutes: 50,
-  });
-}
-
 const toPlan = (exercise: string | Partial<ExercisePlan>): ExercisePlan =>
   typeof exercise === "string"
     ? { name: exercise, sets: 3, reps: "8–12", rir: 2 }
@@ -253,39 +244,4 @@ export function normalizeRoutine(value: unknown): Routine {
     schedule,
     cycle: readCycle(candidate.cycle) ?? undefined,
   } as Routine);
-}
-
-export const trainingGoalLabel = (goal: TrainingGoal) =>
-  goal === "strength" ? "Fuerza" : goal === "hypertrophy" ? "Hipertrofia" : "Acondicionamiento";
-
-/**
- * Descanso sugerido entre series, en segundos, según el objetivo del bloque.
- * Las series cerca del fallo (RIR 0–1) reciben medio minuto más.
- */
-export function restSeconds(goal: TrainingGoal, rir = 2): number {
-  const base = goal === "strength" ? 180 : goal === "hypertrophy" ? 90 : 60;
-  return rir <= 1 ? base + 30 : base;
-}
-
-/** Segundos como reloj: 150 → "2:30". */
-export const formatClock = (seconds: number) => {
-  const safe = Math.max(0, Math.ceil(seconds));
-  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
-};
-
-/** Una línea por ejercicio: "nombre | series | repeticiones | RIR". Es el formato del editor de rutina. */
-export const formatExerciseLines = (exercises: ExercisePlan[]) =>
-  exercises
-    .map((exercise) => `${exercise.name} | ${exercise.sets} | ${exercise.reps} | ${exercise.rir}`)
-    .join("\n");
-
-/** Lee el texto del editor. Las líneas sin nombre se descartan y lo que falte toma un valor por defecto. */
-export function parseExerciseLines(text: string): ExercisePlan[] {
-  return text
-    .split("\n")
-    .map((line): ExercisePlan | null => {
-      const [name, sets, reps, rir] = line.split("|").map((part) => part.trim());
-      return name ? { name, sets: Number(sets) || 3, reps: reps || "8–12", rir: Number(rir) || 2 } : null;
-    })
-    .filter((exercise): exercise is ExercisePlan => Boolean(exercise));
 }

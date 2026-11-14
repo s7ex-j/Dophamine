@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 13 de noviembre de 2026 (versión 0.19.0, Expo SDK 58)
+## Estado al 13 de noviembre de 2026 (versión 0.20.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -46,7 +46,7 @@ Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK li
 | # | Quién | Paso | Notas |
 |---|---|---|---|
 | 1 | J | **Probar en un teléfono físico.** Desde la 0.9.0 cada versión se declara "no comprobada en teléfono". Recorrer las pantallas nuevas (0.14–0.19) en Expo Go o en un APK de prueba. | Lo más urgente: lo que falle se anota con captura. |
-| 2 | J | Decidir si se quitan el **registro rápido** y la **búsqueda en Open Food Facts**: la lista de alcance los marca como descartados, pero existen desde la 0.9.0. | Ver «En revisión». |
+| 2 | C ✔ | Revisión técnica antes del pulido: código sin uso quitado, pantalla de error, pruebas de navegador más estables, documentación al día. | Hecho en la 0.20.0. |
 | 3 | C | Marcar las fases del ciclo en el gráfico de peso. | |
 | 4 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
 
@@ -82,12 +82,13 @@ Necesitan código nativo que Expo Go no trae. Se hacen todas juntas cuando se pa
 
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
 
-## En revisión
+## Se quedan (decisión de Jharol, 13 nov 2026)
 
-- **Registro rápido** (calorías y macros sin alimento) y **búsqueda en Open Food Facts** (opcional, apagada por
-  defecto): la lista de alcance de Jharol del 13 nov 2026 los marca como descartados («empeora el tracking» y
-  «offline primero»), pero ya existen. No se quitan hasta que Jharol lo confirme; quitarlos no borra lo ya
-  anotado.
+- **Registro rápido:** sin él, una comida fuera de casa queda sin anotar y el gasto real sale mal (un hueco
+  daña más que una estimación). Desde la 0.20.0 va al final de Agregar, cada registro se marca "estimado" y,
+  si más de la mitad del día es estimada, se sugiere marcarlo como incompleto.
+- **Búsqueda en Open Food Facts:** viene apagada, solo sale a internet si se enciende, cada producto queda
+  guardado para usarlo sin red y no agrega peso a la app. Sin ella, el lector de códigos de barras casi no sirve.
 
 ## Descartado
 

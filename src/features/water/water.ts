@@ -5,8 +5,6 @@
  * salud la necesidad cambia.
  */
 export const GLASS_ML = 250;
-export const WATER_STEPS = [250, 500];
-
 export function waterTargetMl(weightKg: number | null, trainingMinutes = 0): number {
   const base = (weightKg && weightKg > 0 ? weightKg : 70) * 35;
   const total = base + Math.max(0, trainingMinutes) * 12;

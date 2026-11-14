@@ -47,13 +47,6 @@ export type Food = {
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
 
-export const sourceLabels: Record<FoodSource, string> = {
-  builtin: "Básico",
-  custom: "Mío",
-  recipe: "Receta",
-  off: "Open Food Facts",
-};
-
 /** Nutrientes de una cantidad en gramos de un alimento. */
 export function nutrientsFor(food: Pick<Food, "per100">, grams: number): Nutrients {
   const factor = Math.max(0, grams) / 100;
@@ -217,10 +210,6 @@ export function buildRecipe(
     error: null,
   };
 }
-
-/** "165 kcal · P 31 · C 0 · G 3.6" */
-export const describeNutrients = (nutrients: Nutrients) =>
-  `${nutrients.kcal} kcal · P ${nutrients.proteinG} · C ${nutrients.carbsG} · G ${nutrients.fatsG}`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);

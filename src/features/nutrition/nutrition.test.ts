@@ -18,6 +18,9 @@ import {
 } from "./foods";
 import {
   copyEntries,
+  estimatedShare,
+  isEstimate,
+  suggestPartial,
   draftFromFood,
   draftFromQuick,
   emptyQuick,
@@ -457,5 +460,42 @@ describe("alcohol", () => {
   it("el registro rápido acepta gramos de alcohol", () => {
     const { draft } = draftFromQuick({ ...emptyQuick(), name: "Pisco sour", alcohol: "14", carbs: "12" });
     expect(draft).toMatchObject({ kcal: 146, alcoholG: 14, carbsG: 12 });
+  });
+});
+
+describe("registros estimados", () => {
+  const food = {
+    id: "1",
+    date: "2026-11-13",
+    slot: "lunch",
+    foodId: "b:arroz",
+    name: "Arroz",
+    kcal: 300,
+    proteinG: 6,
+    carbsG: 60,
+    fatsG: 1,
+  };
+  const quick = {
+    id: "2",
+    date: "2026-11-13",
+    slot: "dinner",
+    name: "Cena fuera",
+    kcal: 700,
+    proteinG: 30,
+    carbsG: 70,
+    fatsG: 30,
+  };
+
+  it("un registro sin alimento detrás es una estimación", () => {
+    expect(isEstimate(quick)).toBe(true);
+    expect(isEstimate(food)).toBe(false);
+    expect(estimatedShare([food, quick])).toBeCloseTo(0.7);
+    expect(estimatedShare([])).toBe(0);
+  });
+
+  it("si más de la mitad del día es estimada, sugiere marcarlo incompleto (si no lo está)", () => {
+    expect(suggestPartial([food, quick], false)).toBe(true);
+    expect(suggestPartial([food, quick], true)).toBe(false);
+    expect(suggestPartial([food, { ...quick, kcal: 200 }], false)).toBe(false);
   });
 });

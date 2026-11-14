@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.20.0 - 2026-11-13
+
+Registro rápido más honesto y revisión técnica antes del pulido.
+
+- Registro rápido: la pestaña "Rápido" pasa al final de Agregar (buscar el alimento es el camino normal), cada registro rápido se marca "estimado" en el día y, si más de la mitad de las calorías de un día son estimadas, el Panel sugiere marcarlo como incompleto para que no altere el cálculo del gasto.
+- Se quedan el registro rápido y la búsqueda en Open Food Facts (motivos en la hoja de ruta).
+- Si una pantalla falla, se ve un aviso con "Reintentar" y el detalle técnico en lugar de una pantalla en blanco; si la base de datos no abre al iniciar, se dice y se puede reintentar.
+- Código sin uso quitado (unas 460 líneas): el editor de rutina por texto, la sesión y las pistas de progresión anteriores, la revisión semanal vieja y piezas de interfaz que ya no se mostraban.
+- Pruebas de navegador más estables: una navegación lenta se reintenta una vez en lugar de fallar.
+- `docs/ARCHITECTURE.md` y el README al día con lo que hace la app hoy.
+- Dependencias al día con el SDK (`expo install --check`).
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.19.0 - 2026-11-13
 
 Fecha estimada al ritmo real, copiar y pegar comidas y días, biblioteca con recetas editables y borrado preciso.

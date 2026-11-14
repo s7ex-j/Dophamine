@@ -151,10 +151,6 @@ export function analyzeMetabolism(records: DailyBiometrics[]): MetabolicAnalysis
   };
 }
 
-export function estimateTdee(records: DailyBiometrics[]) {
-  return analyzeMetabolism(records).tdee;
-}
-
 export function weeklyRecommendation(
   analysis: MetabolicAnalysis,
   goal: "gain" | "maintain" | "lose",
@@ -175,49 +171,6 @@ export function weeklyRecommendation(
       ? "subir"
       : "bajar";
   return `La tendencia cambia ${analysis.weeklyRateKg >= 0 ? "+" : ""}${convertWeight(analysis.weeklyRateKg, "kg", unit).toFixed(2)} ${unit}/semana. Prueba ${direction} 100 kcal diarias y revisa en 7 días.`;
-}
-
-export function buildWeeklyCheckIn(analysis: MetabolicAnalysis, profile: NutritionProfile): WeeklyCheckIn {
-  if (analysis.status === "building")
-    return {
-      status: "building",
-      ready: false,
-      suggestedCalories: null,
-      delta: null,
-      message: `Construyendo tu estimación: ${analysis.loggedDays}/10 días de ingesta y al menos 14 días de tendencia.`,
-    };
-  if (analysis.status === "holding")
-    return {
-      status: "holding",
-      ready: false,
-      suggestedCalories: null,
-      delta: null,
-      message: `Estimación en pausa: registra al menos 4 días de ingesta y 1 pesaje esta semana. Ahora llevas ${analysis.nutritionDaysLast7} y ${analysis.weightDaysLast7}.`,
-    };
-  if (!analysis.tdee)
-    return {
-      status: "building",
-      ready: false,
-      suggestedCalories: null,
-      delta: null,
-      message: "Aún no hay datos suficientes para una propuesta.",
-    };
-  const currentKg = analysis.points.at(-1)?.trendKg ?? 0;
-  const desired = analysis.tdee + goalCalorieOffset(profile, currentKg);
-  // Revisar más seguido pide pasos más cortos: ±50 kcal cada 3 días, ±100 cada 7.
-  const step = checkInDaysOf(profile) === 3 ? 50 : 100;
-  const delta = Math.max(-step, Math.min(step, Math.round(desired - profile.calorieTarget)));
-  const suggestedCalories = profile.calorieTarget + delta;
-  return {
-    status: "updating",
-    ready: true,
-    suggestedCalories,
-    delta,
-    message:
-      Math.abs(delta) < 25
-        ? "Tu objetivo actual coincide con la estimación. Mantén el plan hasta la próxima revisión."
-        : `La estimación sugiere ${delta > 0 ? "subir" : "bajar"} ${Math.abs(delta)} kcal por día para mantener el ritmo de tu objetivo.`,
-  };
 }
 
 /** El gasto estimado al cierre de cada uno de los últimos `days` días con datos suficientes. */
