@@ -265,15 +265,19 @@ export function coach(input: CoachInput): Coach {
   }));
   const pending = base.filter((meal) => !doneSlots.includes(meal.slot));
   const nextMeal = pending.find((meal) => meal.minutes >= now - 90) ?? pending[0] ?? null;
+  // Si la dieta ya marca qué comida va antes y después de entrenar, eso manda.
+  const tagged = (tag: string) => base.find((meal) => meal.tags?.includes(tag)) ?? null;
   const pre =
     trainTime === null
       ? null
-      : ([...base]
+      : (tagged("pre_gym") ??
+        [...base]
           .reverse()
-          .find((meal) => meal.minutes <= trainTime - 30 && meal.minutes >= trainTime - 240) ?? null);
+          .find((meal) => meal.minutes <= trainTime - 30 && meal.minutes >= trainTime - 240) ??
+        null);
   const post =
     trainTime !== null
-      ? (pending.find((meal) => meal.minutes >= trainTime + 30) ?? null)
+      ? (tagged("post_gym") ?? pending.find((meal) => meal.minutes >= trainTime + 30) ?? null)
       : trained
         ? nextMeal
         : null;

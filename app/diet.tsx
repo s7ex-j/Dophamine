@@ -7,6 +7,7 @@ import {
   DAY_KIND_LABELS,
   dayTotals,
   dietToText,
+  isWeekly,
   itemFromFood,
   mealTotals,
   otherState,
@@ -18,9 +19,18 @@ import {
   type DietPlan,
 } from "@/src/features/diet/diet";
 import { getDiet, saveDiet } from "@/src/features/diet/diet.repository";
+import {
+  DietFormatError,
+  importDietFile,
+  isDietFile,
+  WEEKDAY_NAMES,
+  WEEKDAYS,
+  type Weekday,
+} from "@/src/features/diet/format";
 import { BUILTIN_FOODS } from "@/src/features/nutrition/builtin.foods";
 import { searchFoods, type Food } from "@/src/features/nutrition/foods";
 import { getUserFoods } from "@/src/features/nutrition/nutrition.repository";
+import { weekdayId } from "@/src/features/training/week";
 import { localDateKey } from "@/src/lib/dates";
 import { pickTextFile, shareTextFile } from "@/src/lib/files";
 import { VIEWER } from "@/src/lib/mode";
@@ -49,6 +59,7 @@ export default function DietScreen() {
   const [fixing, setFixing] = useState<At | null>(null);
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
+  const [weekday, setWeekday] = useState(() => weekdayId(new Date()));
   useFocusEffect(
     useCallback(() => {
       getDiet().then(setSaved);
@@ -60,7 +71,16 @@ export default function DietScreen() {
   const editable = !VIEWER;
   const change = (next: DietPlan) => (draft ? setDraft(next) : saveDiet(next).then(() => setSaved(next)));
   const read = (source: string) => {
-    const fromJson = source.trim().startsWith("{") ? readDiet(safeJson(source)) : null;
+    const json = source.trim().startsWith("{") ? safeJson(source) : null;
+    let fromJson: DietPlan | null = null;
+    if (isDietFile(json)) {
+      // Archivo con el formato de Dophamine: o entra completo o se dice qué corregir.
+      try {
+        fromJson = importDietFile(json, localDateKey());
+      } catch (error) {
+        return setMessage(error instanceof DietFormatError ? error.message : "No se pudo leer el archivo.");
+      }
+    } else if (json) fromJson = readDiet(json);
     const next = fromJson ?? parseDietText(source, foods, "Mi dieta", localDateKey()).plan;
     if (!next.days.length)
       return setMessage("No encontré comidas. Escribe cada comida en una línea y sus alimentos debajo.");
@@ -102,12 +122,21 @@ export default function DietScreen() {
               Para tener un día de entreno y otro de descanso, pon "Día de entreno" y "Día de descanso" como
               títulos. Entiende gramos, ml, unidades, tazas y cucharadas.
             </Text>
+            <Text style={AppTheme.hint}>
+              Si tu dieta cambia según el día de la semana, usa un archivo con el formato de Dophamine
+              (dophamine-diet): lleva tus alimentos, tus comidas, el horario de cada día y la hora del
+              gimnasio. La plantilla está en la web; una IA puede pasar tu dieta a ese formato.
+            </Text>
           </Card>
         </ScrollView>
       </Screen>
     );
 
   const pending = unresolved(plan);
+  const weekly = isWeekly(plan);
+  const shown = plan.days
+    .map((day, index) => ({ day, index }))
+    .filter(({ day }) => !weekly || day.weekday === weekday);
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
@@ -122,17 +151,81 @@ export default function DietScreen() {
           </View>
         ) : null}
 
-        {plan.days.map((day, dayIndex) => (
+        <Text style={AppTheme.title}>{plan.name}</Text>
+        {plan.targets ? (
+          <Text style={AppTheme.hint}>
+            Metas de la dieta: {plan.targets.kcal} kcal · P {plan.targets.proteinG} · C {plan.targets.carbsG}{" "}
+            · G {plan.targets.fatsG}
+          </Text>
+        ) : null}
+        {weekly ? (
+          <View
+            style={{ flexDirection: "row", borderBottomWidth: 1, borderBottomColor: AppTheme.colors.border }}
+          >
+            {WEEKDAYS.map((id) => {
+              const day = plan.days.find((item) => item.weekday === id);
+              const active = id === weekday;
+              return (
+                <Pressable
+                  key={id}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={WEEKDAY_NAMES[id]}
+                  onPress={() => setWeekday(id)}
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    paddingVertical: 10,
+                    borderBottomWidth: 2,
+                    borderBottomColor: active ? AppTheme.colors.accent : "transparent",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontWeight: active ? "700" : "500",
+                      color: !day
+                        ? AppTheme.colors.muted
+                        : active
+                          ? AppTheme.colors.accent
+                          : AppTheme.colors.text,
+                    }}
+                  >
+                    {WEEKDAY_NAMES[id].slice(0, 3)}
+                  </Text>
+                  <Text style={[AppTheme.hint, { fontSize: 10 }]}>{day?.gym ? "gym" : " "}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+        {weekly && !shown.length ? (
+          <Text style={AppTheme.body}>
+            La dieta no tiene comidas para el {WEEKDAY_NAMES[weekday as Weekday]?.toLowerCase()}.
+          </Text>
+        ) : null}
+
+        {shown.map(({ day, index: dayIndex }) => (
           <View key={`${day.kind}-${dayIndex}`} style={{ gap: 12 }}>
             <Text style={AppTheme.sectionTitle}>
-              {DAY_KIND_LABELS[day.kind]} · {dayTotals(day).kcal} kcal · {Math.round(dayTotals(day).proteinG)}{" "}
-              g prot
+              {day.weekday ? WEEKDAY_NAMES[day.weekday as Weekday] : DAY_KIND_LABELS[day.kind]} ·{" "}
+              {dayTotals(day).kcal} kcal · {Math.round(dayTotals(day).proteinG)} g prot
             </Text>
+            {day.gym ? (
+              <Text style={AppTheme.hint}>
+                Gimnasio {day.gym.start}
+                {day.gym.end ? `–${day.gym.end}` : ""}
+              </Text>
+            ) : null}
             {day.meals.map((meal, mealIndex) => (
               <Card
                 key={`${meal.slot}-${mealIndex}`}
-                title={`${meal.label}${meal.time ? ` · ${meal.time}` : ""}`}
+                title={`${meal.time ? `${meal.time} · ` : ""}${meal.label}`}
               >
+                {meal.tags?.includes("pre_gym") || meal.tags?.includes("post_gym") ? (
+                  <Text style={[AppTheme.eyebrow, { color: AppTheme.colors.warning }]}>
+                    {meal.tags.includes("pre_gym") ? "ANTES DE ENTRENAR" : "DESPUÉS DE ENTRENAR"}
+                  </Text>
+                ) : null}
                 <Text style={AppTheme.hint}>
                   {mealTotals(meal).kcal} kcal · P {Math.round(mealTotals(meal).proteinG)} · C{" "}
                   {Math.round(mealTotals(meal).carbsG)} · G {Math.round(mealTotals(meal).fatsG)}
@@ -244,6 +337,15 @@ export default function DietScreen() {
           </>
         ) : (
           <>
+            {plan.rules?.length ? (
+              <Card title="Reglas de tu dieta">
+                {plan.rules.map((rule) => (
+                  <Text key={rule} style={AppTheme.body}>
+                    · {rule}
+                  </Text>
+                ))}
+              </Card>
+            ) : null}
             <Card title="Con tu dieta cargada">
               <Text style={AppTheme.body}>
                 En el Panel verás qué comida toca, la registras con un toque y recibes cambios según tu
@@ -266,7 +368,7 @@ export default function DietScreen() {
                   title="Reemplazar por otra"
                   variant="secondary"
                   onPress={() => {
-                    setText(dietToText(plan));
+                    setText(weekly ? "" : dietToText(plan));
                     setSaved(null);
                   }}
                 />

@@ -8,7 +8,6 @@ import { ViewerOnlyNotice } from "@/src/features/backup/ViewerSections";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting } from "@/src/features/settings/settings.repository";
-import { PlateCalculator } from "@/src/features/training/PlateCalculator";
 import type { Routine } from "@/src/features/training/training.plans";
 import {
   deleteWorkoutSession,
@@ -142,7 +141,6 @@ function TrainingScreenContent() {
           }}
           openExercise={openExercise}
         />
-        <PlateCalculator unit={unit} />
       </ScrollView>
     </Screen>
   );

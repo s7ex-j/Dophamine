@@ -18,6 +18,14 @@ con el repo.
   (EAS) va después, para empaquetar todo y sumar lo que necesita código nativo.
 - La mejora de Dopi (más estados y animación) queda para la 1.0.0. La sobriedad se quitó en la 0.15.0:
   volverá con más trabajo de fondo.
+- **17 de noviembre de 2026 — licencia:** GPL-3.0-only (solo la versión 3, no "o posterior") desde la
+  próxima versión (0.24.0). Hasta la 0.23.0 el código sigue bajo MIT para quien ya lo tenga; la última versión
+  MIT queda marcada con la etiqueta `v0.23.0-mit`. El nombre "Dophamine", "Dopi" y sus ilustraciones tienen
+  una política de marca aparte (`TRADEMARK.md`).
+- **17 de noviembre de 2026 — donaciones:** solo un enlace en el README y en el sitio. Nada dentro de la app
+  hasta revisar las políticas de Google Play y de Apple sobre donaciones.
+- **17 de noviembre de 2026 — mapa muscular propio:** se diseña desde cero. No se copia código ni SVG de
+  openGym (AGPL-3.0); se puede tomar como referencia de qué mostrar (balance, fatiga, fuerza), no de cómo.
 
 **Lo que ya hace:**
 

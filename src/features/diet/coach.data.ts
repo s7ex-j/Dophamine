@@ -1,5 +1,6 @@
 import { coach, type Coach, type DayState } from "@/src/features/diet/coach";
 import { dietDayFor, type DietPlan } from "@/src/features/diet/diet";
+import { parseTime } from "@/src/lib/time";
 import { getDayState, getDiet, getHealth } from "@/src/features/diet/diet.repository";
 import { BUILTIN_FOODS } from "@/src/features/nutrition/builtin.foods";
 import { getMealEntries, getUserFoods } from "@/src/features/nutrition/nutrition.repository";
@@ -27,7 +28,7 @@ export async function getCoachToday(now = new Date()): Promise<CoachToday | null
   const plan = await getDiet();
   if (!plan) return null;
   const date = localDateKey(now);
-  const [state, health, logged, mine, profile, routine, wellbeing, nights] = await Promise.all([
+  const [saved, health, logged, mine, profile, routine, wellbeing, nights] = await Promise.all([
     getDayState(date),
     getHealth(),
     getMealEntries(date),
@@ -38,10 +39,15 @@ export async function getCoachToday(now = new Date()): Promise<CoachToday | null
     getSleepSince(date),
   ]);
   const weekday = weekdayId(now);
-  const trainingDay = routine.days.includes(weekday);
-  const day = dietDayFor(plan, trainingDay && !state.noTraining);
+  const today = dietDayFor(plan, routine.days.includes(weekday), weekday);
+  // Si la dieta trae la hora del gimnasio de hoy, ya no hace falta preguntarla.
+  const gymStart = today?.gym ? parseTime(today.gym.start) : null;
+  const trainingDay = gymStart !== null || routine.days.includes(weekday);
+  const state =
+    gymStart !== null && saved.trainTime === undefined ? { ...saved, trainTime: gymStart } : saved;
+  const day = today?.weekday ? today : dietDayFor(plan, trainingDay && !state.noTraining, weekday);
   if (!day) return null;
-  const today = wellbeing.find((entry) => entry.date === date);
+  const feelingToday = wellbeing.find((entry) => entry.date === date);
   const night = nights.find((entry) => entry.date === date);
   const targets = profile ? targetsForWeekday(profile, weekday, routine.days) : { calories: 0, protein: 0 };
   const result = coach({
@@ -51,13 +57,16 @@ export async function getCoachToday(now = new Date()): Promise<CoachToday | null
     now: now.getHours() * 60 + now.getMinutes(),
     trainingDay,
     feeling: {
-      energy: today?.energy ?? null,
-      stress: today?.stress ?? null,
+      energy: feelingToday?.energy ?? null,
+      stress: feelingToday?.stress ?? null,
       sleepMinutes: night ? sleepMinutes(night.bedtime, night.wakeTime) : null,
     },
     health,
     foods: [...mine, ...BUILTIN_FOODS],
-    targets: { calories: targets.calories, protein: targets.protein },
+    // Las metas que trae la dieta mandan sobre las del plan mientras se la sigue.
+    targets: plan.targets
+      ? { calories: plan.targets.kcal, protein: plan.targets.proteinG }
+      : { calories: targets.calories, protein: targets.protein },
   });
   return { plan, state, result, date, trainingDay };
 }

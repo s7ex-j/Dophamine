@@ -1,5 +1,11 @@
 # Changelog
 
+## Sin publicar
+
+- Dieta por archivo: la app lee el formato dophamine-diet (tus alimentos con sus valores, comidas armadas, un horario distinto para cada dia de la semana y la hora del gimnasio). Mi dieta muestra la semana por dias; el Panel sigue el dia de hoy, ya no pregunta la hora del entreno si la dieta la trae y respeta la comida marcada para antes y despues de entrenar. Las metas de la dieta mandan mientras se la sigue. Plantilla y explicacion en docs/formatos.
+- Se quito la calculadora de discos.
+- No comprobado en telefono.
+
 ## 0.23.0 - 2026-11-17
 
 Conexión directa entre el teléfono y la web por código QR: cifrada y sin servidor.

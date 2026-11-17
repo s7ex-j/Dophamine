@@ -25,10 +25,35 @@ export type DietItem = MealDraft & {
   /** El alimento existe crudo y cocido y el texto no decía cuál. */
   ambiguous?: boolean;
 };
-export type DietMeal = { slot: MealSlot; label: string; time?: string; items: DietItem[] };
+export type DietMeal = {
+  slot: MealSlot;
+  label: string;
+  time?: string;
+  items: DietItem[];
+  /** Etiquetas del archivo de dieta; `pre_gym` y `post_gym` marcan la comida de antes y después de entrenar. */
+  tags?: string[];
+};
 export type DayKind = "any" | "training" | "rest";
-export type DietDay = { kind: DayKind; meals: DietMeal[] };
-export type DietPlan = { name: string; days: DietDay[]; createdAt: string };
+export type DietDay = {
+  kind: DayKind;
+  meals: DietMeal[];
+  /** Día de la semana ("mon"…"sun") cuando la dieta trae un horario distinto para cada día. */
+  weekday?: string;
+  /** Hora del gimnasio de ese día, si la dieta la trae. */
+  gym?: { start: string; end?: string };
+};
+export type DietPlan = {
+  name: string;
+  days: DietDay[];
+  createdAt: string;
+  /** Metas que trae la propia dieta: mandan sobre las del plan al seguirla. */
+  targets?: { kcal: number; proteinG: number; carbsG: number; fatsG: number };
+  rules?: string[];
+  notes?: string;
+};
+
+/** La dieta trae un horario por día de la semana (y no un día único o entreno/descanso). */
+export const isWeekly = (plan: DietPlan) => plan.days.some((day) => day.weekday);
 
 export const DAY_KIND_LABELS: Record<DayKind, string> = {
   any: "Todos los días",
@@ -37,7 +62,9 @@ export const DAY_KIND_LABELS: Record<DayKind, string> = {
 };
 
 /** El día de la dieta que toca: el de entreno o descanso si existe; si no, el general. */
-export function dietDayFor(plan: DietPlan, trainingDay: boolean): DietDay | null {
+export function dietDayFor(plan: DietPlan, trainingDay: boolean, weekday?: string): DietDay | null {
+  // Con horario semanal, el día es el de hoy; si hoy no tiene, no hay dieta que seguir.
+  if (isWeekly(plan)) return plan.days.find((day) => day.weekday === weekday) ?? null;
   const wanted: DayKind = trainingDay ? "training" : "rest";
   return (
     plan.days.find((day) => day.kind === wanted) ??
@@ -324,15 +351,43 @@ export function readDiet(value: unknown): DietPlan | null {
               label: typeof meal.label === "string" ? meal.label : "Comida",
               ...(typeof meal.time === "string" ? { time: meal.time } : {}),
               items,
+              ...(Array.isArray(meal.tags)
+                ? { tags: meal.tags.filter((tag): tag is string => typeof tag === "string") }
+                : {}),
             },
           ]
         : [];
     });
     const kind: DayKind = day.kind === "training" || day.kind === "rest" ? day.kind : "any";
-    return meals.length ? [{ kind, meals }] : [];
+    return meals.length
+      ? [
+          {
+            kind,
+            meals,
+            ...(typeof day.weekday === "string" ? { weekday: day.weekday } : {}),
+            ...(day.gym && typeof day.gym.start === "string"
+              ? {
+                  gym: {
+                    start: day.gym.start,
+                    ...(typeof day.gym.end === "string" ? { end: day.gym.end } : {}),
+                  },
+                }
+              : {}),
+          },
+        ]
+      : [];
   });
   return days.length
-    ? { name: raw.name, days, createdAt: typeof raw.createdAt === "string" ? raw.createdAt : "" }
+    ? {
+        name: raw.name,
+        days,
+        createdAt: typeof raw.createdAt === "string" ? raw.createdAt : "",
+        ...(raw.targets && typeof raw.targets.kcal === "number" ? { targets: raw.targets } : {}),
+        ...(Array.isArray(raw.rules)
+          ? { rules: raw.rules.filter((rule): rule is string => typeof rule === "string") }
+          : {}),
+        ...(typeof raw.notes === "string" ? { notes: raw.notes } : {}),
+      }
     : null;
 }
 
