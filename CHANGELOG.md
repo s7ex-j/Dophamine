@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.30.0 - 2026-11-17
+
+Análisis de la silueta en las fotos de progreso (la medición) y contenido privado en GitHub Actions.
+
+- Fotos de progreso: la medición de la silueta está lista y probada. A partir de lo que entregan dos modelos de MediaPipe en el teléfono (máscara de la persona y puntos del cuerpo), revisa la pose (cuerpo entero, de frente o de perfil, centrado, sin inclinar) y mide hombros, cintura y cadera relativos a la altura en la foto, la proporción hombro/cintura y en qué zonas cambió la silueta entre dos fotos; con una foto de frente y otra de perfil estima la cintura en cm. Cambios menores al 2,5 % se toman como ruido. No da % de grasa ni centímetros exactos.
+- Los modelos se conectan con el APK (`react-native-fast-tflite`): hasta entonces la tarjeta "Silueta" de Fotos explica que llega con la app instalada.
+- GitHub Actions trae el contenido privado (RepDB y arte de Term) desde el repositorio privado `s7ex-j/dophamine-assets` con el secreto `DOPHAMINE_ASSETS_TOKEN`; sin el secreto se salta y todo compila con los módulos vacíos.
+- De 409 a 419 pruebas de dominio.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.29.0 - 2026-11-17
 
 La meta con fecha pasa a la evaluación y Term se pone la banda de entrenar.

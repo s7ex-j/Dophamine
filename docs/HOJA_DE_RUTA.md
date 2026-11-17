@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.29.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.30.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -98,7 +98,9 @@ Necesitan código nativo que Expo Go no trae. Se hacen todas juntas cuando se pa
 - Widgets de pantalla de inicio y de bloqueo.
 - Dictado de comidas con reconocimiento de voz propio (hoy ya se puede dictar con el micrófono del teclado).
 - Lectura de etiquetas nutricionales con la cámara (reconocimiento de texto en el teléfono).
-- Análisis de fotos de progreso en el teléfono, sin servidor. Viable con modelos ya entrenados que corren
+- Análisis de fotos de progreso en el teléfono, sin servidor. **La medición ya está hecha y probada**
+  (`src/features/photos/bodyShape.ts`, 0.30.0); falta conectar los modelos en
+  `src/features/photos/photos.analysis.ts` y poner `ANALYSIS_READY` en true. Viable con modelos ya entrenados que corren
   en el dispositivo: `react-native-fast-tflite` (MIT, con plugin de Expo) y dos modelos de MediaPipe
   (Apache-2.0, compatibles con la GPL): segmentación de persona (silueta) y puntos del cuerpo (hombros,
   cadera, rodillas). Con eso se mide, en la misma pose y distancia: ancho de hombros, cintura y cadera

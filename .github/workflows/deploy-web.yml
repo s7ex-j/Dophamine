@@ -20,8 +20,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      ASSETS_TOKEN: ${{ secrets.DOPHAMINE_ASSETS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      # Contenido privado (RepDB y arte de Term) desde s7ex-j/dophamine-assets. Sin el secreto
+      # (forks, PR de terceros) se salta y la app compila con los módulos vacíos.
+      - name: Contenido privado
+        if: env.ASSETS_TOKEN != ''
+        run: |
+          git clone --depth 1 "https://x-access-token:${ASSETS_TOKEN}@github.com/s7ex-j/dophamine-assets.git" "$RUNNER_TEMP/privado"
+          cp -r "$RUNNER_TEMP/privado/assets" "$RUNNER_TEMP/privado/src" .
+          rm -rf "$RUNNER_TEMP/privado"
       - uses: actions/setup-node@v4
         with:
           node-version: 22

@@ -23,6 +23,14 @@ import {
   type ProgressPhoto,
 } from "@/src/features/photos/photos";
 import {
+  compareShapes,
+  estimateWaistCm,
+  measureShape,
+  poseIssues,
+  type BodyShape,
+} from "@/src/features/photos/bodyShape";
+import { analyzePhoto, ANALYSIS_READY } from "@/src/features/photos/photos.analysis";
+import {
   capturePhoto,
   deletePhotoFile,
   PHOTOS_SUPPORTED,
@@ -49,6 +57,7 @@ export default function PhotosScreen() {
   const [chosen, setChosen] = useState<{ before?: string; after?: string }>({});
   const [mode, setMode] = useState<"side" | "flip">("side");
   const [showAfter, setShowAfter] = useState(true);
+  const [issues, setIssues] = useState<string[]>([]);
   const load = useCallback(() => {
     getSetting(PHOTOS_KEY).then((value) =>
       // Una foto cuyo archivo ya no está (por ejemplo, tras restaurar en otro teléfono) no se muestra.
@@ -85,8 +94,23 @@ export default function PhotosScreen() {
     const file = await capturePhoto(source);
     if (!file) return;
     const latest = await getLatestBiometrics();
+    // Con los modelos en el teléfono, se mide la silueta al guardar; si la pose no sirve, se avisa.
+    let shape: BodyShape | null = null;
+    const found = ANALYSIS_READY ? await analyzePhoto(file) : null;
+    if (found) {
+      const problems = poseIssues(found.landmarks, pose);
+      setIssues(problems);
+      if (!problems.length) shape = measureShape(found.mask, found.landmarks);
+    }
     await store(
-      addPhoto(photos, { id: newId(), date: localDateKey(), file, pose, weightKg: latest?.weightKg ?? null }),
+      addPhoto(photos, {
+        id: newId(),
+        date: localDateKey(),
+        file,
+        pose,
+        weightKg: latest?.weightKg ?? null,
+        ...(shape ? { shape } : {}),
+      }),
     );
   };
   const unit = profile ? weightUnitOf(profile) : "kg";
@@ -117,6 +141,18 @@ export default function PhotosScreen() {
             label: POSE_LABELS[value],
           }))}
         />
+        {issues.length ? (
+          <Card title="Para medir la próxima foto">
+            {issues.map((issue) => (
+              <Text key={issue} style={AppTheme.body}>
+                {issue}
+              </Text>
+            ))}
+          </Card>
+        ) : null}
+        {pair ? (
+          <ShapeCard before={pair.before} after={pair.after} photos={photos} heightCm={profile?.heightCm} />
+        ) : null}
         {pair && stats ? (
           <Card title={`Antes y ahora · ${daysBetween(pair.before.date, pair.after.date)} días`}>
             <Segmented
@@ -259,5 +295,90 @@ export default function PhotosScreen() {
         </Text>
       </ScrollView>
     </Screen>
+  );
+}
+
+/** La silueta antes y ahora: qué cambió y dónde. Sin modelos en el teléfono, explica cuándo llega. */
+function ShapeCard({
+  before,
+  after,
+  photos,
+  heightCm,
+}: {
+  before: ProgressPhoto;
+  after: ProgressPhoto;
+  photos: ProgressPhoto[];
+  heightCm?: number;
+}) {
+  if (!before.shape || !after.shape)
+    return (
+      <Card title="Silueta">
+        <Text style={AppTheme.hint}>
+          {ANALYSIS_READY
+            ? "Estas fotos no se pudieron medir. De cuerpo entero, de frente o de perfil, con los brazos un poco separados y ropa ajustada."
+            : "Con la app instalada (APK), cada foto se mide en el teléfono: hombros, cintura, cadera y dónde cambió tu silueta. Las fotos no salen del teléfono."}
+        </Text>
+      </Card>
+    );
+  const change = compareShapes(before.shape, after.shape);
+  const label = (value: number | null) =>
+    value === null ? "Igual" : `${value > 0 ? "+" : "−"}${Math.abs(value).toFixed(1)} %`;
+  // Con una foto de perfil cercana a cada fecha, se estima la cintura en cm (tendencia, no medida exacta).
+  const sideNear = (date: string) =>
+    photos.find(
+      (photo) => photo.pose === "side" && photo.shape && Math.abs(daysBetween(photo.date, date)) <= 3,
+    );
+  const sideBefore = before.pose === "front" ? sideNear(before.date) : undefined;
+  const sideAfter = after.pose === "front" ? sideNear(after.date) : undefined;
+  const waist =
+    heightCm && sideBefore?.shape && sideAfter?.shape
+      ? {
+          before: estimateWaistCm(before.shape, sideBefore.shape, heightCm),
+          after: estimateWaistCm(after.shape, sideAfter.shape, heightCm),
+        }
+      : null;
+  return (
+    <Card title="Silueta">
+      <View style={{ flexDirection: "row" }}>
+        {[
+          { label: "Hombros", value: label(change.shoulder) },
+          { label: "Cintura", value: label(change.waist) },
+          { label: "Cadera", value: label(change.hip) },
+        ].map((figure, index) => (
+          <View
+            key={figure.label}
+            style={[
+              { flex: 1, gap: 2 },
+              index > 0 && { borderLeftWidth: 1, borderLeftColor: AppTheme.colors.border, paddingLeft: 10 },
+            ]}
+          >
+            <Text style={[AppTheme.hint, { fontSize: 11 }]}>{figure.label}</Text>
+            <Text style={[AppTheme.tileValue, { fontSize: 18 }]}>{figure.value}</Text>
+          </View>
+        ))}
+      </View>
+      <Text style={AppTheme.body}>
+        Proporción hombro/cintura: {after.shape.shoulderToWaist.toFixed(2)} (
+        {change.shoulderToWaist >= 0 ? "+" : "−"}
+        {Math.abs(change.shoulderToWaist).toFixed(2)}).
+      </Text>
+      {change.regions.length ? (
+        <Text style={AppTheme.body}>
+          Donde más cambió:{" "}
+          {change.regions.map((item) => `${item.region.toLowerCase()} (${label(item.pct)})`).join(", ")}.
+        </Text>
+      ) : (
+        <Text style={AppTheme.body}>La silueta no cambió más que el margen de la foto.</Text>
+      )}
+      {waist ? (
+        <Text style={AppTheme.body}>
+          Cintura estimada con frente y perfil: {waist.before.toFixed(0)} → {waist.after.toFixed(0)} cm.
+        </Text>
+      ) : null}
+      <Text style={AppTheme.hint}>
+        Medido sobre la foto, relativo a tu altura: cambios menores al 2,5 % se toman como ruido. La pose, la
+        ropa y la luz influyen; la cinta métrica sigue siendo la referencia.
+      </Text>
+    </Card>
   );
 }

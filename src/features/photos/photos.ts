@@ -2,14 +2,25 @@
  * Fotos de progreso: cada una con su fecha y, opcional, el peso de ese día y
  * la pose. Las imágenes quedan en el teléfono (carpeta de la app); aquí solo
  * se maneja la lista, que se guarda en ajustes (`progress_photos`).
- * Las imágenes no entran en el respaldo: pesan demasiado.
+ * Las imágenes no entran en el respaldo: pesan demasiado. La silueta medida
+ * (`shape`, ver bodyShape.ts) sí, porque son unos pocos números.
  */
+import { readShape, type BodyShape } from "@/src/features/photos/bodyShape";
+
 export const PHOTOS_KEY = "progress_photos";
 
 export type Pose = "front" | "side" | "back";
 export const POSE_LABELS: Record<Pose, string> = { front: "Frente", side: "Perfil", back: "Espalda" };
 
-export type ProgressPhoto = { id: string; date: string; file: string; pose: Pose; weightKg?: number | null };
+export type ProgressPhoto = {
+  id: string;
+  date: string;
+  file: string;
+  pose: Pose;
+  weightKg?: number | null;
+  /** Silueta medida en el teléfono; falta si la foto no se pudo analizar. */
+  shape?: BodyShape;
+};
 
 /** Lee la lista guardada, de la más reciente a la más antigua. */
 export function readPhotos(value: unknown): ProgressPhoto[] {
@@ -23,6 +34,11 @@ export function readPhotos(value: unknown): ProgressPhoto[] {
         /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
         ["front", "side", "back"].includes(item.pose),
     )
+    .map((item) => {
+      const shape = readShape(item.shape);
+      const { shape: _dropped, ...rest } = item;
+      return shape ? { ...rest, shape } : rest;
+    })
     .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
 
