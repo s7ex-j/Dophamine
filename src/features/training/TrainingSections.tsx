@@ -279,11 +279,17 @@ export function VolumeCard({ weeks, unit }: { weeks: WeekVolume[]; unit: WeightU
 }
 
 /** El mapa muscular de la semana y los músculos que más trabajaron. */
-export function MuscleMapCard({ loads }: { loads: MuscleLoad[] }) {
+export function MuscleMapCard({
+  loads,
+  gender = "male",
+}: {
+  loads: MuscleLoad[];
+  gender?: "male" | "female";
+}) {
   const worked = loads.filter((item) => item.sets > 0).sort((a, b) => b.sets - a.sets);
   return (
     <Card title="Músculos esta semana">
-      <BodyMap loads={loads} />
+      <BodyMap loads={loads} gender={gender} />
       {worked.length ? (
         <View style={AppTheme.chipRow}>
           {worked.map((item) => (

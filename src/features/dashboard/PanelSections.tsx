@@ -1,3 +1,4 @@
+import { macroSplit } from "@/src/features/profile/targets";
 import { localDateKey } from "@/src/lib/dates";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
@@ -60,14 +61,11 @@ export function FoodSearchBar({ onPress }: { onPress: () => void }) {
 export function NutritionWeek({ week, profile }: { week: WeekDay[]; profile: NutritionProfile }) {
   const [mode, setMode] = useState<"consumed" | "remaining">("consumed");
   const [selected, setSelected] = useState(week.length - 1);
+  // Las mismas metas que el resumen del día: el tipo de plan cambia carbos y grasas.
+  const split = macroSplit(profile, profile.calorieTarget);
   const rows = nutritionGrid(
     week,
-    {
-      calories: profile.calorieTarget,
-      protein: profile.proteinTarget,
-      fats: profile.fatsTarget,
-      carbs: profile.carbsTarget,
-    },
+    { calories: profile.calorieTarget, protein: split.protein, fats: split.fats, carbs: split.carbs },
     mode,
   );
   return (
@@ -174,16 +172,18 @@ export function ExpenditureTile({
   records,
   analysis,
   onPress,
+  days = 14,
 }: {
   records: DailyBiometrics[];
   analysis: MetabolicAnalysis;
   onPress: () => void;
+  days?: number;
 }) {
-  const series = expenditureSeries(records, 14, { analysis });
+  const series = expenditureSeries(records, days, { analysis });
   return (
     <Tile
       title="Gasto"
-      subtitle="Últimos 14 días"
+      subtitle={`Últimos ${days} días`}
       icon="flame-outline"
       value={analysis.tdee ? String(analysis.tdee) : "—"}
       unit={analysis.tdee ? "kcal" : undefined}
@@ -207,18 +207,20 @@ export function TrendTile({
   analysis,
   profile,
   onPress,
+  days = 14,
 }: {
   analysis: MetabolicAnalysis;
   profile: NutritionProfile;
   onPress: () => void;
+  days?: number;
 }) {
   const unit = weightUnitOf(profile);
-  const points = analysis.points.slice(-14);
+  const points = analysis.points.slice(-days);
   const last = points.at(-1);
   return (
     <Tile
       title="Tendencia"
-      subtitle="Peso suavizado"
+      subtitle={`Peso suavizado · ${days} días`}
       icon="trending-down-outline"
       value={last ? weightValue(last.trendKg, unit, 1) : "—"}
       unit={last ? unit : undefined}
@@ -241,19 +243,21 @@ export function BalanceTile({
   records,
   analysis,
   onPress,
+  days = 7,
 }: {
   records: DailyBiometrics[];
   analysis: MetabolicAnalysis;
   onPress: () => void;
+  days?: number;
 }) {
-  const balance = energyBalance(records, analysis.tdee, 7);
+  const balance = energyBalance(records, analysis.tdee, days);
   const average = balance.length
     ? Math.round(balance.reduce((sum, day) => sum + day.balance, 0) / balance.length)
     : 0;
   return (
     <Tile
       title="Balance"
-      subtitle="Últimos 7 días"
+      subtitle={`Últimos ${days} días`}
       icon="swap-vertical-outline"
       value={balance.length ? `${average > 0 ? "+" : ""}${average}` : "—"}
       unit={balance.length ? (average < 0 ? "déficit" : "superávit") : undefined}
@@ -511,6 +515,7 @@ export function MacrosTile({
   profile,
   onPress,
 }: {
+  /** Los días a mostrar (7 o 30), del más antiguo a hoy. */
   week: WeekDay[];
   profile: NutritionProfile;
   onPress: () => void;
@@ -523,13 +528,15 @@ export function MacrosTile({
   return (
     <Tile
       title="Macros"
-      subtitle="Últimos 7 días"
+      subtitle={`Últimos ${week.length} días`}
       icon="pie-chart-outline"
       value={average ? String(average) : "—"}
       unit={average ? "kcal/día" : undefined}
       onPress={onPress}
     >
-      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 4, height: 56 }}>
+      <View
+        style={{ flexDirection: "row", alignItems: "flex-end", gap: week.length > 10 ? 1 : 4, height: 56 }}
+      >
         {week.map((day) => {
           const record = day.record;
           const parts = record
@@ -571,17 +578,21 @@ export function SleepTile({
   const byDate = new Map(
     sleep.map((entry) => [entry.date, sleepMinutes(entry.bedtime, entry.wakeTime) ?? 0]),
   );
-  const summary = sleepSummary(sleep, 7);
+  const summary = sleepSummary(sleep, dates.length);
   return (
     <Tile
       title="Sueño"
-      subtitle={summary.averageBedtime ? `Te acuestas ~${summary.averageBedtime}` : "Últimas 7 noches"}
+      subtitle={
+        summary.averageBedtime ? `Te acuestas ~${summary.averageBedtime}` : `Últimas ${dates.length} noches`
+      }
       icon="moon-outline"
       value={summary.averageMinutes ? formatDuration(summary.averageMinutes) : "—"}
       onPress={onPress}
     >
       {summary.nights ? (
-        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6, height: 56 }}>
+        <View
+          style={{ flexDirection: "row", alignItems: "flex-end", gap: dates.length > 10 ? 1 : 6, height: 56 }}
+        >
           {dates.map((date) => (
             <View key={date} style={{ flex: 1, alignItems: "center", gap: 3 }}>
               <MiniBar
@@ -589,7 +600,7 @@ export function SleepTile({
                 target={SLEEP_GOAL_MINUTES}
                 color={AppTheme.colors.violet}
               />
-              <Text style={AppTheme.weekGridDay}>{letterOf(date)}</Text>
+              {dates.length <= 10 ? <Text style={AppTheme.weekGridDay}>{letterOf(date)}</Text> : null}
             </View>
           ))}
         </View>

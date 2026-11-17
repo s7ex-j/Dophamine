@@ -1,8 +1,9 @@
+import Svg, { Circle, G } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
-import { Ring, StackBar } from "@/src/components/charts";
+import { StackBar } from "@/src/components/charts";
 import { IconButton, LinkButton, type IconName } from "@/src/components/ui";
 import { stateLabels, type Food, type Nutrients } from "@/src/features/nutrition/foods";
 import { isEstimate, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
@@ -27,43 +28,82 @@ type Targets = { calories: number; protein: number; carbs: number; fats: number 
 export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Targets }) {
   const { colors } = AppTheme;
   const remaining = targets ? targets.calories - totals.kcal : 0;
-  const macros = [
-    { label: "Proteína", value: totals.proteinG, target: targets?.protein, color: colors.protein },
-    { label: "Carbos", value: totals.carbsG, target: targets?.carbs, color: colors.carbs },
-    { label: "Grasas", value: totals.fatsG, target: targets?.fats, color: colors.fats },
+  const rings = [
+    {
+      label: "Calorías",
+      value: totals.kcal,
+      target: targets?.calories,
+      color: remaining < 0 ? colors.coral : colors.kcal,
+      unit: "",
+    },
+    {
+      label: "Proteína",
+      value: totals.proteinG,
+      target: targets?.protein,
+      color: colors.protein,
+      unit: " g",
+    },
+    { label: "Carbos", value: totals.carbsG, target: targets?.carbs, color: colors.carbs, unit: " g" },
+    { label: "Grasas", value: totals.fatsG, target: targets?.fats, color: colors.fats, unit: " g" },
   ];
+  const size = 136;
   return (
-    <View style={[AppTheme.card, AppTheme.iconRow, { gap: 18 }]}>
-      <Ring
-        value={targets ? totals.kcal / targets.calories : 0}
-        size={118}
-        color={remaining < 0 ? colors.coral : colors.kcal}
-      >
-        <Text style={AppTheme.ringNumber}>{totals.kcal}</Text>
-        <Text style={AppTheme.ringLabel}>
+    <View style={[AppTheme.card, AppTheme.iconRow, { gap: 16 }]}>
+      <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+        <Svg width={size} height={size} style={{ position: "absolute" }}>
+          {rings.map((ring, index) => {
+            const stroke = index === 0 ? 10 : 6;
+            const radius = size / 2 - 6 - (index === 0 ? 0 : 11 + (index - 1) * 8);
+            const circumference = 2 * Math.PI * radius;
+            const done = ring.target ? Math.min(1, ring.value / ring.target) : 0;
+            return (
+              <G key={ring.label}>
+                <Circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke={ring.color}
+                  strokeOpacity={0.15}
+                  strokeWidth={stroke}
+                  fill="none"
+                />
+                <Circle
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={radius}
+                  stroke={ring.color}
+                  strokeWidth={stroke}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={`${circumference * done} ${circumference}`}
+                  transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                />
+              </G>
+            );
+          })}
+        </Svg>
+        <Text style={[AppTheme.ringNumber, { fontSize: 16, lineHeight: 19 }]}>{totals.kcal}</Text>
+        <Text style={[AppTheme.ringLabel, { fontSize: 9, lineHeight: 11 }]}>
           {targets ? (remaining >= 0 ? `quedan ${remaining}` : `+${-remaining}`) : "kcal"}
         </Text>
-      </Ring>
-      <View style={{ flex: 1, gap: 10 }}>
-        {macros.map((macro) => (
-          <View key={macro.label} style={{ gap: 4 }}>
-            <View style={AppTheme.legendRow}>
-              <Text style={AppTheme.legendLabel}>{macro.label}</Text>
-              <Text style={AppTheme.legendValue}>
-                {Math.round(macro.value)}
-                {macro.target ? <Text style={AppTheme.macroTarget}> / {macro.target} g</Text> : " g"}
-              </Text>
-            </View>
-            <View style={AppTheme.progressTrack}>
-              <View
-                style={{
-                  height: "100%",
-                  borderRadius: 5,
-                  backgroundColor: macro.color,
-                  width: `${Math.min(100, macro.target ? (macro.value / macro.target) * 100 : 0)}%`,
-                }}
-              />
-            </View>
+      </View>
+      <View style={{ flex: 1, gap: 8 }}>
+        {rings.map((ring) => (
+          <View key={ring.label} style={AppTheme.legendRow}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ring.color }} />
+            <Text style={[AppTheme.legendLabel, { flex: 1 }]}>{ring.label}</Text>
+            <Text style={AppTheme.legendValue}>
+              {Math.round(ring.value)}
+              {ring.target ? (
+                <Text style={AppTheme.macroTarget}>
+                  {" "}
+                  / {ring.target}
+                  {ring.unit}
+                </Text>
+              ) : (
+                ring.unit
+              )}
+            </Text>
           </View>
         ))}
         {totals.alcoholG ? (

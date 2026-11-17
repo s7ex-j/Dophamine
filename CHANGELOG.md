@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.26.0 - 2026-11-17
+
+Lista para el primer APK: ícono propio, reparto igual todos los días, Panel con anillos de macros y rango de 7 o 30 días, y revisión general.
+
+- Reparto: el objetivo es el mismo todos los días, entrenes o no. "Tu semana" ya no tiene selector; un plan guardado con reparto por entreno o a mano también queda parejo.
+- Panel: el resumen del día es un anillo de calorías con tres anillos por dentro (proteína, carbohidratos y grasas). Debajo, un aviso del día con lo que más conviene atender ahora (proteína que falta, calorías que quedan o que se pasaron). Los gráficos de "Tu progreso" se ven a 7 o 30 días.
+- "Nutrición y metas" usa las mismas metas de macros que el resumen del día (antes ignoraba el tipo de plan).
+- Ícono de la app, ícono adaptativo de Android y pantalla de inicio propios (antes salía el genérico de Expo); se generan con `node scripts/icons.mjs` desde el logo.
+- El permiso de cámara explica también el QR de la conexión directa.
+- El mapa muscular usa la silueta femenina si el perfil es de mujer.
+- Revisión general: el repositorio web de bienestar exporta el mismo tipo que el de SQLite; textos viejos del README al día; tildes en el CHANGELOG.
+- De 381 a 383 pruebas de dominio; 27 flujos de navegador.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.25.0 - 2026-11-17
 
 Controles nuevos en toda la app, evaluación inicial completa, Estrategia como tablero, motor más prudente y "Cómo se calcula" como red.
@@ -26,8 +40,8 @@ Primera versión bajo GPL-3.0-only. Panel más denso con los gráficos primero, 
 - Tu dieta en el Panel: muestra solo la comida que toca ("Comida 3 · 16:45"), se registra con "Registrar comida" y se pueden ajustar las cantidades antes, porque casi nunca se come exacto. Muestra una sola sugerencia: la de esa comida (antes o después de entrenar, alergia, cómo te sientes).
 - Mi dieta más simple: una fila por comida con hora, nombre y calorías; al tocarla se ven sus alimentos. Las cantidades se editan solo al revisar una dieta nueva.
 - Licencia: el código pasa de MIT a la GNU General Public License, versión 3 únicamente (GPL-3.0-only). Hasta la 0.23.0 sigue bajo MIT (etiqueta `v0.23.0-mit`). Se agregan la política de marca (`TRADEMARK.md`), la licencia de las contribuciones con DCO (`CONTRIBUTING.md`) y el aviso de que los datos de terceros conservan su licencia (`NOTICE.md`). No cambia el código de la app: no requiere prueba en teléfono.
-- Dieta por archivo: la app lee el formato dophamine-diet (tus alimentos con sus valores, comidas armadas, un horario distinto para cada dia de la semana y la hora del gimnasio). Mi dieta muestra la semana por dias; el Panel sigue el dia de hoy, ya no pregunta la hora del entreno si la dieta la trae y respeta la comida marcada para antes y despues de entrenar. Las metas de la dieta mandan mientras se la sigue. Plantilla y explicacion en docs/formatos.
-- Se quito la calculadora de discos.
+- Dieta por archivo: la app lee el formato dophamine-diet (tus alimentos con sus valores, comidas armadas, un horario distinto para cada día de la semana y la hora del gimnasio). Mi dieta muestra la semana por días; el Panel sigue el día de hoy, ya no pregunta la hora del entreno si la dieta la trae y respeta la comida marcada para antes y después de entrenar. Las metas de la dieta mandan mientras se la sigue. Plantilla y explicación en docs/formatos.
+- Se quitó la calculadora de discos.
 - No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
 
 ## 0.23.0 - 2026-11-17

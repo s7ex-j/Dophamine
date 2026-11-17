@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { IconButton, Screen } from "@/src/components/ui";
+import { IconButton, Segmented, Screen } from "@/src/components/ui";
 import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
 import { buildWeek } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
@@ -104,6 +104,7 @@ export default function DashboardScreen() {
   }, []);
   useEffect(load, [load]);
   useFocusEffect(load);
+  const [range, setRange] = useState<7 | 30>(7);
   const controls = useCheckIn(snapshot, load);
 
   const changeLayout = (next: PanelLayout) => {
@@ -141,10 +142,19 @@ export default function DashboardScreen() {
             records={snapshot.records}
             analysis={snapshot.analysis}
             onPress={open("expenditure")}
+            days={range === 7 ? 14 : 30}
           />
         );
       case "trend":
-        return <TrendTile key={id} analysis={snapshot.analysis} profile={profile} onPress={open("weight")} />;
+        return (
+          <TrendTile
+            key={id}
+            analysis={snapshot.analysis}
+            profile={profile}
+            onPress={open("weight")}
+            days={range === 7 ? 14 : 30}
+          />
+        );
       case "balance":
         return (
           <BalanceTile
@@ -152,6 +162,7 @@ export default function DashboardScreen() {
             records={snapshot.records}
             analysis={snapshot.analysis}
             onPress={open("balance")}
+            days={range}
           />
         );
       case "goal":
@@ -165,9 +176,16 @@ export default function DashboardScreen() {
           />
         );
       case "macros":
-        return <MacrosTile key={id} week={week} profile={profile} onPress={open("macros")} />;
+        return (
+          <MacrosTile
+            key={id}
+            week={buildWeek(snapshot.records, new Date(), range)}
+            profile={profile}
+            onPress={open("macros")}
+          />
+        );
       case "sleep":
-        return <SleepTile key={id} sleep={sleep} dates={lastDays(7)} onPress={open("sleep")} />;
+        return <SleepTile key={id} sleep={sleep} dates={lastDays(range)} onPress={open("sleep")} />;
       case "composition":
         return (
           <CompositionTile
@@ -244,7 +262,20 @@ export default function DashboardScreen() {
           />
         ) : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} withMealsButton={!dietToday} />}
-        <Text style={[AppTheme.sectionTitle, { marginTop: 4 }]}>Tu progreso</Text>
+        <View style={[AppTheme.sectionHeader, { marginTop: 4 }]}>
+          <Text style={AppTheme.sectionTitle}>Tu progreso</Text>
+          <View style={{ width: 150 }}>
+            <Segmented
+              label="Rango de los gráficos"
+              value={range}
+              onChange={setRange}
+              options={[
+                { value: 7, label: "7 días" },
+                { value: 30, label: "30 días" },
+              ]}
+            />
+          </View>
+        </View>
         {customizing ? (
           <CustomizePanel
             layout={layout}

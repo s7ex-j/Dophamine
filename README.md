@@ -22,7 +22,7 @@ Dophamine es un proyecto open source, offline-first, pensado para quienes quiere
 ### Un flujo corto que mantiene el contexto
 
 ```text
-Configura tu plan -> Registra peso y totales diarios -> Mira la tendencia -> Decide en tu revision semanal
+Evaluación inicial -> Registra comida, peso, sueño y entreno -> Mira la tendencia -> Revisión cada 3 o 7 días
 ```
 
 La pantalla principal no es un muro de numeros: presenta la energia disponible, los habitos del dia, la semana completa y la siguiente accion que desbloquea mas informacion. Los huecos de registro se muestran con honestidad; Dophamine no fabrica precision cuando todavia faltan datos.
@@ -40,7 +40,7 @@ La pantalla principal no es un muro de numeros: presenta la energia disponible, 
 
 ## Filosofia
 
-1. **Menos friccion, mejores datos.** Registrar los totales diarios es suficiente para iniciar una conversacion util con la tendencia.
+1. **Menos fricción, mejores datos.** Registrar alimento por alimento, o seguir tu dieta con un toque, alimenta la tendencia sin hojas de cálculo.
 2. **Las recomendaciones deben poder explicarse.** Cada estado y propuesta muestra que datos tiene y que datos aun necesita.
 3. **El usuario conserva la ultima palabra.** Una revision propone; nunca modifica automaticamente el plan.
 4. **Offline no es una limitacion.** Tus datos permanecen en tu dispositivo y la app funciona sin una cuenta obligatoria.
@@ -106,7 +106,7 @@ La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARC
 
 ## Alcance y hoja de ruta
 
-Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. El modelo actual registra **totales diarios**, no alimentos individuales. Por eso una base global de alimentos, plantillas de comidas e importacion manual pertenecen a la siguiente etapa, junto con el respaldo en la app movil (en la web ya se puede descargar y restaurar un archivo), bloques de periodizacion y sincronizacion cifrada opcional.
+Dophamine es una herramienta de seguimiento personal; no diagnostica ni reemplaza a profesionales de salud o nutricion. Registra alimento por alimento (con alimentos incluidos, propios, recetas y búsqueda opcional en Open Food Facts), carga tu dieta y tu rutina desde un archivo, y estima tu gasto con un motor de autoajuste. Lo que necesita código nativo propio (Health Connect, pasos, widgets, conexión directa con la web en el teléfono) llega con el APK.
 
 El orden de lo que falta, con quién hace cada paso y cómo se comprueba, está en [docs/HOJA_DE_RUTA.md](docs/HOJA_DE_RUTA.md).
 

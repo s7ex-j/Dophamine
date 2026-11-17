@@ -9,19 +9,14 @@ export type WellbeingEntry = {
   sleepHours: number | null;
   note: string;
 };
-export async function saveWellbeingEntry({
-  mood,
-  energy,
-  stress,
-  sleepHours,
-  note,
-}: {
+export type WellbeingInput = {
   mood: number;
   energy: number;
   stress: number;
   sleepHours: number;
   note: string;
-}) {
+};
+export async function saveWellbeingEntry({ mood, energy, stress, sleepHours, note }: WellbeingInput) {
   const store = readStore();
   store.wellbeing.unshift({
     id: webId(),

@@ -24,7 +24,7 @@ Dophamine is an open source, offline-first project for people who want to unders
 ### A short flow that keeps the context
 
 ```text
-Set up your plan -> Log weight and daily totals -> Check the trend -> Decide in your weekly review
+Initial assessment -> Log food, weight, sleep and training -> Check the trend -> Review every 3 or 7 days
 ```
 
 The main screen is not a wall of numbers: it shows available energy, the day's habits, the full week and the next action that unlocks more information. Logging gaps are shown honestly; Dophamine does not invent precision when data is still missing.
@@ -43,7 +43,7 @@ The main screen is not a wall of numbers: it shows available energy, the day's h
 
 ## Philosophy
 
-1. **Less friction, better data.** Logging daily totals is enough to start a useful conversation with the trend.
+1. **Less friction, better data.** Logging food item by item, or following your diet with one tap, feeds the trend without spreadsheets.
 2. **Recommendations must be explainable.** Every state and proposal shows what data it has and what data it still needs.
 3. **The user has the last word.** A review proposes; it never changes the plan automatically.
 4. **Offline is not a limitation.** Your data stays on your device and the app works without a mandatory account.
@@ -109,7 +109,7 @@ The separation between interface, domain and persistence is explained in [docs/A
 
 ## Scope and roadmap
 
-Dophamine is a personal tracking tool; it does not diagnose or replace health or nutrition professionals. The current model logs **daily totals**, not individual foods. That is why a global food database, meal templates and manual import belong to the next stage, together with data export, periodization blocks and optional encrypted sync.
+Dophamine is a personal tracking tool; it does not diagnose or replace health or nutrition professionals. It logs food item by item (built-in foods, your own, recipes and optional Open Food Facts search), loads your diet and routine from a file, and estimates your expenditure with a self-adjusting engine. What needs native code of its own (Health Connect, steps, widgets, direct link with the web on the phone) arrives with the APK.
 
 ## Exercise data, privacy and license
 

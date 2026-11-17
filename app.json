@@ -3,8 +3,9 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.25.0",
+    "version": "0.26.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
     "plugins": [
       "expo-router",
@@ -23,7 +24,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Dophamine usa la cámara solo para leer el código de barras de un producto. La imagen no se guarda.",
+          "cameraPermission": "Dophamine usa la cámara para leer códigos de barras y el código QR de la conexión directa con la web. La imagen no se guarda.",
           "recordAudioAndroid": false
         }
       ],
@@ -31,6 +32,15 @@
         "expo-notifications",
         {
           "color": "#34D399"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#0E1311"
         }
       ]
     ],
@@ -47,7 +57,11 @@
       "versionCode": 1,
       "permissions": [
         "android.permission.VIBRATE"
-      ]
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#167B5B"
+      }
     },
     "ios": {
       "bundleIdentifier": "com.s7ex.dophamine",

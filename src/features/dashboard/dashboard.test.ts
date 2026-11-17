@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildWeek, nutritionGrid } from "./dashboard";
+import { buildWeek, dailyTip, nutritionGrid } from "./dashboard";
 
 const record = (date: string, caloriesIn: number) => ({
   id: date,
@@ -51,5 +51,28 @@ describe("cuadrícula de nutrición", () => {
     expect(grid[0].values.at(-1)).toBe(500);
     expect(grid[0].values[0]).toBe(2000);
     expect(grid[1].values.at(-1)).toBe(0);
+  });
+});
+
+describe("aviso del día", () => {
+  const targets = { calories: 2400, protein: 160 };
+  it("prioriza la proteína cuando faltan muchas y quedan pocas calorías", () => {
+    expect(dailyTip({ kcal: 2000, proteinG: 100 }, targets, 18)).toBe(
+      "Te faltan 60 g de proteína y quedan 400 kcal: elige proteína magra.",
+    );
+    expect(dailyTip({ kcal: 900, proteinG: 60 }, targets, 13)).toBe(
+      "Te faltan 100 g de proteína para tu meta de hoy.",
+    );
+  });
+  it("avisa al pasarse, al final del día y si aún no hay nada", () => {
+    expect(dailyTip({ kcal: 2900, proteinG: 170 }, targets, 21)).toContain(
+      "Pasaste tu objetivo por 500 kcal",
+    );
+    expect(dailyTip({ kcal: 1900, proteinG: 150 }, targets, 20)).toBe(
+      "Te quedan 500 kcal para cerrar el día.",
+    );
+    expect(dailyTip({ kcal: 0, proteinG: 0 }, targets, 9)).toBeNull();
+    expect(dailyTip({ kcal: 0, proteinG: 0 }, targets, 14)).toBe("Aún no registras comida hoy.");
+    expect(dailyTip({ kcal: 2350, proteinG: 158 }, targets, 21)).toBeNull();
   });
 });

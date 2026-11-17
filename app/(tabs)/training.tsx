@@ -52,10 +52,14 @@ function TrainingScreenContent() {
   const [sessions, setSessions] = useState<CompletedSession[]>([]);
   const [resumable, setResumable] = useState(false);
   const [unit, setUnit] = useState<WeightUnit>("kg");
+  const [sex, setSex] = useState<"male" | "female">("male");
   const [selected, setSelected] = useState(() => weekdayId(new Date()));
   const [gymName, setGymName] = useState("");
   const load = useCallback(() => {
-    getNutritionProfile().then((profile) => setUnit(weightUnitOf(profile)));
+    getNutritionProfile().then((profile) => {
+      setUnit(weightUnitOf(profile));
+      setSex(profile?.sex ?? "male");
+    });
     getSetting("active_session").then((saved) => setResumable(readActiveSession(saved) !== null));
     getGyms().then(({ active }) => setGymName(active.name));
     Promise.all([getRoutine(), getSessionHistory(200)]).then(([nextRoutine, nextSessions]) => {
@@ -129,7 +133,7 @@ function TrainingScreenContent() {
           openExercise={openExercise}
         />
         <WeekTotals week={week} current={weeks[weeks.length - 1]} unit={unit} />
-        <MuscleMapCard loads={muscleLoads(thisWeek)} />
+        <MuscleMapCard loads={muscleLoads(thisWeek)} gender={sex} />
         <VolumeCard weeks={weeks} unit={unit} />
         <BestsCard bests={exerciseBests(sessions)} unit={unit} openExercise={openExercise} />
         <HistoryCard

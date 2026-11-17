@@ -26,36 +26,6 @@ export const DIET_TYPES: Array<{ value: DietType; label: string; detail: string 
   { value: "high_protein", label: "Alto en proteína", detail: "25 % más de proteína; 28 % en grasas." },
 ];
 
-export const SCHEDULES: Array<{ value: CalorieSchedule; label: string }> = [
-  { value: "even", label: "Igual todos los días" },
-  { value: "training", label: "Más en días de entreno" },
-  { value: "custom", label: "A mano por día" },
-];
-
-const WEEK = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-
-/**
- * Cuánto se aparta cada día del promedio. En "entreno", los días de entreno
- * suman `extra` y los de descanso restan lo justo para que la semana no cambie.
- * En "a mano", lo escrito se centra para que el promedio sea el objetivo.
- */
-export function weeklyOffsets(profile: NutritionProfile, trainingDays: string[]): Record<string, number> {
-  const zero = Object.fromEntries(WEEK.map((day) => [day, 0]));
-  if (profile.calorieSchedule === "training") {
-    const extra = profile.trainingDayExtra ?? 200;
-    const trained = WEEK.filter((day) => trainingDays.includes(day)).length;
-    if (!trained || trained === 7) return zero;
-    const rest = -Math.round((extra * trained) / (7 - trained));
-    return Object.fromEntries(WEEK.map((day) => [day, trainingDays.includes(day) ? extra : rest]));
-  }
-  if (profile.calorieSchedule === "custom" && profile.customDayOffsets) {
-    const raw = WEEK.map((day) => profile.customDayOffsets?.[day] ?? 0);
-    const mean = raw.reduce((sum, value) => sum + value, 0) / 7;
-    return Object.fromEntries(WEEK.map((day, index) => [day, Math.round(raw[index] - mean)]));
-  }
-  return zero;
-}
-
 /** Proteína, carbos y grasas para unas calorías según el tipo de plan. */
 export function macroSplit(profile: NutritionProfile, calories: number) {
   const type = profile.dietType;
@@ -83,7 +53,10 @@ export function targetsForWeekday(
   weekday: string,
   trainingDays: string[],
 ): DayTargets {
-  const offset = weeklyOffsets(profile, trainingDays)[weekday] ?? 0;
-  const calories = Math.max(1000, profile.calorieTarget + offset);
-  return { calories, offset, ...macroSplit(profile, calories) };
+  // Decisión de Jharol (17 nov 2026): el objetivo es el mismo todos los días, entrenes o no.
+  // Los campos viejos de reparto (calorieSchedule…) se conservan en el perfil pero ya no cuentan.
+  void weekday;
+  void trainingDays;
+  const calories = Math.max(1000, profile.calorieTarget);
+  return { calories, offset: 0, ...macroSplit(profile, calories) };
 }

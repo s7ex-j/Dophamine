@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildNutritionProfile } from "@/src/features/profile/profile";
-import { macroSplit, targetsForWeekday, weeklyOffsets } from "@/src/features/profile/targets";
+import { macroSplit, targetsForWeekday } from "@/src/features/profile/targets";
 
 const base = {
   ...buildNutritionProfile({
@@ -32,23 +32,12 @@ describe("metas por día", () => {
     });
   });
 
-  it("más en días de entreno sin cambiar el promedio de la semana", () => {
-    const profile = { ...base, calorieSchedule: "training" as const, trainingDayExtra: 300 };
-    expect(weeklyOffsets(profile, training)).toMatchObject({ mon: 300, wed: -400, sun: -400 });
-    expect(targetsForWeekday(profile, "mon", training).calories).toBe(2800);
-    expect(targetsForWeekday(profile, "sun", training).calories).toBe(2100);
-    expect(weeklyAverage(profile)).toBeCloseTo(2500, 0);
-  });
-
-  it("a mano por día: se centra para que el promedio sea el objetivo", () => {
-    const profile = {
-      ...base,
-      calorieSchedule: "custom" as const,
-      customDayOffsets: { sat: 700 },
-    };
-    expect(targetsForWeekday(profile, "sat", training).calories).toBe(3100);
-    expect(targetsForWeekday(profile, "mon", training).calories).toBe(2400);
-    expect(weeklyAverage(profile)).toBeCloseTo(2500, 0);
+  it("un plan guardado con reparto por entreno o a mano también queda igual todos los días", () => {
+    const training_ = { ...base, calorieSchedule: "training" as const, trainingDayExtra: 300 };
+    const custom = { ...base, calorieSchedule: "custom" as const, customDayOffsets: { sat: 700 } };
+    for (const profile of [training_, custom])
+      for (const day of ["mon", "sat", "sun"])
+        expect(targetsForWeekday(profile, day, training).calories).toBe(2500);
   });
 });
 

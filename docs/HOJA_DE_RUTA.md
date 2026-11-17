@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.25.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.26.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -24,6 +24,8 @@ con el repo.
   una política de marca aparte (`TRADEMARK.md`).
 - **17 de noviembre de 2026 — donaciones:** solo un enlace en el README y en el sitio. Nada dentro de la app
   hasta revisar las políticas de Google Play y de Apple sobre donaciones.
+- **17 de noviembre de 2026 — reparto:** el objetivo de calorías y macros es el mismo todos los días,
+  entrenes o no. Se quitó el reparto por entreno y a mano (los campos viejos se conservan en el perfil).
 - **17 de noviembre de 2026 — mapa muscular propio:** se diseña desde cero. No se copia código ni SVG de
   openGym (AGPL-3.0); se puede tomar como referencia de qué mostrar (balance, fatiga, fuerza), no de cómo.
 

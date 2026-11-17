@@ -13,6 +13,7 @@ import {
 } from "@/src/features/biometrics/biometrics.repository";
 import { buildBodyInput, emptyForm, formFromRecord, type BodyForm } from "@/src/features/biometrics/dailyLog";
 import { leanMassKg } from "@/src/features/composition/composition";
+import { dailyTip } from "@/src/features/dashboard/dashboard";
 import { DaySummary } from "@/src/features/nutrition/MealSections";
 import { totalsOf, type MealEntry } from "@/src/features/nutrition/meals";
 import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
@@ -184,6 +185,11 @@ export function TodaySection({
         </Text>
       ) : null}
       <DaySummary totals={totals} targets={dayTargets} />
+      {date === today && dailyTip(totals, dayTargets, new Date().getHours()) ? (
+        <View style={[AppTheme.banner, { paddingVertical: 10 }]}>
+          <Text style={AppTheme.bannerText}>{dailyTip(totals, dayTargets, new Date().getHours())}</Text>
+        </View>
+      ) : null}
 
       <View style={AppTheme.quickRow}>
         <QuickTile

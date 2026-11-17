@@ -54,7 +54,7 @@ export default function StrategyScreen() {
         <StrategyHeader profile={profile} trendKg={snapshot.trendKg} analysis={snapshot.analysis} />
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         <CheckInCard snapshot={snapshot} controls={controls} />
-        <DistributionCard profile={profile} onChanged={load} readOnly={VIEWER} />
+        <DistributionCard profile={profile} />
         <ReviewHistoryCard reviews={reviews} />
         <View style={[AppTheme.card, { paddingVertical: 2 }]}>
           <NavRow

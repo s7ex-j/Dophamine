@@ -695,12 +695,7 @@ async function main() {
     await waitText("% de grasa estimado");
     await open("/strategy");
     await waitText("Tu semana");
-    await press("Más en días de entreno");
-    await page.waitForFunction(
-      (key) => JSON.parse(localStorage.getItem(key)).profile?.calorieSchedule === "training",
-      {},
-      STORE_KEY,
-    );
+    await waitText("Mismo objetivo todos los días");
     await open("/nutrients");
     await waitText("Principales aportes");
     await waitText("Cómo repartes el día");
@@ -1138,7 +1133,6 @@ async function main() {
     await viewer.goto(`${base}/strategy`, { waitUntil: "networkidle0" });
     await waitFor("Tu semana");
     assert(!(await text()).includes("Reevaluar mi plan"), "El visor permite reevaluar el plan.");
-    assert(!(await text()).includes("Más en días de entreno"), "El visor permite cambiar el reparto.");
     const after = await read();
     assert(after.reviews.length === 0, "El visor aplicó un ajuste automático.");
     assert(
