@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 16 de noviembre de 2026 (versión 0.21.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.22.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -28,7 +28,8 @@ con el repo.
   favoritos, código de barras y búsqueda opcional en Open Food Facts.
 - Gasto real adaptativo (tendencia suavizada, energía por kilo según composición, margen) y revisión cada
   3 o 7 días que mira cumplimiento, sueño, entreno y cercanía a la meta. "Cómo se calcula" lo muestra paso
-  a paso.
+  a paso. Con 15 días seguidos completos toma el relevo el motor de autoajuste (filtro de Kalman que
+  aprende el agua, el ruido y la deriva del gasto de cada persona).
 - Entreno: semana con un entreno por día (plantillas o armada a mano por enfoque muscular, cardio
   incluido), catálogo de ~610 ejercicios con imagen (RepDB), sesión serie por serie con hora de inicio y
   fin, carga sugerida, récords, mapa muscular, volumen semanal (series, tonelaje y sesiones).
@@ -50,7 +51,7 @@ Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK li
 | 1 | J | **Probar en un teléfono físico.** Desde la 0.9.0 cada versión se declara "no comprobada en teléfono". Recorrer las pantallas nuevas (0.14–0.19) en Expo Go o en un APK de prueba. | Lo más urgente: lo que falle se anota con captura. |
 | 2 | C ✔ | Revisión técnica antes del pulido: código sin uso quitado, pantalla de error, pruebas de navegador más estables, documentación al día. | Hecho en la 0.20.0. |
 | 3 | C ✔ | Tu dieta y el asesor: cargar la dieta, seguirla desde el Panel, alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo. | Hecho en la 0.21.0. |
-| 4 | C | Motor de autoajuste: con 15 días seguidos de datos completos, un filtro de estado estima peso real y gasto a la vez (agua, glucógeno, ciclo, días incompletos) y afina las revisiones. Complejo por dentro, simple a la vista. | 0.22.0. |
+| 4 | C ✔ | Motor de autoajuste: con 15 días seguidos de datos completos, un filtro de estado estima peso real y gasto a la vez (agua, glucógeno, ciclo, días incompletos) y afina las revisiones. Complejo por dentro, simple a la vista. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
 | 5 | C | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor (WebRTC): ver las métricas en la web sin subir un archivo y enviar la dieta desde la web. | 0.23.0. En el teléfono necesita el APK (no corre en Expo Go). |
 | 6 | C | Marcar las fases del ciclo en el gráfico de peso. | |
 | 7 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |

@@ -62,10 +62,11 @@ describe("cómo se calcula", () => {
       training,
       period: 7,
       sleepMinutes: 450,
+      periods: [],
     };
   };
 
-  it("muestra los seis pasos con tus números", () => {
+  it("muestra los siete pasos con tus números", () => {
     const records = Array.from({ length: 21 }, (_, index) => record(index));
     const steps = explainAlgorithm(snapshot(records), "2026-11-21");
     expect(steps.map((step) => step.id)).toEqual([
@@ -73,14 +74,19 @@ describe("cómo se calcula", () => {
       "trend",
       "density",
       "observed",
+      "engine",
       "training",
       "review",
     ]);
     expect(steps[0].value).toMatch(/kcal$/);
     expect(steps[0].detail).toContain("Basal");
     expect(steps[3].value).toContain("2500");
-    expect(steps[4].value).toBe("3/4 sesiones");
-    expect(steps[5].detail).toContain("7 h 30 min");
+    expect(steps[3].detail).toContain("motor de autoajuste");
+    expect(steps[4].value).toMatch(/^Activo · confianza/);
+    expect(steps[4].detail).toContain("Peso real estimado: 70.0 kg");
+    expect(steps[4].detail).toContain("en 14 días");
+    expect(steps[5].value).toBe("3/4 sesiones");
+    expect(steps[6].detail).toContain("7 h 30 min");
     expect(steps.every((step) => !step.pending)).toBe(true);
   });
 
@@ -88,5 +94,8 @@ describe("cómo se calcula", () => {
     const steps = explainAlgorithm(snapshot([record(0), record(1)]), "2026-11-02");
     expect(steps.find((step) => step.id === "observed")?.pending).toBe(true);
     expect(steps.find((step) => step.id === "observed")?.detail).toContain("Llevas 2 días");
+    const engine = steps.find((step) => step.id === "engine");
+    expect(engine?.pending).toBe(true);
+    expect(engine?.value).toBe("2/15 días seguidos");
   });
 });

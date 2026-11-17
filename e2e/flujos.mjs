@@ -980,6 +980,14 @@ async function main() {
     await waitText("Cambio en el rango");
     await open("/insight?metric=consistency");
     await waitText("Racha actual");
+    // Con 20 días seguidos completos manda el motor de autoajuste.
+    await open("/insight?metric=expenditure");
+    await waitText("Motor de autoajuste");
+    await waitText("Activo");
+    await open("/algorithm");
+    await waitText("Activo · confianza");
+    await waitText("Peso real estimado");
+    await waitText("en 14 días");
   });
 
   await step("dieta: cargarla, evitar un alimento y seguirla desde el Panel", async () => {

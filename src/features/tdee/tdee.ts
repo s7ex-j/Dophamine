@@ -3,6 +3,8 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { convertWeight, type WeightUnit } from "@/src/lib/units";
 import { compositionChange } from "@/src/features/composition/composition";
 import { checkInDaysOf, goalCalorieOffset, type NutritionProfile } from "@/src/features/profile/profile";
+import type { Period } from "@/src/features/period/period";
+import { adaptiveEngine, type Adaptive } from "@/src/features/tdee/adaptive";
 
 export type TrendPoint = {
   date: string;
@@ -27,6 +29,13 @@ export type MetabolicAnalysis = {
   nutritionDaysLast7: number;
   weightDaysLast7: number;
   status: ExpenditureStatus;
+  /** Motor de autoajuste: su avance hacia los 15 días o, ya activo, todo lo que estima. */
+  adaptive?: Adaptive;
+};
+export type AnalysisOptions = {
+  periods?: Period[];
+  /** Registros de más días para el motor de autoajuste (por defecto, los mismos). */
+  history?: DailyBiometrics[];
 };
 export type WeeklyCheckIn = {
   status: ExpenditureStatus;
@@ -109,7 +118,33 @@ export function trendPoints(records: DailyBiometrics[]): TrendPoint[] {
   });
 }
 
-export function analyzeMetabolism(records: DailyBiometrics[]): MetabolicAnalysis {
+/**
+ * El análisis que usa toda la app. Parte del cálculo simple y, cuando ya hay 15
+ * días seguidos completos, el gasto, su margen y el ritmo pasan a salir del
+ * motor de autoajuste (`adaptive.ts`).
+ */
+export function analyzeMetabolism(
+  records: DailyBiometrics[],
+  options: AnalysisOptions = {},
+): MetabolicAnalysis {
+  const simple = simpleAnalysis(records);
+  const adaptive = adaptiveEngine(options.history ?? records, {
+    energyPerKg: simple.energyPerKg,
+    priorTdee: simple.tdee,
+    periods: options.periods,
+  });
+  if (!adaptive.active) return { ...simple, adaptive };
+  return {
+    ...simple,
+    tdee: Math.round(adaptive.tdee),
+    tdeeMargin: adaptive.margin,
+    weeklyRateKg: adaptive.weeklyRateKg,
+    adaptive,
+  };
+}
+
+/** El cálculo simple: ingesta media menos la pendiente de la tendencia. */
+export function simpleAnalysis(records: DailyBiometrics[]): MetabolicAnalysis {
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
   const points = trendPoints(ordered);
   // Un día marcado como incompleto no representa lo que se comió: no cuenta para la media.
@@ -177,10 +212,15 @@ export function weeklyRecommendation(
 export function expenditureSeries(
   records: DailyBiometrics[],
   days = 14,
+  options: AnalysisOptions & { analysis?: MetabolicAnalysis } = {},
 ): Array<{ date: string; tdee: number }> {
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
+  // Desde que el motor se activó, cada día tiene su propia estimación; antes, el cálculo simple.
+  const engine = (options.analysis ?? analyzeMetabolism(ordered, options)).adaptive;
+  const byEngine = new Map(engine?.active ? engine.series.map((point) => [point.date, point.tdee]) : []);
   return ordered.slice(-days).flatMap((record) => {
-    const tdee = analyzeMetabolism(ordered.filter((item) => item.date <= record.date)).tdee;
+    const tdee =
+      byEngine.get(record.date) ?? simpleAnalysis(ordered.filter((item) => item.date <= record.date)).tdee;
     return tdee === null ? [] : [{ date: record.date, tdee }];
   });
 }

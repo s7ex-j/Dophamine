@@ -3,6 +3,7 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { buildNutritionProfile } from "@/src/features/profile/profile";
 import {
   analyzeMetabolism,
+  simpleAnalysis,
   energyBalance,
   energyPerKg,
   expenditureSeries,
@@ -141,11 +142,26 @@ describe("precisión del gasto", () => {
   });
 
   it("da un margen que crece con el ruido del peso", () => {
-    const steady = analyzeMetabolism(days(21, () => ({ weightKg: 75, caloriesIn: 2500 })));
-    const noisy = analyzeMetabolism(
-      days(21, (index) => ({ weightKg: 75 + (index % 2 ? 0.8 : -0.8), caloriesIn: 2500 })),
-    );
+    const calm = days(21, () => ({ weightKg: 75, caloriesIn: 2500 }));
+    const jumpy = days(21, (index) => ({ weightKg: 75 + (index % 2 ? 0.8 : -0.8), caloriesIn: 2500 }));
+    const steady = simpleAnalysis(calm);
+    const noisy = simpleAnalysis(jumpy);
     expect(steady.tdeeMargin).toBe(80);
     expect(noisy.tdeeMargin ?? 0).toBeGreaterThan(steady.tdeeMargin ?? 0);
+    // Con 15 días seguidos completos manda el motor de autoajuste, y también ensancha el margen.
+    const engine = analyzeMetabolism(calm);
+    expect(engine.adaptive?.active).toBe(true);
+    expect(engine.tdee).toBeGreaterThan(2440);
+    expect(engine.tdee).toBeLessThan(2560);
+    expect(analyzeMetabolism(jumpy).tdeeMargin ?? 0).toBeGreaterThan(engine.tdeeMargin ?? 0);
+  });
+
+  it("antes de los 15 días seguidos se usa el cálculo simple y se informa el avance", () => {
+    const records = days(20, () => ({ weightKg: 75, caloriesIn: 2500 }));
+    records[6] = { ...records[6], weightKg: null };
+    records[13] = { ...records[13], partial: true };
+    const analysis = analyzeMetabolism(records);
+    expect(analysis.adaptive).toEqual({ active: false, streak: 6, needed: 15 });
+    expect(analysis.tdee).toBe(simpleAnalysis(records).tdee);
   });
 });

@@ -1,6 +1,7 @@
 import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { estimateExpenditure } from "@/src/features/profile/expenditure";
 import { checkInDaysOf } from "@/src/features/profile/profile";
+import { ENGINE_DAYS, forecastWeight } from "@/src/features/tdee/adaptive";
 import { adherenceGap, averageIntake } from "@/src/features/tdee/checkin";
 import { addDays } from "@/src/lib/dates";
 
@@ -24,6 +25,11 @@ export type AlgorithmStep = {
 const kcal = (value: number) => `${Math.round(value)} kcal`;
 const signed = (value: number, decimals = 0) =>
   `${value > 0 ? "+" : value < 0 ? "−" : "±"}${Math.abs(value).toFixed(decimals)}`;
+
+const WEEKDAYS = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
+const CONFIDENCE = { high: "alta", medium: "media", low: "baja" } as const;
+const ENGINE_FORMULA =
+  "Filtro de Kalman: peso real de mañana = peso real + (comido − gasto) ÷ energía por kilo; báscula = peso real + agua (carbohidratos, comida de ayer, ciclo) + ruido. El ruido y cuánto deriva el gasto se aprenden de tus datos; los pesajes atípicos pesan menos.";
 
 export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): AlgorithmStep[] {
   const { profile, analysis } = snapshot;
@@ -93,19 +99,75 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
 
   // 4. Gasto observado.
   const intake = averageIntake(snapshot.records);
+  const engine = analysis.adaptive;
   steps.push({
     id: "observed",
     title: "Gasto real (observado)",
     value: analysis.tdee ? `${analysis.tdee} ± ${analysis.tdeeMargin ?? 0} kcal` : "—",
     detail: analysis.tdee
-      ? `Comiste en promedio ${intake ? kcal(intake) : "—"} y tu tendencia cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana: eso equivale a ${kcal(analysis.tdee)} de gasto.`
+      ? engine?.active
+        ? `Lo estima el motor de autoajuste con ${engine.days} días de datos: comiste en promedio ${intake ? kcal(intake) : "—"} y tu peso real cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana.`
+        : `Comiste en promedio ${intake ? kcal(intake) : "—"} y tu tendencia cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana: eso equivale a ${kcal(analysis.tdee)} de gasto.`
       : `Se activa con 14 días de tendencia y 10 de comida completos. Llevas ${analysis.loggedDays} días de comida.`,
-    formula:
-      "ingesta media − (cambio de peso por día × energía por kilo). Los días marcados como incompletos no cuentan.",
+    formula: engine?.active
+      ? "El gasto es parte del estado del motor de autoajuste (paso siguiente): se corrige con cada pesaje."
+      : "ingesta media − (cambio de peso por día × energía por kilo). Los días marcados como incompletos no cuentan.",
     pending: !analysis.tdee,
   });
 
-  // 5. Entreno.
+  // 5. Motor de autoajuste.
+  if (engine?.active) {
+    const notes = [
+      `Peso real estimado: ${engine.weightKg.toFixed(1)} kg${
+        engine.water && Math.abs(engine.water.totalKg) >= 0.3
+          ? ` (hoy la báscula marca ${signed(engine.water.totalKg, 1)} kg que son agua y contenido digestivo)`
+          : ""
+      }.`,
+      `Tu peso varía ±${engine.noiseKg.toFixed(2)} kg de un día a otro sin motivo.`,
+    ];
+    const carbs = engine.effects.carbsPer100g;
+    if (carbs.learned && Math.abs(carbs.value) >= 0.05)
+      notes.push(
+        `Por cada 100 g de carbohidratos sobre lo habitual, al día siguiente pesas ${signed(carbs.value, 2)} kg.`,
+      );
+    if (engine.effects.lutealKg.learned)
+      notes.push(`En la fase lútea retienes ${signed(engine.effects.lutealKg.value, 1)} kg.`);
+    if (engine.adaptation?.flagged)
+      notes.push(
+        `En ${engine.adaptation.weeks} semanas tu gasto ${engine.adaptation.flagged === "down" ? "bajó" : "subió"} unas ${Math.abs(engine.adaptation.kcal)} kcal más de lo que explica tu cambio de peso.`,
+      );
+    if (engine.weekday)
+      notes.push(
+        `Los ${WEEKDAYS[engine.weekday.day]} comes unas ${Math.abs(engine.weekday.kcal)} kcal ${engine.weekday.kcal > 0 ? "más" : "menos"} que tu promedio.`,
+      );
+    if (engine.outliers.length)
+      notes.push(
+        `${engine.outliers.length} ${engine.outliers.length === 1 ? "pesaje atípico pesó" : "pesajes atípicos pesaron"} menos.`,
+      );
+    const forecast = forecastWeight(engine, profile.calorieTarget, 14);
+    notes.push(
+      `Con tu objetivo actual, en 14 días: ${forecast.kg.toFixed(1)} ± ${(1.96 * forecast.sd).toFixed(1)} kg.`,
+    );
+    steps.push({
+      id: "engine",
+      title: "Motor de autoajuste",
+      value: `Activo · confianza ${CONFIDENCE[engine.confidence]}`,
+      detail: notes.join(" "),
+      formula: ENGINE_FORMULA,
+      pending: false,
+    });
+  } else
+    steps.push({
+      id: "engine",
+      title: "Motor de autoajuste",
+      value: `${engine?.streak ?? 0}/${ENGINE_DAYS} días seguidos`,
+      detail:
+        "Se activa cuando juntas 15 días seguidos con peso y comida completos. Desde ahí aprende de ti: cuánto varía tu peso sin motivo, cuánta agua retienes y cómo cambia tu gasto con el tiempo.",
+      formula: ENGINE_FORMULA,
+      pending: true,
+    });
+
+  // 6. Entreno.
   const training = snapshot.training;
   steps.push({
     id: "training",
@@ -119,7 +181,7 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     pending: !training,
   });
 
-  // 6. Revisión.
+  // 7. Revisión.
   const since = addDays(today, -(snapshot.period - 1));
   const gap = adherenceGap(
     snapshot.records.filter((record) => record.date >= since),

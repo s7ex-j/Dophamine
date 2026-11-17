@@ -60,6 +60,33 @@ En la app, Estrategia → "Cómo se calcula" muestra estos pasos con los número
 Las metas de cada día (`profile/targets.ts`) reparten ese objetivo según el tipo de plan y la semana (más en
 días de entreno o a mano) sin cambiar el promedio semanal.
 
+## Motor de autoajuste
+
+`tdee/adaptive.ts`. Se activa con 15 días seguidos de peso y comida completos y desde entonces
+`analyzeMetabolism` toma de él el gasto, el margen y el ritmo (`simpleAnalysis` queda como cálculo previo y
+como punto de partida).
+
+- **Estado oculto (6 valores):** peso real, gasto diario (guardado como kg/día: gasto ÷ energía por kilo),
+  y cuatro efectos de agua: por 100 g de carbohidratos sobre lo habitual, por 1000 kcal de comida sobre lo
+  habitual (los dos del día anterior), fase lútea y menstruación.
+- **Transición diaria:** peso real += comido ÷ energía por kilo − gasto. El gasto deriva como caminata
+  aleatoria. Un día sin comida completa usa la ingesta media y suma su dispersión a la incertidumbre.
+- **Observación:** báscula = peso real + efectos de agua del día + ruido.
+- **Autoajuste:** el ruido de la báscula se aprende de los residuos (dos pasadas: la segunda parte del
+  ruido aprendido en la primera); la deriva del gasto se elige entre 2, 5, 10, 18, 30 y 45 kcal/día por
+  máxima verosimilitud, con una preferencia suave por 15; los pesajes a más de 2.5 desviaciones se
+  atenúan (Huber) y a más de 3.5 se listan como atípicos.
+- **Suavizador RTS** hacia atrás para el ritmo (cambio del peso real en 14 días) y para la adaptación:
+  cambio del gasto en 4 a 8 semanas menos 22 kcal por kg de peso perdido o ganado; se avisa si baja más de
+  80 kcal y de 1.5 desviaciones.
+- **Salidas:** gasto ± desviación, peso real, agua de hoy y sus causas, ruido, efectos aprendidos, patrón
+  por día de la semana, serie diaria desde la activación y `forecastWeight` (peso esperado a N días).
+- **En la revisión** (`checkin.ts`): una diferencia menor que una desviación del gasto no cambia el plan; la
+  adaptación se menciona en definición.
+
+Límite: el error sistemático al anotar comida no se puede separar del gasto (comer 200 kcal más de lo
+anotado se ve igual que gastar 200 menos). El margen incluye un 3 % de la ingesta por eso.
+
 ## Entreno
 
 - Rutina con un entreno por día (`training/training.plans.ts`), plantillas recomendadas por experiencia

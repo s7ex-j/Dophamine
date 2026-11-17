@@ -18,6 +18,8 @@ import { trainingLoad, type TrainingLoad } from "@/src/features/training/energy"
 import { getRoutine, getSessionHistory } from "@/src/features/training/training.repository";
 import { weekdayId } from "@/src/features/training/week";
 import type { CheckInContext } from "@/src/features/tdee/checkin";
+import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
+import { getSetting } from "@/src/features/settings/settings.repository";
 
 export type DashboardSnapshot = {
   weightKg: number | null;
@@ -43,23 +45,29 @@ export type DashboardSnapshot = {
   period: number;
   /** Sueño medio del periodo, en minutos. */
   sleepMinutes: number | null;
+  /** Periodos anotados: el motor de autoajuste los usa para el agua del ciclo. */
+  periods: Period[];
 };
 export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
-  const [latest, records, mood, profile, reviews, sessions, routine] = await Promise.all([
+  const [latest, history, mood, profile, reviews, sessions, routine, savedPeriods] = await Promise.all([
     getLatestBiometrics(),
-    getBiometricsWindow(42),
+    // 120 días para el motor de autoajuste; el resto del Panel usa los últimos 42.
+    getBiometricsWindow(120),
     getLatestMood(),
     getNutritionProfile(),
     getWeeklyReviews(1),
     getSessionHistory(60),
     getRoutine(),
+    getSetting(PERIODS_KEY),
   ]);
+  const records = history.slice(0, 42);
+  const periods = readPeriods(savedPeriods);
   // El contexto de la revisión: lo comido y lo dormido en el periodo (3 o 7 días).
   const period = checkInDaysOf(profile);
   const since = addDays(localDateKey(), -(period - 1));
   const nights = await getSleepSince(since);
   const lastReview = reviews[0] ?? null;
-  const analysis = analyzeMetabolism(records);
+  const analysis = analyzeMetabolism(records, { periods, history });
   const sleepMinutes = nights.length ? sleepSummary(nights, period).averageMinutes : null;
   // Entreno del periodo: lo hecho (horario real y MET) frente a lo que dice la rutina.
   const today = localDateKey();
@@ -110,5 +118,6 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     training,
     period,
     sleepMinutes,
+    periods,
   };
 }

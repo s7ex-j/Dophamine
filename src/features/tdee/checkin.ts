@@ -23,6 +23,9 @@ import type { MetabolicAnalysis, WeeklyCheckIn } from "@/src/features/tdee/tdee"
  *    planeadas, no se suben calorías (sin estímulo, el extra va sobre todo a
  *    grasa). Mientras el gasto se construye, avisa cuánto difiere el entreno
  *    real del que se usó para el cálculo inicial.
+ * 5. Motor de autoajuste (cuando ya está activo): una diferencia menor que la
+ *    incertidumbre del gasto no se persigue, y si el gasto bajó más de lo que
+ *    explica el peso (adaptación) se avisa antes de recortar otra vez.
  */
 export type CheckInContext = {
   /** Registros del periodo de revisión (los últimos 3 o 7 días). */
@@ -34,7 +37,14 @@ export type CheckInContext = {
 };
 
 export type CheckInReason =
-  "adherence" | "sleep" | "approachingGoal" | "goalReached" | "fastCorrection" | "training";
+  | "adherence"
+  | "sleep"
+  | "approachingGoal"
+  | "goalReached"
+  | "fastCorrection"
+  | "training"
+  | "withinMargin"
+  | "adaptation";
 export type ContextualCheckIn = WeeklyCheckIn & { reasons: CheckInReason[] };
 
 /** Ingesta promedio de los días completos con comida del periodo. */
@@ -144,6 +154,14 @@ export function contextualCheckIn(
   }
   let delta = Math.max(-step, Math.min(step, Math.round(desired - profile.calorieTarget)));
 
+  // 5. Motor de autoajuste: no se persigue una diferencia menor que su incertidumbre.
+  const engine = analysis.adaptive?.active ? analysis.adaptive : null;
+  const difference = Math.round(desired - profile.calorieTarget);
+  if (engine && Math.abs(delta) >= 25 && Math.abs(difference) < engine.tdeeSd) {
+    delta = 0;
+    reasons.push("withinMargin");
+  }
+
   // 2. Sueño: con poco descanso no se profundiza un déficit.
   const sleptPoorly = context.sleepMinutes !== null && context.sleepMinutes < SLEEP_ENOUGH_MINUTES;
   if (sleptPoorly && delta < 0) {
@@ -165,7 +183,11 @@ export function contextualCheckIn(
   }
 
   const parts: string[] = [];
-  if (Math.abs(delta) < 25)
+  if (reasons.includes("withinMargin") && engine)
+    parts.push(
+      `Tus datos apuntan a ${difference > 0 ? "subir" : "bajar"} ${Math.abs(difference)} kcal, pero eso es menos que la incertidumbre de tu gasto (± ${Math.round(engine.tdeeSd)} kcal). Mantengo el plan hasta tener más certeza.`,
+    );
+  else if (Math.abs(delta) < 25)
     parts.push(
       "Tu objetivo coincide con lo que muestran tus datos. Mantén el plan hasta la próxima revisión.",
     );
@@ -185,6 +207,12 @@ export function contextualCheckIn(
     parts.push(
       `No subo calorías porque entrenaste ${training.done} de ${training.planned} sesiones: sin el estímulo del entreno, el extra se iría sobre todo a grasa.`,
     );
+  if (engine?.adaptation?.flagged === "down" && profile.goal === "lose") {
+    reasons.push("adaptation");
+    parts.push(
+      `Tu gasto bajó unas ${Math.abs(engine.adaptation.kcal)} kcal más de lo que explica tu cambio de peso en ${engine.adaptation.weeks} semanas. Es una respuesta habitual a un déficit largo: una o dos semanas comiendo a mantenimiento suelen ayudar más que recortar otra vez.`,
+    );
+  }
   return {
     status: "updating",
     ready: true,

@@ -179,7 +179,7 @@ export function ExpenditureTile({
   analysis: MetabolicAnalysis;
   onPress: () => void;
 }) {
-  const series = expenditureSeries(records, 14);
+  const series = expenditureSeries(records, 14, { analysis });
   return (
     <Tile
       title="Gasto"

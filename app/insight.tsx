@@ -12,8 +12,10 @@ import {
   RANGE_DAYS,
   type InsightRange,
 } from "@/src/features/dashboard/insights";
+import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
 import type { NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { getSetting } from "@/src/features/settings/settings.repository";
 import type { SleepEntry } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
@@ -27,6 +29,7 @@ export default function InsightScreen() {
   const [records, setRecords] = useState<DailyBiometrics[]>([]);
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
   const [sleep, setSleep] = useState<SleepEntry[]>([]);
+  const [periods, setPeriods] = useState<Period[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -35,7 +38,9 @@ export default function InsightScreen() {
         getBiometricsWindow(410),
         getNutritionProfile(),
         getSleepSince(addDays(localDateKey(), -366)),
-      ]).then(([rows, nextProfile, nights]) => {
+        getSetting(PERIODS_KEY),
+      ]).then(([rows, nextProfile, nights, savedPeriods]) => {
+        setPeriods(readPeriods(savedPeriods));
         setRecords(rows);
         setProfile(nextProfile);
         setSleep(nights);
@@ -44,8 +49,8 @@ export default function InsightScreen() {
   );
 
   const insight = useMemo(
-    () => (profile ? buildInsight(metric, range, { records, profile, sleep }) : null),
-    [metric, range, records, profile, sleep],
+    () => (profile ? buildInsight(metric, range, { records, profile, sleep, periods }) : null),
+    [metric, range, records, profile, sleep, periods],
   );
 
   return (

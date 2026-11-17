@@ -4,7 +4,9 @@ import { useFocusEffect } from "expo-router";
 
 import { Card, ListRow, Metric, Screen } from "@/src/components/ui";
 import { getBiometricsWindow, type DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
+import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { getSetting } from "@/src/features/settings/settings.repository";
 import { analyzeMetabolism, weeklyRecommendation } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
 import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
@@ -19,18 +21,25 @@ export default function AnalysisScreen() {
   const [records, setRecords] = useState<DailyBiometrics[]>([]);
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
   const [reviews, setReviews] = useState<WeeklyReview[]>([]);
+  const [periods, setPeriods] = useState<Period[]>([]);
+  const [history, setHistory] = useState<DailyBiometrics[]>([]);
   const load = useCallback(() => {
-    Promise.all([getBiometricsWindow(42), getNutritionProfile(), getWeeklyReviews()]).then(
-      ([rows, savedProfile, savedReviews]) => {
-        setRecords(rows);
-        setProfile(savedProfile);
-        setReviews(savedReviews);
-      },
-    );
+    Promise.all([
+      getBiometricsWindow(120),
+      getNutritionProfile(),
+      getWeeklyReviews(),
+      getSetting(PERIODS_KEY),
+    ]).then(([rows, savedProfile, savedReviews, savedPeriods]) => {
+      setHistory(rows);
+      setPeriods(readPeriods(savedPeriods));
+      setRecords(rows.slice(0, 42));
+      setProfile(savedProfile);
+      setReviews(savedReviews);
+    });
   }, []);
   useFocusEffect(load);
   const unit = weightUnitOf(profile);
-  const analysis = analyzeMetabolism(records);
+  const analysis = analyzeMetabolism(records, { periods, history });
   const points = analysis.points.slice(-14);
   const columns = trendColumns(points);
   const calorieTarget = profile?.calorieTarget ?? 1;

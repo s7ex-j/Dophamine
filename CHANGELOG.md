@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.22.0 - 2026-11-17
+
+Motor de autoajuste: con 15 días seguidos de datos, la app aprende de ti.
+
+- Se activa solo cuando juntas 15 días seguidos con peso y comida completos (un día sin pesaje o marcado como incompleto corta la cuenta; el día de hoy a medias no). Antes de eso sigue el cálculo de siempre y "Cómo se calcula" muestra el avance (por ejemplo, 9/15).
+- Por dentro es un filtro de Kalman que estima a la vez tu peso real y tu gasto, día a día, y separa del peso el agua esperable: carbohidratos y cantidad de comida del día anterior y, si anotas tu ciclo, la fase lútea y la menstruación. Cuánto pesa cada efecto se aprende de tus propios datos.
+- Se ajusta solo: aprende cuánto varía tu peso de un día a otro sin motivo, elige cuánto puede moverse tu gasto probando varias opciones y quedándose con la que mejor predice tus pesajes, da menos peso a los pesajes atípicos y, en los días sin comida completa, aumenta la incertidumbre en lugar de inventar el dato.
+- Detecta adaptación metabólica: si en 4 a 8 semanas tu gasto bajó más de lo que explica tu cambio de peso, la revisión lo dice y sugiere una o dos semanas a mantenimiento antes de recortar otra vez.
+- La revisión ya no persigue ruido: si la diferencia con tu objetivo es menor que la incertidumbre del gasto, mantiene el plan y lo explica.
+- A la vista sigue siendo simple: el gasto, su margen y el ritmo del Panel y de los gráficos salen del motor; "Cómo se calcula" suma un paso con lo aprendido (peso real, agua de hoy, variación diaria, efecto de los carbohidratos, el día de la semana en que más comes) y el peso esperado en 14 días con tu objetivo actual.
+- Probado con datos simulados de gasto conocido (60 series por caso): en 90 días con un salto de 300 kcal en el gasto, el error medio fue de 40 a 75 kcal según el ruido de la báscula, frente a unas 200 del cálculo simple sobre los mismos días; con un descenso gradual, 55 a 90 frente a 155; con gasto fijo quedan parejos (15 a 30 kcal). En las primeras semanas tras un cambio brusco el margen que informa se queda corto.
+- El Panel y Análisis leen ahora hasta 120 días para el motor (el resto sigue con 42).
+- De 340 a 359 pruebas de dominio; 26 flujos de navegador.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0. El motor no se ha contrastado todavía con datos reales de varias semanas: sus números son una estimación.
+
 ## 0.21.0 - 2026-11-16
 
 Tu dieta dentro de la app, con un asesor que la adapta a tu día y a tu salud.

@@ -49,6 +49,39 @@ describe("revisión con contexto", () => {
     expect(checkIn.reasons).toEqual([]);
   });
 
+  it("con el motor de autoajuste, una diferencia menor que su incertidumbre no se persigue", () => {
+    const engine = analysis.adaptive;
+    if (!engine?.active) throw new Error("Con 21 días completos el motor debe estar activo.");
+    const unsure = { ...analysis, adaptive: { ...engine, tdeeSd: 500 } };
+    const checkIn = contextualCheckIn(unsure, profile, { recent, sleepMinutes: 450 });
+    expect(checkIn.delta).toBe(0);
+    expect(checkIn.reasons).toEqual(["withinMargin"]);
+    expect(checkIn.message).toContain("incertidumbre de tu gasto (± 500 kcal)");
+  });
+
+  it("si el gasto bajó más de lo que explica el peso, lo avisa antes de recortar otra vez", () => {
+    const engine = analysis.adaptive;
+    if (!engine?.active) throw new Error("Con 21 días completos el motor debe estar activo.");
+    const adapted = {
+      ...analysis,
+      adaptive: { ...engine, adaptation: { kcal: -180, sd: 60, weeks: 6, flagged: "down" as const } },
+    };
+    const checkIn = contextualCheckIn(adapted, profile, { recent, sleepMinutes: 450 });
+    expect(checkIn.reasons).toEqual(["adaptation"]);
+    expect(checkIn.message).toContain("180 kcal más de lo que explica tu cambio de peso en 6 semanas");
+    expect(checkIn.message).toContain("mantenimiento");
+    // En volumen no aplica: el aviso es para un déficit largo.
+    const gaining = contextualCheckIn(
+      adapted,
+      { ...profile, goal: "gain", goalWeightKg: 80 },
+      {
+        recent,
+        sleepMinutes: 450,
+      },
+    );
+    expect(gaining.reasons).not.toContain("adaptation");
+  });
+
   it("si no se comió lo planeado, mantiene la meta y lo explica", () => {
     const over = recent.map((record) => ({ ...record, caloriesIn: 2700 }));
     const checkIn = contextualCheckIn(analysis, profile, { recent: over, sleepMinutes: 450 });
