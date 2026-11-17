@@ -37,6 +37,8 @@ import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { StreakCard } from "@/src/features/streak/StreakCard";
 import { DopiCheckIn } from "@/src/features/wellbeing/DopiCheckIn";
+import { DietCoachCard } from "@/src/features/diet/DietCoachCard";
+import { getCoachToday, type CoachToday } from "@/src/features/diet/coach.data";
 import {
   cycleStatus,
   PERIODS_KEY,
@@ -73,9 +75,11 @@ export default function DashboardScreen() {
   const [streak, setStreak] = useState<StreakSummary | null>(null);
   const [weekly, setWeekly] = useState<WeeklySummary | null>(null);
   const [offerCheckIn, setOfferCheckIn] = useState(false);
+  const [dietToday, setDietToday] = useState<CoachToday | null>(null);
   const [period, setPeriod] = useState<CycleStatus | null>(null);
 
   const load = useCallback(() => {
+    getCoachToday().then(setDietToday);
     Promise.all([
       getDashboardSnapshot(),
       getComplianceDays(1),
@@ -231,6 +235,9 @@ export default function DashboardScreen() {
             </Text>
             <Text style={AppTheme.tileSubtitle}>{PHASE_NOTES[period.phase]}</Text>
           </Pressable>
+        ) : null}
+        {dietToday && !VIEWER ? (
+          <DietCoachCard today={dietToday} onChanged={load} onOpenDiet={() => router.push("/diet")} />
         ) : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
         <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>

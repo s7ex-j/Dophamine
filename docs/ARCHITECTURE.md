@@ -70,6 +70,24 @@ días de entreno o a mano) sin cambiar el promedio semanal.
   calentamiento (`sets.ts`), cargas redondeadas al gimnasio activo (`gyms.ts`).
 - Semana, volumen, mejores marcas y mapa muscular (`week.ts`).
 
+## Dieta, asesor y salud
+
+- `diet/diet.ts` lee una dieta escrita como texto: títulos de comida (con hora opcional), días de entreno o
+  descanso, y por línea cantidad + alimento. Empareja cada alimento con el catálogo (raíces para plurales,
+  crudo o cocido por defecto según el alimento) y marca lo dudoso y lo desconocido para corregirlo a mano.
+- `health/foodTags.ts` etiqueta cada alimento por su nombre: alérgenos (gluten, lácteos, huevo…) y rasgos
+  (hierro, fibra, grasa saturada, FODMAP, purinas…). `health/health.ts` define las condiciones (qué rasgos
+  conviene sumar y cuáles moderar), los rangos de laboratorio y `foodFit`, que puntúa un alimento para una
+  persona. Son pautas generales, no diagnóstico.
+- `diet/coach.ts` es el asesor: con la dieta del día, lo ya anotado, la hora, el entreno, el ánimo, el
+  sueño, la salud y las metas, decide la comida que toca y propone cambios en orden de prioridad
+  (alergias → antes y después de entrenar → cómo te sientes → salud → balance del día). Los reemplazos
+  salen de `equivalents`: mismo papel (proteína, carbohidrato, grasa, verdura), macros parecidos y
+  preferencia por alimentos que ya están en la dieta. Lo aceptado se guarda como estado de hoy
+  (`diet_day_state`) y no toca la dieta guardada.
+- Dieta, estado de hoy y perfil de salud viven en ajustes (`diet.repository.ts`), así que viajan en el
+  respaldo sin cambiar el formato.
+
 ## Respaldo, exportar y borrar
 
 - `backup/backup.ts` arma y valida el respaldo (formato 9, lee del 1 al 8). En el teléfono se comparte con

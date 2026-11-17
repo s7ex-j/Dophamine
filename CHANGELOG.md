@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.21.0 - 2026-11-16
+
+Tu dieta dentro de la app, con un asesor que la adapta a tu día y a tu salud.
+
+- Mi dieta (Más → Mi dieta): pega la dieta como texto o abre un archivo. La app reconoce comidas, horas, alimentos y cantidades (gramos, ml, unidades, tazas, cucharadas, fracciones), avisa lo que no entendió para elegirlo a mano, deja cambiar crudo/cocido y los gramos, y admite un día de entreno y otro de descanso. Se comparte como texto.
+- Tu dieta de hoy en el Panel: qué comida toca, con sus alimentos, y se registra con un toque. Pregunta a qué hora entrenas (o si ya entrenaste, o si hoy no) y con eso marca la comida de antes y la de después.
+- Recomendaciones que se aplican solo si las aceptas: cambiar un alimento por otro equivalente de tu propia dieta o del mismo grupo; antes de entrenar, menos grasa y carbohidrato fácil; después, proteína suficiente; con poca energía, poco sueño o mucho estrés, ajustes suaves; y si vas por encima o por debajo del objetivo, escalar lo que falta del día (entre 60 % y 140 %). "Volver a mi dieta original de hoy" lo deshace.
+- Salud y restricciones (Más → Salud y restricciones): 10 alergias e intolerancias que nunca se proponen y se avisan si están en tu dieta; lo que indicó tu médico según análisis de sangre (hemoglobina o hierro bajo, B12, folato, vitamina D, colesterol, triglicéridos, glucosa, ácido úrico, presión) o el gastroenterólogo (gastritis o reflujo, colon irritable, estreñimiento, hígado graso, vesícula), con qué alimentos conviene sumar y cuáles moderar; y valores de laboratorio opcionales que se comparan con rangos habituales para sugerir qué marcar.
+- No es un diagnóstico ni un tratamiento: son pautas generales de alimentación y la app lo dice. Las etiquetas de cada alimento salen de su nombre; con una alergia hay que revisar siempre el envase.
+- Todo vive en ajustes: viaja en el respaldo (formato 9, sin cambios) y no sale del teléfono.
+- De 312 a 340 pruebas de dominio y de 25 a 26 flujos de navegador.
+- No comprobado en teléfono: abrir el archivo de la dieta con el selector, compartirla y todo lo nuevo desde la 0.14.0.
+
 ## 0.20.0 - 2026-11-13
 
 Registro rápido más honesto y revisión técnica antes del pulido.

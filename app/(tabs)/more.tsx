@@ -63,6 +63,16 @@ export default function MoreScreen() {
                 onPress={() => router.push("/measurements")}
               />
               <NavRow
+                title="Mi dieta"
+                detail="Carga tu dieta y recibe qué comer, cuándo y con qué cambiarlo"
+                onPress={() => router.push("/diet")}
+              />
+              <NavRow
+                title="Salud y restricciones"
+                detail="Alergias, intolerancias, análisis y digestivo"
+                onPress={() => router.push("/health")}
+              />
+              <NavRow
                 title="Biblioteca"
                 detail="Favoritos, alimentos propios, recetas y comidas guardadas"
                 onPress={() => router.push("/library")}

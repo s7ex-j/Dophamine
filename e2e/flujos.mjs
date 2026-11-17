@@ -982,6 +982,66 @@ async function main() {
     await waitText("Racha actual");
   });
 
+  await step("dieta: cargarla, evitar un alimento y seguirla desde el Panel", async () => {
+    await open("/more");
+    await press("Salud y restricciones");
+    await waitText("Alergias e intolerancias");
+    await pressLabel("Evitar Huevo");
+    await pressLabel("Hemoglobina o hierro bajo");
+    await waitText("vitamina C");
+    assert(
+      (await store()).settings.health_profile.avoid.includes("egg"),
+      "No se guardó lo que la persona evita.",
+    );
+    await open("/more");
+    await press("Mi dieta");
+    await waitText("Carga tu dieta");
+    await press("Usar el ejemplo");
+    await press("Leer dieta");
+    await waitText("Revisa antes de guardar");
+    await waitText("Reconocí todos los alimentos");
+    await press("Guardar dieta");
+    await waitText("Con tu dieta cargada");
+    const plan = (await store()).settings.diet_plan;
+    assert(
+      plan.days.length === 1 && plan.days[0].meals.length === 3 && plan.days[0].meals[0].items.length === 3,
+      "La dieta de ejemplo no se leyó con sus tres comidas.",
+    );
+
+    // En el Panel: pregunta el entreno si hoy toca, avisa del huevo y registra la comida.
+    await open("/");
+    await waitText("TU DIETA DE HOY");
+    await waitText("0/3 comidas");
+    const asks = await page.evaluate(() => document.body.innerText.includes("¿A qué hora entrenas hoy?"));
+    if (asks) {
+      await pressLabel("Entreno en la tarde");
+      await waitText("Entreno hoy a las");
+    }
+    await waitText("tiene huevo");
+    await press("Aplicar el cambio");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings.diet_day_state?.swaps?.length === 1,
+      {},
+      STORE_KEY,
+    );
+    await waitText("Volver a mi dieta original de hoy");
+    const label = await page.evaluate(
+      () =>
+        [...document.querySelectorAll('[role="button"], [tabindex="0"]')]
+          .map((element) => element.innerText.trim())
+          .find((text) => text.startsWith("Registrar ")) ?? null,
+    );
+    assert(label, "El Panel no ofrece registrar la comida que toca.");
+    await press(label);
+    await waitText("1/3 comidas");
+    const today = (await store()).meals.filter((entry) => entry.date === dateKey());
+    assert(today.length >= 1, "Registrar la comida de la dieta no guardó sus alimentos.");
+    assert(
+      !today.some((entry) => /huevo/i.test(entry.name)) || label !== "Registrar desayuno",
+      "Se registró el huevo aunque se aceptó cambiarlo.",
+    );
+  });
+
   await step("visor web: carga un respaldo, no escribe y no ofrece registrar", async () => {
     // Un respaldo en modo automático con una revisión pendiente: la app completa
     // aplicaría el ajuste al abrir. El visor no debe tocar nada.
