@@ -35,10 +35,13 @@ export function DietCoachCard({
   today,
   onChanged,
   onOpenDiet,
+  onOpenMeals,
 }: {
   today: CoachToday;
   onChanged: () => void;
   onOpenDiet: () => void;
+  /** Todas las comidas del día (registrar fuera de la dieta, editar, copiar). */
+  onOpenMeals: () => void;
 }) {
   const { result, state, date } = today;
   const next = result.next;
@@ -193,6 +196,7 @@ export function DietCoachCard({
       ) : (
         <Text style={AppTheme.body}>Completaste las comidas de hoy.</Text>
       )}
+      <LinkButton title="Ver todas las comidas del día" onPress={onOpenMeals} />
 
       {gymToday !== null ? (
         <View style={AppTheme.sectionHeader}>

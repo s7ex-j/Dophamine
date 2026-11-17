@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { StackBar } from "@/src/components/charts";
 import {
@@ -14,6 +14,15 @@ import {
   StepDots,
 } from "@/src/components/ui";
 import { saveDayBody } from "@/src/features/biometrics/biometrics.repository";
+import { readDiet } from "@/src/features/diet/diet";
+import { getHealth, saveDiet, saveHealth } from "@/src/features/diet/diet.repository";
+import { DietFormatError, importDietFile, isDietFile } from "@/src/features/diet/format";
+import { parseProgram } from "@/src/features/export/export";
+import { ALLERGEN_LABELS, type Allergen } from "@/src/features/health/foodTags";
+import { DIET_TYPES } from "@/src/features/profile/targets";
+import { saveRoutine } from "@/src/features/training/training.repository";
+import { localDateKey } from "@/src/lib/dates";
+import { pickTextFile } from "@/src/lib/files";
 import { MEAL_COUNTS, mealSlots } from "@/src/features/nutrition/meals";
 import {
   answersFrom,
@@ -48,7 +57,16 @@ const TITLES: Record<OnboardingStep, { title: string; help: string }> = {
   intake: { title: "Lo que comes hoy", help: "Opcional. Si lo sabes, es el mejor dato para empezar." },
   target: { title: "Tu meta", help: "A dónde quieres llegar y a qué ritmo." },
   protein: { title: "Proteína", help: "Más proteína ayuda a conservar músculo." },
-  meals: { title: "Tus comidas", help: "Cómo divides lo que comes en el día." },
+  plan: { title: "Tipo de plan", help: "Cómo se reparten carbohidratos y grasas. Se puede cambiar después." },
+  meals: { title: "Tus comidas", help: "Cuántas veces comes al día y cómo llamarlas." },
+  restrictions: {
+    title: "Alergias e intolerancias",
+    help: "Opcional. Lo que marques no se te propondrá y se avisará si aparece.",
+  },
+  files: {
+    title: "¿Ya tienes una dieta o una rutina?",
+    help: "Opcional. Si la tienes en un archivo de Dophamine, cárgala ahora; si no, continúa.",
+  },
   tracking: { title: "Seguimiento", help: "La app compara tu avance con la meta y recalcula." },
   summary: { title: "Tu plan", help: "Un punto de partida: se afina con tus registros." },
 };
@@ -102,7 +120,9 @@ export function Onboarding({
   };
   const save = async () => {
     const input = planInputFrom(answers, profile);
-    await saveNutritionProfile(buildNutritionProfile(input));
+    await saveNutritionProfile({ ...buildNutritionProfile(input), dietType: answers.dietType });
+    const health = await getHealth();
+    if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
     onSaved();
@@ -113,7 +133,7 @@ export function Onboarding({
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
         <StepDots total={steps.length} current={index} />
         <Text style={AppTheme.eyebrow}>
-          {profile ? "EDITAR PLAN" : "EVALUACIÓN INICIAL"} · {index + 1} DE {steps.length}
+          {profile ? "REEVALUACIÓN" : "EVALUACIÓN INICIAL"} · {index + 1} DE {steps.length}
         </Text>
         <Text style={AppTheme.title}>{TITLES[step].title}</Text>
         <Text style={AppTheme.hint}>{TITLES[step].help}</Text>
@@ -127,7 +147,6 @@ export function Onboarding({
                 value: "lose",
                 label: "Definición",
                 detail: "Bajar grasa conservando músculo",
-                icon: "trending-down",
               },
               { value: "maintain", label: "Mantenimiento", detail: "Sostener tu peso", icon: "remove" },
               { value: "gain", label: "Volumen", detail: "Ganar masa muscular", icon: "trending-up" },
@@ -212,25 +231,21 @@ export function Onboarding({
                 value: "low",
                 label: "Sentado casi todo el día",
                 detail: "Oficina o estudio, poco traslado",
-                icon: "desktop-outline",
               },
               {
                 value: "light",
                 label: "Algo de movimiento",
                 detail: "Caminas a clases o al trabajo",
-                icon: "walk-outline",
               },
               {
                 value: "moderate",
                 label: "De pie buena parte del día",
                 detail: "Ventas, docencia, reparto a pie",
-                icon: "footsteps-outline",
               },
               {
                 value: "high",
                 label: "Trabajo físico",
                 detail: "Construcción, carga, campo",
-                icon: "hammer-outline",
               },
             ]}
           />
@@ -264,19 +279,16 @@ export function Onboarding({
                       value: "strength",
                       label: "Fuerza",
                       detail: "Pesas, calistenia",
-                      icon: "barbell-outline",
                     },
                     {
                       value: "mixed",
                       label: "Mixto",
                       detail: "Pesas y cardio, deportes de equipo",
-                      icon: "fitness-outline",
                     },
                     {
                       value: "cardio",
                       label: "Cardio",
                       detail: "Correr, bici, natación",
-                      icon: "bicycle-outline",
                     },
                   ]}
                 />
@@ -289,19 +301,16 @@ export function Onboarding({
                       value: "beginner",
                       label: "Menos de 1 año",
                       detail: "Progresas casi cada semana",
-                      icon: "leaf-outline",
                     },
                     {
                       value: "intermediate",
                       label: "1 a 3 años",
                       detail: "Progresas mes a mes",
-                      icon: "flame-outline",
                     },
                     {
                       value: "advanced",
                       label: "Más de 3 años",
                       detail: "Cada mejora cuesta",
-                      icon: "trophy-outline",
                     },
                   ]}
                 />
@@ -385,17 +394,37 @@ export function Onboarding({
                 value: "high",
                 label: "Alta",
                 detail: "2.0 g por kg · si entrenas fuerza",
-                icon: "fish-outline",
               },
               {
                 value: "very_high",
                 label: "Muy alta",
                 detail: "2.4 g por kg · déficits marcados",
-                icon: "nutrition-outline",
               },
             ]}
           />
         ) : null}
+
+        {step === "plan" ? (
+          <OptionList
+            value={answers.dietType}
+            onChange={(dietType) => set("dietType", dietType)}
+            options={DIET_TYPES.map((item) => ({
+              value: item.value,
+              label: item.label,
+              detail: item.detail,
+            }))}
+          />
+        ) : null}
+
+        {step === "restrictions" ? (
+          <RestrictionsStep
+            value={answers.avoid}
+            onChange={(avoid) => set("avoid", avoid)}
+            editing={Boolean(profile)}
+          />
+        ) : null}
+
+        {step === "files" ? <FilesStep /> : null}
 
         {step === "meals" ? (
           <>
@@ -404,16 +433,14 @@ export function Onboarding({
               onChange={(mealStyle) => set("mealStyle", mealStyle)}
               options={[
                 {
+                  value: "numbered",
+                  label: "Por número",
+                  detail: "Comida 1, comida 2… sirve para cualquier cantidad",
+                },
+                {
                   value: "named",
                   label: "Por nombre",
                   detail: "Desayuno, almuerzo, cena…",
-                  icon: "restaurant-outline",
-                },
-                {
-                  value: "numbered",
-                  label: "Por número",
-                  detail: "Comida 1, comida 2… ideal si comes 5 o 6 veces",
-                  icon: "list-outline",
                 },
               ]}
             />
@@ -451,19 +478,16 @@ export function Onboarding({
                   value: "auto",
                   label: "Automático",
                   detail: "La app ajusta, avisa y puedes deshacer",
-                  icon: "sync-outline",
                 },
                 {
                   value: "collaborative",
                   label: "Colaborativo",
                   detail: "La app propone, tú decides",
-                  icon: "people-outline",
                 },
                 {
                   value: "manual",
                   label: "Manual",
                   detail: "La app solo informa",
-                  icon: "hand-left-outline",
                 },
               ]}
             />
@@ -566,5 +590,106 @@ function PlanSummary({ answers, existing }: { answers: Answers; existing: Nutrit
         real.
       </Text>
     </>
+  );
+}
+
+/** Alergias e intolerancias: una lista para marcar varias. */
+function RestrictionsStep({
+  value,
+  onChange,
+  editing,
+}: {
+  value: Allergen[];
+  onChange: (value: Allergen[]) => void;
+  editing: boolean;
+}) {
+  // Al editar el plan se parte de lo que ya estaba marcado en Salud y restricciones.
+  useEffect(() => {
+    if (editing && !value.length) getHealth().then((health) => health.avoid.length && onChange(health.avoid));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <View style={AppTheme.groupList}>
+      {(Object.keys(ALLERGEN_LABELS) as Allergen[]).map((allergen, index) => {
+        const active = value.includes(allergen);
+        return (
+          <Pressable
+            key={allergen}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: active }}
+            accessibilityLabel={`Evitar ${ALLERGEN_LABELS[allergen]}`}
+            onPress={() =>
+              onChange(active ? value.filter((item) => item !== allergen) : [...value, allergen])
+            }
+            style={[AppTheme.groupRow, index > 0 && AppTheme.groupRowDivider]}
+          >
+            <Text style={[AppTheme.optionTitle, { flex: 1 }, active && { color: AppTheme.colors.accent }]}>
+              {ALLERGEN_LABELS[allergen]}
+            </Text>
+            <View style={[AppTheme.checkbox, active && AppTheme.checkboxActive]}>
+              {active ? <Text style={AppTheme.checkboxMark}>✓</Text> : null}
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Cargar una dieta o una rutina que ya se tiene en archivo. Se guardan al momento. */
+function FilesStep() {
+  const [diet, setDiet] = useState("");
+  const [routine, setRoutine] = useState("");
+  const openDiet = async () => {
+    const text = await pickTextFile();
+    if (!text) return;
+    try {
+      const json: unknown = JSON.parse(text);
+      const plan = isDietFile(json) ? importDietFile(json, localDateKey()) : readDiet(json);
+      if (!plan) return setDiet("Ese archivo no es una dieta de Dophamine.");
+      await saveDiet(plan);
+      setDiet(`Cargada: ${plan.name} (${plan.days.length} ${plan.days.length === 1 ? "día" : "días"}).`);
+    } catch (error) {
+      setDiet(error instanceof DietFormatError ? error.message : "Ese archivo no es una dieta de Dophamine.");
+    }
+  };
+  const openRoutine = async () => {
+    const text = await pickTextFile();
+    if (!text) return;
+    const result = parseProgram(text);
+    if (!result.routine) return setRoutine(result.error);
+    await saveRoutine(result.routine);
+    setRoutine(
+      `Cargada: ${result.routine.schedule.length} días de entreno, ${result.routine.schedule.reduce((sum, day) => sum + day.exercises.length, 0)} ejercicios.`,
+    );
+  };
+  return (
+    <View style={{ gap: 12 }}>
+      <View style={AppTheme.groupList}>
+        <Pressable accessibilityRole="button" onPress={openDiet} style={AppTheme.groupRow}>
+          <View style={AppTheme.optionText}>
+            <Text style={AppTheme.optionTitle}>Cargar mi dieta</Text>
+            <Text style={AppTheme.optionDetail}>{diet || "Archivo dophamine-diet (.json)"}</Text>
+          </View>
+          <Text style={AppTheme.linkButtonText}>Abrir</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={openRoutine}
+          style={[AppTheme.groupRow, AppTheme.groupRowDivider]}
+        >
+          <View style={AppTheme.optionText}>
+            <Text style={AppTheme.optionTitle}>Cargar mi rutina</Text>
+            <Text style={AppTheme.optionDetail}>{routine || "Archivo de rutina (.csv o .json)"}</Text>
+          </View>
+          <Text style={AppTheme.linkButtonText}>Abrir</Text>
+        </Pressable>
+      </View>
+      <Text style={AppTheme.hint}>
+        Las plantillas de los dos formatos se descargan desde la web de Dophamine. Si tu dieta o rutina está
+        en un PDF o una foto, una IA puede pasarla a ese formato. También puedes cargarlas después, en Mi
+        dieta y en Mi rutina.
+      </Text>
+    </View>
   );
 }

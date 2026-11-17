@@ -23,6 +23,13 @@ import { addDays } from "@/src/lib/dates";
  * - Los pesajes atípicos pesan menos (pérdida de Huber) y los días sin comida
  *   completa aumentan la incertidumbre en lugar de inventar un dato.
  *
+ * Lo que ensancha la incertidumbre en lugar de sesgar:
+ * - Un día con calorías estimadas (registro rápido) suma varianza a lo comido,
+ *   en proporción a cuánto del día fue estimado.
+ * - Durante 10 días después de un cambio de plan (dieta nueva, objetivo nuevo)
+ *   el agua se mueve más de lo normal: el ruido de la báscula se ensancha y se
+ *   va cerrando, para no leer ese cambio de agua como grasa.
+ *
  * Un suavizador (Rauch-Tung-Striebel) recorre después la historia hacia atrás
  * para ver el pasado con lo que se supo después: con eso se mide el ritmo real
  * y si el gasto bajó más de lo que explica el cambio de peso (adaptación).
@@ -52,6 +59,11 @@ const DRIFT_TYPICAL = 15;
 const DRIFT_WEIGHT = 0.02;
 /** Error al anotar la comida de un día completo. */
 const LOGGING_ERROR = 0.05;
+/** Error extra de las calorías estimadas a ojo (registro rápido). */
+const ESTIMATE_ERROR = 0.25;
+/** Días en que el agua se mueve más tras un cambio de plan, y cuánto más al inicio. */
+const TRANSITION_DAYS = 10;
+const TRANSITION_BOOST = 2.5;
 const NOISE_START = 0.4;
 const NOISE_MIN = 0.12;
 const NOISE_MAX = 1;
@@ -71,6 +83,10 @@ type Day = {
   intake: number | null;
   carbs: number | null;
   phase: Phase | null;
+  /** Parte de las calorías del día que fueron estimadas (0 a 1). */
+  estimated: number;
+  /** Multiplicador del ruido de la báscula (1 normal; más tras un cambio de plan). */
+  waterBoost: number;
 };
 type Step = { xPred: number[]; pPred: Matrix; x: number[]; p: Matrix };
 type Base = { intake: number; intakeSd: number; carbs: number };
@@ -81,6 +97,10 @@ export type AdaptiveOptions = {
   /** Punto de partida del gasto: el cálculo simple o el de la evaluación inicial. */
   priorTdee?: number | null;
   periods?: Period[];
+  /** Por fecha, la parte de las calorías que fue estimada (registro rápido). */
+  estimated?: Record<string, number>;
+  /** Fechas en que empezó un plan nuevo (dieta cargada, objetivo cambiado). */
+  transitions?: string[];
 };
 export type Learned = { value: number; sd: number; learned: boolean };
 export type AdaptiveProgress = { active: false; streak: number; needed: number };
@@ -160,7 +180,9 @@ function invert(matrix: Matrix): Matrix | null {
 }
 
 /** Un renglón por día de calendario, desde el primer pesaje de la ventana. */
-function calendar(records: DailyBiometrics[], periods: Period[]): Day[] {
+function calendar(records: DailyBiometrics[], options: AdaptiveOptions): Day[] {
+  const periods = options.periods ?? [];
+  const transitions = [...(options.transitions ?? [])].sort();
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
   const last = ordered.at(-1)?.date;
   if (!last) return [];
@@ -178,9 +200,19 @@ function calendar(records: DailyBiometrics[], periods: Period[]): Day[] {
       intake: record && counts ? record.caloriesIn : null,
       carbs: record && counts ? record.carbsG : null,
       phase: periods.length ? (cycleStatus(periods, date)?.phase ?? null) : null,
+      estimated: Math.max(0, Math.min(1, options.estimated?.[date] ?? 0)),
+      waterBoost: boostOn(date, transitions),
     });
   }
   return days;
+}
+
+/** Cuánto se ensancha el ruido de la báscula un día, según el último cambio de plan. */
+function boostOn(date: string, transitions: string[]): number {
+  const start = [...transitions].reverse().find((item) => item <= date);
+  if (!start) return 1;
+  const since = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 86_400_000);
+  return since >= TRANSITION_DAYS ? 1 : 1 + (TRANSITION_BOOST - 1) * (1 - since / TRANSITION_DAYS);
 }
 
 const complete = (day: Day) => day.weight !== null && day.intake !== null;
@@ -245,7 +277,7 @@ function runFilter(
     if (previous) {
       const known = previous.intake !== null;
       const intake = known ? (previous.intake as number) : base.intake;
-      const intakeSd = known ? LOGGING_ERROR * intake : base.intakeSd;
+      const intakeSd = known ? (LOGGING_ERROR + ESTIMATE_ERROR * previous.estimated) * intake : base.intakeSd;
       xPred = [...x];
       xPred[W] += intake / rho - x[D];
       pPred = multiply(multiply(transition, p), transitionT);
@@ -259,7 +291,7 @@ function runFilter(
       const h = observation(day, previous, base);
       const ph = p.map((row) => dot(row, h));
       const hph = dot(h, ph);
-      const dayNoise = noise * (previous && previous.intake === null ? 1.5 : 1);
+      const dayNoise = noise * (previous && previous.intake === null ? 1.5 : 1) * day.waterBoost;
       const innovation = day.weight - dot(h, x);
       const expected = hph + dayNoise;
       const z = innovation / Math.sqrt(expected);
@@ -339,7 +371,7 @@ function weekdayPattern(days: Day[], average: number): AdaptiveEstimate["weekday
 }
 
 export function adaptiveEngine(records: DailyBiometrics[], options: AdaptiveOptions = {}): Adaptive {
-  const days = calendar(records, options.periods ?? []);
+  const days = calendar(records, options);
   const gate = gateOf(days);
   if (gate.index === null) return { active: false, streak: gate.streak, needed: ENGINE_DAYS };
   const gateIndex = gate.index;

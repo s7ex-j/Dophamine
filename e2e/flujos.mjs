@@ -202,12 +202,21 @@ async function main() {
     await press("Continuar");
     await press("Alta");
     await press("Continuar");
+    await waitText("Tipo de plan");
+    await press("Alto en proteína");
+    await press("Continuar");
     await waitText("Tus comidas");
     await press("Por número");
     await press("5");
     await waitText("Comida 1 · Comida 2 · Comida 3 · Comida 4 · Comida 5");
     await press("Por nombre");
     await press("4");
+    await press("Continuar");
+    await waitText("Alergias e intolerancias");
+    await pressLabel("Evitar Lácteos");
+    await press("Continuar");
+    await waitText("¿Ya tienes una dieta o una rutina?");
+    await waitText("Cargar mi rutina");
     await press("Continuar");
     await press("Cada 3 días");
     await press("Automático");
@@ -235,6 +244,9 @@ async function main() {
       profile.mealStyle === "named" && profile.mealsPerDay === 4,
       "No se guardó cómo se dividen las comidas.",
     );
+    assert(profile.dietType === "high_protein", "No se guardó el tipo de plan.");
+    const health = (await store()).settings.health_profile;
+    assert(health?.avoid?.includes("dairy"), "No se guardaron las alergias de la evaluación.");
   });
 
   await step("panel · hoy: guardar peso y composición", async () => {
@@ -682,16 +694,10 @@ async function main() {
     assert(current.settings.body_measurements?.[0]?.waistCm === 82, "No se guardaron las medidas.");
     await waitText("% de grasa estimado");
     await open("/strategy");
-    await waitText("Reparto de tus calorías");
+    await waitText("Tu semana");
     await press("Más en días de entreno");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).profile?.calorieSchedule === "training",
-      {},
-      STORE_KEY,
-    );
-    await press("Keto");
-    await page.waitForFunction(
-      (key) => JSON.parse(localStorage.getItem(key)).profile?.dietType === "keto",
       {},
       STORE_KEY,
     );
@@ -1004,9 +1010,11 @@ async function main() {
     await waitText("Motor de autoajuste");
     await waitText("Activo");
     await open("/algorithm");
-    await waitText("Activo · confianza");
-    await waitText("Peso real estimado");
-    await waitText("en 14 días");
+    await waitText("máxima verosimilitud");
+    const noise = await page.$('[aria-label^="Ruido: "]');
+    assert(noise, "La red de Cómo se calcula no muestra el nodo de ruido.");
+    await noise.click();
+    await waitText("sin motivo");
   });
 
   await step("dieta: cargarla, evitar un alimento y seguirla desde el Panel", async () => {
@@ -1128,8 +1136,9 @@ async function main() {
       );
     const read = () => viewer.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORE_KEY);
     await viewer.goto(`${base}/strategy`, { waitUntil: "networkidle0" });
-    await waitFor("Tu programa");
-    assert(!(await text()).includes("Editar plan"), "El visor permite editar el plan.");
+    await waitFor("Tu semana");
+    assert(!(await text()).includes("Reevaluar mi plan"), "El visor permite reevaluar el plan.");
+    assert(!(await text()).includes("Más en días de entreno"), "El visor permite cambiar el reparto.");
     const after = await read();
     assert(after.reviews.length === 0, "El visor aplicó un ajuste automático.");
     assert(

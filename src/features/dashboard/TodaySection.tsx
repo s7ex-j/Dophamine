@@ -37,7 +37,16 @@ type Editor = "weight" | "sleep" | null;
  * peso, agua y sueño en tarjetas que se abren al tocarlas, y un solo botón
  * para registrar comida (las comidas del día se abren en su propia pantalla).
  */
-export function TodaySection({ profile, onChanged }: { profile: NutritionProfile; onChanged: () => void }) {
+export function TodaySection({
+  profile,
+  onChanged,
+  withMealsButton = true,
+}: {
+  profile: NutritionProfile;
+  onChanged: () => void;
+  /** Con dieta cargada, registrar va por la tarjeta de la dieta: aquí no se repite el botón. */
+  withMealsButton?: boolean;
+}) {
   const router = useRouter();
   const [date, setDate] = useState(localDateKey());
   const [day, setDay] = useState<DailyBiometrics | null>(null);
@@ -335,20 +344,22 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
       ) : null}
 
-      <View style={{ gap: 6 }}>
-        <Button
-          title="Registrar comida"
-          onPress={() => router.push({ pathname: "/meals", params: { date } })}
-        />
-        <Text style={[AppTheme.hint, { textAlign: "center" }]}>
-          {entries.length
-            ? `${entries.length} ${entries.length === 1 ? "alimento registrado" : "alimentos registrados"} · ${totals.kcal} kcal`
-            : day?.fasting
-              ? "Día de ayuno"
-              : "Nada registrado todavía"}
-          {day?.partial ? " · incompleto" : ""}
-        </Text>
-      </View>
+      {withMealsButton ? (
+        <View style={{ gap: 6 }}>
+          <Button
+            title="Registrar comida"
+            onPress={() => router.push({ pathname: "/meals", params: { date } })}
+          />
+          <Text style={[AppTheme.hint, { textAlign: "center" }]}>
+            {entries.length
+              ? `${entries.length} ${entries.length === 1 ? "alimento registrado" : "alimentos registrados"} · ${totals.kcal} kcal`
+              : day?.fasting
+                ? "Día de ayuno"
+                : "Nada registrado todavía"}
+            {day?.partial ? " · incompleto" : ""}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }

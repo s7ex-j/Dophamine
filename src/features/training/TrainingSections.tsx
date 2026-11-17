@@ -141,18 +141,26 @@ export function DayWorkoutCard({
             <Text style={AppTheme.tileTitle}>
               {isToday ? "Hoy descansas" : `${DAY_NAMES[day]}: descanso`}
             </Text>
-            <Text style={AppTheme.tileSubtitle}>Si igual quieres entrenar, elige uno:</Text>
+            <Text style={AppTheme.tileSubtitle}>Si igual quieres entrenar, elige el de otro día:</Text>
           </View>
         </View>
-        <View style={AppTheme.chipRow}>
-          {routine.schedule.map((item) => (
+        <View style={AppTheme.groupList}>
+          {routine.schedule.map((item, index) => (
             <Pressable
               key={item.day}
               accessibilityRole="button"
+              accessibilityLabel={`Entrenar el de ${DAY_NAMES[item.day].toLowerCase()}`}
               onPress={() => onStart(item.day)}
-              style={AppTheme.chip}
+              style={[AppTheme.groupRow, index > 0 && AppTheme.groupRowDivider]}
             >
-              <Text style={AppTheme.chipText}>{item.name}</Text>
+              <View style={AppTheme.optionText}>
+                <Text style={AppTheme.optionTitle}>{DAY_NAMES[item.day]}</Text>
+                <Text style={AppTheme.optionDetail}>
+                  {item.name} · {item.exercises.length}{" "}
+                  {item.exercises.length === 1 ? "ejercicio" : "ejercicios"}
+                </Text>
+              </View>
+              <Text style={AppTheme.linkButtonText}>Empezar</Text>
             </Pressable>
           ))}
         </View>

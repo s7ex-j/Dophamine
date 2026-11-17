@@ -4,7 +4,7 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import { buildNutritionProfile } from "@/src/features/profile/profile";
 import { addWaterMl, formatWater, waterTargetMl } from "@/src/features/water/water";
 import { analyzeMetabolism } from "./tdee";
-import { adherenceGap, averageIntake, contextualCheckIn, taperFactor } from "./checkin";
+import { adherenceGap, averageIntake, contextualCheckIn, inDeadZone, taperFactor } from "./checkin";
 
 function days(count: number, record: (index: number) => Partial<DailyBiometrics>): DailyBiometrics[] {
   return Array.from({ length: count }, (_, index) => {
@@ -56,7 +56,32 @@ describe("revisión con contexto", () => {
     const checkIn = contextualCheckIn(unsure, profile, { recent, sleepMinutes: 450 });
     expect(checkIn.delta).toBe(0);
     expect(checkIn.reasons).toEqual(["withinMargin"]);
-    expect(checkIn.message).toContain("incertidumbre de tu gasto (± 500 kcal)");
+    expect(checkIn.message).toContain("incertidumbre de tu gasto (± 980 kcal)");
+  });
+
+  it("zona muerta: solo se mueve si el intervalo del 95 % no incluye el cero", () => {
+    const engine = analysis.adaptive;
+    if (!engine?.active) throw new Error("Con 21 días completos el motor debe estar activo.");
+    // Toca bajar ~412 kcal: con ±1.96 × 200 = ±392 el intervalo ya no cruza el cero.
+    const sure = contextualCheckIn({ ...analysis, adaptive: { ...engine, tdeeSd: 200 } }, profile, {
+      recent,
+      sleepMinutes: 450,
+    });
+    expect(sure.reasons).not.toContain("withinMargin");
+    expect(sure.delta).toBe(-100);
+    const unsure = contextualCheckIn({ ...analysis, adaptive: { ...engine, tdeeSd: 220 } }, profile, {
+      recent,
+      sleepMinutes: 450,
+    });
+    expect(unsure.reasons).toEqual(["withinMargin"]);
+  });
+
+  it("costo asimétrico: en volumen, recortar exige más certeza que sumar", () => {
+    // Con σ = 170: el 95 % es ±333 y el 99 % es ±439.
+    expect(inDeadZone(-400, 170, "lose")).toBe(false);
+    expect(inDeadZone(-400, 170, "gain")).toBe(true);
+    expect(inDeadZone(400, 170, "gain")).toBe(false);
+    expect(inDeadZone(300, 170, "gain")).toBe(true);
   });
 
   it("si el gasto bajó más de lo que explica el peso, lo avisa antes de recortar otra vez", () => {

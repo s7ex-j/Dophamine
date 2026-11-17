@@ -236,9 +236,14 @@ export default function DashboardScreen() {
           </Pressable>
         ) : null}
         {dietToday && !VIEWER ? (
-          <DietCoachCard today={dietToday} onChanged={load} onOpenDiet={() => router.push("/diet")} />
+          <DietCoachCard
+            today={dietToday}
+            onChanged={load}
+            onOpenDiet={() => router.push("/diet")}
+            onOpenMeals={() => router.push("/meals")}
+          />
         ) : null}
-        {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
+        {VIEWER ? null : <TodaySection profile={profile} onChanged={load} withMealsButton={!dietToday} />}
         <Text style={[AppTheme.sectionTitle, { marginTop: 4 }]}>Tu progreso</Text>
         {customizing ? (
           <CustomizePanel

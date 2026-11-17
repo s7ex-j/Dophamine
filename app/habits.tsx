@@ -18,7 +18,6 @@ import { AppTheme } from "@/src/theme";
 
 const ICONS: Record<ComplianceKey, IconName> = {
   calories: "flame-outline",
-  protein: "fish-outline",
   water: "water-outline",
   weight: "scale-outline",
   training: "barbell-outline",

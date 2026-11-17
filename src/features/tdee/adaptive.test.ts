@@ -190,6 +190,33 @@ describe("motor de autoajuste: qué encuentra", () => {
   });
 });
 
+describe("motor de autoajuste: datos inciertos", () => {
+  it("los días con calorías estimadas ensanchan la incertidumbre", () => {
+    const records = simulate({ days: 45, tdee: () => 2500 });
+    const exact = estimate(records);
+    const estimated = Object.fromEntries(records.slice(-25).map((record) => [record.date, 0.8]));
+    const rough = adaptiveEngine(records, { estimated });
+    if (!rough.active) throw new Error("El motor debería estar activo.");
+    expect(rough.tdeeSd).toBeGreaterThan(exact.tdeeSd);
+  });
+
+  it("tras un cambio de plan, el agua de los primeros días pesa menos en el gasto", () => {
+    // Al empezar un plan nuevo la báscula sube 1.2 kg de agua en tres días y se queda ahí.
+    const base = simulate({ days: 40, tdee: () => 2500, noise: 0.2, seed: 3 });
+    const change = 30;
+    const records = base.map((record, index) =>
+      index >= change && record.weightKg
+        ? { ...record, weightKg: record.weightKg + Math.min(3, index - change + 1) * 0.4 }
+        : record,
+    );
+    const plain = estimate(records);
+    const marked = adaptiveEngine(records, { transitions: [addDays(START, change)] });
+    if (!marked.active) throw new Error("El motor debería estar activo.");
+    // El agua se lee como gasto más bajo; marcando el cambio de plan, el error es menor.
+    expect(Math.abs(marked.tdee - 2500)).toBeLessThan(Math.abs(plain.tdee - 2500));
+  });
+});
+
 describe("proyección de peso", () => {
   it("comiendo lo que gastas el peso se queda; la incertidumbre crece con los días", () => {
     const result = estimate(simulate({ days: 45, tdee: () => 2500 }));

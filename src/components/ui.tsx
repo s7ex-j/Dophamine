@@ -63,27 +63,71 @@ export function Button({
     </Pressable>
   );
 }
-export function ChoiceControl<T extends string>({
-  value,
-  onChange,
-  options,
-}: {
+export function ChoiceControl<T extends string>(props: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string }>;
 }) {
+  return <Segmented {...props} />;
+}
+/**
+ * Control segmentado: las opciones van unidas en una sola pieza, del mismo
+ * ancho, y la elegida se resalta por dentro. Con muchas opciones o textos
+ * largos se reparte en filas de tres celdas iguales.
+ */
+export function Segmented<T extends string | number>({
+  value,
+  onChange,
+  options,
+  label,
+}: {
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string }>;
+  /** Nombre accesible del grupo. */
+  label?: string;
+}) {
+  const longest = Math.max(...options.map((option) => option.label.length));
+  const perRow =
+    options.length <= 3 || (options.length <= 8 && longest <= 6) || (options.length <= 4 && longest <= 9)
+      ? options.length
+      : 3;
+  const rows = Array.from({ length: Math.ceil(options.length / perRow) }, (_, row) =>
+    options.slice(row * perRow, row * perRow + perRow),
+  );
   return (
-    <View style={AppTheme.choiceWrap}>
-      {options.map((option) => (
-        <Pressable
-          key={option.value}
-          onPress={() => onChange(option.value)}
-          style={[AppTheme.choice, option.value === value && AppTheme.choiceActive]}
-        >
-          <Text style={[AppTheme.choiceText, option.value === value && AppTheme.choiceTextActive]}>
-            {option.label}
-          </Text>
-        </Pressable>
+    <View accessibilityRole="radiogroup" accessibilityLabel={label} style={AppTheme.segmentGroup}>
+      {rows.map((row, rowIndex) => (
+        <View key={rowIndex} style={[AppTheme.segmentRow, rowIndex > 0 && AppTheme.segmentRowDivider]}>
+          {Array.from({ length: perRow }, (_, column) => {
+            const option = row[column];
+            if (!option)
+              return (
+                <View
+                  key={`empty-${column}`}
+                  style={[AppTheme.segmentCell, column > 0 && AppTheme.segmentCellDivider]}
+                />
+              );
+            const active = option.value === value;
+            return (
+              <Pressable
+                key={String(option.value)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => onChange(option.value)}
+                style={[
+                  AppTheme.segmentCell,
+                  column > 0 && AppTheme.segmentCellDivider,
+                  active && AppTheme.segmentCellActive,
+                ]}
+              >
+                <Text style={[AppTheme.segmentLabel, active && AppTheme.segmentLabelActive]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       ))}
     </View>
   );
@@ -147,7 +191,11 @@ export function RowActions({
 }
 export type IconName = keyof typeof Ionicons.glyphMap;
 
-/** Opciones en lista vertical, cada una con icono y una línea de explicación. Para elegir una sola. */
+/**
+ * Opciones con explicación, en una lista agrupada: una fila por opción,
+ * separadas por una línea, y un indicador de selección a la derecha. Para
+ * elegir una sola.
+ */
 export function OptionList<T extends string>({
   value,
   onChange,
@@ -158,8 +206,8 @@ export function OptionList<T extends string>({
   options: Array<{ value: T; label: string; detail: string; icon?: IconName }>;
 }) {
   return (
-    <View style={AppTheme.optionList}>
-      {options.map((option) => {
+    <View accessibilityRole="radiogroup" style={AppTheme.groupList}>
+      {options.map((option, index) => {
         const active = option.value === value;
         return (
           <Pressable
@@ -167,23 +215,16 @@ export function OptionList<T extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
-            style={[AppTheme.optionCard, active && AppTheme.optionCardActive]}
+            style={[AppTheme.groupRow, index > 0 && AppTheme.groupRowDivider]}
           >
-            <View style={AppTheme.optionRow}>
-              {option.icon ? (
-                <View style={AppTheme.iconChip}>
-                  <Ionicons
-                    name={option.icon}
-                    size={20}
-                    color={active ? AppTheme.colors.accent : AppTheme.colors.muted}
-                  />
-                </View>
-              ) : null}
-              <View style={AppTheme.optionText}>
-                <Text style={AppTheme.optionTitle}>{option.label}</Text>
-                <Text style={AppTheme.optionDetail}>{option.detail}</Text>
-              </View>
-              {active ? <Ionicons name="checkmark-circle" size={22} color={AppTheme.colors.accent} /> : null}
+            <View style={AppTheme.optionText}>
+              <Text style={[AppTheme.optionTitle, active && { color: AppTheme.colors.accent }]}>
+                {option.label}
+              </Text>
+              <Text style={AppTheme.optionDetail}>{option.detail}</Text>
+            </View>
+            <View style={[AppTheme.radio, active && AppTheme.radioActive]}>
+              {active ? <View style={AppTheme.radioDot} /> : null}
             </View>
           </Pressable>
         );
@@ -191,33 +232,13 @@ export function OptionList<T extends string>({
     </View>
   );
 }
-/** Píldoras para elegir un valor corto (días, minutos). */
-export function Chips<T extends string | number>({
-  value,
-  onChange,
-  options,
-}: {
+/** Valores cortos (días, minutos, cantidades): un control segmentado. */
+export function Chips<T extends string | number>(props: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string }>;
 }) {
-  return (
-    <View style={AppTheme.chipRow}>
-      {options.map((option) => (
-        <Pressable
-          key={String(option.value)}
-          accessibilityRole="button"
-          accessibilityState={{ selected: option.value === value }}
-          onPress={() => onChange(option.value)}
-          style={[AppTheme.chip, option.value === value && AppTheme.chipActive]}
-        >
-          <Text style={[AppTheme.chipText, option.value === value && AppTheme.chipTextActive]}>
-            {option.label}
-          </Text>
-        </Pressable>
-      ))}
-    </View>
-  );
+  return <Segmented {...props} />;
 }
 /** Campo numérico grande, para una sola cifra por pantalla o por fila. */
 export function BigInput({ label, unit, ...props }: TextInputProps & { label: string; unit?: string }) {

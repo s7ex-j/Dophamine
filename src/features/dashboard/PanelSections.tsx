@@ -440,7 +440,6 @@ export function CustomizePanel({
 
 const COMPLIANCE_ICONS: Record<ComplianceKey, IconName> = {
   calories: "flame-outline",
-  protein: "fish-outline",
   water: "water-outline",
   weight: "scale-outline",
   training: "barbell-outline",
@@ -452,38 +451,49 @@ const COMPLIANCE_ICONS: Record<ComplianceKey, IconName> = {
 export function ComplianceCard({ compliance, onPress }: { compliance: DayCompliance; onPress: () => void }) {
   const score = complianceScore(compliance);
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={[AppTheme.card, AppTheme.iconRow, { gap: 16 }]}
-    >
-      <Ring value={score / COMPLIANCE_ITEMS.length} size={84} stroke={9} color={AppTheme.colors.accent}>
-        <Text style={[AppTheme.ringNumber, { fontSize: 22 }]}>{score}</Text>
-        <Text style={AppTheme.ringLabel}>de {COMPLIANCE_ITEMS.length}</Text>
-      </Ring>
-      <View style={{ flex: 1, gap: 8 }}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={[AppTheme.card, { gap: 10 }]}>
+      <View style={AppTheme.sectionHeader}>
         <Text style={AppTheme.tileTitle}>Cumplimiento de hoy</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {COMPLIANCE_ITEMS.map((item) => {
-            const done = compliance[item.key];
-            return (
-              <View
-                key={item.key}
-                accessibilityLabel={`${item.label}: ${done ? "cumplido" : "pendiente"}`}
-                style={[AppTheme.complianceChip, done && AppTheme.complianceChipDone]}
+        <Text style={AppTheme.tileValue}>
+          {score}
+          <Text style={AppTheme.tileUnit}> de {COMPLIANCE_ITEMS.length}</Text>
+        </Text>
+      </View>
+      <View style={{ flexDirection: "row", borderRadius: 10, overflow: "hidden", gap: 2 }}>
+        {COMPLIANCE_ITEMS.map((item) => {
+          const done = compliance[item.key];
+          return (
+            <View
+              key={item.key}
+              accessibilityLabel={`${item.label}: ${done ? "cumplido" : "pendiente"}`}
+              style={{
+                flex: 1,
+                height: 74,
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingVertical: 10,
+                backgroundColor: done ? AppTheme.colors.accent : AppTheme.colors.surface2,
+              }}
+            >
+              <Ionicons
+                name={COMPLIANCE_ICONS[item.key]}
+                size={20}
+                color={done ? AppTheme.colors.onAccent : AppTheme.colors.muted}
+              />
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                style={{
+                  fontSize: 11,
+                  fontWeight: "700",
+                  color: done ? AppTheme.colors.onAccent : AppTheme.colors.muted,
+                }}
               >
-                <Ionicons
-                  name={COMPLIANCE_ICONS[item.key]}
-                  size={14}
-                  color={done ? AppTheme.colors.onAccent : AppTheme.colors.muted}
-                />
-                <Text style={[AppTheme.complianceText, done && { color: AppTheme.colors.onAccent }]}>
-                  {item.label}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+                {item.label}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     </Pressable>
   );

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.25.0 - 2026-11-17
+
+Controles nuevos en toda la app, evaluación inicial completa, Estrategia como tablero, motor más prudente y "Cómo se calcula" como red.
+
+- Elegir opciones: fuera las pastillas y las tarjetas sueltas. Los valores cortos (días, comidas, minutos, modos) usan un control segmentado: una sola pieza con divisiones y la opción elegida resaltada por dentro. Las opciones con explicación usan una lista agrupada con un indicador de selección a la derecha. Las etiquetas que se marcan varias tienen esquinas rectas suaves y se resaltan con borde. Cambia en toda la app de una vez.
+- Evaluación inicial (y "Reevaluar mi plan"): pregunta también el tipo de plan, las alergias e intolerancias y si ya tienes una dieta o una rutina en archivo para cargarlas ahí mismo. Las comidas van por número de forma predeterminada.
+- Estrategia: arriba la meta con su avance y fecha, y cuatro cifras en fila (objetivo, gasto, ritmo y margen); luego la revisión con un anillo que cuenta los días que faltan; "Tu semana" con una barra por día partida en proteína, carbohidratos y grasas, la línea del promedio y los gramos de cada día; el historial; y al final tu plan con un solo botón "Reevaluar mi plan". El tipo de plan se elige en la evaluación.
+- Motor de autoajuste más prudente: los días con calorías estimadas suman incertidumbre; durante 10 días después de un cambio de plan (dieta nueva, objetivo nuevo, ajuste aceptado) el agua se mueve más y no se lee como grasa; zona muerta: el objetivo solo se mueve si el intervalo del 95 % de la diferencia no incluye el cero; costo asimétrico: en volumen, recortar exige el 99 %.
+- "Cómo se calcula" como red: lo que registras, lo que estima el filtro (peso real, agua, ruido, gasto), lo que aprende de ti (ritmo, adaptación, certeza) y la decisión, unidos por líneas según qué alimenta a qué. Al tocar un nodo se ve su valor con tus números y su fórmula.
+- Cumplimiento de hoy: seis compromisos (sin proteína aparte: las calorías ya la incluyen) en barras unidas con icono y nombre.
+- Arreglos: en día de descanso, Entreno proponía tres veces el mismo nombre; ahora muestra cada día con su entreno y número de ejercicios. Con dieta cargada ya no hay dos botones "Registrar comida": registra la tarjeta de la dieta y "Ver todas las comidas del día" abre la lista.
+- De 375 a 382 pruebas de dominio; 27 flujos de navegador.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.24.0 - 2026-11-17
 
 Primera versión bajo GPL-3.0-only. Panel más denso con los gráficos primero, un solo botón para registrar comida, dieta por archivo con horario semanal, mapa muscular nuevo y sitio al día.

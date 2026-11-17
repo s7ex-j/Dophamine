@@ -23,8 +23,11 @@ import type { MetabolicAnalysis, WeeklyCheckIn } from "@/src/features/tdee/tdee"
  *    planeadas, no se suben calorías (sin estímulo, el extra va sobre todo a
  *    grasa). Mientras el gasto se construye, avisa cuánto difiere el entreno
  *    real del que se usó para el cálculo inicial.
- * 5. Motor de autoajuste (cuando ya está activo): una diferencia menor que la
- *    incertidumbre del gasto no se persigue, y si el gasto bajó más de lo que
+ * 5. Motor de autoajuste (cuando ya está activo): zona muerta. El objetivo
+ *    solo se mueve si el intervalo del 95 % de (objetivo buscado − objetivo
+ *    actual) no incluye el cero. Costo asimétrico: en volumen, recortar exige
+ *    el 99 %, porque equivocarse recortando cuesta más que equivocarse sumando.
+ *    Y y si el gasto bajó más de lo que
  *    explica el peso (adaptación) se avisa antes de recortar otra vez.
  */
 export type CheckInContext = {
@@ -77,6 +80,14 @@ function trainingNote(training: CheckInContext["training"]): string {
   if (Math.abs(diff) < 40) return `${sessions}, en línea con lo que se usó para tu cálculo inicial.`;
   return `${sessions}: unas ${Math.abs(diff)} kcal por día ${diff > 0 ? "más" : "menos"} de lo previsto. Tu gasto real lo irá reflejando.`;
 }
+
+/** Cuántas desviaciones exige mover el objetivo: 1.96 (95 %), o 2.58 (99 %) para recortar en volumen. */
+export const certaintyFor = (goal: NutritionProfile["goal"], difference: number) =>
+  goal === "gain" && difference < 0 ? 2.58 : 1.96;
+
+/** Zona muerta: el intervalo de la diferencia incluye el cero, así que no se mueve el objetivo. */
+export const inDeadZone = (difference: number, sd: number, goal: NutritionProfile["goal"]) =>
+  Math.abs(difference) < certaintyFor(goal, difference) * sd;
 
 export function contextualCheckIn(
   analysis: MetabolicAnalysis,
@@ -157,7 +168,8 @@ export function contextualCheckIn(
   // 5. Motor de autoajuste: no se persigue una diferencia menor que su incertidumbre.
   const engine = analysis.adaptive?.active ? analysis.adaptive : null;
   const difference = Math.round(desired - profile.calorieTarget);
-  if (engine && Math.abs(delta) >= 25 && Math.abs(difference) < engine.tdeeSd) {
+  const certainty = certaintyFor(profile.goal, difference);
+  if (engine && Math.abs(delta) >= 25 && inDeadZone(difference, engine.tdeeSd, profile.goal)) {
     delta = 0;
     reasons.push("withinMargin");
   }
@@ -185,7 +197,7 @@ export function contextualCheckIn(
   const parts: string[] = [];
   if (reasons.includes("withinMargin") && engine)
     parts.push(
-      `Tus datos apuntan a ${difference > 0 ? "subir" : "bajar"} ${Math.abs(difference)} kcal, pero eso es menos que la incertidumbre de tu gasto (± ${Math.round(engine.tdeeSd)} kcal). Mantengo el plan hasta tener más certeza.`,
+      `Tus datos apuntan a ${difference > 0 ? "subir" : "bajar"} ${Math.abs(difference)} kcal, pero con la incertidumbre de tu gasto (± ${Math.round(certainty * engine.tdeeSd)} kcal) el cambio podría ser cero. Mantengo el plan hasta tener más certeza${certainty > 2 ? ": en volumen, recortar exige más seguridad que sumar" : ""}.`,
     );
   else if (Math.abs(delta) < 25)
     parts.push(

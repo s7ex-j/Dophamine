@@ -20,6 +20,9 @@ import { weekdayId } from "@/src/features/training/week";
 import type { CheckInContext } from "@/src/features/tdee/checkin";
 import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
 import { getSetting } from "@/src/features/settings/settings.repository";
+import { getDiet } from "@/src/features/diet/diet.repository";
+import { estimatedShare, type MealEntry } from "@/src/features/nutrition/meals";
+import { getMealHistory } from "@/src/features/nutrition/nutrition.repository";
 
 export type DashboardSnapshot = {
   weightKg: number | null;
@@ -49,17 +52,20 @@ export type DashboardSnapshot = {
   periods: Period[];
 };
 export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
-  const [latest, history, mood, profile, reviews, sessions, routine, savedPeriods] = await Promise.all([
-    getLatestBiometrics(),
-    // 120 días para el motor de autoajuste; el resto del Panel usa los últimos 42.
-    getBiometricsWindow(120),
-    getLatestMood(),
-    getNutritionProfile(),
-    getWeeklyReviews(1),
-    getSessionHistory(60),
-    getRoutine(),
-    getSetting(PERIODS_KEY),
-  ]);
+  const [latest, history, mood, profile, reviews, sessions, routine, savedPeriods, meals, diet] =
+    await Promise.all([
+      getLatestBiometrics(),
+      // 120 días para el motor de autoajuste; el resto del Panel usa los últimos 42.
+      getBiometricsWindow(120),
+      getLatestMood(),
+      getNutritionProfile(),
+      getWeeklyReviews(1),
+      getSessionHistory(60),
+      getRoutine(),
+      getSetting(PERIODS_KEY),
+      getMealHistory(4000),
+      getDiet(),
+    ]);
   const records = history.slice(0, 42);
   const periods = readPeriods(savedPeriods);
   // El contexto de la revisión: lo comido y lo dormido en el periodo (3 o 7 días).
@@ -67,7 +73,16 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   const since = addDays(localDateKey(), -(period - 1));
   const nights = await getSleepSince(since);
   const lastReview = reviews[0] ?? null;
-  const analysis = analyzeMetabolism(records, { periods, history });
+  // Para el motor: qué parte de cada día fue estimada y cuándo empezó un plan nuevo.
+  const byDate = new Map<string, MealEntry[]>();
+  for (const entry of meals) byDate.set(entry.date, [...(byDate.get(entry.date) ?? []), entry]);
+  const estimated = Object.fromEntries([...byDate].map(([date, entries]) => [date, estimatedShare(entries)]));
+  const transitions = [
+    profile?.startDate,
+    diet?.createdAt,
+    reviews[0] && reviews[0].decision !== "dismissed" ? reviews[0].date : undefined,
+  ].filter((date): date is string => Boolean(date));
+  const analysis = analyzeMetabolism(records, { periods, history, estimated, transitions });
   const sleepMinutes = nights.length ? sleepSummary(nights, period).averageMinutes : null;
   // Entreno del periodo: lo hecho (horario real y MET) frente a lo que dice la rutina.
   const today = localDateKey();

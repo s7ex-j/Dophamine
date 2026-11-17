@@ -1,7 +1,9 @@
 import { localDateKey } from "@/src/lib/dates";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 import type { RecentTrend, TrainingType } from "@/src/features/profile/expenditure";
+import type { Allergen } from "@/src/features/health/foodTags";
 import { isValidPlanInput } from "@/src/features/profile/planInput";
+import type { DietType } from "@/src/features/profile/targets";
 import {
   adjustModeOf,
   checkInDaysOf,
@@ -33,7 +35,10 @@ export type OnboardingStep =
   | "intake"
   | "target"
   | "protein"
+  | "plan"
   | "meals"
+  | "restrictions"
+  | "files"
   | "tracking"
   | "summary";
 
@@ -61,6 +66,10 @@ export type Answers = {
   checkInDays: CheckInDays;
   mealStyle: "named" | "numbered";
   mealsPerDay: number;
+  /** Tipo de plan: cómo se reparten carbohidratos y grasas. */
+  dietType: DietType;
+  /** Alergias e intolerancias: van al perfil de salud. */
+  avoid: Allergen[];
 };
 
 /** Mantener no tiene peso meta ni ritmo, así que se salta ese paso. */
@@ -74,7 +83,10 @@ export function stepsFor(goal: Goal): OnboardingStep[] {
     "intake",
     "target",
     "protein",
+    "plan",
     "meals",
+    "restrictions",
+    "files",
     "tracking",
   ];
   return [...steps.filter((step) => goal !== "maintain" || step !== "target"), "summary"];
@@ -123,8 +135,11 @@ export function answersFrom(profile: NutritionProfile | null, weightKg: number |
     proteinLevel: profile?.proteinLevel ?? "high",
     adjustMode: adjustModeOf(profile),
     checkInDays: checkInDaysOf(profile),
-    mealStyle: mealSetupOf(profile).style,
+    // Por número sirve para cualquier cantidad de comidas; por nombre solo si la persona lo elige.
+    mealStyle: profile ? mealSetupOf(profile).style : "numbered",
     mealsPerDay: mealSetupOf(profile).count,
+    dietType: profile?.dietType ?? "balanced",
+    avoid: [],
   };
 }
 

@@ -36,6 +36,8 @@ export type AnalysisOptions = {
   periods?: Period[];
   /** Registros de más días para el motor de autoajuste (por defecto, los mismos). */
   history?: DailyBiometrics[];
+  estimated?: Record<string, number>;
+  transitions?: string[];
 };
 export type WeeklyCheckIn = {
   status: ExpenditureStatus;
@@ -132,6 +134,8 @@ export function analyzeMetabolism(
     energyPerKg: simple.energyPerKg,
     priorTdee: simple.tdee,
     periods: options.periods,
+    estimated: options.estimated,
+    transitions: options.transitions,
   });
   if (!adaptive.active) return { ...simple, adaptive };
   return {
