@@ -21,7 +21,6 @@ import {
   ConsistencyTile,
   CustomizePanel,
   ExpenditureTile,
-  FoodSearchBar,
   GoalTile,
   MacrosTile,
   NutritionWeek,
@@ -35,7 +34,7 @@ import { weightUnitOf } from "@/src/features/profile/profile";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
-import { StreakCard } from "@/src/features/streak/StreakCard";
+import { StreakBadge } from "@/src/features/streak/StreakCard";
 import { DopiCheckIn } from "@/src/features/wellbeing/DopiCheckIn";
 import { DietCoachCard } from "@/src/features/diet/DietCoachCard";
 import { getCoachToday, type CoachToday } from "@/src/features/diet/coach.data";
@@ -210,19 +209,19 @@ export default function DashboardScreen() {
             <Text style={AppTheme.title}>Panel</Text>
           </View>
           {VIEWER ? null : (
-            <IconButton
-              icon={customizing ? "checkmark" : "options-outline"}
-              label="Personalizar el Panel"
-              onPress={() => setCustomizing(!customizing)}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {streak ? <StreakBadge summary={streak} onPress={() => router.push("/achievements")} /> : null}
+              <IconButton
+                icon={customizing ? "checkmark" : "options-outline"}
+                label="Personalizar el Panel"
+                onPress={() => setCustomizing(!customizing)}
+              />
+            </View>
           )}
         </View>
-        {VIEWER ? <ViewerBanner /> : <FoodSearchBar onPress={() => router.push("/add-food")} />}
+        {VIEWER ? <ViewerBanner /> : null}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
-        {streak && !VIEWER ? (
-          <StreakCard summary={streak} onPress={() => router.push("/achievements")} />
-        ) : null}
         {offerCheckIn && !VIEWER ? <DopiCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
         {period ? (
           <Pressable
@@ -240,8 +239,7 @@ export default function DashboardScreen() {
           <DietCoachCard today={dietToday} onChanged={load} onOpenDiet={() => router.push("/diet")} />
         ) : null}
         {VIEWER ? null : <TodaySection profile={profile} onChanged={load} />}
-        <Text style={[AppTheme.sectionTitle, { marginTop: 8 }]}>Tu progreso</Text>
-        {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}
+        <Text style={[AppTheme.sectionTitle, { marginTop: 4 }]}>Tu progreso</Text>
         {customizing ? (
           <CustomizePanel
             layout={layout}
@@ -259,6 +257,7 @@ export default function DashboardScreen() {
             render(block[0])
           ),
         )}
+        {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}
       </ScrollView>
     </Screen>
   );

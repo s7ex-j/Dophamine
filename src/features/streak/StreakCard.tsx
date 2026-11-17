@@ -5,6 +5,35 @@ import { Dopi } from "@/src/features/streak/Dopi";
 import type { StreakSummary } from "@/src/features/streak/streak.data";
 import { AppTheme } from "@/src/theme";
 
+/** Racha en pequeño, para la cabecera del Panel: Dopi y los días. Tocarla abre los logros. */
+export function StreakBadge({ summary, onPress }: { summary: StreakSummary; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Racha de ${summary.current} días. Ver logros`}
+      onPress={onPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingLeft: 2,
+        paddingRight: 10,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: AppTheme.colors.border,
+      }}
+    >
+      <Dopi level={summary.stage.level} mood={summary.mood} size={30} />
+      <Ionicons
+        name="flame"
+        size={14}
+        color={summary.current ? AppTheme.colors.amber : AppTheme.colors.muted}
+      />
+      <Text style={[AppTheme.label, { color: AppTheme.colors.text }]}>{summary.current}</Text>
+    </Pressable>
+  );
+}
+
 /** Racha y Dopi en una fila del Panel. Tocarla abre los logros. */
 export function StreakCard({ summary, onPress }: { summary: StreakSummary; onPress: () => void }) {
   const text =

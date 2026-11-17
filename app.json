@@ -3,7 +3,7 @@
     "name": "Dophamine",
     "slug": "dophamine",
     "scheme": "dophamine",
-    "version": "0.23.0",
+    "version": "0.24.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "plugins": [

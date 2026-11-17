@@ -1,54 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { BigInput, Button, Chips, Input, LinkButton, RowActions, type IconName } from "@/src/components/ui";
+import { BigInput, Button, Chips, Input, LinkButton, type IconName } from "@/src/components/ui";
 import {
   addWater,
-  deleteDailyBiometrics,
   getBiometricsByDate,
   getRecentBiometrics,
   saveDayBody,
-  setDayFasting,
-  setDayPartial,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
-import {
-  buildBodyInput,
-  emptyForm,
-  formFromRecord,
-  hasData,
-  type BodyForm,
-} from "@/src/features/biometrics/dailyLog";
+import { buildBodyInput, emptyForm, formFromRecord, type BodyForm } from "@/src/features/biometrics/dailyLog";
 import { leanMassKg } from "@/src/features/composition/composition";
-import { DaySummary, MealCard } from "@/src/features/nutrition/MealSections";
-import {
-  groupBySlot,
-  suggestPartial,
-  totalsOf,
-  type MealEntry,
-  type MealSlot,
-} from "@/src/features/nutrition/meals";
-import {
-  addMealEntries,
-  copyDay,
-  deleteDayMeals,
-  deleteMealEntry,
-  getMealEntries,
-} from "@/src/features/nutrition/nutrition.repository";
-import { mealSetupOf, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
-import { saveMealFromEntries } from "@/src/features/nutrition/savedMeals.repository";
-import {
-  CLIPBOARD_KEY,
-  clipboardKcal,
-  copyMeal,
-  copyWholeDay,
-  pastePlan,
-  readClipboard,
-  type Clipboard,
-} from "@/src/features/nutrition/clipboard";
-import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import { DaySummary } from "@/src/features/nutrition/MealSections";
+import { totalsOf, type MealEntry } from "@/src/features/nutrition/meals";
+import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
+import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { weekdayOf } from "@/src/features/reminders/reminders";
 import { targetsForWeekday } from "@/src/features/profile/targets";
 import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
@@ -66,14 +34,14 @@ type Editor = "weight" | "sleep" | null;
 /**
  * "Hoy" en el Panel: todo lo que se anota en un día, sin cambiar de pestaña.
  * Arriba se elige el día (para corregir días anteriores); debajo, la energía,
- * peso, agua y sueño en tarjetas que se abren al tocarlas, y las comidas.
+ * peso, agua y sueño en tarjetas que se abren al tocarlas, y un solo botón
+ * para registrar comida (las comidas del día se abren en su propia pantalla).
  */
 export function TodaySection({ profile, onChanged }: { profile: NutritionProfile; onChanged: () => void }) {
   const router = useRouter();
   const [date, setDate] = useState(localDateKey());
   const [day, setDay] = useState<DailyBiometrics | null>(null);
   const [entries, setEntries] = useState<MealEntry[]>([]);
-  const [previous, setPrevious] = useState(0);
   const [lastWeight, setLastWeight] = useState<number | null>(null);
   const [sleep, setSleep] = useState<SleepEntry | null>(null);
   const [routine, setRoutine] = useState<Routine | null>(null);
@@ -81,7 +49,6 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
   const [form, setForm] = useState<BodyForm>(emptyForm);
   const [sleepForm, setSleepForm] = useState({ bedtime: "", wakeTime: "", quality: 0 });
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
-  const [clipboard, setClipboard] = useState<Clipboard | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
 
@@ -90,17 +57,13 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
       Promise.all([
         getBiometricsByDate(current),
         getMealEntries(current),
-        getMealEntries(addDays(current, -1)),
         getRecentBiometrics(),
         getSleepSince(current),
         getRoutine(),
-        getSetting(CLIPBOARD_KEY),
-      ]).then(([record, meals, before, rows, nights, nextRoutine, copied]) => {
-        setClipboard(readClipboard(copied));
+      ]).then(([record, meals, rows, nights, nextRoutine]) => {
         const night = nights.find((entry) => entry.date === current) ?? null;
         setDay(record);
         setEntries(meals);
-        setPrevious(before.length);
         setLastWeight(rows.find((row) => row.weightKg)?.weightKg ?? null);
         setSleep(night);
         setRoutine(nextRoutine);
@@ -119,21 +82,6 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
     setMessage(null);
     setEditor(null);
   }, [date]);
-
-  const copy = async (next: Clipboard | null, text: string) => {
-    if (!next) return;
-    await setSetting(CLIPBOARD_KEY, next);
-    setClipboard(next);
-    setMessage({ text, error: false });
-  };
-  const paste = async (slot?: string) => {
-    if (!clipboard) return;
-    const plan = pastePlan(clipboard, slot);
-    for (const item of plan) await addMealEntries(date, item.slot, item.drafts);
-    changed(`Pegado: ${clipboard.label} (${clipboardKcal(clipboard)} kcal).`);
-  };
-  const mealPaste =
-    clipboard?.kind === "meal" ? `${clipboard.label} · ${clipboardKcal(clipboard)} kcal` : null;
 
   const changed = (text?: string) => {
     load(date);
@@ -189,8 +137,6 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
   );
   const weightKg = toKg(Number(form.weight), unit);
   const bodyFat = Number(form.bodyFat);
-  const add = (slot: MealSlot) => router.push({ pathname: "/add-food", params: { date, slot } });
-  const edit = (entry: MealEntry) => router.push({ pathname: "/edit-entry", params: { id: entry.id, date } });
   const toggle = (next: Editor) => {
     setMessage(null);
     setEditor(editor === next ? null : next);
@@ -389,108 +335,20 @@ export function TodaySection({ profile, onChanged }: { profile: NutritionProfile
         <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
       ) : null}
 
-      <View style={[AppTheme.rowActions, { flexWrap: "wrap" }]}>
-        {entries.length ? (
-          <LinkButton
-            title="Copiar el día"
-            onPress={() =>
-              copy(copyWholeDay(entries, date), 'Día copiado: ve a otro día y toca "Pegar el día".')
-            }
-          />
-        ) : null}
-        {clipboard?.kind === "day" && clipboard.from !== date ? (
-          <LinkButton title={`Pegar el día ${clipboard.label.slice(5)}`} onPress={() => paste()} />
-        ) : null}
+      <View style={{ gap: 6 }}>
+        <Button
+          title="Registrar comida"
+          onPress={() => router.push({ pathname: "/meals", params: { date } })}
+        />
+        <Text style={[AppTheme.hint, { textAlign: "center" }]}>
+          {entries.length
+            ? `${entries.length} ${entries.length === 1 ? "alimento registrado" : "alimentos registrados"} · ${totals.kcal} kcal`
+            : day?.fasting
+              ? "Día de ayuno"
+              : "Nada registrado todavía"}
+          {day?.partial ? " · incompleto" : ""}
+        </Text>
       </View>
-      {!entries.length && previous > 0 ? (
-        <View style={AppTheme.rowActions}>
-          <LinkButton
-            title={`Copiar los ${previous} alimentos del día anterior`}
-            onPress={async () => {
-              const copied = await copyDay(addDays(date, -1), date);
-              changed(`Se copiaron ${copied} alimentos del día anterior.`);
-            }}
-          />
-        </View>
-      ) : null}
-      {groupBySlot(entries, mealSetupOf(profile)).map((slot) => (
-        <MealCard
-          key={slot.id}
-          slot={slot.id}
-          label={slot.label}
-          entries={slot.entries}
-          kcal={slot.totals.kcal}
-          onAdd={() => add(slot.id)}
-          onRemove={async (entry) => {
-            await deleteMealEntry(entry);
-            changed();
-          }}
-          onEdit={edit}
-          onSave={(name) => saveMealFromEntries(name, slot.entries)}
-          onCopy={() =>
-            copy(
-              copyMeal(slot.entries, `${slot.label} del ${date.slice(5)}`),
-              `${slot.label} copiado: toca "Pegar aquí" en otra comida o en otro día.`,
-            )
-          }
-          pasteLabel={mealPaste}
-          onPaste={() => paste(slot.id)}
-        />
-      ))}
-      {suggestPartial(entries, day?.partial) ? (
-        <View style={[AppTheme.banner, { gap: 6 }]}>
-          <Text style={AppTheme.body}>
-            Más de la mitad de las calorías de este día son estimadas. Si no estás seguro de los números,
-            márcalo como incompleto: así no altera el cálculo de tu gasto.
-          </Text>
-          <LinkButton
-            title="Marcar como incompleto"
-            onPress={async () => {
-              await setDayPartial(date, true);
-              changed("Día marcado como incompleto.");
-            }}
-          />
-        </View>
-      ) : null}
-      {entries.length || totals.kcal ? (
-        <View style={[AppTheme.sectionHeader, { paddingHorizontal: 4 }]}>
-          <Text style={AppTheme.hint}>No registré todo lo que comí este día</Text>
-          <Switch
-            accessibilityLabel="Día incompleto"
-            value={Boolean(day?.partial)}
-            onValueChange={async (partial) => {
-              await setDayPartial(date, partial);
-              changed();
-            }}
-            trackColor={{ true: AppTheme.colors.amber, false: AppTheme.colors.border }}
-            thumbColor={AppTheme.colors.text}
-          />
-        </View>
-      ) : null}
-      <View style={[AppTheme.sectionHeader, { paddingHorizontal: 4 }]}>
-        <Text style={AppTheme.hint}>Día de ayuno (lo comido, aunque sea nada, cuenta)</Text>
-        <Switch
-          accessibilityLabel="Día de ayuno"
-          value={Boolean(day?.fasting)}
-          onValueChange={async (fasting) => {
-            await setDayFasting(date, fasting);
-            changed();
-          }}
-          trackColor={{ true: AppTheme.colors.violet, false: AppTheme.colors.border }}
-          thumbColor={AppTheme.colors.text}
-        />
-      </View>
-      {hasData(day) || entries.length ? (
-        <RowActions
-          question={`¿Borrar todo lo registrado el ${date}?`}
-          onDelete={async () => {
-            await deleteDayMeals(date);
-            await deleteDailyBiometrics(date);
-            await deleteSleep(date);
-            changed("Día borrado.");
-          }}
-        />
-      ) : null}
     </View>
   );
 }

@@ -15,22 +15,24 @@ const RELEASE_URL = `${REPO_URL}/releases/latest`
 
 const steps = [
   {
-    title: "Configura tu plan",
+    title: "Tu plan inicial",
     description:
-      "Edad, altura, peso, actividad y objetivo. Dophamine estima tu gasto con Mifflin-St Jeor y propone calorías y macros de referencia.",
+      "Cuerpo, actividad, entreno, meta y cuántas comidas haces al día. Dophamine estima tu gasto con varias fórmulas y te propone calorías y macros.",
   },
   {
-    title: "Registra totales diarios",
+    title: "Registra en el teléfono",
     description:
-      "Peso, calorías, proteína, carbohidratos y grasas del día. No hace falta catalogar alimento por alimento.",
+      "Alimento por alimento (crudo o cocido), tu peso, tu sueño y tu entreno serie por serie. O carga tu dieta y registra cada comida con un toque.",
   },
   {
-    title: "Mira la tendencia",
-    description: "El peso diario se suaviza para separar la señal del ruido de agua, sal y digestión.",
+    title: "Aprende de ti",
+    description:
+      "Con dos semanas de datos calcula tu gasto real; con 15 días seguidos se activa el motor de autoajuste, que separa el agua del peso real.",
   },
   {
-    title: "Decide en tu revisión semanal",
-    description: "La app propone un ajuste y explica por qué. Nunca cambia tu objetivo sin que lo aceptes.",
+    title: "Revisa cada 3 o 7 días",
+    description:
+      "La app propone un ajuste pequeño y explica por qué. En modo colaborativo nunca cambia tu objetivo sin que lo aceptes.",
   },
 ]
 
@@ -41,15 +43,19 @@ const faqs = [
   },
   {
     q: "¿Dónde se guardan mis datos?",
-    a: "En tu dispositivo: SQLite en Android e iOS, y el almacenamiento local del navegador en la versión web. Si borras los datos del navegador o desinstalas la app, se pierden: la versión actual no tiene respaldo ni sincronización.",
+    a: "En tu teléfono. Puedes exportar un respaldo cuando quieras y llevarlo a otro teléfono o a esta web. Si desinstalas la app sin un respaldo, los datos se pierden.",
   },
   {
-    q: "¿La web y el móvil se sincronizan?",
-    a: "Todavía no. Son almacenamientos independientes. La sincronización cifrada opcional está en la hoja de ruta.",
+    q: "¿Para qué sirve la versión web?",
+    a: "Para ver tu progreso en pantalla grande. Es de solo lectura: cargas un respaldo o conectas tu teléfono con un código QR, sin subir nada a ningún servidor (la conexión directa necesita la app instalada).",
   },
   {
-    q: "¿Cuándo aparece mi TDEE?",
-    a: "Cuando hay suficiente historial: al menos 14 días con peso, 10 de ellos con ingesta, en un periodo de 13 días o más. Antes de eso la app indica que la estimación se está construyendo.",
+    q: "¿Puedo cargar la dieta que me dio mi nutricionista?",
+    a: "Sí. Pégala como texto o usa la plantilla de dieta de esta página. Si la tienes en PDF o en una foto, una IA puede pasarla al formato de la plantilla.",
+  },
+  {
+    q: "¿Cuándo aparece mi gasto real?",
+    a: "Con al menos 14 días de pesajes y 10 de comida completos. Con 15 días seguidos de peso y comida se activa el motor de autoajuste. Antes de eso la app usa tu evaluación inicial y lo dice.",
   },
   {
     q: "¿Reemplaza a un nutricionista o a un médico?",
@@ -57,7 +63,7 @@ const faqs = [
   },
   {
     q: "¿Cuánto cuesta?",
-    a: "Nada. Es open source bajo licencia MIT y el código está en GitHub.",
+    a: "Nada. Es software libre bajo licencia GPL-3.0 y el código está en GitHub.",
   },
 ]
 
@@ -102,7 +108,8 @@ function Header() {
           Dophamine
         </a>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <a href="#vistas" className="hover:text-foreground">Las seis vistas</a>
+          <a href="#vistas" className="hover:text-foreground">Qué hace</a>
+          <a href="#formatos" className="hover:text-foreground">Plantillas</a>
           <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
           <a href="#privacidad" className="hover:text-foreground">Privacidad</a>
           <a href="#faq" className="hover:text-foreground">Preguntas</a>
@@ -115,7 +122,7 @@ function Header() {
             </a>
           </Button>
           <Button asChild className="ml-1 rounded-full px-5">
-            <a href={APP_URL}>Abrir la app</a>
+            <a href={APP_URL}>Abrir el visor</a>
           </Button>
         </div>
       </div>
@@ -271,10 +278,10 @@ function TrendChart() {
    Es un teléfono genérico dibujado con CSS (ver index.css), sin marca. */
 
 const pantallas = [
-  { id: "hoy", nombre: "Hoy", texto: "Cuánta energía te queda y qué falta registrar." },
-  { id: "analisis", nombre: "Análisis", texto: "La tendencia de tu peso y tu ingesta de la semana." },
-  { id: "entreno", nombre: "Entreno", texto: "Tu rutina y la sesión de hoy, serie por serie." },
-  { id: "habitos", nombre: "Hábitos", texto: "Cinco compromisos diarios en una vista mensual." },
+  { id: "hoy", nombre: "Panel", texto: "Lo que te queda del día y tu progreso en gráficos." },
+  { id: "dieta", nombre: "Dieta", texto: "Tu dieta por día de la semana, con la comida de antes y después de entrenar." },
+  { id: "entreno", nombre: "Entreno", texto: "Tu semana de entreno y los músculos que trabajaste." },
+  { id: "analisis", nombre: "Estrategia", texto: "Tu plan, la revisión cada 3 o 7 días y el progreso hacia tu meta." },
 ]
 
 function PhoneDemo() {
@@ -356,20 +363,19 @@ function Hero() {
             className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <span className="size-2 rounded-full bg-primary" />
-            Versión 0.4.0, de código abierto
+            Versión {__APP_VERSION__}, software libre
           </a>
           <h1 className="mt-6 text-[clamp(2.9rem,9.6vw,6rem)] font-extrabold leading-[0.93] tracking-[-0.035em] text-balance">
             Un pesaje no dice nada. La tendencia sí.
           </h1>
           <p className="mt-7 max-w-xl text-lg text-muted-foreground text-pretty md:text-xl">
-            Dophamine toma los totales de tu día (peso, calorías y macros), separa la señal del ruido y una vez por
-            semana te propone un ajuste pequeño, con su porqué. Sin catalogar cada comida, sin hojas de cálculo y sin
-            cuentas.
+            Dophamine registra lo que comes, tu peso, tu sueño y tu entreno; separa la señal del ruido y cada pocos
+            días te propone un ajuste pequeño, con su porqué. Todo en tu teléfono, sin cuentas y sin servidor.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Button size="lg" asChild className="h-13 rounded-full px-7 text-base">
               <a href={APP_URL}>
-                Abrir en la web <ArrowRight />
+                Ver mi progreso en la web <ArrowRight />
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="h-13 rounded-full px-6 text-base">
@@ -519,55 +525,55 @@ function Vistas() {
     <section id="vistas" className="scroll-mt-20 py-20">
       <div className="mx-auto max-w-6xl px-5">
         <h2 className="max-w-[18ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
-          Seis vistas sobre los mismos registros.
+          Todo lo que registras, en un solo lugar.
         </h2>
         <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-          Cada pantalla responde una pregunta concreta. Todas leen los mismos datos, guardados en tu dispositivo.
+          Cada pantalla responde una pregunta concreta. Todas leen los mismos datos, guardados en tu teléfono.
         </p>
 
         <div className="mt-12 grid gap-4 md:grid-cols-6">
           <article className="flex flex-col justify-between gap-8 rounded-3xl bg-forest p-6 text-forest-foreground md:col-span-3 md:p-8">
             <MiniHoy />
             <div>
-              <h3 className="text-3xl font-bold tracking-tight">Hoy</h3>
+              <h3 className="text-3xl font-bold tracking-tight">Panel</h3>
               <p className="mt-1.5 opacity-75 text-pretty">
-                Energía consumida o restante, macros, consistencia de la semana y el siguiente paso que desbloquea
-                más información.
+                Lo que te queda del día, tu peso, sueño y agua, un solo botón para registrar comida y tu progreso
+                en gráficos: gasto, tendencia, balance, meta y constancia.
               </p>
             </div>
           </article>
           <Vista
             className="md:col-span-3"
-            titulo="Progreso"
-            texto="Peso, calorías y macros diarios con tendencia suavizada. Puedes corregir días anteriores."
+            titulo="Comida"
+            texto="Alimento por alimento, crudo o cocido, recetas, comidas guardadas y código de barras. O tu dieta, con un toque."
           >
             <MiniBarras valores={[62, 70, 58, 74, 66, 81, 60, 72, 69, 77, 64, 71, 68, 75]} clase="bg-noise/75" />
           </Vista>
           <Vista
             className="md:col-span-2"
             titulo="Entreno"
-            texto="Rutinas full body, torso/pierna, empuje/tirón o propias. Registra carga, repeticiones y RIR por serie."
+            texto="Plantillas o tu propia semana, catálogo de 600 ejercicios con imagen, serie por serie con carga sugerida."
           >
             <MiniEntreno />
           </Vista>
           <Vista
             className="md:col-span-2"
-            titulo="Hábitos"
-            texto="Cinco hábitos (plan, proteína, movimiento, descanso y chequeo) con una vista mensual de consistencia."
+            titulo="Constancia"
+            texto="Cumplimiento del día que se marca solo, racha con Dopi, logros y resumen de la semana."
           >
             <MiniHabitos />
           </Vista>
           <Vista
             className="md:col-span-2"
             titulo="Bienestar"
-            texto="Ánimo, energía, estrés, horas de sueño y una nota privada, con lectura de la tendencia reciente."
+            texto="Un chequeo de tres toques, sueño y ciclo menstrual. Todo entra en las recomendaciones."
           >
             <MiniBienestar />
           </Vista>
           <Vista
             className="md:col-span-6 md:flex-row md:items-end"
-            titulo="Análisis"
-            texto="Promedios de macros, adherencia calórica y la evolución de peso frente a ingesta."
+            titulo="Cómo se calcula"
+            texto="Cada paso del algoritmo con tus números: gasto inicial, tendencia, energía por kilo, motor de autoajuste y revisión."
           >
             <div className="md:w-[420px]">
               <MiniBarras valores={[92, 100, 88, 97, 100, 46, 79, 95, 100, 90, 84, 100, 72, 96, 100, 91, 88, 97]} clase="bg-primary/80" />
@@ -605,7 +611,7 @@ function Tdee() {
   return (
     <section className="bg-forest py-20 text-forest-foreground md:py-28">
       <div className="mx-auto max-w-6xl px-5">
-        <p className="text-lg opacity-70">La cuenta que hace la revisión semanal</p>
+        <p className="text-lg opacity-70">La cuenta que hace cada revisión</p>
         <p className="mt-5 font-display text-[clamp(1.7rem,5.2vw,4rem)] font-bold leading-[1.08] tracking-[-0.02em]">
           Gasto real <span className="opacity-50">=</span> lo que comiste <span className="opacity-50">−</span>{" "}
           <span className="text-noise">lo que cambió tu tendencia</span> <span className="opacity-50">×</span> 7 700 kcal/kg
@@ -614,8 +620,8 @@ function Tdee() {
           <div>
             <h3 className="text-xl font-bold">Aprende de tus datos</h3>
             <p className="mt-2 opacity-75 text-pretty">
-              Con al menos 14 días de registros, 10 de ellos con ingesta, compara lo que comiste en promedio con lo que
-              se movió tu peso suavizado. Ya no depende de una fórmula fija.
+              Con dos semanas de datos compara lo que comiste con lo que se movió tu peso suavizado. Con 15 días
+              seguidos, un filtro de estado estima a la vez tu peso real y tu gasto, y aprende cuánta agua retienes.
             </p>
           </div>
           <div>
@@ -628,8 +634,8 @@ function Tdee() {
           <div>
             <h3 className="text-xl font-bold">Ajustes pequeños</h3>
             <p className="mt-2 opacity-75 text-pretty">
-              Cada revisión cambia como máximo 100 kcal diarias y solo cuando la diferencia lo justifica. La propuesta
-              se aplica si tú la aceptas.
+              Cada revisión (cada 3 o 7 días) mueve entre 50 y 100 kcal, mira tu sueño, tu entreno y si comiste lo
+              planeado, y no persigue diferencias menores que su propia incertidumbre.
             </p>
           </div>
         </div>
@@ -640,10 +646,10 @@ function Tdee() {
 
 function Privacy() {
   const hechos = [
-    ["Datos en tu dispositivo", "SQLite en Android e iOS y almacenamiento local en la web."],
+    ["Datos en tu teléfono", "Todo se guarda en el teléfono. La web solo muestra lo que tú le pases."],
     ["Sin rastreo", "Sin cuentas, analítica, anuncios ni telemetría. Esta página tampoco carga nada de terceros."],
     ["Funciona sin conexión", "Registra y consulta tu progreso aunque no tengas internet."],
-    ["Sin respaldo automático", "Si borras los datos del navegador o desinstalas la app, se pierden. La sincronización cifrada está en la hoja de ruta."],
+    ["Conexión directa y cifrada", "Para ver tus datos en la web, el teléfono y la computadora se conectan por código QR dentro de tu Wi-Fi, sin servidor. O usas un archivo de respaldo."],
   ]
   return (
     <section id="privacidad" className="scroll-mt-20 py-20 md:py-28">
@@ -659,6 +665,59 @@ function Privacy() {
             </div>
           ))}
         </dl>
+      </div>
+    </section>
+  )
+}
+
+function Formatos() {
+  const base = `${import.meta.env.BASE_URL}formatos/`
+  const archivos = [
+    {
+      titulo: "Plantilla de dieta",
+      archivo: "dieta.dophamine-diet.json",
+      texto:
+        "Tus alimentos con sus valores por 100 g, tus comidas y el horario de cada día de la semana, con la hora del gimnasio. Se abre en Más → Mi dieta.",
+    },
+    {
+      titulo: "Plantilla de rutina",
+      archivo: "rutina.csv",
+      texto:
+        "Una fila por ejercicio: día, entreno, ejercicio, series, repeticiones y RIR. Se abre en Entreno → Mi rutina → Compartir o importar.",
+    },
+  ]
+  return (
+    <section id="formatos" className="scroll-mt-20 border-t py-20">
+      <div className="mx-auto max-w-6xl px-5">
+        <h2 className="max-w-[18ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
+          Trae tu dieta y tu rutina.
+        </h2>
+        <p className="mt-5 max-w-2xl text-lg text-muted-foreground text-pretty">
+          Si ya tienes una dieta o una rutina escrita, descarga la plantilla y llénala. Si la tienes en un PDF, una foto o
+          una hoja de cálculo, puedes pedirle a una IA que la pase a este formato dándole la plantilla como ejemplo.
+        </p>
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          {archivos.map(({ titulo, archivo, texto }) => (
+            <article key={archivo} className="flex flex-col justify-between gap-6 rounded-3xl border bg-card p-6 md:p-8">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight">{titulo}</h3>
+                <p className="mt-2 text-muted-foreground text-pretty">{texto}</p>
+              </div>
+              <Button asChild variant="outline" className="self-start rounded-full px-5">
+                <a href={`${base}${archivo}`} download={archivo}>
+                  Descargar {archivo}
+                </a>
+              </Button>
+            </article>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          La explicación de cada campo está en{" "}
+          <a href={`${REPO_URL}/tree/main/docs/formatos`} className="underline">
+            docs/formatos
+          </a>
+          .
+        </p>
       </div>
     </section>
   )
@@ -690,7 +749,7 @@ function CallToAction() {
           Empieza con lo que ya sabes de tu día.
         </h2>
         <p className="mt-5 max-w-xl text-lg opacity-90">
-          Peso y totales diarios. Dophamine se encarga de la tendencia y te avisa cuándo tiene datos suficientes.
+          Tu peso y lo que comes. Dophamine se encarga de la tendencia y te avisa cuándo tiene datos suficientes.
         </p>
         <Button size="lg" variant="secondary" asChild className="mt-9 h-13 rounded-full px-7 text-base">
           <a href={APP_URL}>
@@ -711,7 +770,19 @@ function Footer() {
           <a href="https://github.com/s7ex-j" className="font-medium text-foreground hover:underline">
             Jharol Vilca Ramos
           </a>
-          . Licencia MIT.
+          .
+        </p>
+        <p className="max-w-xl text-xs">
+          Copyright (C) 2026 Jharol Vilca Ramos. Este programa es software libre: puedes redistribuirlo y
+          modificarlo bajo los términos de la{" "}
+          <a href={`${REPO_URL}/blob/main/LICENSE`} className="hover:underline">
+            GNU General Public License, versión 3 únicamente (GPL-3.0-only)
+          </a>
+          . El nombre y la mascota tienen su{" "}
+          <a href={`${REPO_URL}/blob/main/TRADEMARK.md`} className="hover:underline">
+            política de marca
+          </a>
+          .
         </p>
         <div className="flex gap-5">
           <a href={`${REPO_URL}/blob/main/docs/PRIVACY.md`} className="hover:text-foreground">Privacidad</a>
@@ -734,6 +805,7 @@ export default function App() {
         <HowItWorks />
         <Tdee />
         <Privacy />
+        <Formatos />
         <Faq />
         <CallToAction />
       </main>

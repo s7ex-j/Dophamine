@@ -100,7 +100,7 @@ La separacion entre interfaz, dominio y persistencia esta explicada en [docs/ARC
 
 - Cada push y pull request ejecuta `npm run typecheck`, los tests de dominio (`npm test`, Vitest: perfil nutricional, TDEE, revision semanal y habitos) y compila el sitio.
 - Cada push a `main` publica en GitHub Pages el sitio en `/Dophamine/` y la app en `/Dophamine/app/`; los enlaces antiguos redirigen a la app.
-- La versión del código es 0.4.0; los cambios están en [CHANGELOG.md](CHANGELOG.md) y las versiones publicadas en [Releases](https://github.com/s7ex-j/Dophamine/releases).
+- La versión del código está en `package.json`; los cambios están en [CHANGELOG.md](CHANGELOG.md) y las versiones publicadas en [Releases](https://github.com/s7ex-j/Dophamine/releases).
 - La preparacion de APK/AAB y tiendas esta documentada en [docs/RELEASING.md](docs/RELEASING.md).
 - Consulta [CHANGELOG.md](CHANGELOG.md) para el historial de cambios.
 
@@ -112,9 +112,17 @@ El orden de lo que falta, con quién hace cada paso y cómo se comprueba, está 
 
 ## Datos de ejercicios, privacidad y licencia
 
-**Exercise data by [RepDB](https://repdb.co) (repdb.co).** Las ilustraciones, instrucciones y parte del catalogo de ejercicios vienen del catalogo gratuito de RepDB, con su propia licencia (no MIT): se usan dentro de la app y no se redistribuyen como dataset. Detalles en [NOTICE.md](NOTICE.md).
+**Exercise data by [RepDB](https://repdb.co) (repdb.co).** Las ilustraciones, instrucciones y parte del catalogo de ejercicios vienen del catalogo gratuito de RepDB, con su propia licencia: no quedan bajo la GPL, se usan dentro de la app y no se redistribuyen como dataset. Detalles en [NOTICE.md](NOTICE.md).
 
-Lee [docs/PRIVACY.md](docs/PRIVACY.md) para conocer los limites de privacidad y salud. Dophamine se distribuye bajo licencia [MIT](LICENSE).
+Lee [docs/PRIVACY.md](docs/PRIVACY.md) para conocer los limites de privacidad y salud.
+
+Copyright (C) 2026 Jharol Vilca Ramos. Este programa es software libre: puedes redistribuirlo y modificarlo bajo los términos de la GNU General Public License, versión 3 únicamente (GPL-3.0-only).
+
+El texto completo está en [LICENSE](LICENSE). Hasta la versión 0.23.0 (etiqueta `v0.23.0-mit`) el código se publicó bajo licencia MIT, y esas copias la conservan. El nombre "Dophamine", "Dopi" y sus ilustraciones no están cubiertos por la licencia del código: ver [TRADEMARK.md](TRADEMARK.md).
+
+## Apoyar el proyecto
+
+Dophamine es gratis y sin anuncios. Si quieres apoyarlo, pronto habrá un enlace aquí. <!-- TODO(Jharol): enlace de donaciones -->
 
 ## Contribuir
 

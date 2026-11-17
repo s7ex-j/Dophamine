@@ -25,8 +25,8 @@ describe("Panel personalizable", () => {
 
   it("mueve y oculta secciones", () => {
     const moved = moveSection(DEFAULT_LAYOUT, "trend", -1);
-    expect(moved.map((item) => item.id).slice(0, 4)).toEqual(["nutrition", "habits", "trend", "expenditure"]);
-    expect(moveSection(DEFAULT_LAYOUT, "nutrition", -1)).toBe(DEFAULT_LAYOUT);
+    expect(moved.map((item) => item.id).slice(0, 3)).toEqual(["trend", "expenditure", "balance"]);
+    expect(moveSection(DEFAULT_LAYOUT, "expenditure", -1)).toBe(DEFAULT_LAYOUT);
     expect(toggleSection(DEFAULT_LAYOUT, "habits").find((item) => item.id === "habits")?.visible).toBe(false);
   });
 });

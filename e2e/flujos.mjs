@@ -239,7 +239,12 @@ async function main() {
 
   await step("panel · hoy: guardar peso y composición", async () => {
     await open("/");
-    await waitText("Desayuno");
+    await waitText("Registrar comida");
+    // Las comidas ya no están en el Panel: se abren con un solo botón.
+    assert(
+      !(await page.evaluate(() => document.body.innerText)).includes("Desayuno"),
+      "El Panel sigue mostrando las comidas por separado.",
+    );
     await pressLabel("Anotar peso");
     await fill("Último", 79.6);
     await fill("Grasa (%)", 19.5);
@@ -253,6 +258,8 @@ async function main() {
   });
 
   await step("agregar: un alimento cocido, pasar a crudo y un registro rápido", async () => {
+    await press("Registrar comida");
+    await waitText("Nada registrado todavía.");
     await pressLabel("Agregar a almuerzo");
     await waitText("Buscar alimento");
     await fillLabel("Buscar alimento", "pechuga pollo");
@@ -311,6 +318,8 @@ async function main() {
   });
 
   await step("agregar: alimento propio, receta y sugerencias", async () => {
+    await press("Registrar comida");
+    await waitText("630 kcal");
     await pressLabel("Agregar a cena");
     await waitText("Buscar alimento");
     await press("Nuevo");
@@ -360,9 +369,13 @@ async function main() {
   });
 
   await step("panel · hoy: un día solo con comida, sin pesaje, y borrarlo", async () => {
+    await open("/");
     await press("‹");
     await waitText("Ayer");
+    await press("Registrar comida");
+    await waitText("Nada registrado todavía.");
     await pressLabel("Agregar a snacks");
+    await waitText("Buscar alimento");
     await press("Rápido");
     await fill("Calorías", 250);
     await press("Agregar a snacks");
@@ -374,7 +387,7 @@ async function main() {
       "No se guardó un día sin pesaje.",
     );
     await press("Listo");
-    await waitText("Ayer");
+    await waitText("250 kcal");
     await press("Borrar");
     await press("Sí, borrar");
     await waitText("Día borrado.");
@@ -384,8 +397,10 @@ async function main() {
   });
 
   await step("panel · hoy: editar un alimento, registrar sueño y marcar día incompleto", async () => {
-    await press("›");
+    await open("/");
     await waitText("Hoy");
+    await press("Registrar comida");
+    await waitText("Pechuga de pollo cocida");
     await pressLabel("Editar Pechuga de pollo cocida, sin piel");
     await waitText("Guardar cambios");
     await fill("Cantidad", 100);
@@ -399,6 +414,8 @@ async function main() {
       STORE_KEY,
       dateKey(),
     );
+    await open("/");
+    await waitText("Hoy");
     await pressLabel("Agregar un vaso de agua");
     await pressLabel("Agregar un vaso de agua");
     await page.waitForFunction(
@@ -421,6 +438,8 @@ async function main() {
       night.bedtime === "23:30" && night.wakeTime === "07:00" && night.quality === 4,
       "No se guardó el sueño.",
     );
+    await press("Registrar comida");
+    await waitText("No registré todo");
     await pressLabel("Día incompleto");
     await page.waitForFunction(
       (key, date) =>
@@ -440,12 +459,12 @@ async function main() {
       assert(await page.$(`[aria-label="${label}"]`), `El cumplimiento no marca "${label}".`);
     await pressLabel("Personalizar el Panel");
     await waitText("Personalizar");
-    await pressLabel("Subir", 1); // "Cumplimiento de hoy" pasa al primer lugar
+    await pressLabel("Subir", 1); // "Tendencia de peso" pasa al primer lugar
     await pressLabel("Mostrar habits");
     await page.waitForFunction(
       (key) => {
         const layout = JSON.parse(localStorage.getItem(key)).settings?.dashboard_layout ?? [];
-        return layout[0]?.id === "habits" && layout[0]?.visible === false;
+        return layout[0]?.id === "trend" && layout.find((item) => item.id === "habits")?.visible === false;
       },
       {},
       STORE_KEY,
@@ -679,8 +698,8 @@ async function main() {
     await open("/nutrients");
     await waitText("Principales aportes");
     await waitText("Cómo repartes el día");
-    await open("/");
-    await waitText("Hoy");
+    await open("/meals");
+    await waitText("Día de ayuno");
     await pressLabel("Día de ayuno");
     await page.waitForFunction(
       (key, date) =>
@@ -780,11 +799,11 @@ async function main() {
       STORE_KEY,
       today,
     );
-    await open("/");
-    await waitText("Hoy");
+    await open("/meals");
+    await waitText("Almuerzo");
     await pressLabel("Copiar almuerzo");
     await waitText("copiado");
-    await press("‹");
+    await open(`/meals?date=${daysAgo(1)}`);
     await waitText("Ayer");
     await pressLabel("Pegar en cena");
     await page.waitForFunction(
@@ -1009,7 +1028,7 @@ async function main() {
     await waitText("Revisa antes de guardar");
     await waitText("Reconocí todos los alimentos");
     await press("Guardar dieta");
-    await waitText("Con tu dieta cargada");
+    await waitText("Compartir como texto");
     const plan = (await store()).settings.diet_plan;
     assert(
       plan.days.length === 1 && plan.days[0].meals.length === 3 && plan.days[0].meals[0].items.length === 3,
@@ -1018,12 +1037,12 @@ async function main() {
 
     // En el Panel: pregunta el entreno si hoy toca, avisa del huevo y registra la comida.
     await open("/");
-    await waitText("TU DIETA DE HOY");
-    await waitText("0/3 comidas");
+    await waitText("TU DIETA");
+    await waitText("0 de 3 comidas");
     const asks = await page.evaluate(() => document.body.innerText.includes("¿A qué hora entrenas hoy?"));
     if (asks) {
       await pressLabel("Entreno en la tarde");
-      await waitText("Entreno hoy a las");
+      await waitText("Gimnasio a las");
     }
     await waitText("tiene huevo");
     await press("Aplicar el cambio");
@@ -1032,21 +1051,27 @@ async function main() {
       {},
       STORE_KEY,
     );
-    await waitText("Volver a mi dieta original de hoy");
-    const label = await page.evaluate(
-      () =>
-        [...document.querySelectorAll('[role="button"], [tabindex="0"]')]
-          .map((element) => element.innerText.trim())
-          .find((text) => text.startsWith("Registrar ")) ?? null,
+    await waitText("Volver a la dieta original de hoy");
+    // Se puede ajustar lo que de verdad se comió antes de registrar.
+    // La comida que toca depende de la hora en que corre la prueba: se ajusta su primer alimento.
+    await press("Ajustar cantidades");
+    const adjusted = await page.$eval('input[aria-label^="Cantidad de "]', (input) =>
+      input.getAttribute("aria-label").slice("Cantidad de ".length),
     );
-    assert(label, "El Panel no ofrece registrar la comida que toca.");
-    await press(label);
-    await waitText("1/3 comidas");
+    await fillLabel(`Cantidad de ${adjusted}`, 50);
+    await press("Registrar comida");
+    await waitText("1 de 3 comidas");
     const today = (await store()).meals.filter((entry) => entry.date === dateKey());
     assert(today.length >= 1, "Registrar la comida de la dieta no guardó sus alimentos.");
     assert(
-      !today.some((entry) => /huevo/i.test(entry.name)) || label !== "Registrar desayuno",
+      !today.some((entry) => /huevo/i.test(entry.name)),
       "Se registró el huevo aunque se aceptó cambiarlo.",
+    );
+    assert(
+      today.find((entry) => entry.name === adjusted)?.grams === 50,
+      `No se registró la cantidad ajustada (${adjusted} → 50 g). Registrado hoy: ${today
+        .map((entry) => `${entry.name} ${entry.grams ?? "-"} g`)
+        .join(", ")}`,
     );
   });
 

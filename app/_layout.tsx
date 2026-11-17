@@ -71,6 +71,7 @@ export default function RootLayout() {
         <Stack.Screen name="gyms" options={{ headerShown: true, title: "Dónde entrenas" }} />
         <Stack.Screen name="period" options={{ headerShown: true, title: "Ciclo menstrual" }} />
         <Stack.Screen name="library" options={{ headerShown: true, title: "Biblioteca" }} />
+        <Stack.Screen name="meals" options={{ headerShown: true, title: "Comidas" }} />
         <Stack.Screen name="diet" options={{ headerShown: true, title: "Mi dieta" }} />
         <Stack.Screen name="link" options={{ headerShown: true, title: "Conexión directa" }} />
         <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />

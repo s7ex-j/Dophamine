@@ -1,0 +1,123 @@
+{
+  "format": "dophamine-diet",
+  "version": 1,
+  "meta": { "name": "Dieta de ejemplo" },
+  "targets": { "kcal": 2600, "protein_g": 160, "carbs_g": 330, "fat_g": 70 },
+  "foods": {
+    "avena": { "name": "Avena (seca)", "unit": "g", "kcal": 389, "protein_g": 16.9, "carbs_g": 66, "fat_g": 6.9 },
+    "huevo": { "name": "Huevo entero", "unit": "g", "kcal": 143, "protein_g": 12.6, "carbs_g": 0.7, "fat_g": 9.5 },
+    "platano": { "name": "Plátano", "unit": "g", "kcal": 89, "protein_g": 1.1, "carbs_g": 23, "fat_g": 0.3 },
+    "leche": { "name": "Leche descremada", "unit": "ml", "kcal": 34, "protein_g": 3.4, "carbs_g": 5, "fat_g": 0.1 },
+    "pan": { "name": "Pan integral", "unit": "g", "kcal": 247, "protein_g": 11, "carbs_g": 41, "fat_g": 3.3 },
+    "pollo": { "name": "Pechuga de pollo (crudo)", "unit": "g", "kcal": 120, "protein_g": 22.5, "carbs_g": 0, "fat_g": 2.6 },
+    "arroz": { "name": "Arroz blanco (crudo)", "unit": "g", "kcal": 365, "protein_g": 7, "carbs_g": 80, "fat_g": 0.6 },
+    "palta": { "name": "Palta", "unit": "g", "kcal": 160, "protein_g": 2, "carbs_g": 8.5, "fat_g": 14.7 },
+    "lentejas": { "name": "Lentejas (crudas)", "unit": "g", "kcal": 352, "protein_g": 24.6, "carbs_g": 63, "fat_g": 1.1 },
+    "aceite": { "name": "Aceite de oliva", "unit": "g", "kcal": 884, "protein_g": 0, "carbs_g": 0, "fat_g": 100 }
+  },
+  "meals": {
+    "desayuno": {
+      "name": "Avena con huevo y plátano",
+      "items": [
+        { "food": "avena", "amount": 70 },
+        { "food": "huevo", "amount": 100 },
+        { "food": "platano", "amount": 120 },
+        { "food": "leche", "amount": 250 }
+      ]
+    },
+    "antes_de_entrenar": {
+      "name": "Pan con plátano",
+      "tags": ["pre_gym"],
+      "items": [
+        { "food": "pan", "amount": 90 },
+        { "food": "platano", "amount": 150 },
+        { "food": "leche", "amount": 200 }
+      ]
+    },
+    "almuerzo": {
+      "name": "Pollo con arroz y palta",
+      "items": [
+        { "food": "pollo", "amount": 160 },
+        { "food": "arroz", "amount": 110 },
+        { "food": "palta", "amount": 60 }
+      ]
+    },
+    "despues_de_entrenar": {
+      "name": "Pollo con arroz",
+      "tags": ["post_gym"],
+      "items": [
+        { "food": "pollo", "amount": 150 },
+        { "food": "arroz", "amount": 120 }
+      ]
+    },
+    "cena": {
+      "name": "Lentejas con huevo",
+      "items": [
+        { "food": "lentejas", "amount": 90 },
+        { "food": "huevo", "amount": 100 },
+        { "food": "aceite", "amount": 10 }
+      ]
+    }
+  },
+  "week": {
+    "mon": {
+      "gym": { "start": "18:00", "end": "19:30" },
+      "meals": [
+        { "slot": 1, "time": "07:30", "meal": "desayuno" },
+        { "slot": 2, "time": "13:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "16:45", "meal": "antes_de_entrenar" },
+        { "slot": 4, "time": "20:15", "meal": "despues_de_entrenar" }
+      ]
+    },
+    "tue": {
+      "meals": [
+        { "slot": 1, "time": "07:30", "meal": "desayuno" },
+        { "slot": 2, "time": "13:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "20:00", "meal": "cena" }
+      ]
+    },
+    "wed": {
+      "gym": { "start": "18:00", "end": "19:30" },
+      "meals": [
+        { "slot": 1, "time": "07:30", "meal": "desayuno" },
+        { "slot": 2, "time": "13:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "16:45", "meal": "antes_de_entrenar" },
+        { "slot": 4, "time": "20:15", "meal": "despues_de_entrenar" }
+      ]
+    },
+    "thu": {
+      "meals": [
+        { "slot": 1, "time": "07:30", "meal": "desayuno" },
+        { "slot": 2, "time": "13:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "20:00", "meal": "cena" }
+      ]
+    },
+    "fri": {
+      "gym": { "start": "18:00", "end": "19:30" },
+      "meals": [
+        { "slot": 1, "time": "07:30", "meal": "desayuno" },
+        { "slot": 2, "time": "13:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "16:45", "meal": "antes_de_entrenar" },
+        { "slot": 4, "time": "20:15", "meal": "despues_de_entrenar" }
+      ]
+    },
+    "sat": {
+      "gym": { "start": "10:00", "end": "11:30" },
+      "meals": [
+        { "slot": 1, "time": "08:30", "meal": "antes_de_entrenar" },
+        { "slot": 2, "time": "12:15", "meal": "despues_de_entrenar" },
+        { "slot": 3, "time": "16:00", "meal": "almuerzo" },
+        { "slot": 4, "time": "20:30", "meal": "cena" }
+      ]
+    },
+    "sun": {
+      "meals": [
+        { "slot": 1, "time": "09:00", "meal": "desayuno" },
+        { "slot": 2, "time": "14:00", "meal": "almuerzo" },
+        { "slot": 3, "time": "20:00", "meal": "cena" }
+      ]
+    }
+  },
+  "rules": ["Pesos siempre en crudo", "Nada sólido a menos de 90 minutos de entrenar pierna"],
+  "notes": ""
+}

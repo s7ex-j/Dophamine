@@ -1,10 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 import { Button, LinkButton } from "@/src/components/ui";
 import { applyAdvice, type Advice, type DayState } from "@/src/features/diet/coach";
 import type { CoachToday } from "@/src/features/diet/coach.data";
+import { scaleItem, type DietItem } from "@/src/features/diet/diet";
 import { saveDayState } from "@/src/features/diet/diet.repository";
+import { sumNutrients } from "@/src/features/nutrition/foods";
 import { addMealEntries } from "@/src/features/nutrition/nutrition.repository";
 import { formatTime } from "@/src/lib/time";
 import { AppTheme } from "@/src/theme";
@@ -15,17 +17,19 @@ const TRAIN_OPTIONS: Array<[string, number]> = [
   ["Tarde", 17 * 60],
   ["Noche", 20 * 60],
 ];
-const KIND_ICON: Record<Advice["kind"], keyof typeof Ionicons.glyphMap> = {
-  allergy: "warning-outline",
-  timing: "barbell-outline",
-  feeling: "happy-outline",
-  health: "medkit-outline",
-  balance: "scale-outline",
-};
+
+/** La recomendación que se muestra: la de la comida que toca primero; si no, la más importante. */
+function adviceFor(advice: Advice[], slot: string | undefined): Advice | null {
+  return (
+    advice.find((item) => item.swap?.slot === slot) ?? advice.find((item) => item.kind === "allergy") ?? null
+  );
+}
 
 /**
- * Tu dieta de hoy en el Panel: pregunta la hora del entreno, muestra la comida
- * que toca para registrarla con un toque y propone cambios. Nada se aplica solo.
+ * Tu dieta en el Panel: solo la comida que toca. Se registra tal cual o
+ * ajustando las cantidades (nunca se come exacto). Muestra una sola sugerencia,
+ * la que importa para esta comida (antes o después de entrenar, alergia,
+ * cómo te sientes). Nada se aplica solo.
  */
 export function DietCoachCard({
   today,
@@ -37,36 +41,58 @@ export function DietCoachCard({
   onOpenDiet: () => void;
 }) {
   const { result, state, date } = today;
-  const update = async (next: DayState) => {
-    await saveDayState(next);
+  const next = result.next;
+  const [adjusting, setAdjusting] = useState(false);
+  const [grams, setGramsState] = useState<Record<number, string>>({});
+  // Copia inmediata de lo escrito: "Registrar" usa siempre lo último, aunque la pantalla no haya redibujado.
+  const typed = useRef<Record<number, string>>({});
+  const setGrams = (value: Record<number, string>) => {
+    typed.current = value;
+    setGramsState(value);
+  };
+  useEffect(() => {
+    setAdjusting(false);
+    setGrams({});
+  }, [next?.slot]);
+
+  const update = async (value: DayState) => {
+    await saveDayState(value);
     onChanged();
   };
-  const next = result.next;
-  const done = result.meals.filter((meal) => meal.status === "done").length;
+  const position = next ? result.meals.findIndex((meal) => meal.slot === next.slot) + 1 : 0;
+  // Lo que se va a registrar: las cantidades del plan o las que la persona ajustó.
+  const itemsFor = (values: Record<number, string>): DietItem[] =>
+    (next?.items ?? []).flatMap((item, index) => {
+      if (item.unknown) return [];
+      const value = Number((values[index] ?? "").replace(",", "."));
+      return [item.grams && value > 0 && value !== item.grams ? scaleItem(item, value / item.grams) : item];
+    });
+  const items = itemsFor(grams);
+  const totals = sumNutrients(items);
+  const tip = adviceFor(result.advice, next?.slot);
+  const gymToday =
+    today.trainingDay && !state.trained && !state.noTraining && typeof state.trainTime === "number"
+      ? state.trainTime
+      : null;
 
   return (
-    <View style={[AppTheme.card, { gap: 12 }]}>
-      <Pressable accessibilityRole="button" onPress={onOpenDiet} style={AppTheme.sectionHeader}>
-        <View>
-          <Text style={AppTheme.eyebrow}>TU DIETA DE HOY</Text>
-          <Text style={AppTheme.tileSubtitle}>
-            {done}/{result.meals.length} comidas · plan {result.planned.kcal} kcal
-          </Text>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={AppTheme.colors.muted} />
+    <View style={[AppTheme.card, { gap: 10 }]}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir mi dieta"
+        onPress={onOpenDiet}
+        style={AppTheme.sectionHeader}
+      >
+        <Text style={AppTheme.eyebrow}>TU DIETA</Text>
+        <Text style={AppTheme.hint}>
+          {result.meals.filter((meal) => meal.status === "done").length} de {result.meals.length} comidas
+        </Text>
       </Pressable>
 
       {result.askTraining ? (
-        <View style={{ gap: 8 }}>
-          <Text style={AppTheme.tileTitle}>¿A qué hora entrenas hoy?</Text>
+        <View style={{ gap: 6 }}>
+          <Text style={AppTheme.body}>¿A qué hora entrenas hoy?</Text>
           <View style={AppTheme.chipRow}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => update({ ...state, trained: true })}
-              style={AppTheme.chip}
-            >
-              <Text style={AppTheme.chipText}>Ya entrené</Text>
-            </Pressable>
             {TRAIN_OPTIONS.map(([label, minutes]) => (
               <Pressable
                 key={label}
@@ -75,98 +101,120 @@ export function DietCoachCard({
                 onPress={() => update({ ...state, trainTime: minutes })}
                 style={AppTheme.chip}
               >
-                <Text style={AppTheme.chipText}>
-                  {label} · {formatTime(minutes)}
-                </Text>
+                <Text style={AppTheme.chipText}>{formatTime(minutes)}</Text>
               </Pressable>
             ))}
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => update({ ...state, noTraining: true })}
-              style={AppTheme.chip}
-            >
-              <Text style={AppTheme.chipText}>Hoy no</Text>
-            </Pressable>
           </View>
-        </View>
-      ) : today.trainingDay && !state.trained && !state.noTraining && typeof state.trainTime === "number" ? (
-        <View style={AppTheme.sectionHeader}>
-          <Text style={AppTheme.hint}>Entreno hoy a las {formatTime(state.trainTime)}</Text>
           <View style={AppTheme.rowActions}>
             <LinkButton title="Ya entrené" onPress={() => update({ ...state, trained: true })} />
-            <LinkButton title="Cambiar" onPress={() => update({ ...state, trainTime: null })} />
+            <LinkButton title="Hoy no entreno" onPress={() => update({ ...state, noTraining: true })} />
           </View>
         </View>
       ) : null}
 
       {next ? (
-        <View style={{ gap: 6 }}>
-          <Text style={AppTheme.tileTitle}>
-            Toca: {next.label}
-            {next.around === "pre"
-              ? " · antes de entrenar"
-              : next.around === "post"
-                ? " · después de entrenar"
-                : ""}
-          </Text>
-          {next.items.map((item, index) => (
-            <View key={`${item.name}-${index}`} style={AppTheme.legendRow}>
-              <Text style={[AppTheme.legendLabel, { flex: 1 }]} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <Text style={AppTheme.legendValue}>{item.grams ? `${item.grams} g` : `${item.kcal} kcal`}</Text>
+        <>
+          <View>
+            <Text style={AppTheme.tileTitle}>
+              Comida {position}
+              {next.time ? ` · ${next.time}` : ""}
+            </Text>
+            <Text style={AppTheme.hint}>
+              {next.label}
+              {next.around === "pre"
+                ? " · antes de entrenar"
+                : next.around === "post"
+                  ? " · después de entrenar"
+                  : ""}
+            </Text>
+          </View>
+
+          {adjusting ? (
+            <View style={{ gap: 6 }}>
+              {next.items.map((item, index) =>
+                item.unknown ? null : (
+                  <View
+                    key={`${item.name}-${index}`}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                  >
+                    <Text style={[AppTheme.body, { flex: 1 }]} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    {item.grams ? (
+                      <TextInput
+                        accessibilityLabel={`Cantidad de ${item.name}`}
+                        value={grams[index] ?? String(item.grams)}
+                        onChangeText={(text) => setGrams({ ...typed.current, [index]: text })}
+                        keyboardType="decimal-pad"
+                        selectTextOnFocus
+                        style={[AppTheme.input, { width: 76, textAlign: "center", paddingVertical: 6 }]}
+                      />
+                    ) : (
+                      <Text style={AppTheme.hint}>{item.kcal} kcal</Text>
+                    )}
+                    <Text style={[AppTheme.hint, { width: 20 }]}>{item.grams ? "g" : ""}</Text>
+                  </View>
+                ),
+              )}
             </View>
-          ))}
+          ) : (
+            <Text style={AppTheme.body} numberOfLines={2}>
+              {items.map((item) => (item.grams ? `${item.name} ${item.grams} g` : item.name)).join(" · ")}
+            </Text>
+          )}
           <Text style={AppTheme.hint}>
-            {next.totals.kcal} kcal · P {Math.round(next.totals.proteinG)} · C{" "}
-            {Math.round(next.totals.carbsG)} · G {Math.round(next.totals.fatsG)}
+            {totals.kcal} kcal · P {Math.round(totals.proteinG)} · C {Math.round(totals.carbsG)} · G{" "}
+            {Math.round(totals.fatsG)}
           </Text>
+
           <Button
-            title={`Registrar ${next.label.toLowerCase()}`}
+            title="Registrar comida"
             onPress={async () => {
               await addMealEntries(
                 date,
                 next.slot,
-                next.items
-                  .filter((item) => !item.unknown)
-                  .map(({ unknown: _unknown, ambiguous: _ambiguous, ...draft }) => draft),
+                itemsFor(typed.current).map(
+                  ({ unknown: _unknown, ambiguous: _ambiguous, ...draft }) => draft,
+                ),
               );
               onChanged();
             }}
           />
-        </View>
+          <View style={AppTheme.rowActions}>
+            <LinkButton
+              title={adjusting ? "Usar las cantidades del plan" : "Ajustar cantidades"}
+              onPress={() => {
+                if (adjusting) setGrams({});
+                setAdjusting(!adjusting);
+              }}
+            />
+          </View>
+        </>
       ) : (
-        <Text style={AppTheme.body}>Completaste las comidas de tu dieta de hoy.</Text>
+        <Text style={AppTheme.body}>Completaste las comidas de hoy.</Text>
       )}
 
-      {result.advice.map((advice) => (
-        <View
-          key={advice.id}
-          style={{
-            flexDirection: "row",
-            gap: 10,
-            paddingTop: 10,
-            borderTopWidth: 1,
-            borderTopColor: AppTheme.colors.border,
-          }}
-        >
-          <Ionicons
-            name={KIND_ICON[advice.kind]}
-            size={18}
-            color={advice.kind === "allergy" ? AppTheme.colors.coral : AppTheme.colors.accent}
-          />
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={AppTheme.entryName}>{advice.title}</Text>
-            <Text style={AppTheme.entryDetail}>{advice.detail}</Text>
-            {advice.swap || advice.scale ? (
-              <LinkButton title="Aplicar el cambio" onPress={() => update(applyAdvice(state, advice))} />
-            ) : null}
-          </View>
+      {gymToday !== null ? (
+        <View style={AppTheme.sectionHeader}>
+          <Text style={AppTheme.hint}>Gimnasio a las {formatTime(gymToday)}</Text>
+          <LinkButton title="Ya entrené" onPress={() => update({ ...state, trained: true })} />
         </View>
-      ))}
+      ) : null}
+
+      {tip ? (
+        <View style={{ gap: 2, paddingTop: 10, borderTopWidth: 1, borderTopColor: AppTheme.colors.border }}>
+          <Text style={[AppTheme.entryName, tip.kind === "allergy" && { color: AppTheme.colors.coral }]}>
+            {tip.title}
+          </Text>
+          <Text style={AppTheme.entryDetail}>{tip.detail}</Text>
+          {tip.swap || tip.scale ? (
+            <LinkButton title="Aplicar el cambio" onPress={() => update(applyAdvice(state, tip))} />
+          ) : null}
+        </View>
+      ) : null}
       {state.swaps.length || state.scale ? (
         <LinkButton
-          title="Volver a mi dieta original de hoy"
+          title="Volver a la dieta original de hoy"
           onPress={() => update({ ...state, swaps: [], scale: undefined })}
         />
       ) : null}

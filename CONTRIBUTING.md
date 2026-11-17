@@ -27,6 +27,14 @@ Gracias por mejorar Dophamine. El proyecto prioriza claridad, privacidad y baja 
 - Respeta el idioma de cada archivo y evita reformateos masivos ajenos al cambio.
 - Incluye estados vacios, carga y error cuando una pantalla lo necesite.
 
+## Licencia de las contribuciones
+
+Dophamine se publica bajo la GNU General Public License, versión 3 únicamente (GPL-3.0-only). Al enviar una contribución aceptas que se publique bajo esa misma licencia. No se pide ceder derechos ni firmar un acuerdo de contribución (CLA).
+
+Cada commit debe llevar una línea `Signed-off-by` con tu nombre y correo, que certifica el [Developer Certificate of Origin](https://developercertificate.org/) (DCO): que escribiste el cambio o tienes derecho a enviarlo bajo la licencia del proyecto. Se agrega con `git commit -s`.
+
+El nombre "Dophamine", "Dopi" y sus ilustraciones siguen la [política de marca](TRADEMARK.md).
+
 ## Reportar problemas
 
 No adjuntes datos personales, registros de salud completos ni capturas que los muestren. Describe pasos para reproducir, resultado esperado, resultado actual, plataforma y version de la app.

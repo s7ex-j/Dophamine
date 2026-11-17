@@ -15,8 +15,6 @@ export type PanelSection =
 export type PanelLayout = Array<{ id: PanelSection; visible: boolean }>;
 
 export const PANEL_SECTIONS: Array<{ id: PanelSection; label: string }> = [
-  { id: "nutrition", label: "Nutrición y metas" },
-  { id: "habits", label: "Cumplimiento de hoy" },
   { id: "expenditure", label: "Gasto energético" },
   { id: "trend", label: "Tendencia de peso" },
   { id: "balance", label: "Balance energético" },
@@ -25,6 +23,8 @@ export const PANEL_SECTIONS: Array<{ id: PanelSection; label: string }> = [
   { id: "sleep", label: "Sueño" },
   { id: "composition", label: "Composición corporal" },
   { id: "consistency", label: "Constancia" },
+  { id: "nutrition", label: "Nutrición y metas" },
+  { id: "habits", label: "Cumplimiento de hoy" },
 ];
 
 export const DEFAULT_LAYOUT: PanelLayout = PANEL_SECTIONS.map((section) => ({

@@ -152,7 +152,7 @@ export default function DietScreen() {
         ) : null}
 
         <Text style={AppTheme.title}>{plan.name}</Text>
-        {plan.targets ? (
+        {plan.targets && draft ? (
           <Text style={AppTheme.hint}>
             Metas de la dieta: {plan.targets.kcal} kcal · P {plan.targets.proteinG} · C {plan.targets.carbsG}{" "}
             · G {plan.targets.fatsG}
@@ -206,120 +206,119 @@ export default function DietScreen() {
 
         {shown.map(({ day, index: dayIndex }) => (
           <View key={`${day.kind}-${dayIndex}`} style={{ gap: 12 }}>
-            <Text style={AppTheme.sectionTitle}>
-              {day.weekday ? WEEKDAY_NAMES[day.weekday as Weekday] : DAY_KIND_LABELS[day.kind]} ·{" "}
-              {dayTotals(day).kcal} kcal · {Math.round(dayTotals(day).proteinG)} g prot
+            {weekly ? null : <Text style={AppTheme.sectionTitle}>{DAY_KIND_LABELS[day.kind]}</Text>}
+            <Text style={AppTheme.hint}>
+              {dayTotals(day).kcal} kcal · {Math.round(dayTotals(day).proteinG)} g de proteína
+              {day.gym ? ` · gimnasio ${day.gym.start}${day.gym.end ? `–${day.gym.end}` : ""}` : ""}
             </Text>
-            {day.gym ? (
-              <Text style={AppTheme.hint}>
-                Gimnasio {day.gym.start}
-                {day.gym.end ? `–${day.gym.end}` : ""}
-              </Text>
-            ) : null}
-            {day.meals.map((meal, mealIndex) => (
-              <Card
-                key={`${meal.slot}-${mealIndex}`}
-                title={`${meal.time ? `${meal.time} · ` : ""}${meal.label}`}
-              >
-                {meal.tags?.includes("pre_gym") || meal.tags?.includes("post_gym") ? (
-                  <Text style={[AppTheme.eyebrow, { color: AppTheme.colors.warning }]}>
-                    {meal.tags.includes("pre_gym") ? "ANTES DE ENTRENAR" : "DESPUÉS DE ENTRENAR"}
+            {!draft ? (
+              <DietMealList meals={day.meals} />
+            ) : (
+              day.meals.map((meal, mealIndex) => (
+                <Card
+                  key={`${meal.slot}-${mealIndex}`}
+                  title={`${meal.time ? `${meal.time} · ` : ""}${meal.label}`}
+                >
+                  {meal.tags?.includes("pre_gym") || meal.tags?.includes("post_gym") ? (
+                    <Text style={[AppTheme.eyebrow, { color: AppTheme.colors.warning }]}>
+                      {meal.tags.includes("pre_gym") ? "ANTES DE ENTRENAR" : "DESPUÉS DE ENTRENAR"}
+                    </Text>
+                  ) : null}
+                  <Text style={AppTheme.hint}>
+                    {mealTotals(meal).kcal} kcal · P {Math.round(mealTotals(meal).proteinG)} · C{" "}
+                    {Math.round(mealTotals(meal).carbsG)} · G {Math.round(mealTotals(meal).fatsG)}
                   </Text>
-                ) : null}
-                <Text style={AppTheme.hint}>
-                  {mealTotals(meal).kcal} kcal · P {Math.round(mealTotals(meal).proteinG)} · C{" "}
-                  {Math.round(mealTotals(meal).carbsG)} · G {Math.round(mealTotals(meal).fatsG)}
-                </Text>
-                {meal.items.map((item, itemIndex) => {
-                  const at = { day: dayIndex, meal: mealIndex, item: itemIndex };
-                  const open =
-                    fixing?.day === dayIndex && fixing.meal === mealIndex && fixing.item === itemIndex;
-                  const other = item.ambiguous ? otherState(item, foods) : null;
-                  return (
-                    <View key={`${item.name}-${itemIndex}`} style={{ gap: 6, paddingVertical: 4 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                        <Pressable
-                          accessibilityRole="button"
-                          accessibilityLabel={`Cambiar ${item.name}`}
-                          disabled={!editable}
-                          onPress={() => {
-                            setFixing(open ? null : at);
-                            setQuery("");
-                          }}
-                          style={{ flex: 1 }}
-                        >
-                          <Text
-                            style={[AppTheme.entryName, item.unknown && { color: AppTheme.colors.warning }]}
-                          >
-                            {item.name}
-                          </Text>
-                          <Text style={AppTheme.entryDetail}>
-                            {item.unknown
-                              ? "No lo reconocí: toca para elegirlo"
-                              : `${item.kcal} kcal · P ${item.proteinG}`}
-                          </Text>
-                        </Pressable>
-                        {item.grams && editable ? (
-                          <TextInput
-                            accessibilityLabel={`Gramos de ${item.name}`}
-                            defaultValue={String(item.grams)}
-                            keyboardType="decimal-pad"
-                            onEndEditing={(event) => {
-                              const grams = Number(event.nativeEvent.text.replace(",", "."));
-                              if (grams > 0 && item.grams)
-                                change(replaceItem(plan, at, scaleItem(item, grams / item.grams)));
+                  {meal.items.map((item, itemIndex) => {
+                    const at = { day: dayIndex, meal: mealIndex, item: itemIndex };
+                    const open =
+                      fixing?.day === dayIndex && fixing.meal === mealIndex && fixing.item === itemIndex;
+                    const other = item.ambiguous ? otherState(item, foods) : null;
+                    return (
+                      <View key={`${item.name}-${itemIndex}`} style={{ gap: 6, paddingVertical: 4 }}>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Cambiar ${item.name}`}
+                            disabled={!editable}
+                            onPress={() => {
+                              setFixing(open ? null : at);
+                              setQuery("");
                             }}
-                            style={[AppTheme.input, { width: 72, textAlign: "center" }]}
-                          />
-                        ) : (
-                          <Text style={AppTheme.hint}>{item.grams ? `${item.grams} g` : ""}</Text>
-                        )}
-                      </View>
-                      {other && editable ? (
-                        <LinkButton
-                          title={`¿Era ${other.name.toLowerCase()}? Cambiar`}
-                          onPress={() => change(replaceItem(plan, at, other))}
-                        />
-                      ) : null}
-                      {open ? (
-                        <View style={{ gap: 4 }}>
-                          <TextInput
-                            accessibilityLabel="Buscar alimento para la dieta"
-                            value={query}
-                            onChangeText={setQuery}
-                            placeholder="Buscar el alimento correcto"
-                            placeholderTextColor={AppTheme.colors.muted}
-                            style={AppTheme.input}
-                            autoFocus
-                          />
-                          {searchFoods(foods, query, {}, 6).map((food) => (
-                            <Pressable
-                              key={food.id}
-                              accessibilityRole="button"
-                              onPress={() => {
-                                change(
-                                  replaceItem(plan, at, itemFromFood(food, item.grams ?? food.servingG)),
-                                );
-                                setFixing(null);
-                              }}
-                              style={AppTheme.entryRow}
+                            style={{ flex: 1 }}
+                          >
+                            <Text
+                              style={[AppTheme.entryName, item.unknown && { color: AppTheme.colors.warning }]}
                             >
-                              <Text style={[AppTheme.entryName, { flex: 1 }]}>{food.name}</Text>
-                              <Text style={AppTheme.hint}>{food.per100.kcal} kcal/100 g</Text>
-                            </Pressable>
-                          ))}
-                          <LinkButton
-                            title="Quitar de la dieta"
-                            danger
-                            onPress={() => change(replaceItem(plan, at, null))}
-                          />
+                              {item.name}
+                            </Text>
+                            <Text style={AppTheme.entryDetail}>
+                              {item.unknown
+                                ? "No lo reconocí: toca para elegirlo"
+                                : `${item.kcal} kcal · P ${item.proteinG}`}
+                            </Text>
+                          </Pressable>
+                          {item.grams && editable ? (
+                            <TextInput
+                              accessibilityLabel={`Gramos de ${item.name}`}
+                              defaultValue={String(item.grams)}
+                              keyboardType="decimal-pad"
+                              onEndEditing={(event) => {
+                                const grams = Number(event.nativeEvent.text.replace(",", "."));
+                                if (grams > 0 && item.grams)
+                                  change(replaceItem(plan, at, scaleItem(item, grams / item.grams)));
+                              }}
+                              style={[AppTheme.input, { width: 72, textAlign: "center" }]}
+                            />
+                          ) : (
+                            <Text style={AppTheme.hint}>{item.grams ? `${item.grams} g` : ""}</Text>
+                          )}
                         </View>
-                      ) : null}
-                    </View>
-                  );
-                })}
-              </Card>
-            ))}
+                        {other && editable ? (
+                          <LinkButton
+                            title={`¿Era ${other.name.toLowerCase()}? Cambiar`}
+                            onPress={() => change(replaceItem(plan, at, other))}
+                          />
+                        ) : null}
+                        {open ? (
+                          <View style={{ gap: 4 }}>
+                            <TextInput
+                              accessibilityLabel="Buscar alimento para la dieta"
+                              value={query}
+                              onChangeText={setQuery}
+                              placeholder="Buscar el alimento correcto"
+                              placeholderTextColor={AppTheme.colors.muted}
+                              style={AppTheme.input}
+                              autoFocus
+                            />
+                            {searchFoods(foods, query, {}, 6).map((food) => (
+                              <Pressable
+                                key={food.id}
+                                accessibilityRole="button"
+                                onPress={() => {
+                                  change(
+                                    replaceItem(plan, at, itemFromFood(food, item.grams ?? food.servingG)),
+                                  );
+                                  setFixing(null);
+                                }}
+                                style={AppTheme.entryRow}
+                              >
+                                <Text style={[AppTheme.entryName, { flex: 1 }]}>{food.name}</Text>
+                                <Text style={AppTheme.hint}>{food.per100.kcal} kcal/100 g</Text>
+                              </Pressable>
+                            ))}
+                            <LinkButton
+                              title="Quitar de la dieta"
+                              danger
+                              onPress={() => change(replaceItem(plan, at, null))}
+                            />
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </Card>
+              ))
+            )}
           </View>
         ))}
 
@@ -338,40 +337,37 @@ export default function DietScreen() {
         ) : (
           <>
             {plan.rules?.length ? (
-              <Card title="Reglas de tu dieta">
+              <View style={{ gap: 4 }}>
+                <Text style={AppTheme.label}>Reglas</Text>
                 {plan.rules.map((rule) => (
-                  <Text key={rule} style={AppTheme.body}>
-                    · {rule}
+                  <Text key={rule} style={AppTheme.hint}>
+                    {rule}
                   </Text>
                 ))}
-              </Card>
+              </View>
             ) : null}
-            <Card title="Con tu dieta cargada">
-              <Text style={AppTheme.body}>
-                En el Panel verás qué comida toca, la registras con un toque y recibes cambios según tu
-                entreno, cómo te sientes y tu salud.
-              </Text>
-              <NavRow
-                title="Salud y restricciones"
-                detail="Alergias, intolerancias y lo que te indicó tu médico"
-                onPress={() => router.push("/health")}
-              />
-            </Card>
-            <Button
-              title="Compartir como texto"
-              variant="secondary"
-              onPress={() => shareTextFile("mi-dieta.txt", dietToText(plan), "text/plain")}
+            <NavRow
+              title="Salud y restricciones"
+              detail="Alergias, intolerancias y lo que te indicó tu médico"
+              onPress={() => router.push("/health")}
             />
-            {editable ? (
-              <>
-                <Button
+            <View style={[AppTheme.rowActions, { flexWrap: "wrap" }]}>
+              <LinkButton
+                title="Compartir como texto"
+                onPress={() => shareTextFile("mi-dieta.txt", dietToText(plan), "text/plain")}
+              />
+              {editable ? (
+                <LinkButton
                   title="Reemplazar por otra"
-                  variant="secondary"
                   onPress={() => {
                     setText(weekly ? "" : dietToText(plan));
                     setSaved(null);
                   }}
                 />
+              ) : null}
+            </View>
+            {editable ? (
+              <>
                 <RowActions
                   question="¿Borrar tu dieta? Lo ya registrado no cambia."
                   onDelete={async () => {
@@ -395,4 +391,60 @@ function safeJson(text: string): unknown {
   } catch {
     return null;
   }
+}
+
+/** Las comidas de un día, una fila cada una: hora, nombre y calorías. Al tocarla se ven sus alimentos. */
+function DietMealList({ meals }: { meals: DietPlan["days"][number]["meals"] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <View style={{ borderTopWidth: 1, borderTopColor: AppTheme.colors.border }}>
+      {meals.map((meal, index) => {
+        const expanded = open === index;
+        const moment = meal.tags?.includes("pre_gym")
+          ? "antes de entrenar"
+          : meal.tags?.includes("post_gym")
+            ? "después de entrenar"
+            : null;
+        return (
+          <Pressable
+            key={`${meal.slot}-${index}`}
+            accessibilityRole="button"
+            accessibilityState={{ expanded }}
+            accessibilityLabel={`Comida ${index + 1}`}
+            onPress={() => setOpen(expanded ? null : index)}
+            style={{
+              paddingVertical: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: AppTheme.colors.border,
+              gap: 6,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 12 }}>
+              <Text style={[AppTheme.hint, { width: 44 }]}>{meal.time ?? `#${index + 1}`}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={AppTheme.entryName} numberOfLines={expanded ? undefined : 1}>
+                  {meal.label}
+                </Text>
+                {moment ? (
+                  <Text style={[AppTheme.hint, { color: AppTheme.colors.accent }]}>{moment}</Text>
+                ) : null}
+              </View>
+              <Text style={AppTheme.hint}>{mealTotals(meal).kcal} kcal</Text>
+            </View>
+            {expanded
+              ? meal.items.map((item, itemIndex) => (
+                  <View
+                    key={`${item.name}-${itemIndex}`}
+                    style={{ flexDirection: "row", paddingLeft: 56, gap: 8 }}
+                  >
+                    <Text style={[AppTheme.body, { flex: 1 }]}>{item.name}</Text>
+                    <Text style={AppTheme.hint}>{item.grams ? `${item.grams} g` : `${item.kcal} kcal`}</Text>
+                  </View>
+                ))
+              : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
 }

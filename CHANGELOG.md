@@ -1,10 +1,20 @@
 # Changelog
 
-## Sin publicar
+## 0.24.0 - 2026-11-17
 
+Primera versión bajo GPL-3.0-only. Panel más denso con los gráficos primero, un solo botón para registrar comida, dieta por archivo con horario semanal, mapa muscular nuevo y sitio al día.
+
+- Panel ordenado como un tablero: arriba el día (calorías y macros, peso, sueño, agua y "Registrar comida"); debajo, primero los gráficos (gasto, tendencia, balance, meta, macros, sueño, composición, constancia) y al final nutrición de la semana, cumplimiento y resumen semanal. La racha pasó a la cabecera en pequeño y el buscador de alimentos salió del Panel (se entra por "Registrar comida"). "Borrar el día" está ahora en la pantalla de comidas del día. Menos espacio entre bloques en toda la app.
+- Mapa muscular con un dibujo de cuerpo profesional (react-native-body-highlighter, MIT), de frente y de espalda.
+- Plantillas descargables desde el sitio: dieta (`dieta.dophamine-diet.json`) y rutina (`rutina.csv`), con la nota de que una IA puede pasar tu dieta o rutina a ese formato. Una prueba comprueba que las dos se importan en la app.
+- Sitio al día: textos de lo que hace la app hoy, versión leída de package.json al compilar, capturas nuevas y sección de plantillas.
+- Panel: las comidas ya no aparecen una por una. Hay un solo botón "Registrar comida" que abre las comidas del día tal como se definieron en el plan (por nombre o por número), con copiar y pegar, día incompleto y día de ayuno.
+- Tu dieta en el Panel: muestra solo la comida que toca ("Comida 3 · 16:45"), se registra con "Registrar comida" y se pueden ajustar las cantidades antes, porque casi nunca se come exacto. Muestra una sola sugerencia: la de esa comida (antes o después de entrenar, alergia, cómo te sientes).
+- Mi dieta más simple: una fila por comida con hora, nombre y calorías; al tocarla se ven sus alimentos. Las cantidades se editan solo al revisar una dieta nueva.
+- Licencia: el código pasa de MIT a la GNU General Public License, versión 3 únicamente (GPL-3.0-only). Hasta la 0.23.0 sigue bajo MIT (etiqueta `v0.23.0-mit`). Se agregan la política de marca (`TRADEMARK.md`), la licencia de las contribuciones con DCO (`CONTRIBUTING.md`) y el aviso de que los datos de terceros conservan su licencia (`NOTICE.md`). No cambia el código de la app: no requiere prueba en teléfono.
 - Dieta por archivo: la app lee el formato dophamine-diet (tus alimentos con sus valores, comidas armadas, un horario distinto para cada dia de la semana y la hora del gimnasio). Mi dieta muestra la semana por dias; el Panel sigue el dia de hoy, ya no pregunta la hora del entreno si la dieta la trae y respeta la comida marcada para antes y despues de entrenar. Las metas de la dieta mandan mientras se la sigue. Plantilla y explicacion en docs/formatos.
 - Se quito la calculadora de discos.
-- No comprobado en telefono.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
 
 ## 0.23.0 - 2026-11-17
 

@@ -1,3 +1,10 @@
+# Third-party notices
+
+Dophamine's own code is licensed under the GNU General Public License, version 3 only
+(GPL-3.0-only); see `LICENSE`. Versions up to 0.23.0 (tag `v0.23.0-mit`) were released under the
+MIT license. The third-party data, images and libraries listed below **keep their own licenses and
+are not relicensed** under the GPL by being included in this project.
+
 # Third-party exercise data
 
 ## RepDB (images, instructions and part of the catalog)
@@ -10,7 +17,7 @@ equipment tags come from the RepDB free-tier dataset
 (https://github.com/RepDB/exercise-dataset), used under the RepDB Free Tier License v1.0:
 free for personal and commercial use inside applications, with this attribution.
 
-These files are **not** covered by Dophamine's MIT license. They are part of the app,
+These files are **not** covered by Dophamine's GPL-3.0 license. They are part of the app,
 not a dataset: do not extract or republish them as a dataset, dataset repository or API
 (RepDB license, term 3), and do not use the images as input for generative models
 (term 5). Images were resized to 320 px for in-app use (term 4). The paid-tier preview
@@ -29,6 +36,13 @@ names and ids; each one is linked to its RepDB equivalent for the image and inst
 Images and GIFs from Gym Visual (used by other open projects such as openGym or
 `hasaneyldrm/exercises-dataset`) are **not** included: they are licensed to those projects
 only. Using them would need a separate license from Gym Visual (https://gymvisual.com/).
+
+# Body map
+
+The front and back body drawings of the weekly muscle map come from
+`react-native-body-highlighter` (Hicham ELBSI, MIT License,
+https://github.com/HichamELBSI/react-native-body-highlighter). Dophamine only decides the color of
+each area.
 
 # QR codes
 
