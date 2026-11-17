@@ -1,6 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
-import { Card, Screen } from "@/src/components/ui";
+import { Button, Card, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
 import { AppTheme } from "@/src/theme";
 
@@ -9,6 +10,7 @@ import { AppTheme } from "@/src/theme";
 
 /** Visor sin datos: explica cómo traerlos del teléfono. */
 export function ViewerEmpty({ onLoaded }: { onLoaded: () => void }) {
+  const router = useRouter();
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
@@ -18,7 +20,14 @@ export function ViewerEmpty({ onLoaded }: { onLoaded: () => void }) {
           Dophamine se usa en el teléfono. Esta página solo muestra tu progreso a partir de un respaldo: no
           registra nada y tus datos no salen de este navegador.
         </Text>
-        <Card title="Cómo traer tus datos">
+        <Card title="Conexión directa (misma red Wi-Fi)">
+          <Text style={AppTheme.body}>
+            Con la app instalada en el teléfono, dos códigos QR abren una conexión cifrada entre los dos
+            dispositivos y tus datos llegan sin subir ningún archivo.
+          </Text>
+          <Button title="Conectar con el teléfono" onPress={() => router.push("/link")} />
+        </Card>
+        <Card title="O con un archivo de respaldo">
           <Text style={AppTheme.body}>
             1. En la app del teléfono abre Más → Respaldo → Compartir respaldo.
           </Text>

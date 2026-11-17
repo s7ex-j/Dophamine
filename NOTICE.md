@@ -30,6 +30,12 @@ Images and GIFs from Gym Visual (used by other open projects such as openGym or
 `hasaneyldrm/exercises-dataset`) are **not** included: they are licensed to those projects
 only. Using them would need a separate license from Gym Visual (https://gymvisual.com/).
 
+# QR codes
+
+- `qrcode-generator` (Kazuhiko Arase, MIT License) draws the pairing QR codes.
+  "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
+- `jsqr` (Cosmo Wolfe, Apache License 2.0) reads QR codes from the webcam in the web viewer.
+
 # Food data
 
 ## Built-in foods

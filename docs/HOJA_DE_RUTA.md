@@ -5,14 +5,15 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.22.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.23.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
 - La app principal es la de teléfono. La web publicada es un visor de solo lectura que carga un respaldo
   (desde la 0.7.0). La app completa se abre en la web solo para desarrollo y pruebas
   (`dophamine.web-mode = full`).
-- Nada sale del dispositivo, salvo la búsqueda de alimentos en línea, que se enciende a propósito.
+- Nada sale del dispositivo, salvo la búsqueda de alimentos en línea, que se enciende a propósito, y la
+  conexión directa con la web, que la persona inicia y confirma (de dispositivo a dispositivo, sin servidor).
 - Primero se termina y pule la app en Expo Go; las animaciones van al final de esa etapa; el APK propio
   (EAS) va después, para empaquetar todo y sumar lo que necesita código nativo.
 - La mejora de Dopi (más estados y animación) queda para la 1.0.0. La sobriedad se quitó en la 0.15.0:
@@ -52,7 +53,7 @@ Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK li
 | 2 | C ✔ | Revisión técnica antes del pulido: código sin uso quitado, pantalla de error, pruebas de navegador más estables, documentación al día. | Hecho en la 0.20.0. |
 | 3 | C ✔ | Tu dieta y el asesor: cargar la dieta, seguirla desde el Panel, alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo. | Hecho en la 0.21.0. |
 | 4 | C ✔ | Motor de autoajuste: con 15 días seguidos de datos completos, un filtro de estado estima peso real y gasto a la vez (agua, glucógeno, ciclo, días incompletos) y afina las revisiones. Complejo por dentro, simple a la vista. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
-| 5 | C | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor (WebRTC): ver las métricas en la web sin subir un archivo y enviar la dieta desde la web. | 0.23.0. En el teléfono necesita el APK (no corre en Expo Go). |
+| 5 | C ✔ | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor (WebRTC): ver las métricas en la web sin subir un archivo y enviar la dieta desde la web. | Hecho en la 0.23.0 del lado de la web y con toda la lógica compartida. El lado del teléfono se activa en la etapa 2 (ver abajo). |
 | 6 | C | Marcar las fases del ciclo en el gráfico de peso. | |
 | 7 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
 
@@ -73,6 +74,10 @@ pantalla, con el total de esa comida a la vista; cada uno se puede editar o quit
 
 Necesitan código nativo que Expo Go no trae. Se hacen todas juntas cuando se pase a un APK propio.
 
+- Conexión directa con la web en el teléfono: instalar `react-native-webrtc` con su plugin de configuración
+  y llamar a `registerGlobals()` al iniciar. `src/features/link/peer.ts` ya usa `RTCPeerConnection` si
+  existe; no hay que tocar nada más. Probar: leer el QR de la web, mismo Wi-Fi, y redes que aíslan
+  dispositivos. STUN opcional (apagado por defecto) queda para después, si hace falta fuera de la red local.
 - Health Connect (Samsung Health, Google Fit): importar sueño, pasos, peso, composición y, la primera vez,
   los últimos 30 días de peso y nutrición. En iPhone, el equivalente es Apple Health.
 - Sueño automático por uso del teléfono (último uso de noche, primero de la mañana): permiso de uso de

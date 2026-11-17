@@ -115,6 +115,29 @@ anotado se ve igual que gastar 200 menos). El margen incluye un 3 % de la ingest
 - Dieta, estado de hoy y perfil de salud viven en ajustes (`diet.repository.ts`), así que viajan en el
   respaldo sin cambiar el formato.
 
+## Conexión directa teléfono ↔ web
+
+`src/features/link/`. Un canal de datos WebRTC entre los dos dispositivos, sin ningún servidor.
+
+- **Señalización por QR** (`signal.ts`): la web crea la oferta, y de su SDP se guarda solo lo necesario
+  (credenciales ICE, huella SHA-256 del certificado, rol DTLS y direcciones locales) en un texto de unos
+  150 caracteres que cabe en un QR. El teléfono lo lee, reconstruye un SDP mínimo, responde y muestra su
+  propio código, que la web lee con la cámara (`QrScanner.web.tsx`, jsQR) o recibe pegado.
+- **Sin servidores ICE** (`peer.ts`): `iceServers: []`. Solo hay direcciones de la red local, así que
+  conecta dentro del mismo Wi-Fi. Chrome oculta su IP tras un nombre `.local`; no importa, porque basta con
+  que uno de los dos lados alcance al otro.
+- **Cifrado**: DTLS de extremo a extremo, propio de WebRTC. La huella de cada certificado viaja en su QR,
+  así que el canal solo se establece con quien mostró ese código. `sha256.ts` deriva de las dos huellas un
+  número de seis cifras que ambos lados muestran.
+- **Protocolo** (`protocol.ts`): mensajes JSON (`hello`, `get`, `backup`, `diet`, `ack`, `bye`) partidos
+  en tramas de 12 000 caracteres y armados al llegar; lo que no es del protocolo se ignora.
+- **Quién decide**: la web solo pide. El teléfono envía su copia cuando la persona pulsa "Enviar mis
+  datos" y guarda una dieta recibida cuando pulsa "Guardar dieta". La copia llega al visor por el mismo
+  camino que un respaldo cargado desde archivo (`parseBackup` → `restoreBackup`).
+- **Plataformas**: en la web usa el WebRTC del navegador. En el teléfono, `peer.ts` usa
+  `globalThis.RTCPeerConnection` si existe; lo registrará `react-native-webrtc` en la app instalada. En Expo
+  Go no existe y la pantalla lo explica.
+
 ## Respaldo, exportar y borrar
 
 - `backup/backup.ts` arma y valida el respaldo (formato 9, lee del 1 al 8). En el teléfono se comparte con
@@ -135,6 +158,7 @@ anotado se ve igual que gastar 200 menos). El margen incluye un 3 % de la ingest
 
 - Todo lo nativo (SQLite, cámara, notificaciones, archivos, fotos) compila y pasa los tipos, pero desde la
   0.14.0 no se ha recorrido en un teléfono físico.
-- Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera.
+- Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera. La
+  conexión directa con la web está probada navegador con navegador; en el teléfono espera al APK.
 - Los alimentos incluidos tienen calorías y macros, no micronutrientes.
 - Health Connect, pasos, widgets y sueño automático esperan al APK propio (ver la hoja de ruta).

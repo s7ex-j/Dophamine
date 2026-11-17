@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.23.0 - 2026-11-17
+
+Conexión directa entre el teléfono y la web por código QR: cifrada y sin servidor.
+
+- La web (Conectar con el teléfono) muestra un código QR; el teléfono lo lee (Más → Conectar con la web) y muestra el suyo; la web lo lee con la cámara del equipo. Con eso se abre un canal directo entre los dos dispositivos (WebRTC, canal de datos) dentro de la misma red Wi-Fi. Si no hay cámara, los códigos también se pueden copiar y pegar.
+- Sin servidor: no se usa ningún servidor de señalización, STUN ni TURN. Los dos códigos QR llevan lo que normalmente llevaría un servidor (credenciales de la sesión, huella del certificado y direcciones locales), en unos 150 caracteres.
+- Cifrada: el canal va cifrado de extremo a extremo (DTLS) y solo se abre con el dispositivo cuyo certificado coincide con la huella del código. Los dos lados muestran un número de verificación de seis cifras que debe coincidir.
+- La web trae todo tu progreso sin subir un archivo: el teléfono pregunta antes ("La web pide tus datos") y solo entonces envía una copia, con el mismo formato del respaldo. En el teléfono no cambia nada.
+- La web puede enviar una dieta al teléfono: se pega como texto, la web la lee y el teléfono muestra un resumen y la guarda solo si la aceptas (avisa si reemplaza a la que tienes).
+- En el teléfono hace falta la app instalada (APK): Expo Go no trae WebRTC. Hasta entonces la pantalla lo explica y remite al respaldo por archivo. La web ya funciona completa.
+- Dependencias nuevas, solo JavaScript: `qrcode-generator` (dibujar el QR) y `jsqr` (leerlo en el navegador).
+- De 359 a 369 pruebas de dominio y de 26 a 27 flujos de navegador (dos sesiones de navegador conectadas entre sí: una hace de teléfono y otra de web).
+- No comprobado: la conexión con un teléfono real (necesita el APK y `react-native-webrtc`), la lectura del QR con cámaras reales y redes Wi-Fi que aíslan los dispositivos entre sí. Comprobado: navegador con navegador en el mismo equipo.
+
 ## 0.22.0 - 2026-11-17
 
 Motor de autoajuste: con 15 días seguidos de datos, la app aprende de ti.

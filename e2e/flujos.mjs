@@ -1118,6 +1118,137 @@ async function main() {
     await context.close();
   });
 
+  await step(
+    "conexión directa: la web trae los datos por código, sin archivo, y envía una dieta",
+    async () => {
+      // La página principal hace de teléfono (app completa); una sesión limpia hace de web (visor).
+      const context = await browser.createBrowserContext();
+      const web = await context.newPage();
+      await web.setViewport({ width: 390, height: 844 });
+      web.on("pageerror", (error) => errors.push(error.message));
+      const webWait = async (value) => {
+        try {
+          await web.waitForFunction(
+            (expected) => document.body.innerText.includes(expected),
+            { timeout: 15000 },
+            value,
+          );
+        } catch {
+          const visible = await web.evaluate(() =>
+            document.body.innerText.split("\n").filter(Boolean).join(" | "),
+          );
+          throw new Error(`La web no mostró "${value}". En pantalla: ${visible.slice(0, 900)}`);
+        }
+      };
+      const webTap = async (label) => {
+        const handle = await web.evaluateHandle(
+          (value) =>
+            [...document.querySelectorAll('[role="button"], [tabindex="0"]')].find(
+              (element) => element.innerText.trim() === value,
+            ) ?? null,
+          label,
+        );
+        assert(handle.asElement(), `La web no muestra "${label}".`);
+        await handle.asElement().evaluate((node) => node.scrollIntoView({ block: "center" }));
+        await handle.asElement().click();
+      };
+      const webFill = async (label, value) => {
+        const handle = await web.evaluateHandle(
+          (text) =>
+            [...document.querySelectorAll("input, textarea")].find((input) =>
+              input.parentElement.innerText.trim().startsWith(text),
+            ) ?? null,
+          label,
+        );
+        assert(handle.asElement(), `La web no tiene el campo "${label}".`);
+        await handle.asElement().evaluate((node) => node.scrollIntoView({ block: "center" }));
+        await handle.asElement().click();
+        await handle.asElement().type(value);
+      };
+
+      // 1. La web muestra su código (QR y texto).
+      await web.goto(`${base}/`, { waitUntil: "networkidle0" });
+      await webWait("DOPHAMINE · VISOR");
+      await webTap("Conectar con el teléfono");
+      await webWait("Trae tus datos del teléfono");
+      await webTap("Mostrar código QR");
+      await web.waitForSelector('[aria-label="Código de conexión"]', { timeout: 15000 });
+      const offer = await web.$eval('[aria-label="Código de conexión"]', (element) =>
+        element.innerText.trim(),
+      );
+      assert(offer.startsWith("D1|O|"), `El código de la web no tiene el formato esperado: ${offer}`);
+      assert(await web.$('[aria-label="Código QR de conexión"] svg'), "La web no dibujó el código QR.");
+
+      // 2. El teléfono lo recibe y muestra el suyo.
+      await open("/more");
+      await press("Conexión directa por código QR");
+      await waitText("Lee el código de la web");
+      await fill("Código de la web", offer);
+      await press("Conectar");
+      await page.waitForSelector('[aria-label="Código de respuesta"]', { timeout: 15000 });
+      const answer = await page.$eval('[aria-label="Código de respuesta"]', (element) =>
+        element.innerText.trim(),
+      );
+      assert(answer.startsWith("D1|A|"), `El código del teléfono no tiene el formato esperado: ${answer}`);
+
+      // 3. La web lo acepta: canal abierto y mismo número de verificación en los dos lados.
+      await webFill("Código del teléfono", answer);
+      await webTap("Conectar");
+      await webWait("Conectado · verificación");
+      await waitText("Conectado · verificación");
+      const verification = (target) =>
+        target.evaluate(() => document.body.innerText.match(/verificación (\d{3} \d{3})/)?.[1] ?? null);
+      const [onWeb, onPhone] = [await verification(web), await verification(page)];
+      assert(onWeb && onWeb === onPhone, `El número de verificación no coincide: ${onWeb} / ${onPhone}`);
+
+      // 4. Los datos solo salen del teléfono cuando la persona lo confirma ahí.
+      await webWait("Confirma en el teléfono");
+      const before = await web.evaluate((key) => localStorage.getItem(key), STORE_KEY);
+      assert(
+        !before || !JSON.parse(before).profile,
+        "La web recibió datos antes de confirmar en el teléfono.",
+      );
+      await waitText("La web pide tus datos");
+      await press("Enviar mis datos");
+      await webWait("Datos cargados");
+      await waitText("Datos enviados");
+      const phoneStore = await store();
+      const webStore = await web.evaluate((key) => JSON.parse(localStorage.getItem(key)), STORE_KEY);
+      assert(
+        webStore.biometrics.length === phoneStore.biometrics.length &&
+          webStore.profile.calorieTarget === phoneStore.profile.calorieTarget &&
+          webStore.meals.length === phoneStore.meals.length,
+        "Los datos que llegaron a la web no son los del teléfono.",
+      );
+
+      // 5. La web envía una dieta y el teléfono la guarda solo al aceptarla.
+      await webFill(
+        "Dieta",
+        "Desayuno 8:00\n- Avena 80 g\n- 1 plátano de seda\nCena 20:00\n- Lentejas cocidas 300 g",
+      );
+      await webTap("Enviar dieta");
+      await webWait("Dieta enviada (2 comidas");
+      await waitText("La web envió una dieta");
+      await waitText("Reemplazará la dieta que tienes guardada");
+      assert(
+        (await store()).settings.diet_plan.days[0].meals.length === 3,
+        "La dieta se guardó en el teléfono antes de aceptarla.",
+      );
+      await press("Guardar dieta");
+      await webWait("Dieta guardada en el teléfono");
+      const plan = (await store()).settings.diet_plan;
+      assert(
+        plan.days[0].meals.length === 2 && plan.days[0].meals[1].items[0].grams === 300,
+        "La dieta enviada desde la web no quedó guardada en el teléfono.",
+      );
+
+      // 6. La web muestra el progreso con lo recibido.
+      await webTap("Ver mi progreso");
+      await webWait("Solo lectura");
+      await context.close();
+    },
+  );
+
   await browser.close();
   server.close();
   assert(errors.length === 0, `Errores de JavaScript en la página:\n${errors.join("\n")}`);

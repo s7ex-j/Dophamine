@@ -142,6 +142,17 @@ export default function MoreScreen() {
             </Text>
           </Card>
         )}
+        <Card title={VIEWER ? "Conectar con el teléfono" : "Conectar con la web"}>
+          <NavRow
+            title="Conexión directa por código QR"
+            detail={
+              VIEWER
+                ? "Trae tus datos del teléfono sin subir un archivo y envíale tu dieta"
+                : "Mira tus datos en la web sin subir un archivo; cifrada y sin servidor"
+            }
+            onPress={() => router.push("/link")}
+          />
+        </Card>
         {VIEWER ? (
           <BackupCard
             onRestored={load}
@@ -164,7 +175,9 @@ export default function MoreScreen() {
         <Card title="Privacidad">
           <Text style={AppTheme.body}>
             Tus datos viven solo en este dispositivo. Dophamine no tiene cuentas, servidor ni analítica; lo
-            único que puede usar internet es la búsqueda de alimentos, y solo si la enciendes.
+            único que puede usar internet es la búsqueda de alimentos, y solo si la enciendes. La conexión
+            directa con la web va cifrada de un dispositivo al otro por tu red Wi-Fi, sin servidor, y solo
+            cuando tú la inicias.
           </Text>
           <Text style={AppTheme.hint}>
             Las cifras de gasto y composición son estimaciones para orientar tus decisiones, no un consejo
