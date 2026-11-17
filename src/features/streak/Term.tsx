@@ -1,4 +1,5 @@
 import { Image, Text, View } from "react-native";
+import Animated, { ZoomIn } from "react-native-reanimated";
 
 import type { PetMood } from "@/src/features/streak/streak";
 import { TERM_IMAGES } from "@/src/features/streak/term.images";
@@ -45,11 +46,13 @@ export function Term({
   const radius = Math.round(size * 0.22);
   if (source)
     return (
-      <Image
-        source={source}
-        accessibilityLabel={`Term, ${name.replace("-", " ")}`}
-        style={{ width: size, height: size }}
-      />
+      <Animated.View key={name} entering={ZoomIn.springify().damping(14)}>
+        <Image
+          source={source}
+          accessibilityLabel={`Term, ${name.replace("-", " ")}`}
+          style={{ width: size, height: size }}
+        />
+      </Animated.View>
     );
   return (
     <View

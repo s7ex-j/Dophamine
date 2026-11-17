@@ -1,6 +1,10 @@
 import { useState, type PropsWithChildren } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, ScrollView, Text, TextInput, type TextInputProps, View } from "react-native";
+import { ScrollView, Text, TextInput, type TextInputProps, View } from "react-native";
+
+import { PressableScale as Pressable } from "@/src/components/PressableScale";
+import { GrowBar } from "@/src/components/motion";
+import { haptic } from "@/src/lib/haptics";
 import { AppTheme } from "@/src/theme";
 
 export function Screen({ children }: PropsWithChildren) {
@@ -25,12 +29,7 @@ export function Metric({ label, value }: { label: string; value: string }) {
 export function ProgressBar({ value, color = AppTheme.colors.accent }: { value: number; color?: string }) {
   return (
     <View style={AppTheme.progressTrack}>
-      <View
-        style={[
-          AppTheme.progressFill,
-          { width: `${Math.max(0, Math.min(value, 100))}%`, backgroundColor: color },
-        ]}
-      />
+      <GrowBar fraction={value / 100} style={[AppTheme.progressFill, { backgroundColor: color }]} />
     </View>
   );
 }
@@ -58,7 +57,14 @@ export function Button({
 }) {
   const secondary = variant === "secondary";
   return (
-    <Pressable onPress={onPress} style={[AppTheme.button, secondary && AppTheme.buttonSecondary]}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => {
+        if (!secondary) haptic.light();
+        onPress();
+      }}
+      style={[AppTheme.button, secondary && AppTheme.buttonSecondary]}
+    >
       <Text style={[AppTheme.buttonText, secondary && AppTheme.buttonTextSecondary]}>{title}</Text>
     </Pressable>
   );
@@ -114,7 +120,10 @@ export function Segmented<T extends string | number>({
                 key={String(option.value)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                onPress={() => onChange(option.value)}
+                onPress={() => {
+                  if (option.value !== value) haptic.tap();
+                  onChange(option.value);
+                }}
                 style={[
                   AppTheme.segmentCell,
                   column > 0 && AppTheme.segmentCellDivider,
@@ -214,7 +223,10 @@ export function OptionList<T extends string>({
             key={option.value}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (option.value !== value) haptic.tap();
+              onChange(option.value);
+            }}
             style={[AppTheme.groupRow, index > 0 && AppTheme.groupRowDivider]}
           >
             <View style={AppTheme.optionText}>
@@ -309,7 +321,10 @@ export function IconTabs<T extends string>({
             key={option.value}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            onPress={() => onChange(option.value)}
+            onPress={() => {
+              if (option.value !== value) haptic.tap();
+              onChange(option.value);
+            }}
             style={[AppTheme.slotTab, active && AppTheme.slotTabActive]}
           >
             <Ionicons
@@ -354,7 +369,10 @@ export function SlotPicker<T extends string>({
           key={option.value}
           accessibilityRole="button"
           accessibilityState={{ selected: option.value === value }}
-          onPress={() => onChange(option.value)}
+          onPress={() => {
+            if (option.value !== value) haptic.tap();
+            onChange(option.value);
+          }}
           style={[AppTheme.chip, AppTheme.iconRow, { gap: 6 }, option.value === value && AppTheme.chipActive]}
         >
           <Ionicons

@@ -2,6 +2,7 @@ import type { PropsWithChildren } from "react";
 import { View } from "react-native";
 import Svg, { Circle, Line, Path } from "react-native-svg";
 
+import { GrowBar, ProgressArc, RevealX } from "@/src/components/motion";
 import { AppTheme } from "@/src/theme";
 
 // Gráficos pequeños dibujados con SVG. Reciben números ya calculados: la
@@ -28,32 +29,34 @@ export function LineChart({
   const geometry = linePath(values, width, height, reference);
   if (!geometry) return <View style={{ width, height }} />;
   return (
-    <Svg width={width} height={height}>
-      {area ? <Path d={geometry.area} fill={color} opacity={0.18} /> : null}
-      {geometry.referenceY !== null ? (
-        <Line
-          x1={0}
-          x2={width}
-          y1={geometry.referenceY}
-          y2={geometry.referenceY}
-          stroke={AppTheme.colors.muted}
-          strokeWidth={1}
-          strokeDasharray="4 4"
-        />
-      ) : null}
-      <Path d={geometry.line} stroke={color} strokeWidth={2} fill="none" strokeLinejoin="round" />
-      {geometry.points.map((point: ChartPoint, index: number) => (
-        <Circle
-          key={index}
-          cx={point.x}
-          cy={point.y}
-          r={geometry.points.length > 10 ? 2 : 3}
-          fill={AppTheme.colors.surface}
-          stroke={color}
-          strokeWidth={2}
-        />
-      ))}
-    </Svg>
+    <RevealX width={width} style={{ height }}>
+      <Svg width={width} height={height}>
+        {area ? <Path d={geometry.area} fill={color} opacity={0.18} /> : null}
+        {geometry.referenceY !== null ? (
+          <Line
+            x1={0}
+            x2={width}
+            y1={geometry.referenceY}
+            y2={geometry.referenceY}
+            stroke={AppTheme.colors.muted}
+            strokeWidth={1}
+            strokeDasharray="4 4"
+          />
+        ) : null}
+        <Path d={geometry.line} stroke={color} strokeWidth={2} fill="none" strokeLinejoin="round" />
+        {geometry.points.map((point: ChartPoint, index: number) => (
+          <Circle
+            key={index}
+            cx={point.x}
+            cy={point.y}
+            r={geometry.points.length > 10 ? 2 : 3}
+            fill={AppTheme.colors.surface}
+            stroke={color}
+            strokeWidth={2}
+          />
+        ))}
+      </Svg>
+    </RevealX>
   );
 }
 
@@ -66,8 +69,6 @@ export function Ring({
   children,
 }: PropsWithChildren<{ value: number; size?: number; stroke?: number; color?: string }>) {
   const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = Math.max(0, Math.min(1, value));
   return (
     <View style={{ width: size, height: size }}>
       <Svg width={size} height={size}>
@@ -79,15 +80,15 @@ export function Ring({
           strokeWidth={stroke}
           fill="none"
         />
-        <Circle
+        <ProgressArc
           cx={size / 2}
           cy={size / 2}
-          r={radius}
+          radius={radius}
+          progress={value}
           stroke={color}
           strokeWidth={stroke}
           fill="none"
           strokeLinecap="round"
-          strokeDasharray={`${circumference * progress} ${circumference}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
@@ -113,7 +114,11 @@ export function MiniBar({ value, target, color }: { value: number; target: numbe
           backgroundColor: AppTheme.colors.muted,
         }}
       />
-      <View style={{ width: "100%", height: `${fill * 100}%`, backgroundColor: color, borderRadius: 4 }} />
+      <GrowBar
+        axis="height"
+        fraction={fill}
+        style={{ width: "100%", backgroundColor: color, borderRadius: 4 }}
+      />
     </View>
   );
 }

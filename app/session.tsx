@@ -1,4 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Celebrate } from "@/src/components/Celebrate";
+import Animated from "react-native-reanimated";
+import { ENTER, SETTLE } from "@/src/components/motion";
+import { Term } from "@/src/features/streak/Term";
+import { haptic } from "@/src/lib/haptics";
 import { useCallback, useRef, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -143,12 +148,15 @@ function SessionContent() {
     const set = exercise.sets[position];
     // Al marcar una serie sin repeticiones escritas se toma la sugerida.
     const reps = set.reps || (set.suggestion ? String(set.suggestion.reps) : "");
+    // Completar una serie es un logro chico: una vibración de éxito.
+    if (!set.done) haptic.success();
     setSet(position, { done: !set.done, reps });
   };
   const finish = async () => {
     const result = finishSession(active, unit, new Date());
     if (result.error !== null) return setError(result.error);
     await completeSession(result.session);
+    haptic.success();
     await setSetting(KEY, null);
     setSummary({
       session: result.session,
@@ -349,7 +357,12 @@ function SessionContent() {
               .slice(0, position + 1)
               .filter((item) => item.type !== "warmup" && item.side !== "right").length;
             return (
-              <View key={position} style={[AppTheme.setRow, set.done && AppTheme.setRowDone]}>
+              <Animated.View
+                key={position}
+                entering={ENTER}
+                layout={SETTLE}
+                style={[AppTheme.setRow, set.done && AppTheme.setRowDone]}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={`Tipo de la serie ${position + 1}: ${SET_TYPE_LABELS[set.type]}`}
@@ -411,7 +424,7 @@ function SessionContent() {
                     color={set.done ? AppTheme.colors.onAccent : AppTheme.colors.muted}
                   />
                 </Pressable>
-              </View>
+              </Animated.View>
             );
           })}
           <View style={AppTheme.wizardFooter}>
@@ -478,6 +491,10 @@ function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: Weight
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
+        <View style={{ alignItems: "center" }}>
+          <Term expression={summary.records.length ? "orgullo" : "listo"} size={120} />
+          {summary.records.length ? <Celebrate /> : null}
+        </View>
         <Text style={AppTheme.eyebrow}>ENTRENO COMPLETO</Text>
         <Text style={AppTheme.title}>{summary.session.name}</Text>
         <View style={AppTheme.tileGrid}>

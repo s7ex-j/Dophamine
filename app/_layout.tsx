@@ -1,12 +1,17 @@
 import { Stack, type ErrorBoundaryProps } from "expo-router";
+import { LaunchScreen } from "@/src/components/LaunchScreen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ErrorScreen } from "@/src/components/ErrorScreen";
 import { initializeDatabase } from "@/src/db/database";
 import { configureNotifications } from "@/src/features/reminders/scheduler";
+import { enableWebRTC } from "@/src/features/link/webrtc";
 import { AppTheme, THEME } from "@/src/theme";
+
+enableWebRTC();
 
 /** Si una pantalla falla, se muestra un aviso con "Reintentar" en lugar de una pantalla en blanco. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
@@ -38,15 +43,11 @@ export default function RootLayout() {
     );
 
   if (!ready) {
-    return (
-      <View style={AppTheme.loading}>
-        <ActivityIndicator color={AppTheme.colors.accent} />
-      </View>
-    );
+    return <LaunchScreen />;
   }
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppTheme.colors.background }}>
       <StatusBar style={THEME === "light" ? "dark" : "light"} />
       <Stack
         screenOptions={{
@@ -88,6 +89,6 @@ export default function RootLayout() {
         <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
         <Stack.Screen name="wellbeing" options={{ headerShown: true, title: "Bienestar" }} />
       </Stack>
-    </>
+    </GestureHandlerRootView>
   );
 }

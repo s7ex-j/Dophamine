@@ -125,7 +125,7 @@ const BASE = {
       gap: 4,
     },
     metricLabel: { fontSize: 12, color: "#8B968F" },
-    metricValue: { fontSize: 18, color: "#F1F5F2", fontWeight: "700" },
+    metricValue: { fontSize: 18, color: "#F1F5F2", fontWeight: "700", fontVariant: ["tabular-nums"] },
     label: { color: "#C5CEC8", fontSize: 13, fontWeight: "600" },
     input: {
       minHeight: 44,
@@ -269,7 +269,7 @@ const BASE = {
     },
     tileTitle: { color: "#F1F5F2", fontSize: 15, fontWeight: "700" },
     tileSubtitle: { color: "#8B968F", fontSize: 12 },
-    tileValue: { color: "#F1F5F2", fontSize: 20, fontWeight: "700" },
+    tileValue: { color: "#F1F5F2", fontSize: 20, fontWeight: "700", fontVariant: ["tabular-nums"] },
     tileUnit: { color: "#8B968F", fontSize: 13, fontWeight: "400" },
     iconChip: {
       width: 40,
@@ -375,7 +375,7 @@ const BASE = {
     legendRow: { flexDirection: "row", alignItems: "center", gap: 8 },
     legendDot: { width: 10, height: 10, borderRadius: 5 },
     legendLabel: { flex: 1, color: "#C5CEC8", fontSize: 13 },
-    legendValue: { color: "#F1F5F2", fontSize: 13, fontWeight: "700" },
+    legendValue: { color: "#F1F5F2", fontSize: 13, fontWeight: "700", fontVariant: ["tabular-nums"] },
     ringCenter: {
       position: "absolute",
       left: 0,
@@ -385,7 +385,7 @@ const BASE = {
       alignItems: "center",
       justifyContent: "center",
     },
-    ringNumber: { color: "#F1F5F2", fontSize: 30, fontWeight: "700" },
+    ringNumber: { color: "#F1F5F2", fontSize: 30, fontWeight: "700", fontVariant: ["tabular-nums"] },
     ringLabel: { color: "#8B968F", fontSize: 12 },
     complianceChip: {
       flexDirection: "row",

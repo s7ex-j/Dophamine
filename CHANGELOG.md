@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.32.0 - 2026-11-17
+
+Primera vuelta de pulido: movimiento, vibración y la base nativa para el development build.
+
+- Al tocar, los botones, opciones y filas se encogen un poco y vuelven con un resorte corto (Reanimated, en el hilo de la interfaz).
+- Vibración con mesura: al elegir una opción, al confirmar un botón principal y al completar una serie, terminar un entreno o guardar el peso. En la web no vibra.
+- Los anillos de calorías y macros se llenan al abrir (uno tras otro), las calorías suben contando, las barras crecen y las líneas de los gráficos se dibujan de izquierda a derecha.
+- Los alimentos y las series entran deslizando y el resto de la lista se reacomoda; un alimento se puede quitar deslizándolo a la izquierda.
+- Term salta un poco cuando cambia de expresión, y aparece al terminar un entreno: con récords, orgulloso y con una celebración corta.
+- Cifras de ancho fijo en los números del Panel, para que no bailen al cambiar.
+- Pantalla de inicio animada mientras abre la base de datos.
+- Todo el movimiento se apaga si el teléfono pide reducir el movimiento.
+- Base nativa: Reanimated, gestos, vibración, WebRTC (la conexión directa por QR ya puede funcionar en el teléfono) y development build. El micrófono queda bloqueado: WebRTC no lo usa aquí.
+- 422 pruebas de dominio y 28 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.31.0 - 2026-11-17
 
 Primeras correcciones tras probar el APK: bienvenida, tema en vivo y la rutina según tus días.

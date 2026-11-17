@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { haptic } from "@/src/lib/haptics";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -102,6 +103,7 @@ export function TodaySection({
     const result = buildBodyInput(form, unit);
     if (result.error !== null) return setMessage({ text: result.error, error: true });
     await saveDayBody(result.input, date);
+    haptic.success();
     setEditor(null);
     changed("Peso guardado.");
   };

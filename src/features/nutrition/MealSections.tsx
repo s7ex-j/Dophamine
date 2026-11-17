@@ -1,9 +1,13 @@
 import Svg, { Circle, G } from "react-native-svg";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { ENTER, EXIT, SETTLE } from "@/src/components/motion";
+import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import { StackBar } from "@/src/components/charts";
+import { CountUp, ProgressArc } from "@/src/components/motion";
 import { IconButton, LinkButton, type IconName } from "@/src/components/ui";
 import { stateLabels, type Food, type Nutrients } from "@/src/features/nutrition/foods";
 import { isEstimate, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
@@ -54,7 +58,6 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
           {rings.map((ring, index) => {
             const stroke = index === 0 ? 10 : 6;
             const radius = size / 2 - 6 - (index === 0 ? 0 : 11 + (index - 1) * 8);
-            const circumference = 2 * Math.PI * radius;
             const done = ring.target ? Math.min(1, ring.value / ring.target) : 0;
             return (
               <G key={ring.label}>
@@ -67,22 +70,23 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
                   strokeWidth={stroke}
                   fill="none"
                 />
-                <Circle
+                <ProgressArc
                   cx={size / 2}
                   cy={size / 2}
-                  r={radius}
+                  radius={radius}
+                  progress={done}
+                  delay={index * 90}
                   stroke={ring.color}
                   strokeWidth={stroke}
                   fill="none"
                   strokeLinecap="round"
-                  strokeDasharray={`${circumference * done} ${circumference}`}
                   transform={`rotate(-90 ${size / 2} ${size / 2})`}
                 />
               </G>
             );
           })}
         </Svg>
-        <Text style={[AppTheme.ringNumber, { fontSize: 16, lineHeight: 19 }]}>{totals.kcal}</Text>
+        <CountUp value={totals.kcal} style={[AppTheme.ringNumber, { fontSize: 16, lineHeight: 19 }]} />
         <Text style={[AppTheme.ringLabel, { fontSize: 9, lineHeight: 11 }]}>
           {targets ? (remaining >= 0 ? `quedan ${remaining}` : `+${-remaining}`) : "kcal"}
         </Text>
@@ -226,12 +230,34 @@ export function MealCard({
         </Pressable>
       ) : null}
       {entries.map((entry) => (
-        <EntryRow
-          key={entry.id}
-          entry={entry}
-          onRemove={() => onRemove(entry)}
-          onPress={onEdit ? () => onEdit(entry) : undefined}
-        />
+        <Animated.View key={entry.id} entering={ENTER} exiting={EXIT} layout={SETTLE}>
+          <ReanimatedSwipeable
+            friction={2}
+            rightThreshold={40}
+            overshootRight={false}
+            renderRightActions={() => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Quitar ${entry.name} (deslizado)`}
+                onPress={() => onRemove(entry)}
+                style={{
+                  justifyContent: "center",
+                  paddingHorizontal: 18,
+                  backgroundColor: AppTheme.colors.coralSoft,
+                  borderRadius: 10,
+                }}
+              >
+                <Ionicons name="trash-outline" size={20} color={AppTheme.colors.coral} />
+              </Pressable>
+            )}
+          >
+            <EntryRow
+              entry={entry}
+              onRemove={() => onRemove(entry)}
+              onPress={onEdit ? () => onEdit(entry) : undefined}
+            />
+          </ReanimatedSwipeable>
+        </Animated.View>
       ))}
       {onSave && entries.length ? <SaveMealInline label={label} onSave={onSave} /> : null}
     </View>
