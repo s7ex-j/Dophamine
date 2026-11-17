@@ -207,6 +207,11 @@ async function main() {
     await fill("Peso meta", 74);
     await press("Moderado");
     await press("Continuar");
+    await waitText("¿Tienes una fecha?");
+    await press("Sí, tengo una fecha");
+    await fill("Qué es (opcional)", "Viaje");
+    await fill("Peso para esa fecha", 76);
+    await press("Continuar");
     await press("Alta");
     await press("Continuar");
     await waitText("Tipo de plan");
@@ -255,6 +260,8 @@ async function main() {
     const health = (await store()).settings.health_profile;
     assert(health?.avoid?.includes("dairy"), "No se guardaron las alergias de la evaluación.");
     assert((await store()).settings.app_theme === "forest", "No se guardó el tema sugerido.");
+    const deadline = (await store()).settings.goal_date;
+    assert(deadline?.weightKg === 76 && deadline?.label === "Viaje", "No se guardó la meta con fecha.");
   });
 
   await step("panel · hoy: guardar peso y composición", async () => {
@@ -1098,15 +1105,19 @@ async function main() {
     await waitText("día 1 de 21");
     assert((await store()).settings.challenges?.active?.[0]?.key === "weight", "No se guardó el reto.");
 
-    // Meta con fecha: con el motor activo hay proyección y probabilidad.
-    await open("/goal-date");
-    await waitText("Tu meta");
-    await fill("Qué es (opcional)", "Viaje");
-    await fill("Peso que quieres tener", 76);
-    await press("Guardar meta");
-    await waitText("Dónde llegarías ese día");
-    await waitText("Probabilidad de");
-    assert((await store()).settings.goal_date?.weightKg === 76, "No se guardó la meta con fecha.");
+    // Meta con fecha (se elige en la evaluación; los datos se sembraron de nuevo después):
+    // con el motor activo, Estrategia da la probabilidad.
+    const withDeadline = await store();
+    await seed({
+      ...withDeadline,
+      settings: {
+        ...withDeadline.settings,
+        goal_date: { date: daysAgo(-70), weightKg: 76, label: "Viaje" },
+      },
+    });
+    await open("/strategy");
+    await waitText("Viaje: 76");
+    await waitText("Probabilidad de llegar");
 
     // Leer una etiqueta: la grasa mal leída se corrige.
     await open("/add-food?slot=lunch");

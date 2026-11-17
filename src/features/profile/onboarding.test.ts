@@ -8,7 +8,16 @@ import {
   mifflinStJeor,
   type ExpenditureInput,
 } from "./expenditure";
-import { answersFrom, bodyFatPresets, planInputFrom, stepError, stepsFor, type Answers } from "./onboarding";
+import {
+  answersFrom,
+  bodyFatPresets,
+  deadlineAnswers,
+  goalDateFrom,
+  planInputFrom,
+  stepError,
+  stepsFor,
+  type Answers,
+} from "./onboarding";
 import {
   basalMetabolicRate,
   buildNutritionProfile,
@@ -43,6 +52,10 @@ const answers: Answers = {
   dietType: "balanced",
   avoid: [],
   theme: null,
+  hasDeadline: false,
+  deadlineDate: "2027-03-01",
+  deadlineWeight: "",
+  deadlineLabel: "",
 };
 
 // El caso que reportó Jharol: 18 años, 170 cm, 56 kg, 15 % de grasa, estudiante que entrena fuerza.
@@ -62,6 +75,8 @@ describe("evaluación inicial", () => {
   it("salta el paso de peso meta al elegir mantenimiento", () => {
     expect(stepsFor("lose")).toContain("target");
     expect(stepsFor("maintain")).not.toContain("target");
+    expect(stepsFor("maintain")).not.toContain("deadline");
+    expect(stepsFor("lose").indexOf("deadline")).toBe(stepsFor("lose").indexOf("target") + 1);
     expect(stepsFor("maintain").at(-1)).toBe("summary");
     expect(stepsFor("gain")).toEqual(expect.arrayContaining(["training", "intake"]));
   });
@@ -289,5 +304,46 @@ describe("plan con ritmo, experiencia y composición", () => {
     expect(goalProgress(profile, 73.8)).toMatchObject({ percent: 100, reached: true, weeksLeft: null });
     expect(goalProgress(profile, 82)?.percent).toBe(0);
     expect(goalProgress({ ...profile, goalWeightKg: undefined }, 77)).toBeNull();
+  });
+});
+
+describe("meta con fecha en la evaluación", () => {
+  const today = "2026-11-17";
+
+  it("es opcional: sin fecha no hay meta ni error", () => {
+    expect(goalDateFrom(answers)).toBeNull();
+    expect(stepError("deadline", answers, today)).toBeNull();
+  });
+
+  it("usa el peso meta si no se escribe otro y guarda la etiqueta", () => {
+    const withDate = { ...answers, hasDeadline: true, deadlineLabel: " Viaje " };
+    expect(goalDateFrom(withDate)).toEqual({ date: "2027-03-01", weightKg: 74, label: "Viaje" });
+    expect(goalDateFrom({ ...withDate, deadlineWeight: "76,5" })?.weightKg).toBe(76.5);
+  });
+
+  it("convierte libras y no aplica al mantener", () => {
+    const pounds = { ...answers, unit: "lb" as const, hasDeadline: true, deadlineWeight: "170" };
+    expect(goalDateFrom(pounds)?.weightKg).toBeCloseTo(77.11, 1);
+    expect(goalDateFrom({ ...pounds, goal: "maintain" })).toBeNull();
+  });
+
+  it("pide una fecha válida y futura", () => {
+    const withDate = { ...answers, hasDeadline: true };
+    expect(stepError("deadline", { ...withDate, deadlineDate: "1/3/27" }, today)).toMatch(/AAAA-MM-DD/);
+    expect(stepError("deadline", { ...withDate, deadlineDate: today }, today)).toMatch(/después de hoy/);
+    expect(stepError("deadline", withDate, today)).toBeNull();
+  });
+
+  it("al reevaluar parte de la meta guardada o propone una fecha a 12 semanas", () => {
+    expect(deadlineAnswers({ date: "2027-01-10", weightKg: 76, label: "Boda" }, "kg", today)).toEqual({
+      hasDeadline: true,
+      deadlineDate: "2027-01-10",
+      deadlineWeight: "76",
+      deadlineLabel: "Boda",
+    });
+    expect(deadlineAnswers(null, "kg", today)).toMatchObject({
+      hasDeadline: false,
+      deadlineDate: "2027-02-09",
+    });
   });
 });

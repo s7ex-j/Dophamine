@@ -6,8 +6,8 @@ import { AppTheme } from "@/src/theme";
 
 /**
  * Term, la mascota de Dophamine: un fantasma de terminal en voxels con
- * lentes de botella y la boca `>_`. Se muestra con sus renders (16
- * expresiones). El arte es privado: en un clon del repositorio sin las
+ * lentes de botella, la boca `>_` y su banda de entrenar. Se muestra con sus
+ * renders de fondo transparente (16 expresiones). El arte es privado: en un clon del repositorio sin las
  * imágenes se dibuja su firma `>_` en una pantalla.
  */
 export type TermExpression =
@@ -48,7 +48,7 @@ export function Term({
       <Image
         source={source}
         accessibilityLabel={`Term, ${name.replace("-", " ")}`}
-        style={{ width: size, height: size, borderRadius: radius }}
+        style={{ width: size, height: size }}
       />
     );
   return (

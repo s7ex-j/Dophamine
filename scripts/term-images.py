@@ -1,11 +1,13 @@
-"""Recorta las expresiones de Term para la app.
+"""Prepara las expresiones de Term para la app.
 
-    python scripts/term-images.py <ruta a term-expresiones.png de term-studio>
+    python scripts/term-images.py <carpeta con los renders>
 
-La hoja `personajes/term/renders/term-expresiones.png` del repositorio privado
-term-studio trae 16 expresiones en una cuadrícula de 4 x 4. Este script corta
-cada una, la deja cuadrada y la guarda en assets/term/<expresión>.webp, y escribe
-src/features/streak/term.images.ts con un require por imagen.
+La carpeta trae un PNG con fondo transparente por expresión (neutral.png,
+feliz.png, ...), renderizados desde el modelo 3D del repositorio privado
+term-studio con la banda de ejercicio puesta. Este script recorta a todos por
+el mismo recuadro (para que Term no cambie de tamaño entre expresiones), los
+deja cuadrados y los guarda en assets/term/<expresión>.webp con transparencia,
+y escribe src/features/streak/term.images.ts con un require por imagen.
 
 El arte de Term es de Jharol Vilca Ramos con todos los derechos reservados: las
 imágenes no se suben al repositorio público (están en .gitignore) y solo viajan
@@ -23,20 +25,25 @@ NAMES = [
     "orgullo", "pensando", "error", "dormido",
     "amor", "enojado", "triste", "listo",
 ]
-# Filas de la hoja: cada una empieza bajo su título (y = 90) y mide 420 px de alto, con 56 de etiqueta.
-ROW_TOPS = [90, 566, 1042, 1518]
-CELL = 420
 SIZE = 288
+MARGIN = 0.04
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 out = os.path.join(root, "assets", "term")
 os.makedirs(out, exist_ok=True)
-sheet = Image.open(sys.argv[1]).convert("RGB")
-for index, name in enumerate(NAMES):
-    row, col = divmod(index, 4)
-    box = (col * CELL, ROW_TOPS[row], col * CELL + CELL, ROW_TOPS[row] + CELL)
-    face = sheet.crop(box).resize((SIZE, SIZE), Image.LANCZOS)
-    face.save(os.path.join(out, f"{name}.webp"), "WEBP", quality=86, method=6)
+renders = {name: Image.open(os.path.join(sys.argv[1], f"{name}.png")).convert("RGBA") for name in NAMES}
+
+# Un solo recuadro para todas: la unión de lo visible en cada render.
+boxes = [image.getchannel("A").getbbox() for image in renders.values()]
+left, top = min(box[0] for box in boxes), min(box[1] for box in boxes)
+right, bottom = max(box[2] for box in boxes), max(box[3] for box in boxes)
+side = int(max(right - left, bottom - top) * (1 + 2 * MARGIN))
+cx, cy = (left + right) // 2, (top + bottom) // 2
+box = (cx - side // 2, cy - side // 2, cx - side // 2 + side, cy - side // 2 + side)
+
+for name, image in renders.items():
+    face = image.crop(box).resize((SIZE, SIZE), Image.LANCZOS)
+    face.save(os.path.join(out, f"{name}.webp"), "WEBP", quality=90, alpha_quality=100, method=6)
 
 lines = [
     "// Generado por scripts/term-images.py. Arte de Term: © Jharol Vilca Ramos, todos los derechos reservados.",

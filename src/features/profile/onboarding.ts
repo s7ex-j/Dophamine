@@ -1,4 +1,5 @@
-import { localDateKey } from "@/src/lib/dates";
+import { addDays, localDateKey } from "@/src/lib/dates";
+import { readGoalDate, type GoalDate } from "@/src/features/goals/goalDate";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 import type { RecentTrend, TrainingType } from "@/src/features/profile/expenditure";
 import type { Allergen } from "@/src/features/health/foodTags";
@@ -36,6 +37,7 @@ export type OnboardingStep =
   | "training"
   | "intake"
   | "target"
+  | "deadline"
   | "protein"
   | "plan"
   | "meals"
@@ -74,9 +76,15 @@ export type Answers = {
   avoid: Allergen[];
   /** Tema de color de la app; null = el sugerido según el perfil. */
   theme: ThemeId | null;
+  /** Meta con fecha (opcional): llegar a un peso un día concreto. */
+  hasDeadline: boolean;
+  deadlineDate: string;
+  /** Peso para esa fecha; vacío = el peso meta. */
+  deadlineWeight: string;
+  deadlineLabel: string;
 };
 
-/** Mantener no tiene peso meta ni ritmo, así que se salta ese paso. */
+/** Mantener no tiene peso meta, ritmo ni fecha, así que se saltan esos pasos. */
 export function stepsFor(goal: Goal): OnboardingStep[] {
   const steps: OnboardingStep[] = [
     "goal",
@@ -87,6 +95,7 @@ export function stepsFor(goal: Goal): OnboardingStep[] {
     "training",
     "intake",
     "target",
+    "deadline",
     "protein",
     "plan",
     "meals",
@@ -94,7 +103,10 @@ export function stepsFor(goal: Goal): OnboardingStep[] {
     "files",
     "tracking",
   ];
-  return [...steps.filter((step) => goal !== "maintain" || step !== "target"), "summary"];
+  return [
+    ...steps.filter((step) => goal !== "maintain" || (step !== "target" && step !== "deadline")),
+    "summary",
+  ];
 }
 
 /** Referencias visuales de % de grasa, para quien no tiene una medición. */
@@ -116,7 +128,25 @@ export function bodyFatPresets(sex: Sex): Array<{ value: string; label: string; 
       ];
 }
 
-export function answersFrom(profile: NutritionProfile | null, weightKg: number | null): Answers {
+/** Las respuestas de la meta con fecha a partir de la guardada (o una fecha a 12 semanas). */
+export function deadlineAnswers(
+  saved: GoalDate | null,
+  unit: WeightUnit,
+  today = localDateKey(),
+): Pick<Answers, "hasDeadline" | "deadlineDate" | "deadlineWeight" | "deadlineLabel"> {
+  return {
+    hasDeadline: saved !== null,
+    deadlineDate: saved?.date ?? addDays(today, 84),
+    deadlineWeight: saved ? weightValue(saved.weightKg, unit) : "",
+    deadlineLabel: saved?.label ?? "",
+  };
+}
+
+export function answersFrom(
+  profile: NutritionProfile | null,
+  weightKg: number | null,
+  saved: GoalDate | null = null,
+): Answers {
   const unit = weightUnitOf(profile);
   return {
     goal: profile?.goal ?? "lose",
@@ -146,14 +176,27 @@ export function answersFrom(profile: NutritionProfile | null, weightKg: number |
     dietType: profile?.dietType ?? "balanced",
     avoid: [],
     theme: null,
+    ...deadlineAnswers(saved, unit),
   };
 }
 
 const weightKgOf = (answers: Answers) => toKg(Number(answers.weight), answers.unit);
 const goalWeightKgOf = (answers: Answers) => toKg(Number(answers.goalWeight), answers.unit);
 
+/** La meta con fecha que sale de las respuestas, o null si no hay (o el objetivo es mantener). */
+export function goalDateFrom(answers: Answers): GoalDate | null {
+  if (answers.goal === "maintain" || !answers.hasDeadline) return null;
+  const weight = answers.deadlineWeight.trim() || answers.goalWeight;
+  const label = answers.deadlineLabel.trim();
+  return readGoalDate({
+    date: answers.deadlineDate.trim(),
+    weightKg: toKg(Number(weight.replace(",", ".")), answers.unit),
+    ...(label ? { label } : {}),
+  });
+}
+
 /** Mensaje a mostrar si el paso no se puede dar por bueno, o null si está completo. */
-export function stepError(step: OnboardingStep, answers: Answers): string | null {
+export function stepError(step: OnboardingStep, answers: Answers, today = localDateKey()): string | null {
   if (step === "body") {
     const input = {
       age: Number(answers.age),
@@ -184,6 +227,11 @@ export function stepError(step: OnboardingStep, answers: Answers): string | null
       return "Para definición, el peso meta debe ser menor al actual.";
     if (answers.goal === "gain" && target <= current)
       return "Para volumen, el peso meta debe ser mayor al actual.";
+  }
+  if (step === "deadline" && answers.hasDeadline) {
+    const goal = goalDateFrom(answers);
+    if (!goal) return "Revisa la fecha (AAAA-MM-DD) y el peso para ese día.";
+    if (goal.date <= today) return "La fecha tiene que ser después de hoy.";
   }
   return null;
 }

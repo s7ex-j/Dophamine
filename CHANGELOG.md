@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.29.0 - 2026-11-17
+
+La meta con fecha pasa a la evaluación y Term se pone la banda de entrenar.
+
+- Meta con fecha: ya no es una pantalla aparte. La evaluación pregunta, después del peso meta, "¿Tienes una fecha?" (opcional): qué es, el día y el peso para ese día (por defecto, el peso meta). Al reevaluar se parte de la guardada, y "Sin fecha" la quita. El encabezado de Estrategia dice cuántos días faltan y, con el motor de autoajuste activo, la probabilidad de llegar; si hace falta, propone el cambio de calorías más chico para llegar (con un botón para aplicarlo) y en las dos últimas semanas da las indicaciones para no mover el agua.
+- Term con fondo transparente y banda de ejercicio: las 16 expresiones se renderizaron de nuevo desde su modelo 3D, sin fondo, con una banda roja en la cabeza. Se ven sobre cualquier tema.
+- De 404 a 409 pruebas de dominio; 28 flujos de navegador (la evaluación ahora incluye la fecha).
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.28.0 - 2026-11-17
 
 Term reemplaza a Dopi y el contenido privado sale del repositorio público.

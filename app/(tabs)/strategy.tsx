@@ -12,6 +12,9 @@ import { activityLabels, goalLabels } from "@/src/features/profile/profile";
 import { AutoAdjustBanner, CheckInCard, ReviewHistoryCard } from "@/src/features/reviews/CheckInSections";
 import type { WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
+import { GOAL_DATE_KEY, readGoalDate, type GoalDate } from "@/src/features/goals/goalDate";
+import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
+import { getSetting } from "@/src/features/settings/settings.repository";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { ViewerEmpty } from "@/src/features/backup/ViewerSections";
 import { VIEWER } from "@/src/lib/mode";
@@ -23,11 +26,15 @@ export default function StrategyScreen() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null);
   const [reviews, setReviews] = useState<WeeklyReview[]>([]);
   const [editing, setEditing] = useState(false);
+  const [goalDate, setGoalDate] = useState<GoalDate | null>(null);
   const load = useCallback(() => {
-    Promise.all([getDashboardSnapshot(), getWeeklyReviews()]).then(([nextSnapshot, nextReviews]) => {
-      setSnapshot(nextSnapshot);
-      setReviews(nextReviews);
-    });
+    Promise.all([getDashboardSnapshot(), getWeeklyReviews(), getSetting(GOAL_DATE_KEY)]).then(
+      ([nextSnapshot, nextReviews, savedGoal]) => {
+        setSnapshot(nextSnapshot);
+        setReviews(nextReviews);
+        setGoalDate(readGoalDate(savedGoal));
+      },
+    );
   }, []);
   useFocusEffect(load);
   const controls = useCheckIn(snapshot, load);
@@ -51,17 +58,21 @@ export default function StrategyScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <StrategyHeader profile={profile} trendKg={snapshot.trendKg} analysis={snapshot.analysis} />
+        <StrategyHeader
+          profile={profile}
+          trendKg={snapshot.trendKg ?? snapshot.weightKg}
+          analysis={snapshot.analysis}
+          goalDate={goalDate}
+          onApplyCalories={async (delta) => {
+            await saveNutritionProfile({ ...profile, calorieTarget: profile.calorieTarget + delta });
+            load();
+          }}
+        />
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         <CheckInCard snapshot={snapshot} controls={controls} />
         <DistributionCard profile={profile} />
         <ReviewHistoryCard reviews={reviews} />
         <View style={[AppTheme.card, { paddingVertical: 2 }]}>
-          <NavRow
-            title="Meta con fecha"
-            detail="Llegar a un peso un día concreto: proyección y probabilidad"
-            onPress={() => router.push("/goal-date")}
-          />
           <NavRow
             title="Cómo se calcula"
             detail="El motor por dentro, con tus números"

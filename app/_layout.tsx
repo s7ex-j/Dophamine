@@ -77,7 +77,6 @@ export default function RootLayout() {
         <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />
         <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
         <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
-        <Stack.Screen name="goal-date" options={{ headerShown: true, title: "Meta con fecha" }} />
         <Stack.Screen name="week-share" options={{ headerShown: true, title: "Compartir mi semana" }} />
         <Stack.Screen name="challenges" options={{ headerShown: true, title: "Retos de 21 días" }} />
         <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />

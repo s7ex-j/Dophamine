@@ -22,7 +22,8 @@ import { ALLERGEN_LABELS, type Allergen } from "@/src/features/health/foodTags";
 import { DIET_TYPES } from "@/src/features/profile/targets";
 import { saveRoutine } from "@/src/features/training/training.repository";
 import { localDateKey } from "@/src/lib/dates";
-import { setSetting } from "@/src/features/settings/settings.repository";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import { GOAL_DATE_KEY, readGoalDate } from "@/src/features/goals/goalDate";
 import { applyTheme } from "@/src/theming/current";
 import { suggestedTheme, THEME_KEY } from "@/src/theming/palettes";
 import { ThemePicker } from "@/src/theming/ThemePicker";
@@ -31,6 +32,8 @@ import { MEAL_COUNTS, mealSlots } from "@/src/features/nutrition/meals";
 import {
   answersFrom,
   bodyFatPresets,
+  deadlineAnswers,
+  goalDateFrom,
   planInputFrom,
   stepError,
   stepsFor,
@@ -64,6 +67,10 @@ const TITLES: Record<OnboardingStep, { title: string; help: string }> = {
   training: { title: "Tu entrenamiento", help: "Una semana normal." },
   intake: { title: "Lo que comes hoy", help: "Opcional. Si lo sabes, es el mejor dato para empezar." },
   target: { title: "Tu meta", help: "A dónde quieres llegar y a qué ritmo." },
+  deadline: {
+    title: "¿Tienes una fecha?",
+    help: "Opcional. Un viaje, una boda o una prueba: la app calcula si llegas a tiempo.",
+  },
   protein: { title: "Proteína", help: "Más proteína ayuda a conservar músculo." },
   plan: { title: "Tipo de plan", help: "Cómo se reparten carbohidratos y grasas. Se puede cambiar después." },
   meals: { title: "Tus comidas", help: "Cuántas veces comes al día y cómo llamarlas." },
@@ -98,6 +105,13 @@ export function Onboarding({
   const [index, setIndex] = useState(0);
   const [error, setError] = useState("");
   const steps = stepsFor(answers.goal);
+  // La meta con fecha vive aparte del perfil: se carga al abrir para poder editarla.
+  useEffect(() => {
+    getSetting(GOAL_DATE_KEY).then((saved) => {
+      const goal = readGoalDate(saved);
+      if (goal) setAnswers((current) => ({ ...current, ...deadlineAnswers(goal, current.unit) }));
+    });
+  }, []);
   const step = steps[Math.min(index, steps.length - 1)];
   const set = <K extends keyof Answers>(key: K, value: Answers[K]) => {
     setError("");
@@ -112,6 +126,7 @@ export function Onboarding({
       unit: next,
       weight: convert(current.weight),
       goalWeight: convert(current.goalWeight),
+      deadlineWeight: convert(current.deadlineWeight),
     }));
   };
 
@@ -132,6 +147,7 @@ export function Onboarding({
     // El tema se aplica al final: si cambia, la app se reinicia ya con sus colores.
     const theme = answers.theme ?? suggestedTheme(answers.sex);
     await setSetting(THEME_KEY, theme);
+    await setSetting(GOAL_DATE_KEY, goalDateFrom(answers));
     const health = await getHealth();
     if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
@@ -393,6 +409,54 @@ export function Onboarding({
                 };
               })}
             />
+          </>
+        ) : null}
+
+        {step === "deadline" ? (
+          <>
+            <OptionList
+              value={answers.hasDeadline ? "yes" : "no"}
+              onChange={(choice) => set("hasDeadline", choice === "yes")}
+              options={[
+                {
+                  value: "no",
+                  label: "Sin fecha",
+                  detail: "Llegar a mi ritmo",
+                  icon: "infinite-outline",
+                },
+                {
+                  value: "yes",
+                  label: "Sí, tengo una fecha",
+                  detail: "Ver si llego y cuánto ajustar",
+                  icon: "calendar-outline",
+                },
+              ]}
+            />
+            {answers.hasDeadline ? (
+              <>
+                <Input
+                  label="Qué es (opcional)"
+                  value={answers.deadlineLabel}
+                  onChangeText={(deadlineLabel) => set("deadlineLabel", deadlineLabel)}
+                  placeholder="Viaje a la playa"
+                />
+                <Input
+                  label="Fecha (AAAA-MM-DD)"
+                  value={answers.deadlineDate}
+                  onChangeText={(deadlineDate) => set("deadlineDate", deadlineDate)}
+                  keyboardType="numbers-and-punctuation"
+                />
+                <View style={AppTheme.fieldRow}>
+                  <BigInput
+                    label="Peso para esa fecha"
+                    unit={answers.unit}
+                    value={answers.deadlineWeight}
+                    placeholder={answers.goalWeight || "0"}
+                    onChangeText={(deadlineWeight) => set("deadlineWeight", deadlineWeight)}
+                  />
+                </View>
+              </>
+            ) : null}
           </>
         ) : null}
 
