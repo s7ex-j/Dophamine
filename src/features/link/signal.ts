@@ -20,11 +20,15 @@ export type Signal = {
   setup: "actpass" | "active" | "passive";
   /** Direcciones locales donde escucha este dispositivo. */
   candidates: Array<{ host: string; port: number }>;
+  /** Cuándo se creó el código (segundos desde 1970): caduca a los 10 minutos. */
+  issuedAt?: number;
 };
 
 export class LinkError extends Error {}
 
-const PREFIX = "D1";
+const PREFIX = "D2";
+/** Un código QR sirve 10 minutos: una foto vieja de la pantalla ya no abre la conexión. */
+export const SIGNAL_LIFETIME_S = 600;
 const MAX_CANDIDATES = 6;
 const SETUP_CODES = { actpass: "x", active: "a", passive: "p" } as const;
 const BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -94,6 +98,7 @@ export function readSdp(sdp: string, type: SignalType): Signal {
     fingerprint,
     setup: setup === "active" || setup === "passive" ? setup : type === "offer" ? "actpass" : "active",
     candidates,
+    issuedAt: Math.floor(Date.now() / 1000),
   };
 }
 
@@ -125,11 +130,12 @@ export function buildSdp(signal: Signal): string {
   ].join("\r\n");
 }
 
-/** La señal como texto corto para un QR: `D1|O|ufrag|pwd|huella|rol|puerto@dirección,...`. */
+/** La señal como texto corto para un QR: `D2|O|hora|ufrag|pwd|huella|rol|puerto@dirección,...`. */
 export function packSignal(signal: Signal): string {
   return [
     PREFIX,
     signal.type === "offer" ? "O" : "A",
+    (signal.issuedAt ?? Math.floor(Date.now() / 1000)).toString(36),
     signal.ufrag,
     signal.pwd,
     hexToBase64(signal.fingerprint),
@@ -139,11 +145,18 @@ export function packSignal(signal: Signal): string {
 }
 
 /** Lee un código escaneado o pegado. Lanza LinkError con un mensaje para mostrar. */
-export function unpackSignal(code: string, expected?: SignalType): Signal {
+export function unpackSignal(code: string, expected?: SignalType, now = Date.now()): Signal {
   const parts = code.trim().split("|");
-  if (parts.length !== 7 || parts[0] !== PREFIX || !["O", "A"].includes(parts[1]))
+  if (parts[0] === "D1")
+    throw new LinkError("Ese código es de una versión anterior de Dophamine. Actualiza la app.");
+  if (parts.length !== 8 || parts[0] !== PREFIX || !["O", "A"].includes(parts[1]))
     throw new LinkError("Ese código no es de Dophamine. Vuelve a leerlo completo.");
-  const [, kind, ufrag, pwd, print, setupCode, list] = parts;
+  const [, kind, stamp, ufrag, pwd, print, setupCode, list] = parts;
+  const issuedAt = parseInt(stamp, 36);
+  if (!Number.isFinite(issuedAt)) throw new LinkError("El código está incompleto. Vuelve a leerlo.");
+  const age = now / 1000 - issuedAt;
+  if (age > SIGNAL_LIFETIME_S || age < -120)
+    throw new LinkError("Ese código caducó (dura 10 minutos). Pide uno nuevo en la otra pantalla.");
   const type: SignalType = kind === "O" ? "offer" : "answer";
   if (expected && type !== expected)
     throw new LinkError(
@@ -175,5 +188,5 @@ export function unpackSignal(code: string, expected?: SignalType): Signal {
     throw new LinkError("El código está incompleto. Vuelve a leerlo.");
   if (!candidates.length)
     throw new LinkError("El otro dispositivo no informó ninguna dirección de red. Revisa que tenga Wi-Fi.");
-  return { type, ufrag, pwd, fingerprint, setup, candidates };
+  return { type, ufrag, pwd, fingerprint, setup, candidates, issuedAt };
 }

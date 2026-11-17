@@ -14,6 +14,17 @@ export type ReminderConfig = {
   days: Record<Weekday, MealReminder[]>;
   /** Aviso diario para pesarse (0.18.0), independiente de las comidas. */
   weighIn?: { enabled: boolean; time: string };
+  /**
+   * Aviso antes de entrenar: la hora del gimnasio de cada día y cuánto antes
+   * avisar. El mensaje dice qué comer (la comida "antes de entrenar" de la dieta
+   * si la hay).
+   */
+  preWorkout?: {
+    enabled: boolean;
+    minutesBefore: number;
+    times: Partial<Record<Weekday, string>>;
+    meals?: Partial<Record<Weekday, string>>;
+  };
 };
 export type ScheduledReminder = {
   /** Día de la semana como lo usa el sistema de notificaciones: 1 = domingo … 7 = sábado. */
@@ -142,8 +153,34 @@ export function remindersToSchedule(config: ReminderConfig): ScheduledReminder[]
           title: "Hora de pesarte",
           body: "Después del baño y antes de comer: así tu tendencia es más fiable.",
         }));
-  if (!config.enabled) return weighIns;
-  return [...weighIns, ...mealReminders(config)];
+  const workouts = preWorkoutReminders(config);
+  if (!config.enabled) return [...weighIns, ...workouts];
+  return [...weighIns, ...workouts, ...mealReminders(config)];
+}
+
+/** Avisos antes de entrenar: uno por día con hora de gimnasio, `minutesBefore` antes. */
+export function preWorkoutReminders(config: ReminderConfig): ScheduledReminder[] {
+  const pre = config.preWorkout;
+  if (!pre?.enabled) return [];
+  return WEEKDAYS.flatMap((day) => {
+    const gym = parseTime(pre.times[day.id] ?? "");
+    if (gym === null) return [];
+    const at = gym - pre.minutesBefore;
+    const shift = at < 0 ? -1 : 0;
+    const value = ((at % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+    const meal = pre.meals?.[day.id];
+    return [
+      {
+        weekday: ((SYSTEM_WEEKDAY[day.id] - 1 + shift + 7) % 7) + 1,
+        hour: Math.floor(value / 60),
+        minute: value % 60,
+        title: `Entrenas en ${pre.minutesBefore} min`,
+        body: meal
+          ? `Toca tu comida antes de entrenar: ${meal}. Carbohidrato fácil y poca grasa.`
+          : "Come algo con carbohidrato fácil y poca grasa: fruta, pan o avena.",
+      },
+    ];
+  });
 }
 
 function mealReminders(config: ReminderConfig): ScheduledReminder[] {
@@ -179,9 +216,33 @@ export function normalizeConfig(value: unknown, newId: () => string): ReminderCo
   const lead = Number(value.leadMinutes);
   const weighIn = isRecord(value.weighIn) ? value.weighIn : null;
   const weighTime = weighIn && typeof weighIn.time === "string" ? normalizeTime(weighIn.time) : null;
+  const pre = isRecord(value.preWorkout) ? value.preWorkout : null;
+  const preTimes = pre && isRecord(pre.times) ? pre.times : {};
+  const preMeals = pre && isRecord(pre.meals) ? pre.meals : {};
+  const preMinutes = pre ? Number(pre.minutesBefore) : NaN;
   return {
     enabled: value.enabled === true,
     ...(weighIn ? { weighIn: { enabled: weighIn.enabled === true, time: weighTime ?? "07:00" } } : {}),
+    ...(pre
+      ? {
+          preWorkout: {
+            enabled: pre.enabled === true,
+            minutesBefore: [60, 90, 120].includes(preMinutes) ? preMinutes : 90,
+            times: Object.fromEntries(
+              WEEKDAYS.flatMap((day) => {
+                const time =
+                  typeof preTimes[day.id] === "string" ? normalizeTime(preTimes[day.id] as string) : null;
+                return time ? [[day.id, time]] : [];
+              }),
+            ),
+            meals: Object.fromEntries(
+              WEEKDAYS.flatMap((day) =>
+                typeof preMeals[day.id] === "string" ? [[day.id, preMeals[day.id]]] : [],
+              ),
+            ),
+          },
+        }
+      : {}),
     leadMinutes: Number.isFinite(lead) && lead >= 0 && lead <= 60 ? Math.round(lead) : 5,
     days: Object.fromEntries(
       WEEKDAYS.map((day) => {

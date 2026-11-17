@@ -58,6 +58,11 @@ export default function StrategyScreen() {
         <ReviewHistoryCard reviews={reviews} />
         <View style={[AppTheme.card, { paddingVertical: 2 }]}>
           <NavRow
+            title="Meta con fecha"
+            detail="Llegar a un peso un día concreto: proyección y probabilidad"
+            onPress={() => router.push("/goal-date")}
+          />
+          <NavRow
             title="Cómo se calcula"
             detail="El motor por dentro, con tus números"
             onPress={() => router.push("/algorithm")}

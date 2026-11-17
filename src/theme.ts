@@ -1,6 +1,15 @@
 import { StyleSheet } from "react-native";
 
-export const AppTheme = {
+import { currentTheme } from "@/src/theming/current";
+import { remapColors, themed } from "@/src/theming/palettes";
+
+/** El tema de color elegido (Bosque, Pastel o Claro). Se lee una vez al arrancar. */
+export const THEME = currentTheme();
+/** Un color escrito en su tono de Bosque, en el tema actual (para colores fuera de este archivo). */
+export const tint = (hex: string) => themed(hex, THEME);
+
+// Todos los colores se escriben en su tono de Bosque; `remapColors` los lleva al tema elegido.
+const BASE = {
   // Modo oscuro: fondo casi negro con un tinte verde, superficies un paso más
   // claras y colores vivos solo para datos (calorías, macros, tendencia).
   colors: {
@@ -25,7 +34,8 @@ export const AppTheme = {
     // Un color fijo por dato, igual en todas las pantallas.
     kcal: "#60A5FA",
     protein: "#F87171",
-    carbs: "#34D399",
+    // Un tono apenas distinto del acento: así en otros temas los carbohidratos tienen su propio color.
+    carbs: "#34D39A",
     fats: "#FBBF24",
   },
   ...StyleSheet.create({
@@ -640,3 +650,5 @@ export const AppTheme = {
     intakeValue: { width: 42, textAlign: "right", fontSize: 12, color: "#C5CEC8", fontWeight: "700" },
   }),
 };
+
+export const AppTheme = remapColors(BASE, THEME);

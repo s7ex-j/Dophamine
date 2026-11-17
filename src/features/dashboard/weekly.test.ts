@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
-import { weeklySummary } from "@/src/features/dashboard/weekly";
+import { weeklyStory, weeklySummary } from "@/src/features/dashboard/weekly";
 
 const record = (date: string, weightKg: number | null, caloriesIn = 0, proteinG = 0): DailyBiometrics => ({
   id: date,
@@ -57,5 +57,45 @@ describe("resumen de la semana pasada", () => {
       targets: { calories: 2000, protein: 100 },
     });
     expect(summary).toMatchObject({ avgWeightKg: null, weightChangeKg: null, avgKcal: null, loggedDays: 0 });
+  });
+});
+
+describe("la semana en tres frases", () => {
+  const base = {
+    weekStart: "2026-11-09",
+    weekEnd: "2026-11-15",
+    loggedDays: 7,
+    avgWeightKg: 78.6,
+    weightChangeKg: -0.6,
+    avgKcal: 2310,
+    kcalTarget: 2300,
+    proteinDays: 6,
+    workouts: 4,
+    avgSleepMinutes: 455,
+  };
+  it("pone primero el peso, luego la comida y el entreno", () => {
+    expect(weeklyStory(base, -1)).toEqual({
+      title: "Semana sólida",
+      lines: [
+        "Bajaste 0.6 kg, en la dirección de tu meta.",
+        "Comiste en tu objetivo: 2310 kcal al día.",
+        "Entrenaste 4 veces.",
+      ],
+    });
+  });
+  it("no inventa lo que no se registró", () => {
+    const story = weeklyStory(
+      {
+        ...base,
+        loggedDays: 3,
+        weightChangeKg: null,
+        avgKcal: null,
+        workouts: 0,
+        proteinDays: 2,
+        avgSleepMinutes: null,
+      },
+      -1,
+    );
+    expect(story).toEqual({ title: "Semana para retomar", lines: [] });
   });
 });

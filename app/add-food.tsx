@@ -12,6 +12,7 @@ import {
   IconButton,
   IconTabs,
   Input,
+  LinkButton,
   SlotPicker,
   RowActions,
   Screen,
@@ -85,6 +86,7 @@ import {
 } from "@/src/features/nutrition/savedMeals.repository";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
+import { readLabel, type LabelField, type LabelReading } from "@/src/features/nutrition/label";
 import { AppTheme } from "@/src/theme";
 
 type Mode = "search" | "quick" | "new" | "barcode" | "recipe";
@@ -519,6 +521,23 @@ function AddFoodContent() {
 
             {mode === "new" ? (
               <Card title="Nuevo alimento">
+                <LabelReader
+                  onRead={(reading) => {
+                    const value = (field: LabelField) => {
+                      const raw = reading.fix?.field === field ? reading.fix.value : reading.values[field];
+                      return raw === undefined ? "" : String(raw);
+                    };
+                    setCustom({
+                      ...custom,
+                      servingG:
+                        reading.basis === "serving" && reading.servingG ? String(reading.servingG) : "100",
+                      kcal: value("kcal"),
+                      protein: value("protein"),
+                      carbs: value("carbs"),
+                      fats: value("fats"),
+                    });
+                  }}
+                />
                 <Text style={AppTheme.hint}>Copia la etiqueta: valores de una porción.</Text>
                 <Input
                   label="Nombre"
@@ -659,6 +678,50 @@ function MacroInputs({
           keyboardType="decimal-pad"
         />
       </View>
+    </View>
+  );
+}
+
+/** Pegar el texto de una etiqueta nutricional y llenar el formulario. Avisa el dato que no cuadra. */
+function LabelReader({ onRead }: { onRead: (reading: LabelReading) => void }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [note, setNote] = useState("");
+  const NAMES: Record<LabelField, string> = {
+    kcal: "calorías",
+    protein: "proteína",
+    carbs: "carbohidratos",
+    fats: "grasas",
+  };
+  if (!open) return <LinkButton title="Leer el texto de una etiqueta" onPress={() => setOpen(true)} />;
+  return (
+    <View style={{ gap: 8 }}>
+      <Input
+        label="Texto de la etiqueta"
+        value={text}
+        onChangeText={setText}
+        multiline
+        placeholder={"Porción 30 g\nEnergía 112 kcal\nProteínas 2,1 g\nCarbohidratos 17 g\nGrasas 3,7 g"}
+      />
+      <Button
+        title="Leer etiqueta"
+        variant="secondary"
+        onPress={() => {
+          const reading = readLabel(text);
+          onRead(reading);
+          setNote(
+            reading.fix
+              ? `Las calorías no cuadraban: puse ${NAMES[reading.fix.field]} en ${reading.fix.value} g. Revísalo con la etiqueta.`
+              : reading.suspicious.length
+                ? `Revisa: ${reading.suspicious.map((field) => NAMES[field]).join(", ")}.`
+                : "Listo: los valores cuadran con las calorías.",
+          );
+        }}
+      />
+      {note ? <Text style={AppTheme.hint}>{note}</Text> : null}
+      <Text style={AppTheme.hint}>
+        Con la app instalada se podrá leer con la cámara; por ahora copia el texto o escríbelo.
+      </Text>
     </View>
   );
 }

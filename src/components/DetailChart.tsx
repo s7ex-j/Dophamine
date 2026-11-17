@@ -7,7 +7,7 @@ import type { Insight, SeriesColor } from "@/src/features/dashboard/insights";
 
 /** Lo que necesita el gráfico: sirve para el Panel y para el historial de un ejercicio. */
 export type ChartData = Pick<Insight, "title" | "unit" | "dates" | "series" | "reference">;
-import { AppTheme } from "@/src/theme";
+import { AppTheme, tint } from "@/src/theme";
 
 const HEIGHT = 220;
 const BOTTOM = 22;
@@ -233,7 +233,7 @@ export function DetailChart({ insight }: { insight: ChartData }) {
 
 /** Calendario de constancia: un cuadro por día, más intenso cuanto más se registró. */
 export function ConsistencyGrid({ levels, dates }: { levels: Array<number | null>; dates: string[] }) {
-  const shades = [AppTheme.colors.surface2, "#1C3A2D", "#22704F", AppTheme.colors.accent];
+  const shades = [AppTheme.colors.surface2, tint("#1C3A2D"), tint("#22704F"), AppTheme.colors.accent];
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
       {dates.map((date, index) => (

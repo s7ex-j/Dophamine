@@ -1,3 +1,4 @@
+import { getDiet } from "@/src/features/diet/diet.repository";
 import { useCallback, useState } from "react";
 import { ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
@@ -79,7 +80,11 @@ function RemindersContent() {
         ? { weighIn: { ...config.weighIn, time: normalizeTime(config.weighIn.time) ?? "07:00" } }
         : {}),
     };
-    if ((clean.enabled || clean.weighIn?.enabled) && remindersAvailable && !(await requestPermission()))
+    if (
+      (clean.enabled || clean.weighIn?.enabled || clean.preWorkout?.enabled) &&
+      remindersAvailable &&
+      !(await requestPermission())
+    )
       return setMessage({
         text: "Sin permiso para notificaciones. Actívalo en los ajustes del teléfono.",
         error: true,
@@ -89,7 +94,7 @@ function RemindersContent() {
     const count = await scheduleReminders(clean);
     setMessage({
       text:
-        !count && !clean.enabled && !clean.weighIn?.enabled
+        !count && !clean.enabled && !clean.weighIn?.enabled && !clean.preWorkout?.enabled
           ? "Guardado. Los recordatorios están apagados."
           : remindersAvailable
             ? `Listo: ${count} avisos programados en la semana.`
@@ -146,6 +151,8 @@ function RemindersContent() {
             Pesarte a diario a la misma hora hace la tendencia más fiable; no importa el número de un día.
           </Text>
         </Card>
+
+        <PreWorkoutCard config={config} onChange={update} />
 
         <Chips
           value={day}
@@ -209,5 +216,79 @@ function RemindersContent() {
         ) : null}
       </ScrollView>
     </Screen>
+  );
+}
+
+/** Aviso antes de entrenar: hora del gimnasio por día y cuánto antes avisar. */
+function PreWorkoutCard({
+  config,
+  onChange,
+}: {
+  config: ReminderConfig;
+  onChange: (next: ReminderConfig) => void;
+}) {
+  const pre = config.preWorkout ?? { enabled: false, minutesBefore: 90, times: {}, meals: {} };
+  const set = (patch: Partial<NonNullable<ReminderConfig["preWorkout"]>>) =>
+    onChange({ ...config, preWorkout: { ...pre, ...patch } });
+  const fromDiet = async () => {
+    const plan = await getDiet();
+    const times: Partial<Record<Weekday, string>> = {};
+    const meals: Partial<Record<Weekday, string>> = {};
+    for (const day of plan?.days ?? []) {
+      if (!day.weekday || !day.gym) continue;
+      times[day.weekday as Weekday] = day.gym.start;
+      const meal = day.meals.find((item) => item.tags?.includes("pre_gym"));
+      if (meal) meals[day.weekday as Weekday] = meal.label;
+    }
+    set({ enabled: true, times, meals });
+  };
+  return (
+    <Card title="Antes de entrenar">
+      <View style={AppTheme.sectionHeader}>
+        <Text style={[AppTheme.body, { flex: 1 }]}>Avisarme qué comer antes del gimnasio</Text>
+        <Switch
+          accessibilityLabel="Aviso antes de entrenar"
+          value={pre.enabled}
+          onValueChange={(enabled) => set({ enabled })}
+          trackColor={{ true: AppTheme.colors.accent, false: AppTheme.colors.border }}
+          thumbColor={AppTheme.colors.text}
+        />
+      </View>
+      {pre.enabled ? (
+        <>
+          <Chips
+            value={pre.minutesBefore}
+            onChange={(minutesBefore) => set({ minutesBefore })}
+            options={[60, 90, 120].map((minutes) => ({ value: minutes, label: `${minutes} min antes` }))}
+          />
+          <View style={AppTheme.groupList}>
+            {WEEKDAYS.map((weekday, index) => (
+              <View key={weekday.id} style={[AppTheme.groupRow, index > 0 && AppTheme.groupRowDivider]}>
+                <View style={AppTheme.optionText}>
+                  <Text style={AppTheme.optionTitle}>{weekday.label}</Text>
+                  <Text style={AppTheme.optionDetail}>
+                    {pre.meals?.[weekday.id] ?? "Sin comida de la dieta"}
+                  </Text>
+                </View>
+                <TextInput
+                  accessibilityLabel={`Hora del gimnasio el ${weekday.label.toLowerCase()}`}
+                  value={pre.times[weekday.id] ?? ""}
+                  onChangeText={(time) => set({ times: { ...pre.times, [weekday.id]: time } })}
+                  placeholder="—"
+                  placeholderTextColor={AppTheme.colors.muted}
+                  keyboardType="numbers-and-punctuation"
+                  style={[AppTheme.input, { width: 80, textAlign: "center", paddingVertical: 6 }]}
+                />
+              </View>
+            ))}
+          </View>
+          <LinkButton title="Usar las horas de mi dieta" onPress={fromDiet} />
+        </>
+      ) : null}
+      <Text style={AppTheme.hint}>
+        Deja vacío el día que no entrenas. Si tu dieta marca la comida de antes de entrenar, el aviso dice
+        cuál es.
+      </Text>
+    </Card>
   );
 }

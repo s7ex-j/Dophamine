@@ -50,3 +50,49 @@ export function daysBetween(from: string, to: string): number {
   };
   return Math.round((parse(to) - parse(from)) / 86_400_000);
 }
+
+export type ComparisonStats = {
+  days: number;
+  /** Peso de cada foto: el peso real del motor ese día si existe; si no, el anotado con la foto. */
+  beforeKg: number | null;
+  afterKg: number | null;
+  /** El peso viene del motor (sin el agua del día). */
+  realWeight: boolean;
+  waistCm: { before: number; after: number } | null;
+};
+
+/** La medida más cercana a una fecha (hasta 10 días de distancia). */
+function nearest<T extends { date: string }>(list: T[], date: string, pick: (item: T) => number | undefined) {
+  let best: { value: number; gap: number } | null = null;
+  for (const item of list) {
+    const value = pick(item);
+    if (value === undefined) continue;
+    const gap = Math.abs(daysBetween(item.date, date));
+    if (gap <= 10 && (!best || gap < best.gap)) best = { value, gap };
+  }
+  return best?.value ?? null;
+}
+
+export function comparisonStats(
+  before: ProgressPhoto,
+  after: ProgressPhoto,
+  realSeries: Array<{ date: string; weightKg: number }>,
+  measurements: Array<{ date: string; waistCm?: number }>,
+): ComparisonStats {
+  const real = new Map(realSeries.map((point) => [point.date, point.weightKg]));
+  const realBefore = real.get(before.date);
+  const realAfter = real.get(after.date);
+  const realWeight = realBefore !== undefined && realAfter !== undefined;
+  const waistBefore = nearest(measurements, before.date, (item) => item.waistCm);
+  const waistAfter = nearest(measurements, after.date, (item) => item.waistCm);
+  return {
+    days: daysBetween(before.date, after.date),
+    beforeKg: realWeight ? (realBefore as number) : (before.weightKg ?? null),
+    afterKg: realWeight ? (realAfter as number) : (after.weightKg ?? null),
+    realWeight,
+    waistCm:
+      waistBefore !== null && waistAfter !== null && waistBefore !== waistAfter
+        ? { before: waistBefore, after: waistAfter }
+        : null,
+  };
+}

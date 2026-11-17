@@ -1,12 +1,19 @@
 import { useCallback, useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
-import { Button, Card, Chips, RowActions, Screen } from "@/src/components/ui";
+import { Button, Card, Chips, LinkButton, RowActions, Screen, Segmented } from "@/src/components/ui";
+import { getDashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
+import {
+  MEASUREMENTS_KEY,
+  readMeasurements,
+  type Measurement,
+} from "@/src/features/measurements/measurements";
 import { getLatestBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import {
   addPhoto,
   comparePair,
+  comparisonStats,
   daysBetween,
   PHOTOS_KEY,
   POSE_LABELS,
@@ -37,12 +44,22 @@ export default function PhotosScreen() {
   const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
   const [pose, setPose] = useState<Pose>("front");
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
+  const [series, setSeries] = useState<Array<{ date: string; weightKg: number }>>([]);
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [chosen, setChosen] = useState<{ before?: string; after?: string }>({});
+  const [mode, setMode] = useState<"side" | "flip">("side");
+  const [showAfter, setShowAfter] = useState(true);
   const load = useCallback(() => {
     getSetting(PHOTOS_KEY).then((value) =>
       // Una foto cuyo archivo ya no está (por ejemplo, tras restaurar en otro teléfono) no se muestra.
       setPhotos(readPhotos(value).filter((photo) => photoUri(photo.file))),
     );
     getNutritionProfile().then(setProfile);
+    getSetting(MEASUREMENTS_KEY).then((value) => setMeasurements(readMeasurements(value)));
+    getDashboardSnapshot().then((snapshot) => {
+      const engine = snapshot.analysis.adaptive;
+      setSeries(engine?.active ? engine.series : []);
+    });
   }, []);
   useFocusEffect(load);
 
@@ -73,7 +90,18 @@ export default function PhotosScreen() {
     );
   };
   const unit = profile ? weightUnitOf(profile) : "kg";
-  const pair = comparePair(photos, pose);
+  const auto = comparePair(photos, pose);
+  const byId = new Map(photos.map((photo) => [photo.id, photo]));
+  const pickedBefore = chosen.before ? byId.get(chosen.before) : undefined;
+  const pickedAfter = chosen.after ? byId.get(chosen.after) : undefined;
+  const pair =
+    auto || (pickedBefore && pickedAfter)
+      ? {
+          before: pickedBefore?.pose === pose ? pickedBefore : (auto?.before as ProgressPhoto),
+          after: pickedAfter?.pose === pose ? pickedAfter : (auto?.after as ProgressPhoto),
+        }
+      : null;
+  const stats = pair ? comparisonStats(pair.before, pair.after, series, measurements) : null;
   const ofPose = photos.filter((photo) => photo.pose === pose);
   const caption = (photo: ProgressPhoto) =>
     `${photo.date}${photo.weightKg ? ` · ${formatWeight(photo.weightKg, unit, 1)}` : ""}`;
@@ -89,19 +117,91 @@ export default function PhotosScreen() {
             label: POSE_LABELS[value],
           }))}
         />
-        {pair ? (
+        {pair && stats ? (
           <Card title={`Antes y ahora · ${daysBetween(pair.before.date, pair.after.date)} días`}>
-            <View style={{ flexDirection: "row", gap: 8 }}>
-              {[pair.before, pair.after].map((photo) => (
-                <View key={photo.id} style={{ flex: 1, gap: 4 }}>
-                  <Image
-                    source={{ uri: photoUri(photo.file) ?? undefined }}
-                    style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 12 }}
-                  />
-                  <Text style={AppTheme.hint}>{caption(photo)}</Text>
+            <Segmented
+              label="Cómo comparar"
+              value={mode}
+              onChange={setMode}
+              options={[
+                { value: "side", label: "Lado a lado" },
+                { value: "flip", label: "Alternar" },
+              ]}
+            />
+            {mode === "side" ? (
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {[pair.before, pair.after].map((photo) => (
+                  <View key={photo.id} style={{ flex: 1, gap: 4 }}>
+                    <Image
+                      source={{ uri: photoUri(photo.file) ?? undefined }}
+                      style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 12 }}
+                    />
+                    <Text style={AppTheme.hint}>{photo.date}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Tocar para alternar entre antes y ahora"
+                onPress={() => setShowAfter(!showAfter)}
+                style={{ gap: 4 }}
+              >
+                <Image
+                  source={{ uri: photoUri((showAfter ? pair.after : pair.before).file) ?? undefined }}
+                  style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 12 }}
+                />
+                <Text style={AppTheme.hint}>
+                  {showAfter ? "Ahora" : "Antes"} · {(showAfter ? pair.after : pair.before).date} · toca para
+                  cambiar
+                </Text>
+              </Pressable>
+            )}
+            <View
+              style={{
+                flexDirection: "row",
+                borderTopWidth: 1,
+                borderTopColor: AppTheme.colors.border,
+                paddingTop: 10,
+              }}
+            >
+              {[
+                {
+                  label: stats.realWeight ? "Peso real" : "Peso",
+                  value:
+                    stats.beforeKg !== null && stats.afterKg !== null
+                      ? `${stats.afterKg - stats.beforeKg > 0 ? "+" : "−"}${formatWeight(Math.abs(stats.afterKg - stats.beforeKg), unit, 1)}`
+                      : "—",
+                },
+                {
+                  label: "Cintura",
+                  value: stats.waistCm
+                    ? `${stats.waistCm.after - stats.waistCm.before > 0 ? "+" : "−"}${Math.abs(stats.waistCm.after - stats.waistCm.before).toFixed(1)} cm`
+                    : "—",
+                },
+                { label: "Tiempo", value: `${Math.round(stats.days / 7)} sem` },
+              ].map((figure, index) => (
+                <View
+                  key={figure.label}
+                  style={[
+                    { flex: 1, gap: 2 },
+                    index > 0 && {
+                      borderLeftWidth: 1,
+                      borderLeftColor: AppTheme.colors.border,
+                      paddingLeft: 10,
+                    },
+                  ]}
+                >
+                  <Text style={[AppTheme.hint, { fontSize: 11 }]}>{figure.label}</Text>
+                  <Text style={[AppTheme.tileValue, { fontSize: 18 }]}>{figure.value}</Text>
                 </View>
               ))}
             </View>
+            {stats.realWeight ? (
+              <Text style={AppTheme.hint}>
+                Peso real del motor en cada fecha, sin el agua del día: la comparación no se deja engañar.
+              </Text>
+            ) : null}
           </Card>
         ) : (
           <Card title="Antes y ahora">
@@ -132,6 +232,16 @@ export default function PhotosScreen() {
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={AppTheme.entryName}>{caption(photo)}</Text>
+                  <View style={AppTheme.rowActions}>
+                    <LinkButton
+                      title="Usar como antes"
+                      onPress={() => setChosen({ ...chosen, before: photo.id })}
+                    />
+                    <LinkButton
+                      title="Usar como ahora"
+                      onPress={() => setChosen({ ...chosen, after: photo.id })}
+                    />
+                  </View>
                   <RowActions
                     question="¿Borrar esta foto?"
                     onDelete={async () => {

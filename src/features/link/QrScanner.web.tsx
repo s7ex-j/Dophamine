@@ -40,7 +40,7 @@ export function QrScanner({
           context.drawImage(element, 0, 0, width, height);
           const result = jsQR(context.getImageData(0, 0, width, height).data, width, height);
           // Solo sirven los códigos de conexión de Dophamine; cualquier otro QR se ignora.
-          if (result?.data.startsWith("D1|")) {
+          if (result?.data.startsWith("D2|")) {
             stopped = true;
             report.current(result.data);
             return;

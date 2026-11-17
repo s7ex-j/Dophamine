@@ -11,7 +11,11 @@ import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/prof
 import { getNutritionProfile, saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { WEIGHT_UNIT_OPTIONS, type WeightUnit } from "@/src/lib/units";
 import { VIEWER } from "@/src/lib/mode";
-import { AppTheme } from "@/src/theme";
+import { AppTheme, THEME } from "@/src/theme";
+import { applyTheme } from "@/src/theming/current";
+import { setSetting } from "@/src/features/settings/settings.repository";
+import { THEME_KEY } from "@/src/theming/palettes";
+import { ThemePicker } from "@/src/theming/ThemePicker";
 
 // Pestaña "Más": el resto de secciones, preferencias y respaldo.
 export default function MoreScreen() {
@@ -51,6 +55,11 @@ export default function MoreScreen() {
                 title="Bienestar"
                 detail="Ánimo, energía, estrés y sueño"
                 onPress={() => router.push("/wellbeing")}
+              />
+              <NavRow
+                title="Retos de 21 días"
+                detail="Un compromiso tres semanas seguidas, marcado solo"
+                onPress={() => router.push("/challenges")}
               />
               <NavRow
                 title="Racha y logros"
@@ -140,6 +149,19 @@ export default function MoreScreen() {
               Solo se envía el texto que buscas o el número del código de barras, nunca tus registros. Lo que
               encuentres queda guardado para usarlo sin conexión. {OFF_ATTRIBUTION}
             </Text>
+          </Card>
+        )}
+        {VIEWER ? null : (
+          <Card title="Estilo de la app">
+            <ThemePicker
+              value={THEME}
+              onChange={async (theme) => {
+                if (theme === THEME) return;
+                await setSetting(THEME_KEY, theme);
+                await applyTheme();
+              }}
+            />
+            <Text style={AppTheme.hint}>Al cambiarlo, la app se reinicia con los colores nuevos.</Text>
           </Card>
         )}
         <Card title={VIEWER ? "Conectar con el teléfono" : "Conectar con la web"}>

@@ -10,6 +10,7 @@ import {
   normalizeTime,
   parseTime,
   phraseFor,
+  preWorkoutReminders,
   remindersToSchedule,
   sortMeals,
   templateMeals,
@@ -151,5 +152,38 @@ describe("recordatorio de pesaje", () => {
     expect(scheduled).toHaveLength(7);
     expect(scheduled[0]).toMatchObject({ weekday: 2, hour: 6, minute: 45, title: "Hora de pesarte" });
     expect(remindersToSchedule({ ...config, weighIn: { enabled: false, time: "06:45" } })).toEqual([]);
+  });
+});
+
+describe("aviso antes de entrenar", () => {
+  const config = {
+    ...defaultConfig(() => "x"),
+    enabled: false,
+    preWorkout: {
+      enabled: true,
+      minutesBefore: 90,
+      times: { mon: "18:00", sat: "01:00" },
+      meals: { mon: "Pan con plátano" },
+    },
+  };
+  it("avisa 90 minutos antes con la comida de la dieta, y pasa al día anterior si cae antes de medianoche", () => {
+    const list = preWorkoutReminders(config);
+    expect(list).toHaveLength(2);
+    expect(list[0]).toMatchObject({ weekday: 2, hour: 16, minute: 30, title: "Entrenas en 90 min" });
+    expect(list[0].body).toContain("Pan con plátano");
+    // Sábado 01:00 − 90 min = viernes 23:30.
+    expect(list[1]).toMatchObject({ weekday: 6, hour: 23, minute: 30 });
+    expect(list[1].body).toContain("carbohidrato fácil");
+    expect(remindersToSchedule(config)).toHaveLength(2);
+  });
+  it("se lee de lo guardado y se apaga del todo", () => {
+    const saved = normalizeConfig(
+      { ...config, preWorkout: { ...config.preWorkout, minutesBefore: 45, times: { mon: "6:5" } } },
+      () => "x",
+    );
+    expect(saved.preWorkout).toMatchObject({ enabled: true, minutesBefore: 90 });
+    expect(preWorkoutReminders({ ...config, preWorkout: { ...config.preWorkout, enabled: false } })).toEqual(
+      [],
+    );
   });
 });

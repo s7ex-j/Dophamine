@@ -4,6 +4,7 @@ import type { RecentTrend, TrainingType } from "@/src/features/profile/expenditu
 import type { Allergen } from "@/src/features/health/foodTags";
 import { isValidPlanInput } from "@/src/features/profile/planInput";
 import type { DietType } from "@/src/features/profile/targets";
+import type { ThemeId } from "@/src/theming/palettes";
 import {
   adjustModeOf,
   checkInDaysOf,
@@ -29,6 +30,7 @@ import {
 export type OnboardingStep =
   | "goal"
   | "body"
+  | "style"
   | "composition"
   | "activity"
   | "training"
@@ -70,6 +72,8 @@ export type Answers = {
   dietType: DietType;
   /** Alergias e intolerancias: van al perfil de salud. */
   avoid: Allergen[];
+  /** Tema de color de la app; null = el sugerido según el perfil. */
+  theme: ThemeId | null;
 };
 
 /** Mantener no tiene peso meta ni ritmo, así que se salta ese paso. */
@@ -77,6 +81,7 @@ export function stepsFor(goal: Goal): OnboardingStep[] {
   const steps: OnboardingStep[] = [
     "goal",
     "body",
+    "style",
     "composition",
     "activity",
     "training",
@@ -140,6 +145,7 @@ export function answersFrom(profile: NutritionProfile | null, weightKg: number |
     mealsPerDay: mealSetupOf(profile).count,
     dietType: profile?.dietType ?? "balanced",
     avoid: [],
+    theme: null,
   };
 }
 

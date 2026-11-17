@@ -5,6 +5,7 @@ import {
   adaptiveEngine,
   ENGINE_DAYS,
   forecastWeight,
+  isCovariance,
   type AdaptiveEstimate,
 } from "@/src/features/tdee/adaptive";
 import { addDays } from "@/src/lib/dates";
@@ -214,6 +215,45 @@ describe("motor de autoajuste: datos inciertos", () => {
     if (!marked.active) throw new Error("El motor debería estar activo.");
     // El agua se lee como gasto más bajo; marcando el cambio de plan, el error es menor.
     expect(Math.abs(marked.tdee - 2500)).toBeLessThan(Math.abs(plain.tdee - 2500));
+  });
+});
+
+describe("motor de autoajuste: estabilidad numérica", () => {
+  it("la covarianza es simétrica y semidefinida positiva en cada paso, también con datos difíciles", () => {
+    const cases = [
+      simulate({ days: 120, tdee: () => 2500, noise: 0.05 }),
+      simulate({ days: 120, tdee: (day) => (day < 60 ? 2800 : 2100), noise: 1.2, seed: 5 }),
+      simulate({ days: 90, tdee: () => 2500, missing: [20, 21, 22, 40, 41], partial: [30, 31, 50], seed: 9 }),
+      simulate({ days: 60, tdee: () => 2500, spike: { 20: 6, 21: -5, 40: 8 }, seed: 13 }),
+      simulate({ days: 40, tdee: () => 2500, carbs: (day) => (day % 2 ? 600 : 50), carbEffect: 1, seed: 17 }),
+    ];
+    for (const records of cases) {
+      const result = estimate(records);
+      expect(result.covarianceOk).toBe(true);
+      expect(result.tdeeSd).toBeGreaterThan(0);
+      expect(Number.isFinite(result.tdee)).toBe(true);
+    }
+  });
+
+  it("reconoce una matriz que no es covarianza", () => {
+    expect(
+      isCovariance([
+        [1, 0],
+        [0, 1],
+      ]),
+    ).toBe(true);
+    expect(
+      isCovariance([
+        [1, 2],
+        [2, 1],
+      ]),
+    ).toBe(false);
+    expect(
+      isCovariance([
+        [1, 0.5],
+        [0.4, 1],
+      ]),
+    ).toBe(false);
   });
 });
 

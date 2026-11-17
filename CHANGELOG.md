@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.27.0 - 2026-11-17
+
+Temas de color, retos de 21 días, meta con fecha, compartir la semana, aviso antes de entrenar, leer etiquetas y correcciones de la auditoría.
+
+- Temas: Bosque (el de siempre), Pastel (lavanda, durazno y menta sobre grafito) y Claro. Se eligen en la evaluación inicial (se sugiere uno según el perfil) y en Más → Estilo de la app; al cambiarlo la app se reinicia con los colores nuevos. Cada color del tema y de los gráficos tiene su equivalente en cada tema, también los de los macros.
+- Retos de 21 días (Más): un compromiso del cumplimiento tres semanas seguidas, marcado solo con lo que ya registras. Un día fallado por semana no reinicia el reto. Los completados quedan en la lista.
+- Meta con fecha (Estrategia): un peso para un día concreto. Con el motor de autoajuste activo muestra dónde llegarías con tu objetivo actual, con su margen y la probabilidad de estar en la meta, y propone el cambio de calorías más chico que la sube al 70 % (o avisa si te pasarías). Las dos últimas semanas da indicaciones para no mover el agua.
+- Compartir mi semana (desde el resumen semanal del Panel): la semana en tres frases con la racha, el peso medio y los días registrados, como imagen que se crea en el teléfono. Se elige qué incluir.
+- Aviso antes de entrenar (Recordatorios): la hora del gimnasio de cada día y 60, 90 o 120 minutos antes un aviso con qué comer; si la dieta marca la comida de antes de entrenar, el aviso la nombra. "Usar las horas de mi dieta" las toma del archivo de dieta.
+- Leer una etiqueta (Agregar → Nuevo): pegar el texto de la etiqueta llena porción, calorías y macros; si las calorías no cuadran con los macros, propone el dato mal leído (una coma perdida) y lo avisa. Con la cámara, cuando llegue el APK.
+- Fotos de progreso: elegir qué dos fotos comparar, verlas lado a lado o alternar, y el cambio de peso real (el del motor, sin el agua del día) y de cintura.
+- Auditoría: la covarianza del filtro se comprueba simétrica y semidefinida positiva en cada paso y se repara si el redondeo la deforma (prueba con datos difíciles); el código QR de la conexión directa caduca a los 10 minutos y uno de la versión anterior se rechaza con un aviso.
+- Dependencia nueva: react-native-view-shot (MIT), incluida en Expo Go.
+- De 383 a 404 pruebas de dominio y de 27 a 28 flujos de navegador.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0; en particular, el reinicio al cambiar de tema, el aviso antes de entrenar y compartir la imagen.
+
 ## 0.26.0 - 2026-11-17
 
 Lista para el primer APK: ícono propio, reparto igual todos los días, Panel con anillos de macros y rango de 7 o 30 días, y revisión general.

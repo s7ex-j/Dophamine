@@ -6,7 +6,7 @@ import { ActivityIndicator, View } from "react-native";
 import { ErrorScreen } from "@/src/components/ErrorScreen";
 import { initializeDatabase } from "@/src/db/database";
 import { configureNotifications } from "@/src/features/reminders/scheduler";
-import { AppTheme } from "@/src/theme";
+import { AppTheme, THEME } from "@/src/theme";
 
 /** Si una pantalla falla, se muestra un aviso con "Reintentar" en lugar de una pantalla en blanco. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
@@ -47,7 +47,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={THEME === "light" ? "dark" : "light"} />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -77,6 +77,9 @@ export default function RootLayout() {
         <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />
         <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
         <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
+        <Stack.Screen name="goal-date" options={{ headerShown: true, title: "Meta con fecha" }} />
+        <Stack.Screen name="week-share" options={{ headerShown: true, title: "Compartir mi semana" }} />
+        <Stack.Screen name="challenges" options={{ headerShown: true, title: "Retos de 21 días" }} />
         <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
         <Stack.Screen name="algorithm" options={{ headerShown: true, title: "Cómo se calcula" }} />
         <Stack.Screen name="measurements" options={{ headerShown: true, title: "Medidas corporales" }} />

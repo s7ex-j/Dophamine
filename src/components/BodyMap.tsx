@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import Body, { type ExtendedBodyPart, type Slug } from "react-native-body-highlighter";
 
 import type { Muscle } from "@/src/features/exercises/catalog";
-import { AppTheme } from "@/src/theme";
+import { AppTheme, tint } from "@/src/theme";
 
 /**
  * Cuerpo de frente y de espalda con cada músculo pintado según cuántas series
@@ -32,7 +32,7 @@ const SLUGS: Record<Muscle, Slug> = {
   calves: "calves",
 };
 
-const LEVEL_COLORS = ["#2A3530", "#1F5A44", "#22936A", "#34D399"];
+const LEVEL_COLORS = ["#2A3530", "#1F5A44", "#22936A", "#34D399"].map(tint);
 const LEVEL_LABELS = ["Sin series", "1–4", "5–9", "10 o más"];
 
 /** Una zona del dibujo puede juntar varios músculos (los tres deltoides): manda el nivel más alto. */

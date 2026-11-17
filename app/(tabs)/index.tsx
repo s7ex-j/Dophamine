@@ -293,7 +293,13 @@ export default function DashboardScreen() {
             render(block[0])
           ),
         )}
-        {weekly ? <WeeklyCard summary={weekly} unit={weightUnitOf(profile)} /> : null}
+        {weekly ? (
+          <WeeklyCard
+            summary={weekly}
+            unit={weightUnitOf(profile)}
+            onShare={VIEWER ? undefined : () => router.push("/week-share")}
+          />
+        ) : null}
       </ScrollView>
     </Screen>
   );

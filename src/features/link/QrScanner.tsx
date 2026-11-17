@@ -40,7 +40,7 @@ export function QrScanner({
           barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
           onBarcodeScanned={({ data }) => {
             // Solo sirven los códigos de conexión de Dophamine; cualquier otro QR se ignora.
-            if (handled.current || !data.startsWith("D1|")) return;
+            if (handled.current || !data.startsWith("D2|")) return;
             handled.current = true;
             onCode(data);
           }}

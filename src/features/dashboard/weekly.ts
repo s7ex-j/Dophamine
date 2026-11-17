@@ -71,3 +71,48 @@ export function weeklySummary(input: {
     avgSleepMinutes: avgSleep === null ? null : Math.round(avgSleep),
   };
 }
+
+export type WeeklyStory = { title: string; lines: string[] };
+
+/**
+ * La semana en tres frases para compartir: lo más importante primero (peso,
+ * calorías, entreno, sueño), en positivo cuando se puede y sin inventar lo que
+ * no se registró. `goalDirection` dice si bajar de peso es lo buscado (-1),
+ * subir (+1) o mantener (0).
+ */
+export function weeklyStory(
+  summary: WeeklySummary,
+  goalDirection: -1 | 0 | 1,
+  unit: "kg" | "lb" = "kg",
+): WeeklyStory {
+  const lines: string[] = [];
+  const toUnit = (kg: number) => (unit === "lb" ? kg * 2.20462 : kg);
+  const change = summary.weightChangeKg;
+  if (change !== null) {
+    const amount = `${Math.abs(toUnit(change)).toFixed(1)} ${unit}`;
+    if (Math.abs(change) < 0.1) lines.push("Tu peso se mantuvo estable.");
+    else if (Math.sign(change) === goalDirection)
+      lines.push(`${change < 0 ? "Bajaste" : "Subiste"} ${amount}, en la dirección de tu meta.`);
+    else lines.push(`${change < 0 ? "Bajaste" : "Subiste"} ${amount} esta semana.`);
+  }
+  if (summary.avgKcal !== null && summary.kcalTarget > 0) {
+    const gap = Math.round(summary.avgKcal - summary.kcalTarget);
+    lines.push(
+      Math.abs(gap) <= summary.kcalTarget * 0.05
+        ? `Comiste en tu objetivo: ${Math.round(summary.avgKcal)} kcal al día.`
+        : `Comiste ${Math.abs(gap)} kcal ${gap > 0 ? "por encima" : "por debajo"} de tu objetivo al día.`,
+    );
+  }
+  if (summary.workouts)
+    lines.push(`Entrenaste ${summary.workouts} ${summary.workouts === 1 ? "vez" : "veces"}.`);
+  if (summary.proteinDays >= 5) lines.push(`Cumpliste tu proteína ${summary.proteinDays} de 7 días.`);
+  if (summary.avgSleepMinutes !== null)
+    lines.push(
+      `Dormiste ${Math.floor(summary.avgSleepMinutes / 60)} h ${summary.avgSleepMinutes % 60 ? `${Math.round(summary.avgSleepMinutes % 60)} min ` : ""}de media.`,
+    );
+  const strong = summary.loggedDays >= 6;
+  return {
+    title: strong ? "Semana sólida" : summary.loggedDays >= 4 ? "Buena semana" : "Semana para retomar",
+    lines: lines.slice(0, 3),
+  };
+}

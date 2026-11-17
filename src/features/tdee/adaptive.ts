@@ -76,7 +76,7 @@ const KCAL_PER_KG_BODY = 22;
 const ADAPTATION_MIN_DAYS = 28;
 const ADAPTATION_MAX_DAYS = 56;
 
-type Matrix = number[][];
+export type Matrix = number[][];
 type Day = {
   date: string;
   weight: number | null;
@@ -134,6 +134,8 @@ export type AdaptiveEstimate = {
   series: Array<{ date: string; tdee: number; weightKg: number }>;
   /** Lo necesario para proyectar el peso con `forecastWeight`. */
   model: { energyPerKg: number; d: number; pWW: number; pWD: number; pDD: number };
+  /** La covarianza final es simétrica y semidefinida positiva (diagnóstico). */
+  covarianceOk: boolean;
 };
 export type Adaptive = AdaptiveProgress | AdaptiveEstimate;
 
@@ -157,6 +159,38 @@ const transpose = (a: Matrix): Matrix => a.map((_, i) => a.map((row) => row[i]))
 const multiply = (a: Matrix, b: Matrix): Matrix =>
   a.map((row) => b[0].map((_, j) => row.reduce((sum, value, k) => sum + value * b[k][j], 0)));
 const symmetric = (a: Matrix): Matrix => a.map((row, i) => row.map((value, j) => (value + a[j][i]) / 2));
+
+/**
+ * ¿La matriz es simétrica y semidefinida positiva? Se intenta una
+ * factorización de Cholesky con una tolerancia mínima.
+ */
+export function isCovariance(matrix: Matrix, tolerance = 1e-12): boolean {
+  const size = matrix.length;
+  for (let i = 0; i < size; i++)
+    for (let j = 0; j < i; j++)
+      if (Math.abs(matrix[i][j] - matrix[j][i]) > 1e-9 * Math.max(1, Math.abs(matrix[i][j]))) return false;
+  const lower: Matrix = Array.from({ length: size }, () => new Array<number>(size).fill(0));
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j <= i; j++) {
+      let sum = matrix[i][j];
+      for (let k = 0; k < j; k++) sum -= lower[i][k] * lower[j][k];
+      if (i === j) {
+        if (sum < -tolerance) return false;
+        lower[i][i] = Math.sqrt(Math.max(sum, 0));
+      } else lower[i][j] = lower[j][j] > 1e-15 ? sum / lower[j][j] : 0;
+    }
+  }
+  return true;
+}
+
+/** Repara una covarianza que perdió la forma por redondeo: simétrica y sin varianzas negativas. */
+function repaired(matrix: Matrix): Matrix {
+  const fixed = symmetric(matrix);
+  for (let i = 0; i < N; i++) if (fixed[i][i] < 1e-12) fixed[i][i] = 1e-12;
+  return isCovariance(fixed)
+    ? fixed
+    : fixed.map((row, i) => row.map((value, j) => (i === j ? value + 1e-9 : value)));
+}
 
 /** Inversa por Gauss-Jordan con pivoteo parcial; null si la matriz no se puede invertir. */
 function invert(matrix: Matrix): Matrix | null {
@@ -304,7 +338,8 @@ function runFilter(
       const updated = multiply(multiply(keep, p), transpose(keep));
       for (let i = 0; i < N; i++)
         for (let j = 0; j < N; j++) updated[i][j] += gain[i] * gain[j] * (used - hph);
-      p = symmetric(updated);
+      // Forma de Joseph y reparación: la covarianza nunca pierde simetría ni se vuelve negativa.
+      p = repaired(updated);
       logLikelihood += -0.5 * Math.log(2 * Math.PI * expected) - huberLoss(z);
       if (Math.abs(z) > OUTLIER && position > 0) outliers.push(day.date);
       // El ruido de la báscula se aprende de lo que queda sin explicar.
@@ -476,6 +511,9 @@ export function adaptiveEngine(records: DailyBiometrics[], options: AdaptiveOpti
       weightKg: smoothed[gateIndex + offset].x[W],
     })),
     model: { energyPerKg: rho, d: final.x[D], pWW: final.p[W][W], pWD: final.p[W][D], pDD: final.p[D][D] },
+    covarianceOk:
+      chosen.steps.every((step) => isCovariance(step.p)) &&
+      smoothed.every((item) => isCovariance(item.p, 1e-9)),
   };
 }
 

@@ -1,3 +1,4 @@
+import { LinkButton } from "@/src/components/ui";
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 
@@ -15,7 +16,16 @@ const shortDate = (date: string) => {
 };
 
 /** La semana pasada en seis datos. Solo aparece si hubo algún registro. */
-export function WeeklyCard({ summary, unit }: { summary: WeeklySummary; unit: WeightUnit }) {
+export function WeeklyCard({
+  summary,
+  unit,
+  onShare,
+}: {
+  summary: WeeklySummary;
+  unit: WeightUnit;
+  /** Abre la pantalla para compartir la semana como imagen. */
+  onShare?: () => void;
+}) {
   if (!summary.loggedDays) return null;
   const change = summary.weightChangeKg;
   const items: Array<{ icon: IconName; label: string; value: string; color: string }> = [
@@ -79,6 +89,7 @@ export function WeeklyCard({ summary, unit }: { summary: WeeklySummary; unit: We
           </View>
         ))}
       </View>
+      {onShare ? <LinkButton title="Compartir mi semana" onPress={onShare} /> : null}
     </View>
   );
 }

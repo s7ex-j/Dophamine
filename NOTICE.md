@@ -44,6 +44,10 @@ The front and back body drawings of the weekly muscle map come from
 https://github.com/HichamELBSI/react-native-body-highlighter). Dophamine only decides the color of
 each area.
 
+# Share image
+
+- `react-native-view-shot` (MIT License) draws the weekly summary as an image on the phone.
+
 # QR codes
 
 - `qrcode-generator` (Kazuhiko Arase, MIT License) draws the pairing QR codes.

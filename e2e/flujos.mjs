@@ -164,6 +164,8 @@ async function main() {
     const element = await page.$(`input[aria-label="${label}"]`);
     assert(element, `No hay ningún campo llamado "${label}".`);
     await element.click();
+    // Algunos campos seleccionan su texto al enfocarse: se espera a que termine antes de escribir.
+    await new Promise((done) => setTimeout(done, 150));
     await element.evaluate((node) => node.select());
     await page.keyboard.press("Backspace");
     await element.type(String(value));
@@ -186,6 +188,9 @@ async function main() {
     await fill("Edad", 25);
     await fill("Altura", 180);
     await fill("Peso actual", 80);
+    await press("Continuar");
+    await waitText("Tu estilo");
+    assert(await page.$('[aria-label="Tema Pastel"]'), "La evaluación no ofrece elegir el tema.");
     await press("Continuar");
     await fill("O escribe tu medición", 20);
     await press("Continuar");
@@ -247,6 +252,7 @@ async function main() {
     assert(profile.dietType === "high_protein", "No se guardó el tipo de plan.");
     const health = (await store()).settings.health_profile;
     assert(health?.avoid?.includes("dairy"), "No se guardaron las alergias de la evaluación.");
+    assert((await store()).settings.app_theme === "forest", "No se guardó el tema sugerido.");
   });
 
   await step("panel · hoy: guardar peso y composición", async () => {
@@ -1078,6 +1084,81 @@ async function main() {
     );
   });
 
+  await step("ideas: retos, meta con fecha, etiqueta, aviso antes de entrenar y tema", async () => {
+    // Retos de 21 días.
+    await open("/more");
+    await press("Retos de 21 días");
+    await waitText("Elige un reto");
+    await pressLabel("Empezar reto: Pesarse cada mañana");
+    await waitText("día 1 de 21");
+    assert((await store()).settings.challenges?.active?.[0]?.key === "weight", "No se guardó el reto.");
+
+    // Meta con fecha: con el motor activo hay proyección y probabilidad.
+    await open("/goal-date");
+    await waitText("Tu meta");
+    await fill("Qué es (opcional)", "Viaje");
+    await fill("Peso que quieres tener", 76);
+    await press("Guardar meta");
+    await waitText("Dónde llegarías ese día");
+    await waitText("Probabilidad de");
+    assert((await store()).settings.goal_date?.weightKg === 76, "No se guardó la meta con fecha.");
+
+    // Leer una etiqueta: la grasa mal leída se corrige.
+    await open("/add-food?slot=lunch");
+    await waitText("Buscar alimento");
+    await press("Nuevo");
+    await press("Leer el texto de una etiqueta");
+    await fill(
+      "Texto de la etiqueta",
+      "Valor energético 373 kcal\nProteínas 10,7 g\nCarbohidratos 66,7 g\nGrasas 70 g",
+    );
+    await press("Leer etiqueta");
+    await waitText("puse grasas en 7 g");
+    const fats = await page
+      .$eval('input[aria-label="Grasas"], input[aria-label^="Grasas"]', (input) => input.value)
+      .catch(() => null);
+    assert(fats === null || fats === "7", `La grasa no quedó corregida: ${fats}`);
+
+    // Aviso antes de entrenar.
+    await open("/reminders");
+    await waitText("Antes de entrenar");
+    await pressLabel("Aviso antes de entrenar");
+    await fillLabel("Hora del gimnasio el lunes", "18:00");
+    await press("Guardar recordatorios");
+    await page.waitForFunction(
+      (key) =>
+        JSON.parse(localStorage.getItem(key)).settings?.meal_reminders?.preWorkout?.times?.mon === "18:00",
+      { timeout: 8000 },
+      STORE_KEY,
+    );
+
+    // Tema: elegir Pastel recarga la app con otros colores; luego se vuelve a Bosque.
+    await open("/more");
+    await waitText("Estilo de la app");
+    const before = await page.evaluate(
+      () => getComputedStyle(document.body.querySelector("div")).backgroundColor,
+    );
+    await Promise.all([
+      page.waitForNavigation({ timeout: 20000 }).catch(() => null),
+      pressLabel("Tema Pastel"),
+    ]);
+    await waitText("Estilo de la app");
+    assert((await store()).settings.app_theme === "pastel", "No se guardó el tema.");
+    const background = await page.evaluate(() => {
+      const colors = [...document.querySelectorAll("div")].map(
+        (node) => getComputedStyle(node).backgroundColor,
+      );
+      return colors.includes("rgb(28, 26, 34)");
+    });
+    assert(background, `El tema Pastel no cambió el fondo (antes ${before}).`);
+    await Promise.all([
+      page.waitForNavigation({ timeout: 20000 }).catch(() => null),
+      pressLabel("Tema Bosque"),
+    ]);
+    await waitText("Estilo de la app");
+    assert((await store()).settings.app_theme === "forest", "No se volvió al tema Bosque.");
+  });
+
   await step("visor web: carga un respaldo, no escribe y no ofrece registrar", async () => {
     // Un respaldo en modo automático con una revisión pendiente: la app completa
     // aplicaría el ajuste al abrir. El visor no debe tocar nada.
@@ -1204,7 +1285,7 @@ async function main() {
       const offer = await web.$eval('[aria-label="Código de conexión"]', (element) =>
         element.innerText.trim(),
       );
-      assert(offer.startsWith("D1|O|"), `El código de la web no tiene el formato esperado: ${offer}`);
+      assert(offer.startsWith("D2|O|"), `El código de la web no tiene el formato esperado: ${offer}`);
       assert(await web.$('[aria-label="Código QR de conexión"] svg'), "La web no dibujó el código QR.");
 
       // 2. El teléfono lo recibe y muestra el suyo.
@@ -1217,7 +1298,7 @@ async function main() {
       const answer = await page.$eval('[aria-label="Código de respuesta"]', (element) =>
         element.innerText.trim(),
       );
-      assert(answer.startsWith("D1|A|"), `El código del teléfono no tiene el formato esperado: ${answer}`);
+      assert(answer.startsWith("D2|A|"), `El código del teléfono no tiene el formato esperado: ${answer}`);
 
       // 3. La web lo acepta: canal abierto y mismo número de verificación en los dos lados.
       await webFill("Código del teléfono", answer);

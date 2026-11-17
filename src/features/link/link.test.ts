@@ -53,10 +53,17 @@ describe("señal para el código QR", () => {
 
   it("el código va y vuelve sin perder nada, y es corto", () => {
     const code = packSignal(signal);
-    expect(code.startsWith("D1|O|")).toBe(true);
-    expect(code.length).toBeLessThan(220);
+    expect(code.startsWith("D2|O|")).toBe(true);
+    expect(code.length).toBeLessThan(230);
     expect(unpackSignal(code, "offer")).toEqual(signal);
     expect(unpackSignal(`  ${code}\n`)).toEqual(signal);
+  });
+
+  it("el código caduca a los 10 minutos y uno de la versión anterior se rechaza con un aviso", () => {
+    const code = packSignal({ ...signal, issuedAt: 1_800_000_000 });
+    expect(unpackSignal(code, "offer", 1_800_000_000_000 + 9 * 60_000).issuedAt).toBe(1_800_000_000);
+    expect(() => unpackSignal(code, "offer", 1_800_000_000_000 + 11 * 60_000)).toThrow("caducó");
+    expect(() => unpackSignal(code.replace(/^D2/, "D1"))).toThrow("versión anterior");
   });
 
   it("reconstruye un SDP con la misma huella, credenciales y direcciones", () => {
@@ -65,7 +72,7 @@ describe("señal para el código QR", () => {
     expect(rebuilt).toContain("a=ice-ufrag:Ab+/");
     expect(rebuilt).toContain("m=application 9 UDP/DTLS/SCTP webrtc-datachannel");
     expect(rebuilt).toContain("192.168.1.20 54321 typ host");
-    expect(readSdp(rebuilt, "offer")).toEqual(signal);
+    expect(readSdp(rebuilt, "offer")).toEqual({ ...signal, issuedAt: expect.any(Number) });
   });
 
   it("explica qué pasa con un código que no sirve", () => {

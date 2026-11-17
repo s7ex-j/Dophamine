@@ -22,6 +22,10 @@ import { ALLERGEN_LABELS, type Allergen } from "@/src/features/health/foodTags";
 import { DIET_TYPES } from "@/src/features/profile/targets";
 import { saveRoutine } from "@/src/features/training/training.repository";
 import { localDateKey } from "@/src/lib/dates";
+import { setSetting } from "@/src/features/settings/settings.repository";
+import { applyTheme } from "@/src/theming/current";
+import { suggestedTheme, THEME_KEY } from "@/src/theming/palettes";
+import { ThemePicker } from "@/src/theming/ThemePicker";
 import { pickTextFile } from "@/src/lib/files";
 import { MEAL_COUNTS, mealSlots } from "@/src/features/nutrition/meals";
 import {
@@ -42,12 +46,16 @@ import {
 } from "@/src/features/profile/profile";
 import { saveNutritionProfile } from "@/src/features/profile/profile.repository";
 import { formatWeight, toKg, WEIGHT_UNIT_OPTIONS, weightValue, type WeightUnit } from "@/src/lib/units";
-import { AppTheme } from "@/src/theme";
+import { AppTheme, THEME } from "@/src/theme";
 
 // Una pregunta corta por pantalla; la explicación va en una sola línea.
 const TITLES: Record<OnboardingStep, { title: string; help: string }> = {
   goal: { title: "¿Qué quieres lograr?", help: "Define hacia dónde se ajusta tu energía." },
   body: { title: "Sobre ti", help: "La base del cálculo." },
+  style: {
+    title: "Tu estilo",
+    help: "Colores de toda la app. Te sugerimos uno según tu perfil; lo cambias cuando quieras en Más.",
+  },
   composition: {
     title: "Grasa corporal",
     help: "Opcional. Elige lo que más se parezca o escribe tu medición.",
@@ -121,10 +129,14 @@ export function Onboarding({
   const save = async () => {
     const input = planInputFrom(answers, profile);
     await saveNutritionProfile({ ...buildNutritionProfile(input), dietType: answers.dietType });
+    // El tema se aplica al final: si cambia, la app se reinicia ya con sus colores.
+    const theme = answers.theme ?? suggestedTheme(answers.sex);
+    await setSetting(THEME_KEY, theme);
     const health = await getHealth();
     if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
+    if (theme !== THEME) return applyTheme();
     onSaved();
   };
 
@@ -401,6 +413,13 @@ export function Onboarding({
                 detail: "2.4 g por kg · déficits marcados",
               },
             ]}
+          />
+        ) : null}
+
+        {step === "style" ? (
+          <ThemePicker
+            value={answers.theme ?? suggestedTheme(answers.sex)}
+            onChange={(theme) => set("theme", theme)}
           />
         ) : null}
 

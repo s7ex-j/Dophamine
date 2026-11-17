@@ -42,6 +42,7 @@ const answers: Answers = {
   mealsPerDay: 5,
   dietType: "balanced",
   avoid: [],
+  theme: null,
 };
 
 // El caso que reportó Jharol: 18 años, 170 cm, 56 kg, 15 % de grasa, estudiante que entrena fuerza.
