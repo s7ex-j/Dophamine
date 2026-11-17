@@ -559,7 +559,7 @@ function Vistas() {
           <Vista
             className="md:col-span-2"
             titulo="Constancia"
-            texto="Cumplimiento del día que se marca solo, racha con Dopi, logros y resumen de la semana."
+            texto="Cumplimiento del día que se marca solo, racha con Term, logros y resumen de la semana."
           >
             <MiniHabitos />
           </Vista>

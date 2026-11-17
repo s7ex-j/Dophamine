@@ -5,13 +5,26 @@ Dophamine's own code is licensed under the GNU General Public License, version 3
 MIT license. The third-party data, images and libraries listed below **keep their own licenses and
 are not relicensed** under the GPL by being included in this project.
 
+# Private content (not in this repository)
+
+Two kinds of content are used by the app but are **not** published in this repository: they are
+listed in `.gitignore` and only travel inside the compiled app (they are not in `.easignore`).
+In a clone without them, `scripts/private-assets.mjs` writes empty modules so the app still
+builds: the exercise catalog has only Dophamine's own exercises, without images, and Term is
+drawn as its `>_` prompt.
+
+- **RepDB exercise data and images** (`assets/exercises/`, `src/features/exercises/repdb.data.ts`,
+  `src/features/exercises/images.ts`), under the RepDB Free Tier License, described below.
+- **Term artwork** (`assets/term/`, `src/features/streak/term.images.ts`): renders of the Term
+  character by Jharol Vilca Ramos, all rights reserved. Not covered by the GPL; see `TRADEMARK.md`.
+
 # Third-party exercise data
 
 ## RepDB (images, instructions and part of the catalog)
 
 **Exercise data by [RepDB](https://repdb.co) (repdb.co).**
 
-The exercise illustrations in `assets/exercises/`, the Spanish exercise names and
+The exercise illustrations (`assets/exercises/`, kept out of this repository), the Spanish exercise names and
 step-by-step instructions in `src/features/exercises/repdb.data.ts`, and its muscle and
 equipment tags come from the RepDB free-tier dataset
 (https://github.com/RepDB/exercise-dataset), used under the RepDB Free Tier License v1.0:

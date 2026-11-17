@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
 import { Button, Card, ProgressBar, Screen } from "@/src/components/ui";
-import { Dopi } from "@/src/features/streak/Dopi";
+import { expressionForLevel, Term } from "@/src/features/streak/Term";
 import { shareText } from "@/src/features/streak/streak";
 import { getStreakSummary, type StreakSummary } from "@/src/features/streak/streak.data";
 import { AppTheme } from "@/src/theme";
@@ -20,7 +20,7 @@ async function share(message: string) {
   }
 }
 
-// Racha de registro, Dopi y logros, con la opción de compartirlos.
+// Racha de registro, Term y logros, con la opción de compartirlos.
 export default function AchievementsScreen() {
   const [summary, setSummary] = useState<StreakSummary | null>(null);
   useFocusEffect(
@@ -38,14 +38,14 @@ export default function AchievementsScreen() {
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
         <View style={[AppTheme.card, { alignItems: "center", gap: 8 }]}>
-          <Dopi level={stage.level} mood={summary.mood} size={160} />
-          <Text style={AppTheme.title}>Dopi · {stage.name}</Text>
+          <Term expression={summary.mood === "sad" ? "triste" : expressionForLevel(stage.level)} size={160} />
+          <Text style={AppTheme.title}>Term · {stage.name}</Text>
           <Text style={[AppTheme.body, { textAlign: "center" }]}>
             {summary.mood === "happy"
-              ? "¡Ya anotaste hoy! Dopi está feliz."
+              ? "¡Ya anotaste hoy! Term está feliz."
               : summary.mood === "sad"
-                ? "La racha se cortó. Anota algo hoy y Dopi vuelve a sonreír."
-                : "Dopi espera tu registro de hoy."}
+                ? "La racha se cortó. Anota algo hoy y Term vuelve a sonreír."
+                : "Term espera tu registro de hoy."}
           </Text>
           <View style={{ flexDirection: "row", gap: 10, alignSelf: "stretch" }}>
             {[
@@ -67,7 +67,7 @@ export default function AchievementsScreen() {
               </Text>
             </View>
           ) : (
-            <Text style={AppTheme.hint}>Dopi llegó a su forma final.</Text>
+            <Text style={AppTheme.hint}>Term llegó a su forma final.</Text>
           )}
           {summary.current > 0 ? (
             <Button

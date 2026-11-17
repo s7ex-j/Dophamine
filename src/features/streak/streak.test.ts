@@ -28,11 +28,11 @@ describe("racha de registro", () => {
   });
 });
 
-describe("Dopi", () => {
+describe("Term", () => {
   it("crece con la mejor racha y nunca encoge", () => {
-    expect(petStage(0)).toMatchObject({ name: "Huevo", next: 1 });
-    expect(petStage(2)).toMatchObject({ name: "Recién nacido", next: 3 });
-    expect(petStage(7)).toMatchObject({ level: 3, name: "Joven", next: 21 });
+    expect(petStage(0)).toMatchObject({ name: "Recién instalado", next: 1 });
+    expect(petStage(2)).toMatchObject({ name: "Primer commit", next: 3 });
+    expect(petStage(7)).toMatchObject({ level: 3, name: "En producción", next: 21 });
     expect(petStage(400)).toMatchObject({ name: "Leyenda", next: null });
   });
 

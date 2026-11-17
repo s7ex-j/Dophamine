@@ -35,7 +35,7 @@ import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSec
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { StreakBadge } from "@/src/features/streak/StreakCard";
-import { DopiCheckIn } from "@/src/features/wellbeing/DopiCheckIn";
+import { TermCheckIn } from "@/src/features/wellbeing/TermCheckIn";
 import { DietCoachCard } from "@/src/features/diet/DietCoachCard";
 import { getCoachToday, type CoachToday } from "@/src/features/diet/coach.data";
 import {
@@ -240,7 +240,7 @@ export default function DashboardScreen() {
         {VIEWER ? <ViewerBanner /> : null}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
-        {offerCheckIn && !VIEWER ? <DopiCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
+        {offerCheckIn && !VIEWER ? <TermCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
         {period ? (
           <Pressable
             accessibilityRole="button"

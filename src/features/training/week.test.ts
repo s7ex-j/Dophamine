@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { REPDB_EXERCISES } from "@/src/features/exercises/repdb.data";
+
+// Sin el contenido privado de RepDB (un clon del repositorio público) estas pruebas no aplican.
+const HAS_REPDB = REPDB_EXERCISES.length > 0;
 
 import {
   CATALOG,
@@ -45,7 +49,7 @@ const session = (
   })),
 });
 
-describe("catálogo con RepDB", () => {
+describe.skipIf(!HAS_REPDB)("catálogo con RepDB", () => {
   it("suma cientos de ejercicios sin repetir ids ni nombres", () => {
     expect(CATALOG.length).toBeGreaterThan(500);
     expect(new Set(CATALOG.map((item) => item.id)).size).toBe(CATALOG.length);

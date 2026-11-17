@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 
-import { Dopi } from "@/src/features/streak/Dopi";
+import { Term } from "@/src/features/streak/Term";
 import type { StreakSummary } from "@/src/features/streak/streak.data";
 import { AppTheme } from "@/src/theme";
 
-/** Racha en pequeño, para la cabecera del Panel: Dopi y los días. Tocarla abre los logros. */
+/** Racha en pequeño, para la cabecera del Panel: Term y los días. Tocarla abre los logros. */
 export function StreakBadge({ summary, onPress }: { summary: StreakSummary; onPress: () => void }) {
   return (
     <Pressable
@@ -23,7 +23,7 @@ export function StreakBadge({ summary, onPress }: { summary: StreakSummary; onPr
         borderColor: AppTheme.colors.border,
       }}
     >
-      <Dopi level={summary.stage.level} mood={summary.mood} size={30} />
+      <Term mood={summary.mood} size={30} />
       <Ionicons
         name="flame"
         size={14}
@@ -34,7 +34,7 @@ export function StreakBadge({ summary, onPress }: { summary: StreakSummary; onPr
   );
 }
 
-/** Racha y Dopi en una fila del Panel. Tocarla abre los logros. */
+/** Racha y Term en una fila del Panel. Tocarla abre los logros. */
 export function StreakCard({ summary, onPress }: { summary: StreakSummary; onPress: () => void }) {
   const text =
     summary.mood === "happy"
@@ -51,7 +51,7 @@ export function StreakCard({ summary, onPress }: { summary: StreakSummary; onPre
       onPress={onPress}
       style={[AppTheme.card, { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }]}
     >
-      <Dopi level={summary.stage.level} mood={summary.mood} size={56} />
+      <Term mood={summary.mood} size={56} />
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Ionicons
@@ -64,7 +64,7 @@ export function StreakCard({ summary, onPress }: { summary: StreakSummary; onPre
           </Text>
         </View>
         <Text style={AppTheme.tileSubtitle}>
-          {text} · Dopi {summary.stage.name.toLowerCase()}
+          {text} · {summary.stage.name}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={AppTheme.colors.muted} />

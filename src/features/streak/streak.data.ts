@@ -14,7 +14,7 @@ import {
 import { getSessionHistory, getWorkoutDates } from "@/src/features/training/training.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 
-// Junta lo registrado (comida, peso y entrenos) para la racha, Dopi y
+// Junta lo registrado (comida, peso y entrenos) para la racha, Term y
 // los logros. Usa repositorios que ya tienen versión SQLite y web.
 
 export type StreakSummary = {

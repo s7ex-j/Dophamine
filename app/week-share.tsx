@@ -9,7 +9,7 @@ import { weeklyStory, type WeeklySummary } from "@/src/features/dashboard/weekly
 import { getWeeklySummary } from "@/src/features/dashboard/weekly.data";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
-import { Dopi } from "@/src/features/streak/Dopi";
+import { Term } from "@/src/features/streak/Term";
 import { getStreakSummary, type StreakSummary } from "@/src/features/streak/streak.data";
 import { formatWeight } from "@/src/lib/units";
 import { AppTheme, tint } from "@/src/theme";
@@ -88,7 +88,7 @@ export default function WeekShareScreen() {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            {streak ? <Dopi level={streak.stage.level} mood="happy" size={64} /> : null}
+            <Term expression="orgullo" size={64} />
             <View style={{ flex: 1 }}>
               <Text style={[AppTheme.eyebrow, { color: tint("#86C8AA") }]}>
                 SEMANA {summary.weekStart.slice(5)} – {summary.weekEnd.slice(5)}

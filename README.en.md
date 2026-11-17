@@ -119,7 +119,7 @@ Read [docs/PRIVACY.md](docs/PRIVACY.md) for the privacy and health limits.
 
 Copyright (C) 2026 Jharol Vilca Ramos. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 only (GPL-3.0-only).
 
-The full text is in [LICENSE](LICENSE). Up to version 0.23.0 (tag `v0.23.0-mit`) the code was published under the MIT license, and those copies keep it. The names "Dophamine" and "Dopi" and their artwork are not covered by the code license: see [TRADEMARK.md](TRADEMARK.md).
+The full text is in [LICENSE](LICENSE). Up to version 0.23.0 (tag `v0.23.0-mit`) the code was published under the MIT license, and those copies keep it. The names "Dophamine" and "Term" and their artwork are not covered by the code license: see [TRADEMARK.md](TRADEMARK.md).
 
 ## Support the project
 

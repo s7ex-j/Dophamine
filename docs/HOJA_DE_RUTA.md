@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.27.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.28.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -16,11 +16,12 @@ con el repo.
   conexión directa con la web, que la persona inicia y confirma (de dispositivo a dispositivo, sin servidor).
 - Primero se termina y pule la app en Expo Go; las animaciones van al final de esa etapa; el APK propio
   (EAS) va después, para empaquetar todo y sumar lo que necesita código nativo.
-- La mejora de Dopi (más estados y animación) queda para la 1.0.0. La sobriedad se quitó en la 0.15.0:
+- La mascota es **Term** (desde la 0.28.0, en lugar de Dopi), con sus renders estáticos: sin animación para no
+  hacer la app más pesada. La sobriedad se quitó en la 0.15.0:
   volverá con más trabajo de fondo.
 - **17 de noviembre de 2026 — licencia:** GPL-3.0-only (solo la versión 3, no "o posterior") desde la
   próxima versión (0.24.0). Hasta la 0.23.0 el código sigue bajo MIT para quien ya lo tenga; la última versión
-  MIT queda marcada con la etiqueta `v0.23.0-mit`. El nombre "Dophamine", "Dopi" y sus ilustraciones tienen
+  MIT queda marcada con la etiqueta `v0.23.0-mit`. El nombre "Dophamine", "Term" y sus ilustraciones tienen
   una política de marca aparte (`TRADEMARK.md`).
 - **17 de noviembre de 2026 — donaciones:** solo un enlace en el README y en el sitio. Nada dentro de la app
   hasta revisar las políticas de Google Play y de Apple sobre donaciones.
@@ -34,7 +35,7 @@ con el repo.
 - Plan inicial completo (cuerpo, composición, actividad, entreno, ingesta conocida, meta, comidas por
   nombre o por número) y gasto inicial con varias fórmulas.
 - Panel como único lugar de registro: peso y composición, comida por momento del día, sueño, agua, día
-  incompleto, comidas guardadas, racha con Dopi, chequeo breve de bienestar y resumen semanal.
+  incompleto, comidas guardadas, racha con Term, chequeo breve de bienestar y resumen semanal.
 - Comida: 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas, registro rápido,
   favoritos, código de barras y búsqueda opcional en Open Food Facts.
 - Gasto real adaptativo (tendencia suavizada, energía por kilo según composición, margen) y revisión cada

@@ -1,7 +1,7 @@
 import { addDays } from "@/src/lib/dates";
 
 /**
- * Racha de registro y Dopi, la mascota que crece con ella. Un día cuenta si se
+ * Racha de registro y Term, la mascota que sube de nivel con ella. Un día cuenta si se
  * anotó algo (comida, peso o entreno). Hoy sin registrar no corta la racha:
  * todavía hay tiempo. Módulo puro.
  */
@@ -34,14 +34,14 @@ export function bestStreak(dates: Iterable<string>): number {
 
 export type PetStage = { level: number; name: string; from: number; next: number | null };
 
-/** Dopi crece con tu mejor racha (nunca encoge): huevo, cría, joven, adulto, sabio, leyenda. */
+/** Term sube de nivel con tu mejor racha (nunca baja): de recién instalado a leyenda. */
 export const PET_STAGES: Array<Omit<PetStage, "next">> = [
-  { level: 0, name: "Huevo", from: 0 },
-  { level: 1, name: "Recién nacido", from: 1 },
-  { level: 2, name: "Cría", from: 3 },
-  { level: 3, name: "Joven", from: 7 },
-  { level: 4, name: "Adulto", from: 21 },
-  { level: 5, name: "Sabio", from: 60 },
+  { level: 0, name: "Recién instalado", from: 0 },
+  { level: 1, name: "Primer commit", from: 1 },
+  { level: 2, name: "Compilando", from: 3 },
+  { level: 3, name: "En producción", from: 7 },
+  { level: 4, name: "Estable", from: 21 },
+  { level: 5, name: "Senior", from: 60 },
   { level: 6, name: "Leyenda", from: 180 },
 ];
 
@@ -102,6 +102,6 @@ export function achievements(input: AchievementInput): Achievement[] {
 /** El texto para compartir un logro. Solo sale si la persona lo envía. */
 export function shareText(kind: "streak" | "achievement", value: string, stage: PetStage): string {
   return kind === "streak"
-    ? `🔥 Llevo ${value} seguidos registrando en Dophamine. Mi Dopi ya es «${stage.name}».`
-    : `🏅 Logro desbloqueado en Dophamine: ${value}.`;
+    ? `Llevo ${value} seguidos registrando en Dophamine. Term ya está en «${stage.name}» >_`
+    : `Logro desbloqueado en Dophamine: ${value} >_`;
 }

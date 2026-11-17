@@ -38,3 +38,11 @@ expo-env.d.ts
 # Build combinado de GitHub Pages (landing + app)
 site/
 *.tsbuildinfo
+
+# Contenido privado (ver scripts/private-assets.mjs): viaja en el APK, no en el repositorio.
+# Datos e imágenes de ejercicios de RepDB (licencia propia) y arte de Term (todos los derechos reservados).
+assets/exercises/
+assets/term/
+src/features/exercises/repdb.data.ts
+src/features/exercises/images.ts
+src/features/streak/term.images.ts

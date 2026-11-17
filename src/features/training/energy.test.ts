@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { REPDB_EXERCISES } from "@/src/features/exercises/repdb.data";
+
+// Sin el contenido privado de RepDB (un clon del repositorio público) estas pruebas no aplican.
+const HAS_REPDB = REPDB_EXERCISES.length > 0;
 
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { exercisesInGroup } from "@/src/features/exercises/catalog";
@@ -36,7 +40,7 @@ describe("energía del entreno", () => {
     expect(sessionDurationMinutes(instant)).toBe(10);
   });
 
-  it("una hora de fuerza a 70 kg ≈ 245 kcal netas; el cardio suma con su MET", () => {
+  it.skipIf(!HAS_REPDB)("una hora de fuerza a 70 kg ≈ 245 kcal netas; el cardio suma con su MET", () => {
     const strength = session("2026-11-13T18:00:00.000Z", "2026-11-13T19:00:00.000Z", [strengthSet(1)]);
     expect(sessionEnergyKcal(strength, 70)).toBe(245);
     const run = exercisesInGroup("cardio").find((item) => item.met && item.met > 5);

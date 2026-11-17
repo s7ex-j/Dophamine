@@ -18,6 +18,8 @@ import puppeteer from "puppeteer-core";
 const ROOT = resolve(import.meta.dirname, "..", "dist");
 const PREFIX = "/Dophamine/app";
 const STORE_KEY = "dophamine.web-store.v1";
+// Sin el contenido privado de RepDB (clon del repositorio público) no hay imágenes ni instrucciones de ejercicios.
+const HAS_REPDB = existsSync(resolve(import.meta.dirname, "..", "assets", "exercises"));
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -551,7 +553,7 @@ async function main() {
     assert(routine.schedule.length > 1, "Editar un día borró los demás.");
     await open(`/session?day=${first.day}`);
     await waitText("Sentadilla frontal · 0/3");
-    await waitText("Cómo se hace");
+    if (HAS_REPDB) await waitText("Cómo se hace");
     await fillLabel("Carga serie 1", 60);
     await fillLabel("Repeticiones serie 1", 10);
     await pressLabel("Completar serie 1");
@@ -586,7 +588,7 @@ async function main() {
     await open("/exercise?name=Sentadilla%20frontal");
     await waitText("Qué trabaja");
     await waitText("Cuádriceps");
-    await waitText("Cómo se hace");
+    if (HAS_REPDB) await waitText("Cómo se hace");
   });
 
   await step("entreno: la segunda sesión sugiere carga y detecta récords", async () => {
@@ -609,8 +611,8 @@ async function main() {
     await waitText("Dorsales");
     await press("Cualquier equipo");
     await pressLabel("Dominadas");
-    await waitText("Cómo se hace");
-    await waitText("Exercise data by RepDB");
+    if (HAS_REPDB) await waitText("Cómo se hace");
+    if (HAS_REPDB) await waitText("Exercise data by RepDB");
   });
 
   await step("entreno: plantilla PPL de 6 días y cardio en un día", async () => {
@@ -628,10 +630,13 @@ async function main() {
     });
     await waitText("Empuje A");
     await press("Cardio");
-    await press("Agregar ejercicio");
-    await fillLabel("Buscar ejercicio", "correr");
-    await pressLabel("Correr");
-    await press("Listo");
+    // Los ejercicios de cardio vienen de RepDB: sin ese contenido privado solo se marca el enfoque.
+    if (HAS_REPDB) {
+      await press("Agregar ejercicio");
+      await fillLabel("Buscar ejercicio", "correr");
+      await pressLabel("Correr");
+      await press("Listo");
+    }
     await press("Guardar rutina");
     await page.waitForFunction(
       (key) => JSON.parse(localStorage.getItem(key)).routines?.[0]?.schedule?.length === 6,
@@ -646,7 +651,7 @@ async function main() {
     assert(schedule[0].focus.includes("cardio"), "No se guardó el cardio como enfoque del lunes.");
     const run = schedule[0].exercises.at(-1);
     assert(
-      run.name === "Correr" && run.sets === 1 && run.reps === "20",
+      !HAS_REPDB || (run.name === "Correr" && run.sets === 1 && run.reps === "20"),
       "El cardio no se agregó en minutos.",
     );
   });
@@ -856,7 +861,7 @@ async function main() {
   await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");
-    await waitText("Dopi");
+    await waitText("Term");
     await waitText("Racha actual");
     await waitText("Logros");
   });

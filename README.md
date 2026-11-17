@@ -34,7 +34,7 @@ La pantalla principal no es un muro de numeros: presenta la energia disponible, 
 - **Gasto real y revision cada 3 o 7 dias.** Tendencia de peso suavizada, gasto observado con margen y ajustes que miran cumplimiento, sueno, entreno y cercania a la meta. "Como se calcula" lo muestra paso a paso con tus numeros. Nunca cambia el objetivo sin tu decision.
 - **Comida.** 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas editables, codigo de barras y busqueda opcional en Open Food Facts, comidas guardadas, copiar y pegar comidas y dias, alcohol aparte, tipos de plan y calorias por dia.
 - **Entreno.** Semana con un entreno por dia, plantillas por experiencia, catalogo de ~610 ejercicios con imagen, sesion serie por serie con carga sugerida, superseries, lados, calentamiento, gimnasios, mesociclos con descarga, mapa muscular y mejores marcas.
-- **Seguimiento.** Medidas corporales, fotos de progreso (solo en el telefono), ciclo menstrual, bienestar con chequeo diario de Dopi, racha y logros.
+- **Seguimiento.** Medidas corporales, fotos de progreso (solo en el telefono), ciclo menstrual, bienestar con chequeo diario de Term, racha y logros.
 - **Tus datos.** Respaldo en archivo entre telefono y web, exportar a CSV, importar programas y borrar por fechas o por ejercicio.
 - **Privacidad por defecto.** Sin cuentas, anuncios ni telemetria. SQLite en Android/iOS y `localStorage` en la web.
 
@@ -118,7 +118,7 @@ Lee [docs/PRIVACY.md](docs/PRIVACY.md) para conocer los limites de privacidad y 
 
 Copyright (C) 2026 Jharol Vilca Ramos. Este programa es software libre: puedes redistribuirlo y modificarlo bajo los términos de la GNU General Public License, versión 3 únicamente (GPL-3.0-only).
 
-El texto completo está en [LICENSE](LICENSE). Hasta la versión 0.23.0 (etiqueta `v0.23.0-mit`) el código se publicó bajo licencia MIT, y esas copias la conservan. El nombre "Dophamine", "Dopi" y sus ilustraciones no están cubiertos por la licencia del código: ver [TRADEMARK.md](TRADEMARK.md).
+El texto completo está en [LICENSE](LICENSE). Hasta la versión 0.23.0 (etiqueta `v0.23.0-mit`) el código se publicó bajo licencia MIT, y esas copias la conservan. El nombre "Dophamine", "Term" y sus ilustraciones no están cubiertos por la licencia del código: ver [TRADEMARK.md](TRADEMARK.md).
 
 ## Apoyar el proyecto
 

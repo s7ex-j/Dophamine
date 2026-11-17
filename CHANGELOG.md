@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.0 - 2026-11-17
+
+Term reemplaza a Dopi y el contenido privado sale del repositorio público.
+
+- Term, la mascota de la marca, reemplaza a Dopi: se muestra con sus renders (16 expresiones) en el Panel, el chequeo diario, Racha y logros y la semana para compartir. Sube de nivel con tu mejor racha, de "Recién instalado" a "Leyenda". Sin animación, para no hacer la app más pesada.
+- Contenido privado fuera del repositorio: los datos e imágenes de ejercicios de RepDB (su licencia no permite redistribuirlos como dataset) y el arte de Term (todos los derechos reservados) ya no se publican. Viajan dentro del APK (`.easignore`). En un clon sin ellos, la app compila igual: el catálogo queda con los ejercicios propios sin imagen y Term se dibuja como `>_`; las pruebas que los necesitan se saltan.
+- No comprobado en teléfono: nada de lo nuevo desde la 0.14.0.
+
 ## 0.27.0 - 2026-11-17
 
 Temas de color, retos de 21 días, meta con fecha, compartir la semana, aviso antes de entrenar, leer etiquetas y correcciones de la auditoría.

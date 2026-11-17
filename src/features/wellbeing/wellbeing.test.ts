@@ -30,7 +30,7 @@ describe("chequeo breve", () => {
     for (const question of QUESTIONS) expect(question.options).toHaveLength(5);
   });
 
-  it("Dopi pregunta una vez al día y respeta el «ahora no»", () => {
+  it("Term pregunta una vez al día y respeta el «ahora no»", () => {
     expect(shouldOfferCheckIn("2026-11-13", false, null)).toBe(true);
     expect(shouldOfferCheckIn("2026-11-13", true, null)).toBe(false);
     expect(shouldOfferCheckIn("2026-11-13", false, "2026-11-13")).toBe(false);

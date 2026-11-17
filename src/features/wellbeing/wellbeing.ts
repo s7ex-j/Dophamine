@@ -2,7 +2,7 @@ import { sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
 
 /**
  * Chequeo breve de bienestar: tres preguntas de un toque (ánimo, energía y
- * estrés) y, si quieres, qué influyó. Dopi lo ofrece una vez al día en el
+ * estrés) y, si quieres, qué influyó. Term lo ofrece una vez al día en el
  * Panel, sin insistir: si dices "ahora no", no vuelve a preguntar hasta mañana.
  * Módulo puro.
  */
@@ -65,7 +65,7 @@ export const INFLUENCES = [
 
 export const DISMISS_KEY = "checkin_dismissed";
 
-/** Dopi pregunta si hoy no hay chequeo y no le dijiste "ahora no" hoy. */
+/** Term pregunta si hoy no hay chequeo y no le dijiste "ahora no" hoy. */
 export const shouldOfferCheckIn = (today: string, checkedToday: boolean, dismissedOn: unknown) =>
   !checkedToday && dismissedOn !== today;
 

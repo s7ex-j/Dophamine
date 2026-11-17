@@ -63,7 +63,7 @@ export default function MoreScreen() {
               />
               <NavRow
                 title="Racha y logros"
-                detail="Dopi crece con tu racha de registro"
+                detail="Term crece con tu racha de registro"
                 onPress={() => router.push("/achievements")}
               />
               <NavRow

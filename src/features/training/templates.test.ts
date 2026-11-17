@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { REPDB_EXERCISES } from "@/src/features/exercises/repdb.data";
+
+// Sin el contenido privado de RepDB (un clon del repositorio público) estas pruebas no aplican.
+const HAS_REPDB = REPDB_EXERCISES.length > 0;
 
 import { exercisesInGroup, findExercise } from "@/src/features/exercises/catalog";
 import {
@@ -72,7 +76,7 @@ describe("armar la semana a mano", () => {
     expect(workoutFor(routine, "mon")?.name).toBe("Full body A");
   });
 
-  it("un ejercicio nuevo trae 3 × 12; el cardio, 20 minutos", () => {
+  it.skipIf(!HAS_REPDB)("un ejercicio nuevo trae 3 × 12; el cardio, 20 minutos", () => {
     expect(defaultPlan("Press de banca")).toEqual({ name: "Press de banca", sets: 3, reps: "12", rir: 2 });
     const cardio = exercisesInGroup("cardio")[0];
     expect(cardio.cardio).toBe(true);
@@ -81,7 +85,7 @@ describe("armar la semana a mano", () => {
     expect(workoutFor(routine, "mon")?.exercises.at(-1)).toMatchObject({ sets: 3, reps: "12" });
   });
 
-  it("bíceps, tríceps y antebrazo son grupos separados", () => {
+  it.skipIf(!HAS_REPDB)("bíceps, tríceps y antebrazo son grupos separados", () => {
     expect(exercisesInGroup("biceps").every((item) => item.primary[0] === "biceps")).toBe(true);
     expect(exercisesInGroup("triceps").length).toBeGreaterThan(10);
     expect(exercisesInGroup("forearms").length).toBeGreaterThan(3);
@@ -109,7 +113,7 @@ describe("hora de inicio y fin", () => {
     expect(withStartTime(active, "hola", now)).toBe(active);
   });
 
-  it("el cardio no suma series a los músculos", () => {
+  it.skipIf(!HAS_REPDB)("el cardio no suma series a los músculos", () => {
     const run = exercisesInGroup("cardio")[0].name;
     const sets = setsPerMuscle([
       {
