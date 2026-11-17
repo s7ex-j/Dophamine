@@ -127,3 +127,28 @@ describe("hora de inicio y fin", () => {
     expect(sets).toEqual([]);
   });
 });
+
+describe("rutina inicial según la evaluación", () => {
+  it("5 días de entreno dan 5 entrenos, no la plantilla de 3", async () => {
+    const { defaultRoutineFor } = await import("./training.plans");
+    const routine = defaultRoutineFor({ experience: "intermediate", trainingDays: 5, sessionMinutes: 60 });
+    expect(routine.days).toEqual(["mon", "tue", "wed", "fri", "sat"]);
+    expect(routine.variant).toBe("hybrid");
+    expect(routine.schedule).toHaveLength(5);
+  });
+
+  it("respeta los días aunque la plantilla traiga menos, y sin perfil usa la de siempre", async () => {
+    const { defaultRoutineFor, DEFAULT_ROUTINES } = await import("./training.plans");
+    const beginner = defaultRoutineFor({ experience: "beginner", trainingDays: 4 });
+    expect(beginner.days).toHaveLength(4);
+    expect(beginner.variant).toBe("upper_lower"); // torso/pierna también sirve a principiantes y usa los 4 días
+    expect(defaultRoutineFor(null)).toBe(DEFAULT_ROUTINES.posterior);
+    expect(defaultRoutineFor({ experience: "advanced", trainingDays: 6 }).variant).toBe("ppl6");
+  });
+
+  it("a igual puntaje recomienda la plantilla que usa más de tus días", async () => {
+    const { recommendTemplates } = await import("./training.templates");
+    expect(recommendTemplates("intermediate", 5)[0].id).toBe("hybrid");
+    expect(recommendTemplates("intermediate", 4)[0].id).toBe("upper_lower");
+  });
+});

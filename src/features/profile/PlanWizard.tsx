@@ -52,12 +52,21 @@ import { formatWeight, toKg, WEIGHT_UNIT_OPTIONS, weightValue, type WeightUnit }
 import { AppTheme, THEME } from "@/src/theme";
 
 // Una pregunta corta por pantalla; la explicación va en una sola línea.
+/** Evaluación a medias, guardada mientras la app se reinicia para mostrar un tema. */
+const DRAFT_KEY = "onboarding_draft";
+const readDraft = (value: unknown): { answers: Answers; index: number } | null => {
+  const raw = value as { answers?: Answers; index?: number } | null;
+  return raw?.answers && typeof raw.answers.goal === "string" && typeof raw.index === "number"
+    ? { answers: raw.answers, index: raw.index }
+    : null;
+};
+
 const TITLES: Record<OnboardingStep, { title: string; help: string }> = {
   goal: { title: "¿Qué quieres lograr?", help: "Define hacia dónde se ajusta tu energía." },
   body: { title: "Sobre ti", help: "La base del cálculo." },
   style: {
     title: "Tu estilo",
-    help: "Colores de toda la app. Te sugerimos uno según tu perfil; lo cambias cuando quieras en Más.",
+    help: "Toca un tema y toda la app cambia para que lo veas. Te sugerimos uno según tu perfil; lo cambias cuando quieras en Más.",
   },
   composition: {
     title: "Grasa corporal",
@@ -106,10 +115,17 @@ export function Onboarding({
   const [error, setError] = useState("");
   const steps = stepsFor(answers.goal);
   // La meta con fecha vive aparte del perfil: se carga al abrir para poder editarla.
+  // Si la app se reinició para mostrar un tema, se retoma la evaluación donde iba.
   useEffect(() => {
-    getSetting(GOAL_DATE_KEY).then((saved) => {
+    Promise.all([getSetting(GOAL_DATE_KEY), getSetting(DRAFT_KEY)]).then(([saved, draft]) => {
       const goal = readGoalDate(saved);
       if (goal) setAnswers((current) => ({ ...current, ...deadlineAnswers(goal, current.unit) }));
+      const resumed = readDraft(draft);
+      if (resumed) {
+        setAnswers(resumed.answers);
+        setIndex(resumed.index);
+        void setSetting(DRAFT_KEY, null);
+      }
     });
   }, []);
   const step = steps[Math.min(index, steps.length - 1)];
@@ -483,7 +499,14 @@ export function Onboarding({
         {step === "style" ? (
           <ThemePicker
             value={answers.theme ?? suggestedTheme(answers.sex)}
-            onChange={(theme) => set("theme", theme)}
+            onChange={async (theme) => {
+              set("theme", theme);
+              if (theme === THEME) return;
+              // Para ver el tema en toda la app hay que reiniciarla: se guarda la evaluación y se retoma.
+              await setSetting(DRAFT_KEY, { answers: { ...answers, theme }, index });
+              await setSetting(THEME_KEY, theme);
+              await applyTheme();
+            }}
           />
         ) : null}
 

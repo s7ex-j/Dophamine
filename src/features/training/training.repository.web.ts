@@ -1,17 +1,13 @@
 import { readStore, webId, writeStore } from "@/src/db/web-storage";
 import { localDateKey } from "@/src/lib/dates";
-import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { defaultRoutineFor, normalizeRoutine, type Routine } from "./training.plans";
 import type { CompletedSession } from "./workout";
 
 export async function getRoutine(): Promise<Routine> {
   const routine = readStore().routines?.[0];
-  return routine
-    ? normalizeRoutine(routine)
-    : {
-        ...DEFAULT_ROUTINES.posterior,
-        days: [...DEFAULT_ROUTINES.posterior.days],
-        exercises: [...DEFAULT_ROUTINES.posterior.exercises],
-      };
+  // Sin rutina guardada: la que encaja con los días y la experiencia de la evaluación.
+  return routine ? normalizeRoutine(routine) : defaultRoutineFor(await getNutritionProfile());
 }
 
 export async function saveRoutine(routine: Routine) {

@@ -2,8 +2,9 @@
   "expo": {
     "name": "Dophamine",
     "slug": "dophamine",
+    "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.30.0",
+    "version": "0.31.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
@@ -56,7 +57,9 @@
       "package": "com.s7ex.dophamine",
       "versionCode": 1,
       "permissions": [
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -67,6 +70,16 @@
       "bundleIdentifier": "com.s7ex.dophamine",
       "buildNumber": "1"
     },
-    "backgroundColor": "#0E1311"
+    "backgroundColor": "#0E1311",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "250a8583-7556-49f2-8bb1-2ec69190343a"
+      }
+    }
   }
 }

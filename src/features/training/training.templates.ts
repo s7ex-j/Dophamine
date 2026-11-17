@@ -313,9 +313,25 @@ export function recommendTemplates(
   const level = experience ?? "beginner";
   const fits = (template: Template) => !daysAvailable || template.days.length <= daysAvailable;
   const score = (template: Template) => (template.levels.includes(level) ? 2 : 0) + (fits(template) ? 1 : 0);
+  // A igual puntaje, primero la que usa más de los días que tienes (5 días → la de 5 antes que la de 3).
+  const gap = (template: Template) => (daysAvailable ? Math.abs(daysAvailable - template.days.length) : 0);
   return [...TEMPLATES]
-    .sort((a, b) => score(b) - score(a))
+    .sort((a, b) => score(b) - score(a) || gap(a) - gap(b))
     .map((template) => ({ ...template, recommended: score(template) === 3 }));
+}
+
+/** Días de la semana repartidos para entrenar `count` veces, con descanso entre medio cuando se puede. */
+export function spreadDays(count: number): string[] {
+  const table: Record<number, string[]> = {
+    1: ["wed"],
+    2: ["tue", "fri"],
+    3: ["mon", "wed", "fri"],
+    4: ["mon", "tue", "thu", "fri"],
+    5: ["mon", "tue", "wed", "fri", "sat"],
+    6: ["mon", "tue", "wed", "thu", "fri", "sat"],
+    7: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+  };
+  return table[Math.min(7, Math.max(1, Math.round(count)))];
 }
 
 export const EXPERIENCE_HINT: Record<Experience, string> = {

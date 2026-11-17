@@ -182,7 +182,15 @@ async function main() {
 
   await step("evaluación inicial crea el plan", async () => {
     await open("/");
+    await waitText("Hola, soy Term");
+    await press("Siguiente");
+    await waitText("Aprende de tus datos");
+    await press("Siguiente");
+    await press("Siguiente");
+    await waitText("Un proyecto abierto");
+    await press("Empezar mi evaluación");
     await waitText("EVALUACIÓN INICIAL");
+    assert((await store()).settings.welcome_seen === true, "No se guardó que ya se vio la bienvenida.");
     await press("Definición");
     await press("Continuar");
     await press("Continuar"); // sin datos: debe quedarse en el paso y avisar
@@ -193,6 +201,22 @@ async function main() {
     await press("Continuar");
     await waitText("Tu estilo");
     assert(await page.$('[aria-label="Tema Pastel"]'), "La evaluación no ofrece elegir el tema.");
+    // Tocar un tema lo muestra en toda la app: se reinicia y la evaluación sigue en el mismo paso.
+    await Promise.all([
+      page.waitForNavigation({ timeout: 20000 }).catch(() => null),
+      pressLabel("Tema Pastel"),
+    ]);
+    await waitText("Tu estilo");
+    let draft = await store();
+    assert(draft.settings.app_theme === "pastel", "El tema no se aplicó durante la evaluación.");
+    assert(!draft.settings.onboarding_draft, "La evaluación no se retomó tras cambiar el tema.");
+    await Promise.all([
+      page.waitForNavigation({ timeout: 20000 }).catch(() => null),
+      pressLabel("Tema Bosque"),
+    ]);
+    await waitText("Tu estilo");
+    draft = await store();
+    assert(draft.settings.app_theme === "forest", "No se volvió al tema Bosque.");
     await press("Continuar");
     await fill("O escribe tu medición", 20);
     await press("Continuar");

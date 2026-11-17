@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.31.0 - 2026-11-17
+
+Primeras correcciones tras probar el APK: bienvenida, tema en vivo y la rutina según tus días.
+
+- Bienvenida: la primera vez, antes de la evaluación, cuatro pantallas con Term explican qué hace la app, cómo calcula, que los datos se quedan en el teléfono y cómo se hizo. Entran con una animación suave (Term flota) que se apaga si el teléfono pide reducir el movimiento. Sin pestañas abajo hasta crear el plan.
+- Tema en la evaluación: al tocar un tema, toda la app cambia a ese tema para verlo; la evaluación sigue en el mismo paso con las respuestas que ya diste.
+- Entreno: quien no armó su rutina ya no recibe siempre "Glúteo y cadena posterior" (3 días). La rutina inicial sale de la evaluación: la plantilla que encaja con tu experiencia, repartida en los días que dijiste (5 días → 5 entrenos). En Rutina, a igual puntaje se recomienda la plantilla que usa más de tus días.
+- De 419 a 422 pruebas de dominio; 28 flujos de navegador (ahora con la bienvenida y el tema en la evaluación).
+- Comprobado por Jharol en el APK 0.30.0: el resto de la app funciona. No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.30.0 - 2026-11-17
 
 Análisis de la silueta en las fotos de progreso (la medición) y contenido privado en GitHub Actions.

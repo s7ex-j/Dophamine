@@ -1,7 +1,8 @@
 import { readSetType } from "./sets";
 import { getDatabase } from "@/src/db/database";
 import { localDateKey } from "@/src/lib/dates";
-import { DEFAULT_ROUTINES, normalizeRoutine, type Routine } from "./training.plans";
+import { getNutritionProfile } from "@/src/features/profile/profile.repository";
+import { DEFAULT_ROUTINES, defaultRoutineFor, normalizeRoutine, type Routine } from "./training.plans";
 import type { CompletedSession } from "./workout";
 
 const SETTINGS_KEY = "training_routine";
@@ -13,12 +14,8 @@ export async function getRoutine(): Promise<Routine> {
     "SELECT value FROM app_settings WHERE key = ?",
     SETTINGS_KEY,
   );
-  if (!row?.value)
-    return {
-      ...DEFAULT_ROUTINES.posterior,
-      days: [...DEFAULT_ROUTINES.posterior.days],
-      exercises: [...DEFAULT_ROUTINES.posterior.exercises],
-    };
+  // Sin rutina guardada: la que encaja con los días y la experiencia de la evaluación.
+  if (!row?.value) return defaultRoutineFor(await getNutritionProfile());
   try {
     return normalizeRoutine(JSON.parse(row.value));
   } catch {

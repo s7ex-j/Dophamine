@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 
 import { IconButton, Segmented, Screen } from "@/src/components/ui";
 import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
@@ -30,6 +30,7 @@ import {
 import type { DayCompliance } from "@/src/features/habits/compliance";
 import { getComplianceDays } from "@/src/features/habits/compliance.data";
 import { Onboarding } from "@/src/features/profile/PlanWizard";
+import { Welcome, WELCOME_KEY } from "@/src/features/welcome/Welcome";
 import { weightUnitOf } from "@/src/features/profile/profile";
 import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSections";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
@@ -76,8 +77,11 @@ export default function DashboardScreen() {
   const [offerCheckIn, setOfferCheckIn] = useState(false);
   const [dietToday, setDietToday] = useState<CoachToday | null>(null);
   const [period, setPeriod] = useState<CycleStatus | null>(null);
+  const [welcomed, setWelcomed] = useState<boolean | null>(null);
+  const navigation = useNavigation();
 
   const load = useCallback(() => {
+    getSetting(WELCOME_KEY).then((seen) => setWelcomed(Boolean(seen)));
     getCoachToday().then(setDietToday);
     Promise.all([
       getDashboardSnapshot(),
@@ -112,7 +116,27 @@ export default function DashboardScreen() {
     void setSetting(LAYOUT_KEY, next);
   };
 
-  if (!snapshot) return <Screen />;
+  // La bienvenida y la primera evaluación ocupan toda la pantalla: sin pestañas abajo.
+  const firstRun = Boolean(snapshot && !snapshot.profile && !VIEWER);
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: firstRun
+        ? { display: "none" }
+        : { borderTopColor: AppTheme.colors.border, backgroundColor: AppTheme.colors.surface },
+    });
+  }, [firstRun, navigation]);
+
+  if (!snapshot || welcomed === null) return <Screen />;
+  // La primera vez: bienvenida con Term y luego la evaluación.
+  if (!snapshot.profile && !VIEWER && !welcomed)
+    return (
+      <Welcome
+        onDone={() => {
+          setWelcomed(true);
+          void setSetting(WELCOME_KEY, true);
+        }}
+      />
+    );
   if (!snapshot.profile)
     return VIEWER ? (
       <ViewerEmpty onLoaded={load} />

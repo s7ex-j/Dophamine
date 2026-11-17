@@ -1,5 +1,11 @@
 import { findExercise, MUSCLE_GROUPS, type MuscleGroup } from "@/src/features/exercises/catalog";
-import { templateById, type TemplateId } from "@/src/features/training/training.templates";
+import {
+  recommendTemplates,
+  spreadDays,
+  templateById,
+  type TemplateId,
+} from "@/src/features/training/training.templates";
+import type { Experience } from "@/src/features/profile/profile";
 import { readCycle, type Cycle } from "@/src/features/training/cycle";
 
 export type TrainingVariant = TemplateId | "custom";
@@ -196,6 +202,25 @@ export const DEFAULT_ROUTINES = {
     sessionMinutes: 50,
   }),
 };
+/**
+ * La rutina con la que empieza quien todavía no armó la suya: la plantilla que
+ * mejor encaja con su experiencia y sus días, repartida en los días que dijo
+ * en la evaluación (5 días → 5 entrenos). Sin perfil, la de siempre.
+ */
+export function defaultRoutineFor(
+  profile: { experience?: Experience; trainingDays?: number; sessionMinutes?: number } | null,
+): Routine {
+  if (!profile?.trainingDays) return DEFAULT_ROUTINES.posterior;
+  const [best] = recommendTemplates(profile.experience, profile.trainingDays);
+  return generateRoutine({
+    variant: best.id,
+    gymProfile: "full_gym",
+    trainingGoal: "hypertrophy",
+    sessionMinutes: profile.sessionMinutes || 50,
+    days: spreadDays(profile.trainingDays),
+  });
+}
+
 const toPlan = (exercise: string | Partial<ExercisePlan>): ExercisePlan =>
   typeof exercise === "string"
     ? { name: exercise, sets: 3, reps: "8–12", rir: 2 }
