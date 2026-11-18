@@ -4,7 +4,7 @@
     "slug": "dophamine",
     "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.38.0",
+    "version": "0.38.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
@@ -51,7 +51,15 @@
           "microphonePermission": "Dophamine no usa el micrófono."
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "-keep class org.webrtc.** { *; }\n-dontwarn org.webrtc.**"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

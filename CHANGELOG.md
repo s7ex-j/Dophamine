@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.38.1 - 2026-11-18
+
+- APK independiente: la primera compilación (0.36.1) falló al reducir el código de Android (R8 no encontraba una clase interna de `react-native-webrtc`, `org.webrtc.Dav1dDecoder$Natives`). Se agregan reglas de ProGuard para WebRTC con `expo-build-properties` (MIT). El development build no se veía afectado porque no reduce el código.
+- 425 pruebas de dominio y 29 flujos de navegador.
+- No comprobado en teléfono: el APK de esta versión.
+
 ## 0.38.0 - 2026-11-18
 
 Visor web: siempre empieza por conectar el teléfono, con un diseño más sobrio y selector de tema.
