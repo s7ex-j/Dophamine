@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { ScreenSkeleton } from "@/src/components/Skeleton";
 import { ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
@@ -40,7 +41,7 @@ export default function StrategyScreen() {
   useFocusEffect(load);
   const controls = useCheckIn(snapshot, load);
 
-  if (!snapshot) return <Screen />;
+  if (!snapshot) return <ScreenSkeleton blocks={[220, 160, 260]} />;
   const profile = snapshot.profile;
   if (!profile && VIEWER) return <ViewerEmpty onLoaded={load} />;
   if (!profile || editing)

@@ -48,7 +48,7 @@ export default function PeriodScreen() {
         {status ? (
           <View style={[AppTheme.card, { gap: 8 }]}>
             <Text style={AppTheme.eyebrow}>
-              DÍA {status.day} DE {status.length}
+              Día {status.day} de {status.length}
             </Text>
             <Text style={AppTheme.title}>{PHASE_LABELS[status.phase]}</Text>
             <Text style={AppTheme.body}>{PHASE_NOTES[status.phase]}</Text>

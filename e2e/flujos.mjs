@@ -196,7 +196,7 @@ async function main() {
     await press("Siguiente");
     await waitText("Hecho por Jharol");
     await press("Empezar mi evaluación");
-    await waitText("EVALUACIÓN INICIAL");
+    await waitText("Evaluación inicial");
     assert((await store()).settings.welcome_seen === true, "No se guardó que ya se vio la bienvenida.");
     await press("Definición");
     await press("Continuar");
@@ -611,7 +611,7 @@ async function main() {
     await pressLabel("Encogimientos de hombros");
     await waitText("Encogimientos de hombros · 0/3");
     await press("Terminar");
-    await waitText("ENTRENO COMPLETO");
+    await waitText("Entreno completo");
     await waitText("Músculos trabajados");
     const current = await store();
     const sets = current.workouts[0].sets;
@@ -803,7 +803,7 @@ async function main() {
 
     await open("/period");
     await press("Empezó hoy");
-    await waitText("DÍA 1");
+    await waitText("Día 1 de");
     assert((await store()).settings.menstrual_periods?.length === 1, "No se guardó el inicio del periodo.");
 
     await open("/reminders");
@@ -1091,7 +1091,7 @@ async function main() {
 
     // En el Panel: pregunta el entreno si hoy toca, avisa del huevo y registra la comida.
     await open("/");
-    await waitText("TU DIETA");
+    await waitText("Tu dieta");
     await waitText("0 de 3 comidas");
     const asks = await page.evaluate(() => document.body.innerText.includes("¿A qué hora entrenas hoy?"));
     if (asks) {
@@ -1243,8 +1243,8 @@ async function main() {
     };
 
     await viewer.goto(`${base}/`, { waitUntil: "networkidle0" });
-    await waitFor("DOPHAMINE · VISOR");
-    assert(!(await text()).includes("EVALUACIÓN INICIAL"), "El visor ofreció crear un plan.");
+    await waitFor("Visor de Dophamine");
+    assert(!(await text()).includes("Evaluación inicial"), "El visor ofreció crear un plan.");
     const [chooser] = await Promise.all([viewer.waitForFileChooser(), tap("Cargar un respaldo")]);
     await chooser.accept([file]);
     await waitFor("Reemplazar mis datos");
@@ -1326,7 +1326,7 @@ async function main() {
 
       // 1. La web muestra su código (QR y texto).
       await web.goto(`${base}/`, { waitUntil: "networkidle0" });
-      await webWait("DOPHAMINE · VISOR");
+      await webWait("Visor de Dophamine");
       await webTap("Conectar con el teléfono");
       await webWait("Trae tus datos del teléfono");
       await webTap("Mostrar código QR");

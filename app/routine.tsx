@@ -234,7 +234,7 @@ function RoutineEditor() {
                 style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={AppTheme.eyebrow}>{DAY_NAMES[item.day].toUpperCase()}</Text>
+                  <Text style={AppTheme.eyebrow}>{DAY_NAMES[item.day]}</Text>
                   <Text style={AppTheme.tileTitle}>{item.name}</Text>
                   <Text style={AppTheme.tileSubtitle}>
                     {item.exercises.length} {item.exercises.length === 1 ? "ejercicio" : "ejercicios"}

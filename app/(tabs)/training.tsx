@@ -91,7 +91,6 @@ function TrainingScreenContent() {
       <ScrollView contentContainerStyle={AppTheme.content}>
         <View style={AppTheme.dashboardHeader}>
           <View>
-            <Text style={AppTheme.eyebrow}>ENTRENO</Text>
             <Text style={AppTheme.title}>{routine.name}</Text>
           </View>
           <View style={{ flexDirection: "row", gap: 8 }}>

@@ -41,7 +41,6 @@ export default function MoreScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>MÁS</Text>
         <Text style={AppTheme.title}>Todo lo demás</Text>
         <Card title="Secciones">
           {VIEWER ? null : (

@@ -221,7 +221,7 @@ export default function DietScreen() {
                 >
                   {meal.tags?.includes("pre_gym") || meal.tags?.includes("post_gym") ? (
                     <Text style={[AppTheme.eyebrow, { color: AppTheme.colors.warning }]}>
-                      {meal.tags.includes("pre_gym") ? "ANTES DE ENTRENAR" : "DESPUÉS DE ENTRENAR"}
+                      {meal.tags.includes("pre_gym") ? "Antes de entrenar" : "Después de entrenar"}
                     </Text>
                   ) : null}
                   <Text style={AppTheme.hint}>

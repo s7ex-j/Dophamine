@@ -180,7 +180,7 @@ function SessionContent() {
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
         <View style={AppTheme.sectionHeader}>
           <View>
-            <Text style={AppTheme.eyebrow}>{active.routineName.toUpperCase()}</Text>
+            <Text style={AppTheme.eyebrow}>{active.routineName}</Text>
             {editingStart ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <TextInput
@@ -495,7 +495,7 @@ function SummaryView({ summary, unit, onDone }: { summary: Summary; unit: Weight
           <Term expression={summary.records.length ? "orgullo" : "listo"} size={120} />
           {summary.records.length ? <Celebrate /> : null}
         </View>
-        <Text style={AppTheme.eyebrow}>ENTRENO COMPLETO</Text>
+        <Text style={AppTheme.eyebrow}>Entreno completo</Text>
         <Text style={AppTheme.title}>{summary.session.name}</Text>
         <View style={AppTheme.tileGrid}>
           {[

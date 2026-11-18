@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.34.0 - 2026-11-17
+
+Pasada de pulido: menos aspecto de plantilla, carga sin pantallas vacías y mejor en pantallas anchas.
+
+- Se quitaron las etiquetas en mayúsculas sobre los títulos. Las que repetían el título (Más, Entreno, Análisis, Estrategia, Conexión directa) ya no están; las que informan (fecha, día del ciclo, paso de la evaluación) van en minúsculas normales.
+- Panel y Estrategia muestran un esqueleto que late suave mientras cargan, en lugar de una pantalla vacía.
+- Las pestañas cambian con un fundido corto.
+- En pantallas anchas (la web a 1440 px) el contenido queda en una columna centrada de 720 px. Revisado sin desbordes ni errores de consola a 390 y 1440 px.
+- 422 pruebas de dominio y 28 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.33.0 - 2026-11-17
 
 El tema cambia al instante, Term se puede tocar y explica cada pregunta de la evaluación.

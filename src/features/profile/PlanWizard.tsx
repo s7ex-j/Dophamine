@@ -181,7 +181,7 @@ export function Onboarding({
       >
         <StepDots total={steps.length} current={index} />
         <Text style={AppTheme.eyebrow}>
-          {profile ? "REEVALUACIÓN" : "EVALUACIÓN INICIAL"} · {index + 1} DE {steps.length}
+          {profile ? "Reevaluación" : "Evaluación inicial"}, paso {index + 1} de {steps.length}
         </Text>
         <Text style={AppTheme.title}>{TITLES[step].title}</Text>
         <Text style={AppTheme.hint}>{TITLES[step].help}</Text>

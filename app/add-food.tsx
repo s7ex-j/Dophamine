@@ -278,7 +278,7 @@ function AddFoodContent() {
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
         <Text style={AppTheme.eyebrow}>
-          {dayLabel(date).toUpperCase()} · {date}
+          {dayLabel(date)}, {date}
         </Text>
         <SlotPicker
           value={slot}

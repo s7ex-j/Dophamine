@@ -98,7 +98,7 @@ export default function AlgorithmScreen() {
         </View>
 
         <View style={[AppTheme.card, { gap: 6 }]}>
-          <Text style={AppTheme.eyebrow}>{LAYER_LABELS[current.layer].toUpperCase()}</Text>
+          <Text style={AppTheme.eyebrow}>{LAYER_LABELS[current.layer]}</Text>
           <View style={AppTheme.sectionHeader}>
             <Text style={AppTheme.cardTitle}>{current.label}</Text>
             <Text style={[AppTheme.tileValue, !current.active && { color: AppTheme.colors.muted }]}>

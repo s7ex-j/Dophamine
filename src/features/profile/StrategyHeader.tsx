@@ -53,7 +53,6 @@ export function StrategyHeader({
   return (
     <View style={[AppTheme.card, { gap: 14 }]}>
       <View style={{ gap: 2 }}>
-        <Text style={AppTheme.eyebrow}>ESTRATEGIA</Text>
         <Text style={AppTheme.title}>{goalLabels[profile.goal]}</Text>
         <Text style={AppTheme.hint}>
           {profile.proteinTarget} g proteína · {profile.carbsTarget} g carbohidratos · {profile.fatsTarget} g

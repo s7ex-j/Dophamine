@@ -170,7 +170,7 @@ export function DayWorkoutCard({
   return (
     <View style={[AppTheme.card, { gap: 12 }]}>
       <View>
-        <Text style={AppTheme.eyebrow}>{(isToday ? "HOY · " : "") + DAY_NAMES[day].toUpperCase()}</Text>
+        <Text style={AppTheme.eyebrow}>{(isToday ? "Hoy, " : "") + DAY_NAMES[day].toLowerCase()}</Text>
         <Text style={AppTheme.title}>{workout.name}</Text>
         <Text style={AppTheme.tileSubtitle}>
           {workout.exercises.length} ejercicios · {sets} series

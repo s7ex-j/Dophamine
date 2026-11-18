@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ScreenSkeleton } from "@/src/components/Skeleton";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 
@@ -126,7 +127,7 @@ export default function DashboardScreen() {
     });
   }, [firstRun, navigation]);
 
-  if (!snapshot || welcomed === null) return <Screen />;
+  if (!snapshot || welcomed === null) return <ScreenSkeleton />;
   // La primera vez: bienvenida con Term y luego la evaluación.
   if (!snapshot.profile && !VIEWER && !welcomed)
     return (
@@ -240,7 +241,7 @@ export default function DashboardScreen() {
   }
   const heading = new Date()
     .toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })
-    .toUpperCase();
+    .replace(/^./, (letter) => letter.toUpperCase());
 
   return (
     <Screen>

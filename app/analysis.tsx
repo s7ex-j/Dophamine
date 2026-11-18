@@ -57,7 +57,6 @@ export default function AnalysisScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>ANÁLISIS</Text>
         <Text style={AppTheme.title}>La señal sobre el ruido.</Text>
         <View style={AppTheme.metricGrid}>
           <Metric label="Días con ingesta" value={String(analysis.loggedDays)} />

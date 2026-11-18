@@ -14,7 +14,7 @@ export function ViewerEmpty({ onLoaded }: { onLoaded: () => void }) {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>DOPHAMINE · VISOR</Text>
+        <Text style={AppTheme.eyebrow}>Visor de Dophamine</Text>
         <Text style={AppTheme.title}>Mira tu progreso en pantalla grande.</Text>
         <Text style={AppTheme.body}>
           Dophamine se usa en el teléfono. Esta página solo muestra tu progreso a partir de un respaldo: no
@@ -62,7 +62,7 @@ export function ViewerOnlyNotice({ what }: { what: string }) {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.eyebrow}>SOLO LECTURA</Text>
+        <Text style={AppTheme.eyebrow}>Solo lectura</Text>
         <Text style={AppTheme.title}>{what} se usa en el teléfono.</Text>
         <Text style={AppTheme.body}>
           Esta página es un visor de tu progreso. Para registrar, abre Dophamine en tu teléfono.

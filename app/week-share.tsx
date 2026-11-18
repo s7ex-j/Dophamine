@@ -91,7 +91,7 @@ export default function WeekShareScreen() {
             <Term expression="orgullo" size={64} />
             <View style={{ flex: 1 }}>
               <Text style={[AppTheme.eyebrow, { color: tint("#86C8AA") }]}>
-                SEMANA {summary.weekStart.slice(5)} – {summary.weekEnd.slice(5)}
+                Semana del {summary.weekStart.slice(5)} al {summary.weekEnd.slice(5)}
               </Text>
               <Text style={[AppTheme.title, { fontSize: 22 }]}>{story.title}</Text>
             </View>

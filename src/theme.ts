@@ -41,8 +41,9 @@ const BASE = {
   ...StyleSheet.create({
     loading: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#0E1311" },
     screen: { flex: 1, backgroundColor: "#0E1311" },
-    content: { padding: 16, paddingBottom: 32, gap: 12 },
-    eyebrow: { color: "#34D399", fontSize: 12, fontWeight: "700", letterSpacing: 0 },
+    // En pantallas anchas (la web) el contenido no pasa de una columna legible y queda centrado.
+    content: { padding: 16, paddingBottom: 32, gap: 12, width: "100%", maxWidth: 720, alignSelf: "center" },
+    eyebrow: { color: "#34D399", fontSize: 13, fontWeight: "600", letterSpacing: 0 },
     title: { color: "#F1F5F2", fontSize: 26, fontWeight: "700", letterSpacing: 0 },
     dashboardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
     headerAction: {

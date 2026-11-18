@@ -134,7 +134,6 @@ function WebSide() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
-        <Text style={AppTheme.eyebrow}>CONEXIÓN DIRECTA</Text>
         <Text style={AppTheme.title}>Trae tus datos del teléfono sin subir un archivo.</Text>
         <SameNetwork />
         {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}
@@ -322,7 +321,6 @@ function PhoneSide() {
     return (
       <Screen>
         <ScrollView contentContainerStyle={AppTheme.content}>
-          <Text style={AppTheme.eyebrow}>CONEXIÓN DIRECTA</Text>
           <Text style={AppTheme.title}>Disponible con la app instalada.</Text>
           <Text style={AppTheme.body}>
             Para conectarse con la web sin servidor, el teléfono necesita una pieza que Expo Go no incluye.
@@ -336,7 +334,6 @@ function PhoneSide() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
-        <Text style={AppTheme.eyebrow}>CONEXIÓN DIRECTA</Text>
         <Text style={AppTheme.title}>Mira tus datos en la web sin subir un archivo.</Text>
         <SameNetwork />
         {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}

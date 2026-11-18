@@ -86,7 +86,7 @@ export function DietCoachCard({
         onPress={onOpenDiet}
         style={AppTheme.sectionHeader}
       >
-        <Text style={AppTheme.eyebrow}>TU DIETA</Text>
+        <Text style={AppTheme.eyebrow}>Tu dieta</Text>
         <Text style={AppTheme.hint}>
           {result.meals.filter((meal) => meal.status === "done").length} de {result.meals.length} comidas
         </Text>
