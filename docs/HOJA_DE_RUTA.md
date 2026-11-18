@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.34.0, Expo SDK 58)
+## Estado al 17 de noviembre de 2026 (versión 0.35.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 

@@ -118,7 +118,7 @@ export default function DashboardScreen() {
   };
 
   // La bienvenida y la primera evaluación ocupan toda la pantalla: sin pestañas abajo.
-  const firstRun = Boolean(snapshot && !snapshot.profile && !VIEWER);
+  const firstRun = Boolean(snapshot && !VIEWER && (!snapshot.profile || welcomed === false));
   useEffect(() => {
     navigation.setOptions({
       tabBarStyle: firstRun
@@ -129,7 +129,8 @@ export default function DashboardScreen() {
 
   if (!snapshot || welcomed === null) return <ScreenSkeleton />;
   // La primera vez: bienvenida con Term y luego la evaluación.
-  if (!snapshot.profile && !VIEWER && !welcomed)
+  // También la ve una vez quien ya usaba la app antes de que existiera.
+  if (!VIEWER && !welcomed)
     return (
       <Welcome
         onDone={() => {

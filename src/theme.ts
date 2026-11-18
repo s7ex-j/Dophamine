@@ -45,7 +45,7 @@ const BASE = {
     content: { padding: 16, paddingBottom: 32, gap: 12, width: "100%", maxWidth: 720, alignSelf: "center" },
     eyebrow: { color: "#34D399", fontSize: 13, fontWeight: "600", letterSpacing: 0 },
     title: { color: "#F1F5F2", fontSize: 26, fontWeight: "700", letterSpacing: 0 },
-    dashboardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+    dashboardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
     headerAction: {
       minHeight: 34,
       justifyContent: "center",
@@ -652,7 +652,10 @@ const BASE = {
   }),
 };
 
-export const AppTheme = remapColors(BASE, THEME);
+// Copia propia y modificable: los estilos de StyleSheet pueden venir congelados y el
+// cambio de tema reescribe estos objetos en su lugar.
+const mutable = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+export const AppTheme = mutable(remapColors(BASE, THEME));
 
 /**
  * Cambia el tema al instante: reescribe los colores de `AppTheme` en los mismos
@@ -661,7 +664,7 @@ export const AppTheme = remapColors(BASE, THEME);
  */
 export function setTheme(theme: ThemeId) {
   THEME = theme;
-  const next = remapColors(BASE, theme) as Record<string, unknown>;
+  const next = mutable(remapColors(BASE, theme)) as Record<string, unknown>;
   const target = AppTheme as unknown as Record<string, unknown>;
   for (const [key, value] of Object.entries(next)) {
     const current = target[key];

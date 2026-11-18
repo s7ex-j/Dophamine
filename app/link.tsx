@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Share, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { Button, Card, Input, LinkButton, Screen } from "@/src/components/ui";
@@ -155,27 +155,37 @@ function WebSide() {
                 {code}
               </Text>
             </Card>
-            <Card title="2. Lee el código que muestra el teléfono">
-              {state === "connecting" ? (
-                <Text style={AppTheme.body}>Conectando…</Text>
-              ) : scanning ? (
-                <QrScanner
-                  onCode={connect}
-                  onClose={() => setScanning(false)}
-                  hint="Acerca el teléfono a la cámara hasta que el código se vea completo."
-                />
-              ) : (
-                <Button title="Leer con la cámara" onPress={() => setScanning(true)} />
-              )}
+            <Card title="2. Pega el código que te envía el teléfono">
+              <Text style={AppTheme.hint}>
+                En el teléfono toca "Enviar a la computadora" y mándalo como prefieras (WhatsApp Web, correo,
+                Enlace Móvil). Luego pégalo aquí.
+              </Text>
               <Input
                 label="Código del teléfono"
                 value={answer}
                 onChangeText={setAnswer}
                 autoCapitalize="none"
                 autoCorrect={false}
-                placeholder="Si no tienes cámara, pega aquí el código"
+                placeholder="Pega aquí el código"
               />
-              <Button title="Conectar" variant="secondary" onPress={() => connect(answer)} />
+              {state === "connecting" ? (
+                <Text style={AppTheme.body}>Conectando…</Text>
+              ) : (
+                <Button title="Conectar" onPress={() => connect(answer)} />
+              )}
+              {state === "connecting" ? null : scanning ? (
+                <QrScanner
+                  onCode={connect}
+                  onClose={() => setScanning(false)}
+                  hint="Acerca el teléfono a la cámara hasta que el código se vea completo."
+                />
+              ) : (
+                <Button
+                  title="O léelo con la cámara de la computadora"
+                  variant="secondary"
+                  onPress={() => setScanning(true)}
+                />
+              )}
             </Card>
           </>
         ) : null}
@@ -365,12 +375,16 @@ function PhoneSide() {
         ) : null}
 
         {state === "answer" || state === "connecting" ? (
-          <Card title="2. Muestra este código a la cámara de la computadora">
+          <Card title="2. Envía este código a la computadora">
+            <Text style={AppTheme.body}>
+              Mándalo como prefieras (WhatsApp Web, correo, Enlace Móvil) y pégalo en la web. Si la
+              computadora tiene cámara, también puede leer el QR.
+            </Text>
+            <Button title="Enviar a la computadora" onPress={() => Share.share({ message: code })} />
             <QrCode value={code} />
             <Text selectable accessibilityLabel="Código de respuesta" style={AppTheme.hint}>
               {code}
             </Text>
-            <Text style={AppTheme.hint}>Cuando la web lo lea, la conexión se abre sola.</Text>
           </Card>
         ) : null}
 

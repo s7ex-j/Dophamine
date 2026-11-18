@@ -90,10 +90,12 @@ function TrainingScreenContent() {
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
         <View style={AppTheme.dashboardHeader}>
-          <View>
-            <Text style={AppTheme.title}>{routine.name}</Text>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={AppTheme.title} numberOfLines={2}>
+              {routine.name}
+            </Text>
           </View>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flexDirection: "row", gap: 8, flexShrink: 0 }}>
             <IconButton
               icon="library-outline"
               label="Explorar ejercicios"

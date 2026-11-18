@@ -92,8 +92,12 @@ async function main() {
     await page.screenshot({ path: join(process.env.SHOTS, `${name}.png`) });
   };
   const store = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), STORE_KEY);
+  // Los datos sembrados son de alguien que ya vio la bienvenida.
   const seed = (data) =>
-    page.evaluate((key, value) => localStorage.setItem(key, JSON.stringify(value)), STORE_KEY, data);
+    page.evaluate((key, value) => localStorage.setItem(key, JSON.stringify(value)), STORE_KEY, {
+      ...data,
+      settings: { welcome_seen: true, ...data.settings },
+    });
   // Abre una ruta. A veces la red del servidor local no se aquieta a tiempo:
   // se reintenta una vez esperando solo el documento, y luego el contenido.
   const open = async (path) => {

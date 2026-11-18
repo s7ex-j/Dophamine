@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.35.0 - 2026-11-18
+
+Correcciones de la prueba en el teléfono.
+
+- Cambiar de tema daba un error en el teléfono y dejaba la app con colores mezclados: los estilos venían congelados y no se podían reescribir. Ahora el tema trabaja sobre su propia copia y cambia completo.
+- Entreno: un nombre de rutina largo ya no empuja los botones de ejercicios y de editar la rutina; se corta en dos líneas.
+- La bienvenida aparece una vez también para quien ya usaba la app antes de que existiera.
+- Conexión directa sin cámara en la computadora: el teléfono lee el QR de la web y luego envía su código de respuesta ("Enviar a la computadora", por WhatsApp Web, correo o Enlace Móvil) para pegarlo en la web. Leerlo con la cámara de la computadora queda como opción.
+- 422 pruebas de dominio y 28 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.34.0 - 2026-11-17
 
 Pasada de pulido: menos aspecto de plantilla, carga sin pantallas vacías y mejor en pantallas anchas.
