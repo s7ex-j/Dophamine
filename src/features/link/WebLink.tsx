@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -148,6 +149,23 @@ export function WebLink({
           <Text style={AppTheme.body}>
             En el teléfono abre Más → Conectar con la web y lee el código QR que aparecerá aquí.
           </Text>
+          {embedded ? (
+            <View
+              style={{
+                height: 200,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderStyle: "dashed",
+                borderColor: AppTheme.colors.border,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              <Ionicons name="qr-code-outline" size={44} color={AppTheme.colors.muted} />
+              <Text style={AppTheme.hint}>El código aparece aquí</Text>
+            </View>
+          ) : null}
           <Button title="Mostrar código QR" onPress={begin} />
         </Card>
       ) : null}

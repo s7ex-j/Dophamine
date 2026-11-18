@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ViewerSidebar } from "@/src/features/backup/ViewerChrome";
 import { useViewerHasData } from "@/src/features/backup/viewerData";
 import { VIEWER } from "@/src/lib/mode";
 import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
@@ -26,7 +27,7 @@ export default function TabsLayout() {
   const hideBar = VIEWER && !hasData;
   return (
     <Tabs
-      tabBar={hideBar ? () => null : undefined}
+      tabBar={hideBar ? () => null : VIEWER_WIDE ? (props) => <ViewerSidebar {...props} /> : undefined}
       screenOptions={{
         headerShown: false,
         animation: "fade",

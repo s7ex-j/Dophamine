@@ -1,60 +1,108 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
-import { PressableScale as Pressable } from "@/src/components/PressableScale";
 import { Text } from "@/src/components/Text";
-import { Screen } from "@/src/components/ui";
+import { Button, LinkButton, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
-import { viewerDataChanged } from "@/src/features/backup/viewerData";
+import { Brand, LayoutSwitch, ThemeSwitch } from "@/src/features/backup/ViewerChrome";
+import { closeViewer, useSavedViewerData, viewerDataChanged } from "@/src/features/backup/viewerData";
 import { SameNetwork, WebLink } from "@/src/features/link/WebLink";
-import { setViewerLayout, VIEWER_LAYOUT, VIEWER_WIDE } from "@/src/lib/viewerLayout";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
+import { forgetViewerData } from "@/src/lib/viewerSession";
 import { AppTheme } from "@/src/theme";
 
 // Lo que muestra la web (visor de solo lectura) en lugar de las pantallas donde
 // se registra: los registros se hacen en la app del teléfono.
 
-/** Visor sin datos: solo los pasos para traerlos del teléfono, con el código QR a la vista. */
+/**
+ * Visor sin datos abiertos: solo cómo conectar el teléfono. Si en este navegador quedó algo de una
+ * visita anterior, se ofrece aparte (ver o borrar); un respaldo, para cuando no hay la misma red.
+ */
 export function ViewerEmpty({ onLoaded }: { onLoaded: () => void }) {
+  const saved = useSavedViewerData(true);
+  const [withFile, setWithFile] = useState(false);
   const loaded = () => {
     viewerDataChanged();
     onLoaded();
   };
   return (
     <Screen>
+      <View style={[styles.topBar, { borderBottomColor: AppTheme.colors.border }]}>
+        <Brand />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <ThemeSwitch />
+          <LayoutSwitch compact={!VIEWER_WIDE} />
+        </View>
+      </View>
       <ScrollView
-        contentContainerStyle={[AppTheme.content, VIEWER_WIDE && { maxWidth: 1120, paddingTop: 40 }]}
+        contentContainerStyle={[AppTheme.content, VIEWER_WIDE && styles.wideContent]}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={AppTheme.sectionHeader}>
-          <Text style={[AppTheme.cardTitle, { fontSize: 20, fontWeight: "700" }]}>Dophamine</Text>
-          <ViewerLayoutToggle />
-        </View>
-        <View style={VIEWER_WIDE ? styles.wideRow : { gap: 16 }}>
-          <View style={[{ gap: 16 }, VIEWER_WIDE && { flex: 1 }]}>
-            <Text style={AppTheme.title}>Conecta tu teléfono para ver tu progreso.</Text>
-            <Text style={AppTheme.body}>
-              Dophamine se usa en el teléfono. Esta página solo muestra tu progreso: no registra nada y tus
-              datos no salen de este navegador.
+        <View style={VIEWER_WIDE ? styles.wideRow : { gap: 24 }}>
+          <View style={[{ gap: 18 }, VIEWER_WIDE && { flex: 1, maxWidth: 460, paddingTop: 8 }]}>
+            <Text
+              style={[AppTheme.title, VIEWER_WIDE && { fontSize: 40, lineHeight: 44, letterSpacing: -1 }]}
+            >
+              Tu progreso, en pantalla grande.
             </Text>
-            <View style={{ gap: 14, paddingTop: 4 }}>
+            <Text style={[AppTheme.body, { color: AppTheme.colors.muted }]}>
+              Dophamine se usa en el teléfono. Conéctalo y aquí verás tu Panel y tu Estrategia. Esta página
+              solo lee: no registra nada y tus datos no salen de este navegador.
+            </Text>
+            <View style={{ paddingTop: 6 }}>
               {STEPS.map((step, index) => (
-                <View key={step} style={styles.step}>
-                  <View style={[styles.stepNumber, { backgroundColor: AppTheme.colors.accentSoft }]}>
-                    <Text style={[AppTheme.label, { color: AppTheme.colors.accentText }]}>{index + 1}</Text>
-                  </View>
+                <View
+                  key={step}
+                  style={[
+                    styles.step,
+                    index > 0 && { borderTopWidth: 1, borderTopColor: AppTheme.colors.border },
+                  ]}
+                >
+                  <Text style={[styles.stepNumber, { color: AppTheme.colors.accentText }]}>{index + 1}</Text>
                   <Text style={[AppTheme.body, { flex: 1 }]}>{step}</Text>
                 </View>
               ))}
             </View>
             <SameNetwork />
           </View>
-          <View style={[{ gap: 14 }, VIEWER_WIDE && { flex: 1 }]}>
+          <View style={[{ gap: 14 }, VIEWER_WIDE && { flex: 1, maxWidth: 520 }]}>
+            {saved ? (
+              <View style={AppTheme.card}>
+                <Text style={AppTheme.cardTitle}>Ya hay datos en este navegador</Text>
+                <Text style={AppTheme.hint}>
+                  Los trajiste en una visita anterior. Puedes verlos o borrarlos de esta computadora; el
+                  teléfono no cambia.
+                </Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <Button title="Ver mis datos" onPress={loaded} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Borrar de aquí"
+                      variant="secondary"
+                      onPress={() => {
+                        forgetViewerData();
+                        closeViewer();
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
+            ) : null}
             <WebLink embedded onShowProgress={loaded} />
-            <BackupCard
-              onRestored={loaded}
-              title="¿Sin la misma red? Usa un respaldo"
-              intro="En el teléfono: Más → Respaldo → Compartir respaldo. Pasa ese archivo a esta computadora y cárgalo aquí; se lee en este navegador y no se envía a ningún servidor."
-            />
+            {withFile ? (
+              <BackupCard
+                onRestored={loaded}
+                title="Cargar un respaldo"
+                intro="En el teléfono: Más → Respaldo → Compartir respaldo. Pasa ese archivo a esta computadora y cárgalo aquí; se lee en este navegador y no se envía a ningún servidor."
+              />
+            ) : (
+              <LinkButton
+                title="¿No están en la misma red? Usa un archivo de respaldo"
+                onPress={() => setWithFile(true)}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
@@ -63,32 +111,11 @@ export function ViewerEmpty({ onLoaded }: { onLoaded: () => void }) {
 }
 
 const STEPS = [
-  "Abre Dophamine en tu teléfono, conectado a la misma red Wi-Fi que esta computadora.",
-  "En el teléfono, entra a Más → Conectar con la web.",
-  'Aquí, toca "Mostrar código QR" y léelo con el teléfono.',
+  "Conecta el teléfono y esta computadora a la misma red Wi-Fi.",
+  'Aquí, toca "Mostrar código QR". En el teléfono abre Más → Conectar con la web y léelo.',
   'En el teléfono toca "Enviar a la computadora" y pega aquí el código que te llegue.',
-  "Confirma en el teléfono: tu Panel y tu Estrategia aparecen en esta página.",
+  "Confirma en el teléfono y tus datos aparecen en esta página.",
 ];
-
-/** Cambia el visor entre la vista ancha (de computadora) y la de celular. */
-export function ViewerLayoutToggle() {
-  const wide = VIEWER_LAYOUT === "wide";
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={wide ? "Cambiar a vista de celular" : "Cambiar a vista ancha"}
-      onPress={() => setViewerLayout(wide ? "phone" : "wide")}
-      style={[AppTheme.headerAction, { flexDirection: "row", alignItems: "center", gap: 6 }]}
-    >
-      <Ionicons
-        name={wide ? "phone-portrait-outline" : "desktop-outline"}
-        size={15}
-        color={AppTheme.colors.accentText}
-      />
-      <Text style={AppTheme.headerActionText}>{wide ? "Vista de celular" : "Vista ancha"}</Text>
-    </Pressable>
-  );
-}
 
 /** Franja que recuerda que lo que se ve es de solo lectura. */
 export function ViewerBanner() {
@@ -119,7 +146,16 @@ export function ViewerOnlyNotice({ what }: { what: string }) {
 }
 
 const styles = StyleSheet.create({
-  wideRow: { flexDirection: "row", gap: 48, alignItems: "flex-start" },
-  step: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
-  stepNumber: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  topBar: {
+    height: 64,
+    paddingHorizontal: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+  },
+  wideContent: { maxWidth: 1120, paddingTop: 56, paddingHorizontal: 40 },
+  wideRow: { flexDirection: "row", gap: 64, alignItems: "flex-start", justifyContent: "space-between" },
+  step: { flexDirection: "row", gap: 16, alignItems: "flex-start", paddingVertical: 14 },
+  stepNumber: { width: 18, fontSize: 15, fontWeight: "700", fontVariant: ["tabular-nums"] },
 });

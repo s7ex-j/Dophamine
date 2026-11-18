@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.38.0 - 2026-11-18
+
+Visor web: siempre empieza por conectar el teléfono, con un diseño más sobrio y selector de tema.
+
+- Cada visita empieza en "Conecta tu teléfono", aunque el navegador guarde datos de antes. Si los hay, se ofrecen aparte: "Ver mis datos" o "Borrar de aquí" (el teléfono no cambia). Al cerrar la pestaña se vuelve a empezar por la conexión.
+- La app completa de la web (el modo de pruebas `dophamine.web-mode = full`) solo se abre en esta computadora (localhost); en el sitio publicado siempre es el visor.
+- Pantalla de conexión nueva: barra superior con el ícono y el nombre, título grande a la izquierda con cuatro pasos separados por líneas finas, y a la derecha el espacio del código QR. El respaldo por archivo queda detrás de un enlace, para cuando no hay la misma red.
+- Vista ancha con un menú lateral propio: marca arriba; Panel, Estrategia y Más; al pie, "Solo lectura", el tema, el cambio de vista y "Cerrar mis datos" (vuelve a la pantalla de conexión sin borrar nada). La franja azul de solo lectura queda solo en la vista de celular.
+- Selector de tema en el visor (Bosque, Pastel, Claro), al instante. Se guarda como preferencia de esta pantalla, fuera de los datos.
+- Panel: la línea de composición corporal ocupa todo el ancho de su tarjeta.
+- 425 pruebas de dominio y 29 flujos de navegador.
+
 ## 0.37.0 - 2026-11-18
 
 Visor web pensado para la computadora (pedido de Jharol).

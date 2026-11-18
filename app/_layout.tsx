@@ -4,7 +4,7 @@ import { LAUNCH_MIN_MS, LaunchScreen } from "@/src/components/LaunchScreen";
 import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
-import { View, type ViewStyle } from "react-native";
+import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ErrorScreen } from "@/src/components/ErrorScreen";
@@ -21,16 +21,6 @@ enableWebRTC();
 
 // El visor web en vista de celular: la app en una columna centrada, como en el teléfono.
 const PHONE_FRAME = VIEWER && !VIEWER_WIDE;
-const phoneFrame: ViewStyle = {
-  flex: 1,
-  width: "100%",
-  maxWidth: 440,
-  alignSelf: "center",
-  borderLeftWidth: 1,
-  borderRightWidth: 1,
-  borderColor: AppTheme.colors.border,
-  overflow: "hidden",
-};
 
 /** Si una pantalla falla, se muestra un aviso con "Reintentar" en lugar de una pantalla en blanco. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
@@ -100,7 +90,22 @@ export default function RootLayout() {
       <StatusBar style={THEME === "light" ? "dark" : "light"} />
       {/* La navegación se monta debajo de la pantalla de carga cuando todo está listo. */}
       {appReady ? (
-        <View style={PHONE_FRAME ? phoneFrame : { flex: 1 }}>
+        <View
+          style={
+            PHONE_FRAME
+              ? {
+                  flex: 1,
+                  width: "100%",
+                  maxWidth: 440,
+                  alignSelf: "center",
+                  borderLeftWidth: 1,
+                  borderRightWidth: 1,
+                  borderColor: AppTheme.colors.border,
+                  overflow: "hidden",
+                }
+              : { flex: 1 }
+          }
+        >
           <Stack
             key={themeVersion}
             screenOptions={{

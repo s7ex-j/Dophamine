@@ -19,6 +19,7 @@ import { saveNutritionProfile } from "@/src/features/profile/profile.repository"
 import { getSetting } from "@/src/features/settings/settings.repository";
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { ViewerEmpty } from "@/src/features/backup/ViewerSections";
+import { useViewerHasData } from "@/src/features/backup/viewerData";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
@@ -41,10 +42,11 @@ export default function StrategyScreen() {
   }, []);
   useFocusEffect(load);
   const controls = useCheckIn(snapshot, load);
+  const viewerOpen = useViewerHasData(VIEWER);
 
   if (!snapshot) return <ScreenSkeleton blocks={[220, 160, 260]} />;
   const profile = snapshot.profile;
-  if (!profile && VIEWER) return <ViewerEmpty onLoaded={load} />;
+  if (VIEWER && (!profile || viewerOpen === false)) return <ViewerEmpty onLoaded={load} />;
   if (!profile || editing)
     return (
       <Onboarding

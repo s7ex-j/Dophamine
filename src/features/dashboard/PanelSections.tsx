@@ -340,6 +340,7 @@ export function CompositionTile({
   profile: NutritionProfile;
   onPress: () => void;
 }) {
+  const [chartWidth, setChartWidth] = useState(0);
   const unit = weightUnitOf(profile);
   const latest = latestComposition(records);
   const series = compositionSeries(records).slice(-14);
@@ -357,11 +358,18 @@ export function CompositionTile({
       wide
     >
       {series.length >= 2 ? (
-        <LineChart
-          values={series.map((point) => point.bodyFatPct)}
-          color={AppTheme.colors.accent}
-          width={300}
-        />
+        // La línea ocupa todo el ancho de la tarjeta (en la web ancha, la pantalla entera).
+        <View onLayout={(event) => setChartWidth(Math.round(event.nativeEvent.layout.width))}>
+          {chartWidth ? (
+            <LineChart
+              values={series.map((point) => point.bodyFatPct)}
+              color={AppTheme.colors.accent}
+              width={chartWidth}
+            />
+          ) : (
+            <View style={{ height: 56 }} />
+          )}
+        </View>
       ) : (
         <Waiting text="Anota tu % de grasa al registrar tu peso para ver su evolución." />
       )}

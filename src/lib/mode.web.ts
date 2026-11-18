@@ -14,4 +14,8 @@ const readMode = () => {
   }
 };
 
-export const VIEWER = readMode() !== "full";
+// La app completa solo se abre en esta computadora (desarrollo y pruebas), nunca en el sitio publicado.
+const isLocal = () =>
+  typeof window !== "undefined" && ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+
+export const VIEWER = !(isLocal() && readMode() === "full");

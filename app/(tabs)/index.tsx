@@ -6,7 +6,10 @@ import { TitledScroll } from "@/src/components/TitledScroll";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 
 import { IconButton, Segmented, Screen } from "@/src/components/ui";
-import { ViewerBanner, ViewerEmpty, ViewerLayoutToggle } from "@/src/features/backup/ViewerSections";
+import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
+import { LayoutSwitch, ThemeSwitch } from "@/src/features/backup/ViewerChrome";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
+import { useViewerHasData } from "@/src/features/backup/viewerData";
 import { buildWeek } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import type { InsightMetric } from "@/src/features/dashboard/insights";
@@ -121,7 +124,10 @@ export default function DashboardScreen() {
 
   // La bienvenida y la primera evaluación ocupan toda la pantalla: sin pestañas abajo.
   const firstRun = Boolean(snapshot && !VIEWER && (!snapshot.profile || welcomed === false));
+  // En el visor las pestañas las decide su propio layout (solo con datos abiertos en esta visita).
+  const viewerOpen = useViewerHasData(VIEWER);
   useEffect(() => {
+    if (VIEWER) return;
     navigation.setOptions({
       tabBarStyle: firstRun
         ? { display: "none" }
@@ -141,7 +147,7 @@ export default function DashboardScreen() {
         }}
       />
     );
-  if (!snapshot.profile)
+  if (!snapshot.profile || (VIEWER && viewerOpen === false))
     return VIEWER ? (
       <ViewerEmpty onLoaded={load} />
     ) : (
@@ -253,7 +259,12 @@ export default function DashboardScreen() {
         context={heading}
         actions={
           VIEWER ? (
-            <ViewerLayoutToggle />
+            VIEWER_WIDE ? null : (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <ThemeSwitch />
+                <LayoutSwitch compact />
+              </View>
+            )
           ) : (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {streak ? <StreakBadge summary={streak} onPress={() => router.push("/achievements")} /> : null}
@@ -266,7 +277,7 @@ export default function DashboardScreen() {
           )
         }
       >
-        {VIEWER ? <ViewerBanner /> : null}
+        {VIEWER && !VIEWER_WIDE ? <ViewerBanner /> : null}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
         {offerCheckIn && !VIEWER ? <TermCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}

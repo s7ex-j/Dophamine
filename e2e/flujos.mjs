@@ -1322,10 +1322,12 @@ async function main() {
     };
 
     await viewer.goto(`${base}/`, { waitUntil: "networkidle0" });
-    await waitFor("Conecta tu teléfono para ver tu progreso");
+    await waitFor("Tu progreso, en pantalla grande");
     assert(!(await text()).includes("Evaluación inicial"), "El visor ofreció crear un plan.");
     // Sin datos no hay pestañas: solo los pasos para conectar el teléfono.
     assert(!(await viewer.$('a[href$="/strategy"]')), "El visor sin datos muestra las pestañas.");
+    // El respaldo por archivo va detrás de un enlace: lo principal es conectar el teléfono.
+    await tap("¿No están en la misma red? Usa un archivo de respaldo");
     const [chooser] = await Promise.all([viewer.waitForFileChooser(), tap("Cargar un respaldo")]);
     await chooser.accept([file]);
     await waitFor("Reemplazar mis datos");
@@ -1407,7 +1409,7 @@ async function main() {
 
       // 1. La web muestra su código (QR y texto).
       await web.goto(`${base}/`, { waitUntil: "networkidle0" });
-      await webWait("Conecta tu teléfono para ver tu progreso");
+      await webWait("Tu progreso, en pantalla grande");
       await webTap("Mostrar código QR");
       await web.waitForSelector('[aria-label="Código de conexión"]', { timeout: 15000 });
       const offer = await web.$eval('[aria-label="Código de conexión"]', (element) =>

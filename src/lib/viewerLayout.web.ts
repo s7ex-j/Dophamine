@@ -30,3 +30,22 @@ export function setViewerLayout(layout: ViewerLayout) {
   }
   window.location.reload();
 }
+
+const THEME_KEY = "dophamine.viewer-theme";
+
+/** El tema que se eligió en el visor (una preferencia de esta pantalla, fuera de los datos). */
+export function savedViewerTheme(): string | null {
+  try {
+    return window.localStorage.getItem(THEME_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveViewerTheme(theme: string) {
+  try {
+    window.localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    // Sin almacenamiento el tema dura hasta recargar.
+  }
+}
