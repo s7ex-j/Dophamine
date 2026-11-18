@@ -4,7 +4,7 @@
     "slug": "dophamine",
     "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.38.1",
+    "version": "0.39.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { TermTip } from "@/src/features/profile/TermTip";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "@/src/components/Text";
@@ -739,7 +740,7 @@ function RestrictionsStep({
               {ALLERGEN_LABELS[allergen]}
             </Text>
             <View style={[AppTheme.checkbox, active && AppTheme.checkboxActive]}>
-              {active ? <Text style={AppTheme.checkboxMark}>✓</Text> : null}
+              {active ? <Ionicons name="checkmark" size={14} color={AppTheme.colors.onAccent} /> : null}
             </View>
           </Pressable>
         );

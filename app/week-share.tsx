@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type ComponentRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, Share, View } from "react-native";
 import { Text } from "@/src/components/Text";
 import { useFocusEffect } from "expo-router";
@@ -152,7 +153,7 @@ export default function WeekShareScreen() {
               >
                 <Text style={[AppTheme.optionTitle, { flex: 1 }]}>{part.label}</Text>
                 <View style={[AppTheme.checkbox, active && AppTheme.checkboxActive]}>
-                  {active ? <Text style={AppTheme.checkboxMark}>✓</Text> : null}
+                  {active ? <Ionicons name="checkmark" size={14} color={AppTheme.colors.onAccent} /> : null}
                 </View>
               </Pressable>
             );

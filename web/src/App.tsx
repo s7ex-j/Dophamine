@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowRight, Moon, Sun } from "lucide-react"
+import { ArrowRight, Download, Moon, Sun } from "lucide-react"
 
 import {
   Accordion,
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button"
 const APP_URL = `${import.meta.env.BASE_URL}app/`
 const REPO_URL = "https://github.com/s7ex-j/Dophamine"
 const RELEASE_URL = `${REPO_URL}/releases/latest`
+// Un solo APK publicado, siempre el de la última versión, con el mismo nombre.
+const APK_URL = `${RELEASE_URL}/download/dophamine.apk`
 
 const steps = [
   {
@@ -374,13 +376,13 @@ function Hero() {
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Button size="lg" asChild className="h-13 rounded-full px-7 text-base">
-              <a href={APP_URL}>
-                Ver mi progreso en la web <ArrowRight />
+              <a href={APK_URL}>
+                <Download /> Descargar para Android
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="h-13 rounded-full px-6 text-base">
-              <a href={REPO_URL}>
-                <GitHubIcon className="size-4" /> Ver el código
+              <a href={APP_URL}>
+                Ver mi progreso en la web <ArrowRight />
               </a>
             </Button>
           </div>
@@ -751,11 +753,16 @@ function CallToAction() {
         <p className="mt-5 max-w-xl text-lg opacity-90">
           Tu peso y lo que comes. Dophamine se encarga de la tendencia y te avisa cuándo tiene datos suficientes.
         </p>
-        <Button size="lg" variant="secondary" asChild className="mt-9 h-13 rounded-full px-7 text-base">
-          <a href={APP_URL}>
-            Abrir Dophamine <ArrowRight />
+        <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+          <Button size="lg" variant="secondary" asChild className="h-13 rounded-full px-7 text-base">
+            <a href={APK_URL}>
+              <Download /> Descargar para Android
+            </a>
+          </Button>
+          <a href={REPO_URL} className="inline-flex items-center gap-2 text-sm font-medium opacity-90 hover:opacity-100">
+            <GitHubIcon className="size-4" /> Ver el código
           </a>
-        </Button>
+        </div>
       </div>
     </section>
   )

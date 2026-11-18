@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Pressable, View } from "react-native";
+import { ScreenSkeleton } from "@/src/components/Skeleton";
 import { Text } from "@/src/components/Text";
 import { TitledScroll } from "@/src/components/TitledScroll";
 import { Ionicons } from "@expo/vector-icons";
@@ -71,14 +72,8 @@ function TrainingScreenContent() {
   }, []);
   useFocusEffect(load);
 
-  if (!routine)
-    return (
-      <Screen>
-        <View style={AppTheme.loading}>
-          <Text style={AppTheme.body}>Preparando tu plan…</Text>
-        </View>
-      </Screen>
-    );
+  // Mientras carga, la forma de la pantalla (semana, entreno del día, totales).
+  if (!routine) return <ScreenSkeleton blocks={[64, 72, 320, 96]} />;
 
   const today = new Date();
   const week = weekProgress(routine, sessions, today);

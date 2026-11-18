@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.39.0 - 2026-11-18
+
+Revisión de calidad: contraste, toques y limpieza.
+
+- Tema Claro con contraste suficiente para leer (WCAG 4.5:1) en todas las superficies: el ámbar de las grasas y los avisos medía 3.1–3.6:1 y ahora mide 4.7–5.6:1; también se oscurecieron un poco el coral, el azul de calorías, el naranja de aviso y el verde del acento. Bosque y Pastel no cambian. Una prueba nueva (`src/theming/contrast.test.ts`) revisa el contraste del texto en los tres temas.
+- Casillas con un ícono de visto en lugar del carácter ✓ (compartir la semana y alergias en la evaluación).
+- Zonas táctiles: los enlaces de texto y los botones redondos se pueden tocar con un margen extra, y los botones de encabezado miden 40 px de alto.
+- Entreno muestra un esqueleto mientras carga, como el Panel y la Estrategia, en lugar de "Preparando tu plan…".
+- Se quitaron 82 estilos del tema que ninguna pantalla usaba (188 líneas menos), sin cambios a la vista.
+- Un solo APK publicado, siempre el de la última versión: `dophamine.apk` en la release de la 0.39.0 (se quitó el de la 0.38.1). El sitio (botón "Descargar para Android" en la portada y al final) y el README enlazan a `releases/latest/download/dophamine.apk`. La rutina para publicar cada APK está en `docs/RELEASING.md`.
+- 429 pruebas de dominio y 29 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.38.1 - 2026-11-18
 
 - APK independiente: la primera compilación (0.36.1) falló al reducir el código de Android (R8 no encontraba una clase interna de `react-native-webrtc`, `org.webrtc.Dav1dDecoder$Natives`). Se agregan reglas de ProGuard para WebRTC con `expo-build-properties` (MIT). El development build no se veía afectado porque no reduce el código.

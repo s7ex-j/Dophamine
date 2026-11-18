@@ -34,9 +34,9 @@ const MAP: Record<string, [string, string]> = {
   "#C5CEC8": ["#D6D0DE", "#33413A"],
   "#9AA59E": ["#ADA6B9", "#55625B"],
   "#8B968F": ["#A39CB0", "#5C6861"],
-  "#86C8AA": ["#CBB9E8", "#2F7A5C"],
+  "#86C8AA": ["#CBB9E8", "#2A6F53"],
   // Acento
-  "#34D399": ["#B8A4F4", "#167B5B"],
+  "#34D399": ["#B8A4F4", "#147455"],
   "#6EE7B7": ["#D3C6FA", "#11674B"],
   "#133126": ["#2E2840", "#DDF1E8"],
   "#1C3A2E": ["#362E4C", "#D4EEE3"],
@@ -46,10 +46,10 @@ const MAP: Record<string, [string, string]> = {
   "#06281C": ["#1C1A22", "#FFFFFF"],
   // Datos: cada macro con su color armonizado
   "#34D39A": ["#9FE3C8", "#1F9A6F"],
-  "#60A5FA": ["#A9C7F5", "#2563EB"],
-  "#F87171": ["#F7A8A8", "#DC2626"],
-  "#FBBF24": ["#F5D98B", "#B7791F"],
-  "#FB923C": ["#F7B89B", "#C2410C"],
+  "#60A5FA": ["#A9C7F5", "#1F5AE0"],
+  "#F87171": ["#F7A8A8", "#C81E1E"],
+  "#FBBF24": ["#F5D98B", "#8F5E06"],
+  "#FB923C": ["#F7B89B", "#B03A0A"],
   "#A78BFA": ["#C9B8F7", "#6D28D9"],
   // Fondos suaves de avisos
   "#16243A": ["#262C3D", "#DBE7FB"],

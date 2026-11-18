@@ -182,7 +182,7 @@ export function LinkButton({
   danger?: boolean;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={AppTheme.linkButton}>
+    <Pressable accessibilityRole="button" onPress={onPress} hitSlop={8} style={AppTheme.linkButton}>
       <Text style={[AppTheme.linkButtonText, danger && AppTheme.linkButtonDanger]}>{title}</Text>
     </Pressable>
   );
@@ -316,6 +316,7 @@ export function IconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
+      hitSlop={4}
       style={[AppTheme.iconButton, danger && { backgroundColor: AppTheme.colors.coralSoft }]}
     >
       <Ionicons name={icon} size={20} color={danger ? AppTheme.colors.coral : AppTheme.colors.accent} />
