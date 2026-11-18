@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 import Body, { type ExtendedBodyPart, type Slug } from "react-native-body-highlighter";
 
 import type { Muscle } from "@/src/features/exercises/catalog";

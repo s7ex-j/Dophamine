@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Pressable, ScrollView, Share, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect } from "expo-router";
 
 import { Button, Card, ProgressBar, Screen } from "@/src/components/ui";

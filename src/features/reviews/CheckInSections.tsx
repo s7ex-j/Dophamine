@@ -1,5 +1,6 @@
 import Svg, { Circle } from "react-native-svg";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Button, Card, LinkButton, ListRow } from "@/src/components/ui";
 import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";

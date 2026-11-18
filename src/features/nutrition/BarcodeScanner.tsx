@@ -1,6 +1,7 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRef } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Button } from "@/src/components/ui";
 import { AppTheme } from "@/src/theme";

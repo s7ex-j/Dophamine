@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ScrollView, Share, Text, View } from "react-native";
+import { ScrollView, Share, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useRouter } from "expo-router";
 
 import { Button, Card, Input, LinkButton, Screen } from "@/src/components/ui";

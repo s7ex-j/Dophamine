@@ -2,7 +2,8 @@ import { macroSplit } from "@/src/features/profile/targets";
 import { localDateKey } from "@/src/lib/dates";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { LineChart, MiniBar, Ring } from "@/src/components/charts";
 import { ConsistencyGrid } from "@/src/components/DetailChart";

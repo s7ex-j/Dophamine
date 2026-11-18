@@ -1,4 +1,5 @@
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useRouter } from "expo-router";
 
 import { Button, Card, Screen } from "@/src/components/ui";

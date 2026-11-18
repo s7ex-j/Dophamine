@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Button, Card } from "@/src/components/ui";
 import { readAllData } from "@/src/features/backup/backup.repository";

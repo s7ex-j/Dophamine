@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/src/components/Text";
+import { TitledScroll } from "@/src/components/TitledScroll";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 
@@ -88,13 +90,9 @@ function TrainingScreenContent() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
-        <View style={AppTheme.dashboardHeader}>
-          <View style={{ flex: 1, flexBasis: 0, minWidth: 0 }}>
-            <Text style={AppTheme.title} numberOfLines={2}>
-              {routineTitle(routine.name)}
-            </Text>
-          </View>
+      <TitledScroll
+        title={routineTitle(routine.name)}
+        actions={
           <View style={{ width: 80, flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
             <IconButton
               icon="library-outline"
@@ -103,7 +101,8 @@ function TrainingScreenContent() {
             />
             <IconButton icon="create-outline" label="Editar rutina" onPress={() => router.push("/routine")} />
           </View>
-        </View>
+        }
+      >
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           <Pressable
             accessibilityRole="button"
@@ -146,7 +145,7 @@ function TrainingScreenContent() {
           }}
           openExercise={openExercise}
         />
-      </ScrollView>
+      </TitledScroll>
     </Screen>
   );
 }

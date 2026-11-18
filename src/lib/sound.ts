@@ -10,7 +10,11 @@ let player: AudioPlayer | null = null;
 
 export function playTermSound() {
   try {
-    player ??= createAudioPlayer(require("../../assets/sounds/term-beep.wav"));
+    if (!player) {
+      player = createAudioPlayer(require("../../assets/sounds/term-beep.wav"));
+      // Un pitido amable, no una alarma.
+      player.volume = 0.35;
+    }
     player.seekTo(0);
     player.play();
   } catch {

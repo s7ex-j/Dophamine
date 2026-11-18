@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { haptic } from "@/src/lib/haptics";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { BigInput, Button, Chips, Input, LinkButton, type IconName } from "@/src/components/ui";
@@ -163,7 +164,7 @@ export function TodaySection({
           onPress={() => setDate(addDays(date, -1))}
           style={AppTheme.dateNavButton}
         >
-          <Text style={AppTheme.dateNavArrow}>‹</Text>
+          <Ionicons name="chevron-back" size={20} color={AppTheme.colors.accentText} />
         </Pressable>
         <View style={AppTheme.dateNavCenter}>
           <Text style={AppTheme.dateNavTitle}>{dayLabel(date)}</Text>
@@ -176,7 +177,7 @@ export function TodaySection({
           onPress={() => setDate(addDays(date, 1))}
           style={[AppTheme.dateNavButton, date >= today && AppTheme.dateNavButtonDisabled]}
         >
-          <Text style={AppTheme.dateNavArrow}>›</Text>
+          <Ionicons name="chevron-forward" size={20} color={AppTheme.colors.accentText} />
         </Pressable>
       </View>
 

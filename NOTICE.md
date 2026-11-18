@@ -67,6 +67,16 @@ each area.
   "QR Code" is a registered trademark of DENSO WAVE INCORPORATED.
 - `jsqr` (Cosmo Wolfe, Apache License 2.0) reads QR codes from the webcam in the web viewer.
 
+# Fonts
+
+Bundled with the app (`@expo-google-fonts/*`) and with the presentation page (`@fontsource-variable/*`);
+they are served from the app or the site itself, never downloaded from a third party. All three are
+under the SIL Open Font License 1.1 (not relicensed under the GPL):
+
+- **Instrument Sans** (The Instrument Sans Project Authors): text.
+- **Bricolage Grotesque** (The Bricolage Grotesque Project Authors): large figures and headings.
+- **JetBrains Mono** (The JetBrains Mono Project Authors): Term's voice, versions and file names.
+
 # Food data
 
 ## Built-in foods

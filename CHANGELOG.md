@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.36.0 - 2026-11-18
+
+Pasada de diseño: letra propia, pantalla de carga nueva, bienvenida sin aspecto de consola, una cifra protagonista en el Panel y movimiento sin rebote.
+
+- Tipografía propia, la misma de la página de presentación (elegida por Jharol): Instrument Sans para leer, Bricolage Grotesque para cifras grandes y títulos, y JetBrains Mono solo para la voz de Term (sus frases en la evaluación y los estados vacíos). Las fuentes van dentro de la app, no se descargan, y no necesitan otro development build (expo-font ya estaba). Cada peso es su propia familia, así la negrita no se engorda a la fuerza en Android ni en la web. Licencias (OFL 1.1) en `NOTICE.md`.
+- Pantalla de carga nueva cada vez que se abre la app: el ícono, el nombre y una línea fina que avanza con la carga real (fuentes y base de datos). Dura lo que dura la carga, con un mínimo de 0,65 s para que no parpadee, y se desvanece sobre la app ya lista. Sin rebote; con reducir movimiento, solo un fundido corto.
+- Bienvenida (pedido de Jharol): sin estética de terminal (sin "> hola_", sin "dophamine ~ 01/04" ni letra monoespaciada); contador "1 de 4", títulos en la letra de titulares y puntos en lugar de "›". Al tocar a Term, además de cambiar de cara, dice una frase corta en un globo junto a su cabeza (seis frases que rotan), sin tapar el texto de la página.
+- El sonido de Term suena más bajo (volumen 0,35).
+- Radios por jerarquía (tarjeta principal 22, tarjetas 16, controles 12, fichas 10, marcas 6) y espaciado en pasos de 4. Botones e inputs un poco más altos (52 y 48 px).
+- Colores: mismos tonos en Bosque, Pastel y Claro. El acento queda para lo que se toca; los valores de las listas van en el color del texto y la línea de contexto sobre un título (la fecha en el Panel, el día en Entreno) va callada en gris.
+- Panel: el resumen del día abre con una cifra grande, "Te quedan N kcal" (o "Te pasaste por", en coral), y los anillos de calorías y macros quedan al lado como apoyo.
+- Panel, Entreno y Más: el título grande se encoge y se desvanece al bajar y arriba aparece una barra fina con el nombre. Corre en el hilo de la interfaz y respeta reducir movimiento.
+- Lo que se toca vuelve a su tamaño frenando, sin el pequeño rebote de antes.
+- Flechas del día y de las filas de navegación con íconos en lugar de los caracteres ‹ ›.
+- Estados vacíos con Term: historial de entreno, medidas y nutrientes.
+- Página de presentación: JetBrains Mono para la versión y los nombres de archivo, radios alineados con la app, selección de texto, cursor y foco con los colores del sitio, cifras tabulares.
+- 425 pruebas de dominio y 29 flujos de navegador. `SHOTS=<carpeta> npm run e2e` también guarda Panel y Más.
+- No comprobado en teléfono: lo nuevo de esta versión (en especial la letra en Android y el encabezado que se encoge).
+
 ## 0.35.1 - 2026-11-18
 
 - Entreno: los nombres de las plantillas ya no llevan los días entre paréntesis (la semana de abajo ya los muestra) y a las rutinas guardadas con "(N días)" se les quita al mostrarlas. El de 6 días pasa a llamarse "Empuje / tirón / pierna intensivo". Los botones de ejercicios y de editar tienen su lugar fijo y el nombre se corta en dos líneas; una prueba nueva comprueba que se vean.

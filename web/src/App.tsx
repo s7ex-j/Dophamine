@@ -363,7 +363,7 @@ function Hero() {
             className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <span className="size-2 rounded-full bg-primary" />
-            Versión {__APP_VERSION__}, software libre
+            Versión <span className="font-mono text-[0.92em] text-foreground">{__APP_VERSION__}</span>, software libre
           </a>
           <h1 className="mt-6 text-[clamp(2.9rem,9.6vw,6rem)] font-extrabold leading-[0.93] tracking-[-0.035em] text-balance">
             Un pesaje no dice nada. La tendencia sí.
@@ -705,7 +705,7 @@ function Formatos() {
               </div>
               <Button asChild variant="outline" className="self-start rounded-full px-5">
                 <a href={`${base}${archivo}`} download={archivo}>
-                  Descargar {archivo}
+                  Descargar <span className="font-mono text-[0.9em]">{archivo}</span>
                 </a>
               </Button>
             </article>

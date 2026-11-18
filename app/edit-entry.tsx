@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { BigInput, Button, Card, ChoiceControl, Input, Screen, SlotPicker } from "@/src/components/ui";

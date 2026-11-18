@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
+import { TermEmpty } from "@/src/features/streak/TermEmpty";
 import { useFocusEffect } from "expo-router";
 
 import { Card, Chips, Screen } from "@/src/components/ui";
@@ -112,7 +114,7 @@ export default function NutrientsScreen() {
               </View>
             ))
           ) : (
-            <Text style={AppTheme.body}>Aún no hay comidas en este periodo.</Text>
+            <TermEmpty text="Aún no hay comidas en este periodo." />
           )}
           {protein.meals ? (
             <Text style={AppTheme.body}>

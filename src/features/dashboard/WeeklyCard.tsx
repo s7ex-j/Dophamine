@@ -1,6 +1,7 @@
 import { LinkButton } from "@/src/components/ui";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import type { IconName } from "@/src/components/ui";
 import type { WeeklySummary } from "@/src/features/dashboard/weekly";

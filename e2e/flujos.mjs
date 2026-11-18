@@ -86,10 +86,10 @@ async function main() {
   page.on("pageerror", (error) => errors.push(error.message));
 
   // Con SHOTS=<carpeta>, guarda capturas de pantallas clave para revisarlas a ojo.
-  const shot = async (name) => {
+  const shot = async (name, fullPage = false) => {
     if (!process.env.SHOTS) return;
     await new Promise((resolve) => setTimeout(resolve, 1200));
-    await page.screenshot({ path: join(process.env.SHOTS, `${name}.png`) });
+    await page.screenshot({ path: join(process.env.SHOTS, `${name}.png`), fullPage });
   };
   const store = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), STORE_KEY);
   // Los datos sembrados son de alguien que ya vio la bienvenida.
@@ -108,6 +108,10 @@ async function main() {
       await page.goto(`${base}${path}`, { waitUntil: "domcontentloaded", timeout: 30000 });
     }
     await page.waitForFunction(() => document.body.innerText.trim().length > 20, { timeout: 15000 });
+    // La pantalla de carga va encima de la app hasta que termina de desvanecerse.
+    await page.waitForFunction(() => !document.querySelector('[aria-label="Cargando Dophamine"]'), {
+      timeout: 15000,
+    });
   };
   const waitText = async (text) => {
     try {
@@ -433,7 +437,7 @@ async function main() {
 
   await step("panel · hoy: un día solo con comida, sin pesaje, y borrarlo", async () => {
     await open("/");
-    await press("‹");
+    await pressLabel("Día anterior");
     await waitText("Ayer");
     await press("Registrar comida");
     await waitText("Nada registrado todavía.");
@@ -763,6 +767,14 @@ async function main() {
     await waitText("Tu semana");
     await shot("estrategia");
     await waitText("Mismo objetivo todos los días");
+    if (process.env.SHOTS) {
+      await open("/");
+      await waitText("Tu progreso");
+      await shot("panel", true);
+      await open("/more");
+      await waitText("Todo lo demás");
+      await shot("mas", true);
+    }
     await open("/nutrients");
     await waitText("Principales aportes");
     await waitText("Cómo repartes el día");

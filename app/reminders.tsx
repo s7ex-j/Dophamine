@@ -1,6 +1,7 @@
 import { getDiet } from "@/src/features/diet/diet.repository";
 import { useCallback, useState } from "react";
-import { ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 import { useFocusEffect } from "expo-router";
 
 import { Button, Card, Chips, IconButton, LinkButton, Screen } from "@/src/components/ui";

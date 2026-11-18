@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { ScreenSkeleton } from "@/src/components/Skeleton";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { Button, Card, ListRow, NavRow, Screen } from "@/src/components/ui";

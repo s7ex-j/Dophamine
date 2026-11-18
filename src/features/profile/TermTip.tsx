@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import type { OnboardingStep } from "@/src/features/profile/onboarding";
@@ -76,7 +77,7 @@ export function TermTip({ step }: { step: OnboardingStep }) {
             paddingHorizontal: 14,
           }}
         >
-          <Text style={[AppTheme.body, { fontSize: 14, lineHeight: 20 }]}>{tip.text}</Text>
+          <Text style={AppTheme.termVoice}>{tip.text}</Text>
         </View>
         {/* Las burbujas chicas que salen de la cabeza de Term. */}
         <Bubble size={10} style={{ left: -2, bottom: -14 }} />

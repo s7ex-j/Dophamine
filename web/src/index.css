@@ -5,7 +5,8 @@
 
 /* Tokens de shadcn/ui (new-york). El primario usa el verde de la app (#167B5B). */
 :root {
-  --radius: 0.625rem;
+  /* Mismos radios que la app: controles 12 px; tarjetas y paneles, más redondos. */
+  --radius: 0.75rem;
   --background: oklch(0.985 0.004 150);
   --foreground: oklch(0.24 0.03 160);
   --card: oklch(1 0 0);
@@ -66,6 +67,8 @@
   /* Fuentes servidas desde el propio sitio: la página no llama a servidores de terceros. */
   --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Bricolage Grotesque Variable", "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  /* La voz de Term y lo que es código o un nombre de archivo, como en la app. */
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --color-forest: var(--forest);
   --color-forest-foreground: var(--forest-foreground);
   --color-noise: var(--noise);
@@ -106,6 +109,20 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    caret-color: var(--primary);
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 28%, transparent);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+  table,
+  dd,
+  time {
+    font-variant-numeric: tabular-nums;
   }
 }
 

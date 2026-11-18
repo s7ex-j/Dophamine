@@ -1,17 +1,17 @@
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-/** Al presionar baja rápido; al soltar vuelve con un resorte corto (se puede interrumpir). */
-const PRESS_IN = { duration: 90 };
-const RELEASE = { damping: 16, stiffness: 320, mass: 0.6 };
+/** Al presionar baja rápido; al soltar vuelve frenando, sin rebote (se puede interrumpir). */
+const PRESS_IN = { duration: 90, easing: Easing.out(Easing.quad) };
+const RELEASE = { duration: 180, easing: Easing.out(Easing.cubic) };
 
 /**
  * Lo que se toca se encoge un poco mientras el dedo está encima, como un botón
@@ -36,7 +36,7 @@ export function PressableScale({
         onPressIn?.(event);
       }}
       onPressOut={(event) => {
-        scale.value = withSpring(1, RELEASE);
+        scale.value = withTiming(1, RELEASE);
         onPressOut?.(event);
       }}
       style={[style, animated]}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
@@ -12,7 +13,6 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withSequence,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 
@@ -25,12 +25,11 @@ import { AppTheme } from "@/src/theme";
 /** Se guarda en ajustes cuando la persona termina o salta la bienvenida. */
 export const WELCOME_KEY = "welcome_seen";
 
-type Page = { expression: TermExpression; command: string; title: string; lines: string[] };
+type Page = { expression: TermExpression; title: string; lines: string[] };
 
 const PAGES: Page[] = [
   {
     expression: "feliz",
-    command: "hola",
     title: "Soy Term. Vamos a llevar tu progreso.",
     lines: [
       "Peso, comida, entreno, sueño y cómo te sientes, en un solo lugar.",
@@ -39,7 +38,6 @@ const PAGES: Page[] = [
   },
   {
     expression: "pensando",
-    command: "como-funciona",
     title: "Tu gasto real sale de tus datos, no de una fórmula.",
     lines: [
       "Registras el peso de la mañana y lo que comes.",
@@ -49,7 +47,6 @@ const PAGES: Page[] = [
   },
   {
     expression: "guino",
-    command: "privacidad",
     title: "Todo se queda en tu teléfono.",
     lines: [
       "Sin cuentas, sin servidor, sin publicidad.",
@@ -58,7 +55,6 @@ const PAGES: Page[] = [
   },
   {
     expression: "orgullo",
-    command: "creditos",
     title: "Hecho por Jharol, con el código abierto.",
     lines: [
       "React Native y Expo, bajo licencia GPL-3.0.",
@@ -68,9 +64,17 @@ const PAGES: Page[] = [
   },
 ];
 
-/** Lo que hace Term cuando lo tocas, una tras otra. */
-const REACTIONS: TermExpression[] = ["muy-feliz", "sorpresa", "amor", "guino", "orgullo", "listo"];
-const REACTION_MS = 1600;
+/** Lo que hace y dice Term cuando lo tocas, una tras otra. */
+const REACTIONS: Array<{ expression: TermExpression; line: string }> = [
+  { expression: "muy-feliz", line: "¡Hola! Qué bueno verte." },
+  { expression: "sorpresa", line: "¡Uy, cosquillas!" },
+  { expression: "orgullo", line: "Cada registro cuenta." },
+  { expression: "guino", line: "Tus datos no salen de aquí." },
+  { expression: "amor", line: "Vamos paso a paso, juntos." },
+  { expression: "listo", line: "¿Empezamos?" },
+];
+// Lo bastante para leer la frase con calma.
+const REACTION_MS = 2400;
 const SWIPE = 60;
 
 /** Pantallas de bienvenida antes de la evaluación inicial (solo la primera vez). */
@@ -97,9 +101,8 @@ export function Welcome({ onDone }: { onDone: () => void }) {
       <GestureDetector gesture={swipe}>
         <View style={[AppTheme.content, { flex: 1, justifyContent: "space-between", paddingTop: 18 }]}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Text style={mono(12, AppTheme.colors.muted)}>
-              dophamine <Text style={{ color: AppTheme.colors.accent }}>~</Text>{" "}
-              {String(index + 1).padStart(2, "0")}/{String(PAGES.length).padStart(2, "0")}
+            <Text style={AppTheme.hint}>
+              {index + 1} de {PAGES.length}
             </Text>
             {last ? null : (
               <Pressable accessibilityRole="button" onPress={onDone} hitSlop={12}>
@@ -110,25 +113,19 @@ export function Welcome({ onDone }: { onDone: () => void }) {
 
           <TouchableTerm base={page.expression} />
 
-          {/* El texto de cada página entra por partes: comando, título y líneas. */}
-          <View key={index} style={{ gap: 14, minHeight: 250 }}>
+          {/* El texto de cada página entra por partes: título y líneas. */}
+          <View key={index} style={{ gap: 16, minHeight: 230 }}>
             <Animated.View entering={FadeInDown.duration(300)}>
-              <Prompt command={page.command} />
+              <Text style={[AppTheme.title, { fontSize: 28, lineHeight: 33 }]}>{page.title}</Text>
             </Animated.View>
-            <Animated.Text
-              entering={FadeInDown.duration(300).delay(100)}
-              style={[AppTheme.title, { fontSize: 26, lineHeight: 32 }]}
-            >
-              {page.title}
-            </Animated.Text>
             <View style={{ gap: 10 }}>
               {page.lines.map((line, position) => (
                 <Animated.View
                   key={line}
-                  entering={FadeInDown.duration(300).delay(200 + position * 100)}
-                  style={{ flexDirection: "row", gap: 10 }}
+                  entering={FadeInDown.duration(300).delay(120 + position * 90)}
+                  style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}
                 >
-                  <Text style={mono(14, AppTheme.colors.accent)}>›</Text>
+                  <View style={[styles.bullet, { backgroundColor: AppTheme.colors.accent }]} />
                   <Text style={[AppTheme.body, { flex: 1 }]}>{line}</Text>
                 </Animated.View>
               ))}
@@ -161,34 +158,6 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   );
 }
 
-const mono = (size: number, color: string) => ({
-  fontFamily: "monospace",
-  fontSize: size,
-  color,
-  letterSpacing: 0.3,
-});
-
-/** `> comando_` con el cursor parpadeando, como en la pantalla de Term. */
-function Prompt({ command }: { command: string }) {
-  const reduceMotion = useReducedMotion();
-  const blink = useSharedValue(1);
-  useEffect(() => {
-    if (reduceMotion) return;
-    blink.value = withRepeat(
-      withSequence(withTiming(0, { duration: 450 }), withTiming(1, { duration: 450 })),
-      -1,
-    );
-  }, [reduceMotion, blink]);
-  const cursor = useAnimatedStyle(() => ({ opacity: blink.value }));
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      <Text style={mono(14, AppTheme.colors.accent)}>{"> "}</Text>
-      <Text style={mono(14, AppTheme.colors.body)}>{command}</Text>
-      <Animated.Text style={[mono(14, AppTheme.colors.accent), cursor]}>_</Animated.Text>
-    </View>
-  );
-}
-
 /** Raya de avance que se llena al llegar a su página. */
 function Segment({ active }: { active: boolean }) {
   const fill = useSharedValue(active ? 1 : 0);
@@ -217,7 +186,7 @@ function Segment({ active }: { active: boolean }) {
  */
 function TouchableTerm({ base }: { base: TermExpression }) {
   const reduceMotion = useReducedMotion();
-  const [reaction, setReaction] = useState<TermExpression | null>(null);
+  const [reaction, setReaction] = useState<(typeof REACTIONS)[number] | null>(null);
   const [touched, setTouched] = useState(false);
   const count = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -244,24 +213,57 @@ function TouchableTerm({ base }: { base: TermExpression }) {
     setReaction(REACTIONS[count.current++ % REACTIONS.length]);
     if (!reduceMotion)
       squash.value = withSequence(
-        withTiming(0.9, { duration: 90 }),
-        withSpring(1, { damping: 20, stiffness: 260, overshootClamping: true }),
+        withTiming(0.9, { duration: 90, easing: Easing.out(Easing.quad) }),
+        withTiming(1, { duration: 220, easing: Easing.out(Easing.cubic) }),
       );
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setReaction(null), REACTION_MS);
   };
   return (
     <View style={{ alignItems: "center", gap: 6 }}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Tocar a Term" onPress={poke}>
-        <Animated.View style={style}>
-          <Term expression={reaction ?? base} size={200} />
-        </Animated.View>
-      </Pressable>
+      <View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Tocar a Term" onPress={poke}>
+          <Animated.View style={style}>
+            <Term expression={reaction?.expression ?? base} size={190} />
+          </Animated.View>
+        </Pressable>
+        {/* Lo que dice Term, en un globo junto a su cabeza: no tapa el texto de la página. */}
+        {reaction ? (
+          <Animated.View
+            key={count.current}
+            entering={FadeInDown.duration(220)}
+            exiting={FadeOut.duration(160)}
+            pointerEvents="none"
+            accessibilityLiveRegion="polite"
+            style={[
+              styles.bubble,
+              { backgroundColor: AppTheme.colors.surface2, borderColor: AppTheme.colors.border },
+            ]}
+          >
+            <Text style={[AppTheme.body, { fontSize: 14, lineHeight: 19 }]}>{reaction.line}</Text>
+          </Animated.View>
+        ) : null}
+      </View>
       {touched ? null : (
-        <Animated.Text entering={FadeIn.delay(900)} exiting={FadeOut} style={mono(11, AppTheme.colors.muted)}>
-          toca a Term
-        </Animated.Text>
+        <Animated.View entering={FadeIn.delay(900)} exiting={FadeOut}>
+          <Text style={AppTheme.hint}>Toca a Term</Text>
+        </Animated.View>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 8 },
+  bubble: {
+    position: "absolute",
+    top: 4,
+    left: "60%",
+    width: 150,
+    borderWidth: 1,
+    borderRadius: 16,
+    borderBottomLeftRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+});

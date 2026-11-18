@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { Switch, Text, View } from "react-native";
+import { Switch, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { LinkButton, RowActions } from "@/src/components/ui";

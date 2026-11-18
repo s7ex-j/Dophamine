@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { LinkButton } from "@/src/components/ui";
 import { setSetting } from "@/src/features/settings/settings.repository";
@@ -23,7 +24,9 @@ export function TermCheckIn({ level, onDone }: { level: number; onDone: () => vo
         style={[AppTheme.card, { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 }]}
       >
         <Term expression="listo" size={44} />
-        <Text style={[AppTheme.body, { flex: 1 }]}>¡Gracias! Lo verás en tus patrones de Bienestar.</Text>
+        <Text style={[AppTheme.termVoice, { flex: 1 }]}>
+          ¡Gracias! Lo verás en tus patrones de Bienestar.
+        </Text>
       </View>
     );
   return (

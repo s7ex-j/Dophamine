@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PropsWithChildren } from "react";
-import { Text, type StyleProp, type TextStyle, type ViewStyle } from "react-native";
+import { type StyleProp, type TextStyle, type ViewStyle } from "react-native";
+import { Text } from "@/src/components/Text";
 import Animated, {
   Easing,
   FadeInDown,

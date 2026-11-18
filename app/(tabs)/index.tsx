@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScreenSkeleton } from "@/src/components/Skeleton";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/src/components/Text";
+import { TitledScroll } from "@/src/components/TitledScroll";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 
 import { IconButton, Segmented, Screen } from "@/src/components/ui";
@@ -246,13 +248,11 @@ export default function DashboardScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
-        <View style={AppTheme.sectionHeader}>
-          <View>
-            <Text style={AppTheme.eyebrow}>{heading}</Text>
-            <Text style={AppTheme.title}>Panel</Text>
-          </View>
-          {VIEWER ? null : (
+      <TitledScroll
+        title="Panel"
+        context={heading}
+        actions={
+          VIEWER ? null : (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {streak ? <StreakBadge summary={streak} onPress={() => router.push("/achievements")} /> : null}
               <IconButton
@@ -261,8 +261,9 @@ export default function DashboardScreen() {
                 onPress={() => setCustomizing(!customizing)}
               />
             </View>
-          )}
-        </View>
+          )
+        }
+      >
         {VIEWER ? <ViewerBanner /> : null}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
@@ -326,7 +327,7 @@ export default function DashboardScreen() {
             onShare={VIEWER ? undefined : () => router.push("/week-share")}
           />
         ) : null}
-      </ScrollView>
+      </TitledScroll>
     </Screen>
   );
 }

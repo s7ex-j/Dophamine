@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 
 import { Button, LinkButton } from "@/src/components/ui";
 import { applyAdvice, type Advice, type DayState } from "@/src/features/diet/coach";

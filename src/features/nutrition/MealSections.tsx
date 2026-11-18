@@ -4,7 +4,8 @@ import { ENTER, EXIT, SETTLE } from "@/src/components/motion";
 import Animated from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 
 import { StackBar } from "@/src/components/charts";
 import { CountUp, ProgressArc } from "@/src/components/motion";
@@ -50,14 +51,35 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
     { label: "Carbos", value: totals.carbsG, target: targets?.carbs, color: colors.carbs, unit: " g" },
     { label: "Grasas", value: totals.fatsG, target: targets?.fats, color: colors.fats, unit: " g" },
   ];
-  const size = 136;
+  const size = 92;
+  // La cifra del día: lo que queda (o lo que sobra) frente a la meta; sin meta, lo comido.
+  const over = remaining < 0;
+  const figure = targets ? Math.abs(remaining) : totals.kcal;
+  const figureLabel = !targets ? "Comiste" : over ? "Te pasaste por" : "Te quedan";
   return (
-    <View style={[AppTheme.card, AppTheme.iconRow, { gap: 16 }]}>
-      <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
-        <Svg width={size} height={size} style={{ position: "absolute" }}>
+    <View style={[AppTheme.card, { gap: 16 }]}>
+      <View style={[AppTheme.iconRow, { gap: 16 }]}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={AppTheme.hint}>{figureLabel}</Text>
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+            <CountUp value={figure} style={[AppTheme.dayFigure, over && { color: colors.coral }]} />
+            <Text style={AppTheme.dayFigureUnit}>kcal</Text>
+          </View>
+          {targets ? (
+            <Text style={AppTheme.hint}>
+              {Math.round(totals.kcal)} de {targets.calories} kcal
+            </Text>
+          ) : null}
+        </View>
+        <Svg
+          width={size}
+          height={size}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {rings.map((ring, index) => {
-            const stroke = index === 0 ? 10 : 6;
-            const radius = size / 2 - 6 - (index === 0 ? 0 : 11 + (index - 1) * 8);
+            const stroke = index === 0 ? 8 : 5;
+            const radius = size / 2 - 5 - (index === 0 ? 0 : 9 + (index - 1) * 7);
             const done = ring.target ? Math.min(1, ring.value / ring.target) : 0;
             return (
               <G key={ring.label}>
@@ -86,13 +108,9 @@ export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Ta
             );
           })}
         </Svg>
-        <CountUp value={totals.kcal} style={[AppTheme.ringNumber, { fontSize: 16, lineHeight: 19 }]} />
-        <Text style={[AppTheme.ringLabel, { fontSize: 9, lineHeight: 11 }]}>
-          {targets ? (remaining >= 0 ? `quedan ${remaining}` : `+${-remaining}`) : "kcal"}
-        </Text>
       </View>
-      <View style={{ flex: 1, gap: 8 }}>
-        {rings.map((ring) => (
+      <View style={{ gap: 8 }}>
+        {rings.slice(1).map((ring) => (
           <View key={ring.label} style={AppTheme.legendRow}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ring.color }} />
             <Text style={[AppTheme.legendLabel, { flex: 1 }]}>{ring.label}</Text>

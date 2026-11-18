@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
+import { TermEmpty } from "@/src/features/streak/TermEmpty";
 
 import { BodyMap } from "@/src/components/BodyMap";
 import { DetailChart } from "@/src/components/DetailChart";
@@ -414,7 +416,7 @@ export function HistoryCard({
           );
         })
       ) : (
-        <Text style={AppTheme.body}>Tu primera sesión aparecerá aquí.</Text>
+        <TermEmpty expression="listo" text="Tu primera sesión aparecerá aquí." />
       )}
     </Card>
   );

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect } from "expo-router";
 import Svg, { Circle, G, Path, Text as SvgText } from "react-native-svg";
 

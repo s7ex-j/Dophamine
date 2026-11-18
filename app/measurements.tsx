@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
+import { TermEmpty } from "@/src/features/streak/TermEmpty";
 import { useFocusEffect } from "expo-router";
 
 import { DetailChart } from "@/src/components/DetailChart";
@@ -125,7 +127,7 @@ export default function MeasurementsScreen() {
               </View>
             ) : null;
           })}
-          {!list.length ? <Text style={AppTheme.body}>Aún no hay medidas.</Text> : null}
+          {!list.length ? <TermEmpty text="Aún no hay medidas." /> : null}
           {ratio !== null ? (
             <Text style={AppTheme.hint}>
               Cintura ÷ altura: {ratio} {ratio < 0.5 ? "(por debajo de 0.5)" : "(0.5 o más)"}.

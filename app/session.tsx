@@ -5,7 +5,8 @@ import { ENTER, SETTLE } from "@/src/components/motion";
 import { Term } from "@/src/features/streak/Term";
 import { haptic } from "@/src/lib/haptics";
 import { useCallback, useRef, useState } from "react";
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { Button, Card, LinkButton, RowActions, Screen } from "@/src/components/ui";

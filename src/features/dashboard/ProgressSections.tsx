@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Card, ListRow, Metric } from "@/src/components/ui";
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";

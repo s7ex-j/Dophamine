@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
-import { ScrollView, Text } from "react-native";
+import { WELCOME_KEY } from "@/src/features/welcome/Welcome";
+import { Text } from "@/src/components/Text";
+import { TitledScroll } from "@/src/components/TitledScroll";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { Card, ChoiceControl, NavRow, Screen } from "@/src/components/ui";
+import { Button, Card, ChoiceControl, NavRow, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
 import { ExportCard } from "@/src/features/export/ExportCard";
 import { getOnlineLookup, setOnlineLookup } from "@/src/features/nutrition/nutrition.repository";
@@ -40,8 +42,7 @@ export default function MoreScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
-        <Text style={AppTheme.title}>Todo lo demás</Text>
+      <TitledScroll title="Todo lo demás">
         <Card title="Secciones">
           {VIEWER ? null : (
             <>
@@ -161,6 +162,14 @@ export default function MoreScreen() {
               }}
             />
             <Text style={AppTheme.hint}>Toda la app cambia al instante.</Text>
+            <Button
+              title="Ver la bienvenida otra vez"
+              variant="secondary"
+              onPress={async () => {
+                await setSetting(WELCOME_KEY, false);
+                router.navigate("/");
+              }}
+            />
           </Card>
         )}
         <Card title={VIEWER ? "Conectar con el teléfono" : "Conectar con la web"}>
@@ -205,7 +214,7 @@ export default function MoreScreen() {
             médico.
           </Text>
         </Card>
-      </ScrollView>
+      </TitledScroll>
     </Screen>
   );
 }

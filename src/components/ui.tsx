@@ -1,6 +1,7 @@
 import { useState, type PropsWithChildren } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { ScrollView, Text, TextInput, type TextInputProps, View } from "react-native";
+import { ScrollView, type TextInputProps, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 
 import { PressableScale as Pressable } from "@/src/components/PressableScale";
 import { GrowBar } from "@/src/components/motion";
@@ -347,7 +348,7 @@ export function NavRow({ title, detail, onPress }: { title: string; detail: stri
         <Text style={AppTheme.listTitle}>{title}</Text>
         <Text style={AppTheme.listDetail}>{detail}</Text>
       </View>
-      <Text style={AppTheme.navChevron}>›</Text>
+      <Ionicons name="chevron-forward" size={18} color={AppTheme.colors.muted} />
     </Pressable>
   );
 }

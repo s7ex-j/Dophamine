@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type ComponentRef } from "react";
-import { Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Pressable, ScrollView, Share, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import { useFocusEffect } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";

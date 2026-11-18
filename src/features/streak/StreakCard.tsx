@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Term } from "@/src/features/streak/Term";
 import type { StreakSummary } from "@/src/features/streak/streak.data";

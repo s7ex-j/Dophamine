@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Button, Card } from "@/src/components/ui";
 import { BackupError, describeBackup, parseBackup, type Backup } from "@/src/features/backup/backup";

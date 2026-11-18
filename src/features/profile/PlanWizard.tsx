@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TermTip } from "@/src/features/profile/TermTip";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { StackBar } from "@/src/components/charts";
 import {

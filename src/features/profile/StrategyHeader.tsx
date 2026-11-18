@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/src/components/Text";
 
 import { Button } from "@/src/components/ui";
 import { goalDatePlan, type GoalDate } from "@/src/features/goals/goalDate";

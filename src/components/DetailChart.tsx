@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, Text, View, type LayoutChangeEvent } from "react-native";
+import { Pressable, View, type LayoutChangeEvent } from "react-native";
+import { Text } from "@/src/components/Text";
 import Svg, { Circle, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import { chartScale } from "@/src/components/chartGeometry";

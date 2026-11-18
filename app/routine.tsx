@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Modal, Pressable, ScrollView, View } from "react-native";
+import { Text, TextInput } from "@/src/components/Text";
 import { useRouter } from "expo-router";
 
 import { Button, Chips, ChoiceControl, Input, LinkButton, OptionList, Screen } from "@/src/components/ui";

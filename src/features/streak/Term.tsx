@@ -1,4 +1,5 @@
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
+import { Text } from "@/src/components/Text";
 import Animated, { ZoomIn } from "react-native-reanimated";
 
 import type { PetMood } from "@/src/features/streak/streak";

@@ -5,7 +5,7 @@ Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
 **Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
 con el repo.
 
-## Estado al 17 de noviembre de 2026 (versión 0.35.1, Expo SDK 58)
+## Estado al 18 de noviembre de 2026 (versión 0.36.0, Expo SDK 58)
 
 **Decisiones de Jharol que mandan:**
 
@@ -66,7 +66,7 @@ Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK li
 | 4 | C ✔ | Motor de autoajuste: con 15 días seguidos de datos completos, un filtro de estado estima peso real y gasto a la vez (agua, glucógeno, ciclo, días incompletos) y afina las revisiones. Complejo por dentro, simple a la vista. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
 | 5 | C ✔ | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor (WebRTC): ver las métricas en la web sin subir un archivo y enviar la dieta desde la web. | Hecho en la 0.23.0 del lado de la web y con toda la lógica compartida. El lado del teléfono se activa en la etapa 2 (ver abajo). |
 | 6 | C | Marcar las fases del ciclo en el gráfico de peso. | |
-| 7 | C | Pulido visual y animaciones en toda la app. | Cierra la etapa. |
+| 7 | C | Pulido visual y animaciones en toda la app. | Primera pasada en la 0.36.0: letra propia, radios por jerarquía, cifra protagonista del Panel, encabezados que se encogen, estados vacíos con Term. Falta: rehacer las capturas de `web/public/pantallas/` con la letra nueva y revisar las pantallas que se abren encima. Cierra la etapa. |
 
 Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol,
 principales aportes, lados/superseries/parciales/myo-reps, calentamiento, gimnasios, mesociclos con

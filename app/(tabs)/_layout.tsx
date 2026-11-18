@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
+import { FONTS } from "@/src/theming/fonts";
 
 // Los colores de la barra vienen del tema y son textos ("#167B5B").
 const tabIcon =
@@ -30,6 +31,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: AppTheme.colors.accent,
         tabBarInactiveTintColor: AppTheme.colors.muted,
         tabBarStyle: { borderTopColor: AppTheme.colors.border, backgroundColor: AppTheme.colors.surface },
+        tabBarLabelStyle: { fontFamily: FONTS.text600, fontSize: 11 },
       }}
     >
       <Tabs.Screen
