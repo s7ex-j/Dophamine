@@ -662,11 +662,11 @@ async function main() {
     await open("/routine");
     await waitText("¿Qué días entrenas?");
     await press("Usar una plantilla");
-    await waitText("Empuje / tirón / pierna (6 días)");
+    await waitText("Empuje / tirón / pierna intensivo");
     await page.evaluate(() => {
       const card = [...document.querySelectorAll("div")].find(
         (node) =>
-          node.innerText?.startsWith("Empuje / tirón / pierna (6 días)") &&
+          node.innerText?.startsWith("Empuje / tirón / pierna intensivo") &&
           node.innerText.includes("Usar esta"),
       );
       [...card.querySelectorAll("div")].find((node) => node.innerText === "Usar esta").click();
@@ -697,6 +697,18 @@ async function main() {
       !HAS_REPDB || (run.name === "Correr" && run.sets === 1 && run.reps === "20"),
       "El cardio no se agregó en minutos.",
     );
+  });
+
+  await step("entreno: el nombre largo de la rutina no tapa los botones", async () => {
+    await open("/training");
+    await waitText("Empuje / tirón / pierna intensivo");
+    await shot("entreno");
+    const visible = await page.evaluate(() => {
+      const button = document.querySelector('[aria-label="Explorar ejercicios"]');
+      const box = button?.getBoundingClientRect();
+      return Boolean(box && box.width > 0 && box.right <= window.innerWidth);
+    });
+    assert(visible, "El botón de ejercicios quedó fuera de la pantalla.");
   });
 
   await step("entreno: calentamiento, tipos de serie, lados, superserie y gimnasios", async () => {

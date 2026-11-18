@@ -90,12 +90,12 @@ function TrainingScreenContent() {
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content}>
         <View style={AppTheme.dashboardHeader}>
-          <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={{ flex: 1, flexBasis: 0, minWidth: 0 }}>
             <Text style={AppTheme.title} numberOfLines={2}>
-              {routine.name}
+              {routineTitle(routine.name)}
             </Text>
           </View>
-          <View style={{ flexDirection: "row", gap: 8, flexShrink: 0 }}>
+          <View style={{ width: 80, flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
             <IconButton
               icon="library-outline"
               label="Explorar ejercicios"
@@ -150,3 +150,6 @@ function TrainingScreenContent() {
     </Screen>
   );
 }
+
+/** El nombre de la rutina sin "(5 días)": los días ya se ven en la semana de abajo. */
+const routineTitle = (name: string) => name.replace(/\s*\(\d+\s*d[ií]as?\)\s*$/i, "");

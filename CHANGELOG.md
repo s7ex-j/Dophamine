@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.35.1 - 2026-11-18
+
+- Entreno: los nombres de las plantillas ya no llevan los días entre paréntesis (la semana de abajo ya los muestra) y a las rutinas guardadas con "(N días)" se les quita al mostrarlas. El de 6 días pasa a llamarse "Empuje / tirón / pierna intensivo". Los botones de ejercicios y de editar tienen su lugar fijo y el nombre se corta en dos líneas; una prueba nueva comprueba que se vean.
+- 422 pruebas de dominio y 29 flujos de navegador.
+
 ## 0.35.0 - 2026-11-18
 
 Correcciones de la prueba en el teléfono.

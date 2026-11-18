@@ -240,7 +240,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: "push_pull_legs",
-    label: "Empuje / tirón / pierna (3 días)",
+    label: "Empuje / tirón / pierna",
     detail: "Cada grupo una vez por semana. Sencilla si solo tienes 3 días.",
     days: ["mon", "wed", "fri"],
     levels: ["intermediate"],
@@ -248,7 +248,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: "hybrid",
-    label: "Híbrida PPL + torso/pierna (5 días)",
+    label: "Híbrida PPL + torso/pierna",
     detail: "Lunes a miércoles empuje, tirón y pierna; jueves descanso; viernes torso y sábado pierna.",
     days: ["mon", "tue", "wed", "fri", "sat"],
     levels: ["intermediate", "advanced"],
@@ -256,7 +256,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: "ppl6",
-    label: "Empuje / tirón / pierna (6 días)",
+    label: "Empuje / tirón / pierna intensivo",
     detail: "Lunes y jueves empuje, martes y viernes tirón, miércoles y sábado pierna. Cada grupo dos veces.",
     days: ["mon", "tue", "wed", "thu", "fri", "sat"],
     levels: ["advanced"],
