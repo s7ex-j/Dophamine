@@ -4,7 +4,7 @@
     "slug": "dophamine",
     "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.32.0",
+    "version": "0.33.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
@@ -50,7 +50,8 @@
           "cameraPermission": "Dophamine usa la cámara para leer el código QR de la conexión directa con la web. La imagen no se guarda.",
           "microphonePermission": "Dophamine no usa el micrófono."
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -67,7 +68,9 @@
         "android.permission.VIBRATE",
         "android.permission.CAMERA"
       ],
-      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#167B5B"

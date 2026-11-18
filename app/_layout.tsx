@@ -1,4 +1,5 @@
-import { Stack, type ErrorBoundaryProps } from "expo-router";
+import { Stack, useRouter, type ErrorBoundaryProps } from "expo-router";
+import { onThemeChange, takeReturnPath } from "@/src/theming/live";
 import { LaunchScreen } from "@/src/components/LaunchScreen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
@@ -22,6 +23,14 @@ export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  // Cambiar de tema vuelve a montar la navegación con los colores nuevos, sin reiniciar la app.
+  const [themeVersion, setThemeVersion] = useState(0);
+  const router = useRouter();
+  useEffect(() => onThemeChange(() => setThemeVersion((version) => version + 1)), []);
+  useEffect(() => {
+    const path = takeReturnPath();
+    if (path && path !== "/") setTimeout(() => router.navigate(path as never), 0);
+  }, [themeVersion, router]);
 
   useEffect(() => {
     configureNotifications();
@@ -50,6 +59,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppTheme.colors.background }}>
       <StatusBar style={THEME === "light" ? "dark" : "light"} />
       <Stack
+        key={themeVersion}
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: AppTheme.colors.background },

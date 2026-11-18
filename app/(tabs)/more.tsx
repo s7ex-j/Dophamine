@@ -12,7 +12,7 @@ import { getNutritionProfile, saveNutritionProfile } from "@/src/features/profil
 import { WEIGHT_UNIT_OPTIONS, type WeightUnit } from "@/src/lib/units";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme, THEME } from "@/src/theme";
-import { applyTheme } from "@/src/theming/current";
+import { switchTheme } from "@/src/theming/live";
 import { setSetting } from "@/src/features/settings/settings.repository";
 import { THEME_KEY } from "@/src/theming/palettes";
 import { ThemePicker } from "@/src/theming/ThemePicker";
@@ -158,10 +158,10 @@ export default function MoreScreen() {
               onChange={async (theme) => {
                 if (theme === THEME) return;
                 await setSetting(THEME_KEY, theme);
-                await applyTheme();
+                switchTheme(theme, "/more");
               }}
             />
-            <Text style={AppTheme.hint}>Al cambiarlo, la app se reinicia con los colores nuevos.</Text>
+            <Text style={AppTheme.hint}>Toda la app cambia al instante.</Text>
           </Card>
         )}
         <Card title={VIEWER ? "Conectar con el teléfono" : "Conectar con la web"}>

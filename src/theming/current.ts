@@ -1,12 +1,11 @@
 import * as SQLite from "expo-sqlite";
-import { reloadAppAsync } from "expo";
 
 import { isThemeId, THEME_KEY, type ThemeId } from "@/src/theming/palettes";
 
 /**
  * El tema elegido, leído al arrancar (variante teléfono). Se lee de forma
  * síncrona de la misma tabla de ajustes, porque los estilos se arman una sola
- * vez al cargar la app; cambiar de tema reinicia la app.
+ * vez al cargar la app; luego `switchTheme` (live.ts) los cambia al instante.
  */
 export function currentTheme(): ThemeId {
   try {
@@ -18,9 +17,4 @@ export function currentTheme(): ThemeId {
     // Primera vez (la tabla aún no existe) o cualquier error: el tema de siempre.
     return "forest";
   }
-}
-
-/** Reinicia la app para aplicar un tema nuevo. */
-export async function applyTheme(): Promise<void> {
-  await reloadAppAsync("Tema nuevo");
 }

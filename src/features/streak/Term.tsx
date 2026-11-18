@@ -46,7 +46,7 @@ export function Term({
   const radius = Math.round(size * 0.22);
   if (source)
     return (
-      <Animated.View key={name} entering={ZoomIn.springify().damping(14)}>
+      <Animated.View key={name} entering={ZoomIn.duration(220)}>
         <Image
           source={source}
           accessibilityLabel={`Term, ${name.replace("-", " ")}`}

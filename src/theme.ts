@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
 
 import { currentTheme } from "@/src/theming/current";
-import { remapColors, themed } from "@/src/theming/palettes";
+import { remapColors, themed, type ThemeId } from "@/src/theming/palettes";
 
-/** El tema de color elegido (Bosque, Pastel o Claro). Se lee una vez al arrancar. */
-export const THEME = currentTheme();
+/** El tema de color elegido (Bosque, Pastel o Claro). Se lee al arrancar y cambia con `setTheme`. */
+export let THEME = currentTheme();
 /** Un color escrito en su tono de Bosque, en el tema actual (para colores fuera de este archivo). */
 export const tint = (hex: string) => themed(hex, THEME);
 
@@ -652,3 +652,20 @@ const BASE = {
 };
 
 export const AppTheme = remapColors(BASE, THEME);
+
+/**
+ * Cambia el tema al instante: reescribe los colores de `AppTheme` en los mismos
+ * objetos (todas las pantallas los leen de ahí). Quien lo llame vuelve a dibujar
+ * la app; ver `src/theming/live.ts`.
+ */
+export function setTheme(theme: ThemeId) {
+  THEME = theme;
+  const next = remapColors(BASE, theme) as Record<string, unknown>;
+  const target = AppTheme as unknown as Record<string, unknown>;
+  for (const [key, value] of Object.entries(next)) {
+    const current = target[key];
+    if (current && typeof current === "object" && value && typeof value === "object")
+      Object.assign(current, value);
+    else target[key] = value;
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TermTip } from "@/src/features/profile/TermTip";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { StackBar } from "@/src/components/charts";
@@ -24,7 +25,7 @@ import { saveRoutine } from "@/src/features/training/training.repository";
 import { localDateKey } from "@/src/lib/dates";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { GOAL_DATE_KEY, readGoalDate } from "@/src/features/goals/goalDate";
-import { applyTheme } from "@/src/theming/current";
+import { switchTheme } from "@/src/theming/live";
 import { suggestedTheme, THEME_KEY } from "@/src/theming/palettes";
 import { ThemePicker } from "@/src/theming/ThemePicker";
 import { pickTextFile } from "@/src/lib/files";
@@ -53,7 +54,7 @@ import { AppTheme, THEME } from "@/src/theme";
 
 // Una pregunta corta por pantalla; la explicación va en una sola línea.
 /** Evaluación a medias, guardada mientras la app se reinicia para mostrar un tema. */
-const DRAFT_KEY = "onboarding_draft";
+export const DRAFT_KEY = "onboarding_draft";
 const readDraft = (value: unknown): { answers: Answers; index: number } | null => {
   const raw = value as { answers?: Answers; index?: number } | null;
   return raw?.answers && typeof raw.answers.goal === "string" && typeof raw.index === "number"
@@ -160,7 +161,7 @@ export function Onboarding({
   const save = async () => {
     const input = planInputFrom(answers, profile);
     await saveNutritionProfile({ ...buildNutritionProfile(input), dietType: answers.dietType });
-    // El tema se aplica al final: si cambia, la app se reinicia ya con sus colores.
+    // El tema se aplica al final: si cambia, la app se vuelve a dibujar con sus colores.
     const theme = answers.theme ?? suggestedTheme(answers.sex);
     await setSetting(THEME_KEY, theme);
     await setSetting(GOAL_DATE_KEY, goalDateFrom(answers));
@@ -168,13 +169,16 @@ export function Onboarding({
     if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
-    if (theme !== THEME) return applyTheme();
     onSaved();
+    if (theme !== THEME) switchTheme(theme);
   };
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[AppTheme.content, { flexGrow: 1 }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <StepDots total={steps.length} current={index} />
         <Text style={AppTheme.eyebrow}>
           {profile ? "REEVALUACIÓN" : "EVALUACIÓN INICIAL"} · {index + 1} DE {steps.length}
@@ -502,10 +506,10 @@ export function Onboarding({
             onChange={async (theme) => {
               set("theme", theme);
               if (theme === THEME) return;
-              // Para ver el tema en toda la app hay que reiniciarla: se guarda la evaluación y se retoma.
+              // Toda la app se vuelve a dibujar con el tema: se guarda la evaluación y se retoma.
               await setSetting(DRAFT_KEY, { answers: { ...answers, theme }, index });
               await setSetting(THEME_KEY, theme);
-              await applyTheme();
+              switchTheme(theme, profile ? "/strategy" : "/");
             }}
           />
         ) : null}
@@ -602,6 +606,7 @@ export function Onboarding({
 
         {step === "summary" ? <PlanSummary answers={answers} existing={profile} /> : null}
 
+        <TermTip step={step} />
         {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}
         <View style={AppTheme.wizardFooter}>
           {index > 0 || onCancel ? (

@@ -15,8 +15,3 @@ export function currentTheme(): ThemeId {
     return "forest";
   }
 }
-
-/** Recarga la página para aplicar un tema nuevo. */
-export async function applyTheme(): Promise<void> {
-  if (typeof window !== "undefined") window.location.reload();
-}

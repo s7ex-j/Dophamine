@@ -85,6 +85,12 @@ async function main() {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
+  // Con SHOTS=<carpeta>, guarda capturas de pantallas clave para revisarlas a ojo.
+  const shot = async (name) => {
+    if (!process.env.SHOTS) return;
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await page.screenshot({ path: join(process.env.SHOTS, `${name}.png`) });
+  };
   const store = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), STORE_KEY);
   const seed = (data) =>
     page.evaluate((key, value) => localStorage.setItem(key, JSON.stringify(value)), STORE_KEY, data);
@@ -182,12 +188,13 @@ async function main() {
 
   await step("evaluación inicial crea el plan", async () => {
     await open("/");
-    await waitText("Hola, soy Term");
+    await waitText("Soy Term. Vamos a llevar tu progreso.");
+    await shot("bienvenida");
     await press("Siguiente");
-    await waitText("Aprende de tus datos");
+    await waitText("Tu gasto real sale de tus datos");
     await press("Siguiente");
     await press("Siguiente");
-    await waitText("Un proyecto abierto");
+    await waitText("Hecho por Jharol");
     await press("Empezar mi evaluación");
     await waitText("EVALUACIÓN INICIAL");
     assert((await store()).settings.welcome_seen === true, "No se guardó que ya se vio la bienvenida.");
@@ -195,6 +202,7 @@ async function main() {
     await press("Continuar");
     await press("Continuar"); // sin datos: debe quedarse en el paso y avisar
     await waitText("Revisa edad, altura y peso");
+    await shot("evaluacion");
     await fill("Edad", 25);
     await fill("Altura", 180);
     await fill("Peso actual", 80);
@@ -737,6 +745,7 @@ async function main() {
     await waitText("% de grasa estimado");
     await open("/strategy");
     await waitText("Tu semana");
+    await shot("estrategia");
     await waitText("Mismo objetivo todos los días");
     await open("/nutrients");
     await waitText("Principales aportes");

@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
 
 import { Card } from "@/src/components/ui";
 import type { NutritionProfile } from "@/src/features/profile/profile";
@@ -8,13 +16,14 @@ import { WEEK_DAYS } from "@/src/features/training/training.plans";
 import { getRoutine } from "@/src/features/training/training.repository";
 import { AppTheme } from "@/src/theme";
 
-const BAR_HEIGHT = 150;
-const BAR_WIDTH = 14;
+const BAR_HEIGHT = 210;
+const BAR_WIDTH = 36;
+/** Bajo este alto un tramo no tiene lugar para su número: se deja solo el color. */
+const MIN_LABEL = 18;
 
 /**
- * Tu semana: cómo se reparten las calorías día a día, con una barra por día
- * partida en proteína, carbohidratos y grasas. Cambiar el reparto no mueve el
- * promedio: la revisión sigue ajustando el objetivo de siempre.
+ * Tu semana: una columna por día partida en grasas, carbohidratos y proteína,
+ * con los gramos dentro de cada tramo. Los días de entreno van marcados.
  */
 export function DistributionCard({ profile }: { profile: NutritionProfile }) {
   const [trainingDays, setTrainingDays] = useState<string[]>([]);
@@ -30,103 +39,132 @@ export function DistributionCard({ profile }: { profile: NutritionProfile }) {
 
   return (
     <Card title={uniform ? `Tu semana · ${days[0].targets.calories} kcal al día` : "Tu semana"}>
-      <View>
-        <View style={{ flexDirection: "row", alignItems: "flex-end", height: BAR_HEIGHT + 18 }}>
-          {days.map((day) => {
-            const { protein, carbs, fats, calories } = day.targets;
-            const parts = [
-              { kcal: fats * 9, color: AppTheme.colors.fats },
-              { kcal: carbs * 4, color: AppTheme.colors.carbs },
-              { kcal: protein * 4, color: AppTheme.colors.protein },
-            ];
-            const sum = parts.reduce((total, part) => total + part.kcal, 0) || 1;
-            return (
-              <View key={day.id} style={{ flex: 1, alignItems: "center", gap: 4 }}>
-                {uniform ? null : (
-                  <Text style={[AppTheme.hint, { fontSize: 10, lineHeight: 12 }]}>{calories}</Text>
-                )}
-                <View
-                  accessibilityLabel={`${day.label}: ${calories} kcal, ${protein} g de proteína, ${carbs} g de carbohidratos, ${fats} g de grasas`}
-                  style={{
-                    width: BAR_WIDTH,
-                    height: (calories / top) * BAR_HEIGHT,
-                    borderRadius: BAR_WIDTH / 2,
-                    overflow: "hidden",
-                  }}
-                >
-                  {parts.map((part, index) => (
-                    <View key={index} style={{ flex: part.kcal / sum, backgroundColor: part.color }} />
-                  ))}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-        {/* Línea del promedio de la semana (tu objetivo). */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: (profile.calorieTarget / top) * BAR_HEIGHT,
-            borderTopWidth: 1,
-            borderStyle: "dashed",
-            borderTopColor: AppTheme.colors.muted,
-          }}
-        />
-      </View>
-      <View style={{ gap: 3 }}>
-        <View style={{ flexDirection: "row" }}>
-          {days.map((day) => (
-            <Text
-              key={day.id}
-              style={[
-                AppTheme.label,
-                { flex: 1, textAlign: "center" },
-                trainingDays.includes(day.id) && { color: AppTheme.colors.accent },
-              ]}
-            >
-              {day.label}
-            </Text>
-          ))}
-        </View>
-        {(
-          [
-            ["protein", AppTheme.colors.protein],
-            ["carbs", AppTheme.colors.carbs],
-            ["fats", AppTheme.colors.fats],
-          ] as const
-        ).map(([key, color]) => (
-          <View key={key} style={{ flexDirection: "row" }}>
-            {days.map((day) => (
-              <Text
-                key={day.id}
-                style={{ flex: 1, textAlign: "center", fontSize: 11, color, fontWeight: "600" }}
+      <View style={{ flexDirection: "row", alignItems: "flex-end", height: BAR_HEIGHT + (uniform ? 0 : 16) }}>
+        {days.map((day, index) => {
+          const { protein, carbs, fats, calories } = day.targets;
+          const height = (calories / top) * BAR_HEIGHT;
+          const parts = [
+            { grams: fats, kcal: fats * 9, color: AppTheme.colors.fats },
+            { grams: carbs, kcal: carbs * 4, color: AppTheme.colors.carbs },
+            { grams: protein, kcal: protein * 4, color: AppTheme.colors.protein },
+          ];
+          const sum = parts.reduce((total, part) => total + part.kcal, 0) || 1;
+          return (
+            <View key={day.id} style={{ flex: 1, alignItems: "center", gap: 4 }}>
+              {uniform ? null : (
+                <Text style={[AppTheme.hint, { fontSize: 10, lineHeight: 12 }]}>{calories}</Text>
+              )}
+              <GrowColumn
+                height={height}
+                delay={index * 50}
+                label={`${day.label}: ${calories} kcal, ${protein} g de proteína, ${carbs} g de carbohidratos, ${fats} g de grasas`}
               >
-                {day.targets[key]}
-              </Text>
-            ))}
-          </View>
-        ))}
+                {parts.map((part, position) => {
+                  const share = part.kcal / sum;
+                  return (
+                    <View
+                      key={position}
+                      style={{
+                        flex: share,
+                        backgroundColor: part.color,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderTopWidth: position > 0 ? 2 : 0,
+                        borderTopColor: AppTheme.colors.surface,
+                      }}
+                    >
+                      {share * height >= MIN_LABEL ? (
+                        <Text
+                          style={{
+                            fontSize: 11,
+                            fontWeight: "800",
+                            color: AppTheme.colors.onAccent,
+                            fontVariant: ["tabular-nums"],
+                          }}
+                        >
+                          {part.grams}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </GrowColumn>
+            </View>
+          );
+        })}
       </View>
-      <View style={{ flexDirection: "row", justifyContent: "center", gap: 14 }}>
+      <View style={{ flexDirection: "row" }}>
+        {days.map((day) => {
+          const training = trainingDays.includes(day.id);
+          return (
+            <View key={day.id} style={{ flex: 1, alignItems: "center", gap: 3 }}>
+              <Text style={[AppTheme.label, training && { color: AppTheme.colors.accent }]}>{day.label}</Text>
+              <View
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: training ? AppTheme.colors.accent : "transparent",
+                }}
+              />
+            </View>
+          );
+        })}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "center", flexWrap: "wrap", gap: 14 }}>
         {(
           [
-            ["Proteína (g)", AppTheme.colors.protein],
-            ["Carbohidratos (g)", AppTheme.colors.carbs],
-            ["Grasas (g)", AppTheme.colors.fats],
+            ["Proteína", AppTheme.colors.protein],
+            ["Carbohidratos", AppTheme.colors.carbs],
+            ["Grasas", AppTheme.colors.fats],
+            ["Entreno", AppTheme.colors.accent],
           ] as const
         ).map(([label, color]) => (
           <View key={label} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: color }} />
+            <View
+              style={{
+                width: label === "Entreno" ? 6 : 10,
+                height: label === "Entreno" ? 6 : 10,
+                borderRadius: label === "Entreno" ? 3 : 3,
+                backgroundColor: color,
+              }}
+            />
             <Text style={AppTheme.hint}>{label}</Text>
           </View>
         ))}
       </View>
       <Text style={AppTheme.hint}>
-        Mismo objetivo todos los días, entrenes o no. La línea marca tu promedio; la revisión lo ajusta.
+        Gramos de cada macro por día. Mismo objetivo todos los días, entrenes o no.
       </Text>
     </Card>
+  );
+}
+
+/** Columna que crece desde abajo al aparecer, una tras otra. */
+function GrowColumn({
+  height,
+  delay,
+  label,
+  children,
+}: {
+  height: number;
+  delay: number;
+  label: string;
+  children: React.ReactNode;
+}) {
+  const reduceMotion = useReducedMotion();
+  const grown = useSharedValue(reduceMotion ? 1 : 0);
+  useEffect(() => {
+    if (!reduceMotion)
+      grown.value = withDelay(delay, withTiming(1, { duration: 600, easing: Easing.out(Easing.cubic) }));
+  }, [delay, reduceMotion, grown]);
+  const style = useAnimatedStyle(() => ({ height: height * grown.value }));
+  return (
+    <Animated.View
+      accessibilityLabel={label}
+      style={[{ width: BAR_WIDTH, borderRadius: 10, overflow: "hidden", justifyContent: "flex-end" }, style]}
+    >
+      <View style={{ height }}>{children}</View>
+    </Animated.View>
   );
 }

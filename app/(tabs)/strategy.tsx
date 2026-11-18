@@ -4,7 +4,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 
 import { Button, Card, ListRow, NavRow, Screen } from "@/src/components/ui";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
-import { Onboarding } from "@/src/features/profile/PlanWizard";
+import { DRAFT_KEY, Onboarding } from "@/src/features/profile/PlanWizard";
 import { DistributionCard } from "@/src/features/profile/DistributionCard";
 import { StrategyHeader } from "@/src/features/profile/StrategyHeader";
 import { DIET_TYPES } from "@/src/features/profile/targets";
@@ -33,6 +33,7 @@ export default function StrategyScreen() {
         setSnapshot(nextSnapshot);
         setReviews(nextReviews);
         setGoalDate(readGoalDate(savedGoal));
+        getSetting(DRAFT_KEY).then((draft) => draft && setEditing(true));
       },
     );
   }, []);

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.33.0 - 2026-11-17
+
+El tema cambia al instante, Term se puede tocar y explica cada pregunta de la evaluación.
+
+- Tema al instante: elegir Bosque, Pastel o Claro ya no reinicia la app. Los colores se reescriben y la navegación se vuelve a dibujar en el momento; desde Más vuelves a Más, y en la evaluación sigues en el mismo paso.
+- Bienvenida nueva, con el estilo de terminal de Term: texto alineado a la izquierda, `> comando_` con el cursor parpadeando, entrada escalonada y páginas que se pasan deslizando. Term se puede tocar: suena (un pitido propio de tres notas), vibra, se aplasta y cambia de cara un momento.
+- Evaluación: al pie de cada pregunta, Term con un globo de pensamiento explica para qué sirve.
+- Estrategia → Tu semana: columnas más anchas con los gramos de cada macro dentro de su tramo; los días de entreno llevan un punto. Las columnas crecen una tras otra al abrir.
+- Dependencia nueva: expo-audio (MIT), para el sonido de Term. Necesita un development build nuevo.
+- 422 pruebas de dominio y 28 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.32.0 - 2026-11-17
 
 Primera vuelta de pulido: movimiento, vibración y la base nativa para el development build.
