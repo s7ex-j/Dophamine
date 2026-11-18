@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.37.0 - 2026-11-18
+
+Visor web pensado para la computadora (pedido de Jharol).
+
+- Sin datos, el visor muestra solo cómo conectar el teléfono: los pasos numerados a la izquierda y, a la derecha, el código QR para leerlo con el teléfono y el campo para pegar su respuesta. Sin pestañas. Debajo, cargar un archivo de respaldo si no están en la misma red.
+- Con datos (por la conexión directa o un respaldo), aparecen Panel, Estrategia y Más. En la vista ancha el menú va a la izquierda, el Panel muestra cuatro tarjetas por fila y la Estrategia reparte sus tarjetas en dos columnas, ocupando el ancho de la pantalla.
+- Botón "Vista de celular" / "Vista ancha" en el Panel y en la pantalla de conexión: la vista de celular deja la app en una columna centrada. La elección se recuerda en este navegador; sin elección, una computadora abre la vista ancha y una pantalla angosta la de celular.
+- El lado web de la conexión directa pasó a `src/features/link/WebLink.tsx` para usarse en la pantalla de inicio del visor.
+- 425 pruebas de dominio y 29 flujos de navegador (el del visor comprueba que sin datos no haya pestañas).
+
 ## 0.36.1 - 2026-11-18
 
 - Página de presentación: las cuatro capturas del teléfono (Panel, Dieta, Entreno, Estrategia) se rehicieron con la letra y el diseño de la 0.36.0, a doble densidad. `PANTALLAS=<carpeta> node e2e/flujos.mjs` las vuelve a generar en PNG con datos de varios días (luego se pasan a webp).

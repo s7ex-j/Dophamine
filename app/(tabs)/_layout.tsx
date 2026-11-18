@@ -2,7 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useViewerHasData } from "@/src/features/backup/viewerData";
 import { VIEWER } from "@/src/lib/mode";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { AppTheme } from "@/src/theme";
 import { FONTS } from "@/src/theming/fonts";
 
@@ -19,8 +21,12 @@ const tabIcon =
 export default function TabsLayout() {
   // Sin barra de título: cada pantalla trae el suyo. El margen superior evita la barra de estado.
   const insets = useSafeAreaInsets();
+  // En el visor sin datos no hay pestañas: solo los pasos para conectar el teléfono.
+  const hasData = useViewerHasData(VIEWER);
+  const hideBar = VIEWER && !hasData;
   return (
     <Tabs
+      tabBar={hideBar ? () => null : undefined}
       screenOptions={{
         headerShown: false,
         animation: "fade",
@@ -30,7 +36,18 @@ export default function TabsLayout() {
         headerTitleStyle: { color: AppTheme.colors.text, fontWeight: "700" },
         tabBarActiveTintColor: AppTheme.colors.accent,
         tabBarInactiveTintColor: AppTheme.colors.muted,
-        tabBarStyle: { borderTopColor: AppTheme.colors.border, backgroundColor: AppTheme.colors.surface },
+        // En la vista ancha del visor el menú va a la izquierda, como en una app de computadora.
+        tabBarPosition: VIEWER_WIDE ? "left" : "bottom",
+        tabBarVariant: VIEWER_WIDE ? "material" : "uikit",
+        tabBarStyle: hideBar
+          ? { display: "none" }
+          : VIEWER_WIDE
+            ? {
+                borderRightColor: AppTheme.colors.border,
+                backgroundColor: AppTheme.colors.surface,
+                minWidth: 200,
+              }
+            : { borderTopColor: AppTheme.colors.border, backgroundColor: AppTheme.colors.surface },
         tabBarLabelStyle: { fontFamily: FONTS.text600, fontSize: 11 },
       }}
     >

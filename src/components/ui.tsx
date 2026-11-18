@@ -1,4 +1,4 @@
-import { useState, type PropsWithChildren } from "react";
+import { Children, useState, type PropsWithChildren } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, type TextInputProps, View } from "react-native";
 import { Text, TextInput } from "@/src/components/Text";
@@ -6,7 +6,26 @@ import { Text, TextInput } from "@/src/components/Text";
 import { PressableScale as Pressable } from "@/src/components/PressableScale";
 import { GrowBar } from "@/src/components/motion";
 import { haptic } from "@/src/lib/haptics";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { AppTheme } from "@/src/theme";
+
+/**
+ * En la vista ancha del visor web reparte las tarjetas en dos columnas (una sí, una no, para que
+ * las alturas se compensen). En el teléfono las deja una debajo de otra.
+ */
+export function WideColumns({ children }: PropsWithChildren) {
+  if (!VIEWER_WIDE) return <>{children}</>;
+  const items = Children.toArray(children).filter(Boolean);
+  const column = (start: number) => (
+    <View style={{ flex: 1, gap: 14, minWidth: 0 }}>{items.filter((_, index) => index % 2 === start)}</View>
+  );
+  return (
+    <View style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
+      {column(0)}
+      {column(1)}
+    </View>
+  );
+}
 
 export function Screen({ children }: PropsWithChildren) {
   return <View style={AppTheme.screen}>{children}</View>;

@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 
 import { currentTheme } from "@/src/theming/current";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { remapColors, themed, type ThemeId } from "@/src/theming/palettes";
 
 /** El tema de color elegido (Bosque, Pastel o Claro). Se lee al arrancar y cambia con `setTheme`. */
@@ -727,10 +728,19 @@ const BASE = {
   }),
 };
 
+// La vista ancha del visor web: columna más amplia y cuatro tarjetas pequeñas por fila.
+const LAYOUT = VIEWER_WIDE
+  ? {
+      ...BASE,
+      content: { ...BASE.content, maxWidth: 1240, paddingHorizontal: 32, paddingTop: 28 },
+      tile: { ...BASE.tile, width: "23.9%" as const },
+    }
+  : BASE;
+
 // Copia propia y modificable: los estilos de StyleSheet pueden venir congelados y el
 // cambio de tema reescribe estos objetos en su lugar.
 const mutable = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-export const AppTheme = mutable(remapColors(BASE, THEME));
+export const AppTheme = mutable(remapColors(LAYOUT, THEME));
 
 /**
  * Cambia el tema al instante: reescribe los colores de `AppTheme` en los mismos
@@ -739,7 +749,7 @@ export const AppTheme = mutable(remapColors(BASE, THEME));
  */
 export function setTheme(theme: ThemeId) {
   THEME = theme;
-  const next = mutable(remapColors(BASE, theme)) as Record<string, unknown>;
+  const next = mutable(remapColors(LAYOUT, theme)) as Record<string, unknown>;
   const target = AppTheme as unknown as Record<string, unknown>;
   for (const [key, value] of Object.entries(next)) {
     const current = target[key];

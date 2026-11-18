@@ -1322,8 +1322,10 @@ async function main() {
     };
 
     await viewer.goto(`${base}/`, { waitUntil: "networkidle0" });
-    await waitFor("Visor de Dophamine");
+    await waitFor("Conecta tu teléfono para ver tu progreso");
     assert(!(await text()).includes("Evaluación inicial"), "El visor ofreció crear un plan.");
+    // Sin datos no hay pestañas: solo los pasos para conectar el teléfono.
+    assert(!(await viewer.$('a[href$="/strategy"]')), "El visor sin datos muestra las pestañas.");
     const [chooser] = await Promise.all([viewer.waitForFileChooser(), tap("Cargar un respaldo")]);
     await chooser.accept([file]);
     await waitFor("Reemplazar mis datos");
@@ -1405,9 +1407,7 @@ async function main() {
 
       // 1. La web muestra su código (QR y texto).
       await web.goto(`${base}/`, { waitUntil: "networkidle0" });
-      await webWait("Visor de Dophamine");
-      await webTap("Conectar con el teléfono");
-      await webWait("Trae tus datos del teléfono");
+      await webWait("Conecta tu teléfono para ver tu progreso");
       await webTap("Mostrar código QR");
       await web.waitForSelector('[aria-label="Código de conexión"]', { timeout: 15000 });
       const offer = await web.$eval('[aria-label="Código de conexión"]', (element) =>

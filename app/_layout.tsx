@@ -4,17 +4,33 @@ import { LAUNCH_MIN_MS, LaunchScreen } from "@/src/components/LaunchScreen";
 import { useFonts } from "expo-font";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useState } from "react";
+import { View, type ViewStyle } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ErrorScreen } from "@/src/components/ErrorScreen";
 import { initializeDatabase } from "@/src/db/database";
 import { configureNotifications } from "@/src/features/reminders/scheduler";
 import { enableWebRTC } from "@/src/features/link/webrtc";
+import { VIEWER } from "@/src/lib/mode";
+import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { AppTheme, THEME } from "@/src/theme";
 import { FONTS } from "@/src/theming/fonts";
 import { FONT_FILES } from "@/src/theming/fontFiles";
 
 enableWebRTC();
+
+// El visor web en vista de celular: la app en una columna centrada, como en el teléfono.
+const PHONE_FRAME = VIEWER && !VIEWER_WIDE;
+const phoneFrame: ViewStyle = {
+  flex: 1,
+  width: "100%",
+  maxWidth: 440,
+  alignSelf: "center",
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderColor: AppTheme.colors.border,
+  overflow: "hidden",
+};
 
 /** Si una pantalla falla, se muestra un aviso con "Reintentar" en lugar de una pantalla en blanco. */
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
@@ -75,51 +91,58 @@ export default function RootLayout() {
     />
   );
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: AppTheme.colors.background }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+        backgroundColor: PHONE_FRAME ? AppTheme.colors.surface2 : AppTheme.colors.background,
+      }}
+    >
       <StatusBar style={THEME === "light" ? "dark" : "light"} />
       {/* La navegación se monta debajo de la pantalla de carga cuando todo está listo. */}
       {appReady ? (
-        <Stack
-          key={themeVersion}
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: AppTheme.colors.background },
-            headerStyle: { backgroundColor: AppTheme.colors.background },
-            headerShadowVisible: false,
-            headerTintColor: AppTheme.colors.accent,
-            headerTitleStyle: { color: AppTheme.colors.text, fontFamily: FONTS.text700, fontSize: 17 },
-            headerBackTitle: "Atrás",
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          {/* Pantallas que se abren encima de las pestañas, con botón de volver. */}
-          <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar alimento" }} />
-          <Stack.Screen name="insight" options={{ headerShown: true, title: "Análisis" }} />
-          <Stack.Screen name="edit-entry" options={{ headerShown: true, title: "Editar alimento" }} />
-          <Stack.Screen name="session" options={{ headerShown: true, title: "Entreno en curso" }} />
-          <Stack.Screen name="exercise" options={{ headerShown: true, title: "Ejercicio" }} />
-          <Stack.Screen name="catalog" options={{ headerShown: true, title: "Ejercicios" }} />
-          <Stack.Screen name="routine" options={{ headerShown: true, title: "Mi rutina" }} />
-          <Stack.Screen name="gyms" options={{ headerShown: true, title: "Dónde entrenas" }} />
-          <Stack.Screen name="period" options={{ headerShown: true, title: "Ciclo menstrual" }} />
-          <Stack.Screen name="library" options={{ headerShown: true, title: "Biblioteca" }} />
-          <Stack.Screen name="meals" options={{ headerShown: true, title: "Comidas" }} />
-          <Stack.Screen name="diet" options={{ headerShown: true, title: "Mi dieta" }} />
-          <Stack.Screen name="link" options={{ headerShown: true, title: "Conexión directa" }} />
-          <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />
-          <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
-          <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
-          <Stack.Screen name="week-share" options={{ headerShown: true, title: "Compartir mi semana" }} />
-          <Stack.Screen name="challenges" options={{ headerShown: true, title: "Retos de 21 días" }} />
-          <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
-          <Stack.Screen name="algorithm" options={{ headerShown: true, title: "Cómo se calcula" }} />
-          <Stack.Screen name="measurements" options={{ headerShown: true, title: "Medidas corporales" }} />
-          <Stack.Screen name="nutrients" options={{ headerShown: true, title: "Nutrientes" }} />
-          <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
-          <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
-          <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
-          <Stack.Screen name="wellbeing" options={{ headerShown: true, title: "Bienestar" }} />
-        </Stack>
+        <View style={PHONE_FRAME ? phoneFrame : { flex: 1 }}>
+          <Stack
+            key={themeVersion}
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: AppTheme.colors.background },
+              headerStyle: { backgroundColor: AppTheme.colors.background },
+              headerShadowVisible: false,
+              headerTintColor: AppTheme.colors.accent,
+              headerTitleStyle: { color: AppTheme.colors.text, fontFamily: FONTS.text700, fontSize: 17 },
+              headerBackTitle: "Atrás",
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            {/* Pantallas que se abren encima de las pestañas, con botón de volver. */}
+            <Stack.Screen name="add-food" options={{ headerShown: true, title: "Agregar alimento" }} />
+            <Stack.Screen name="insight" options={{ headerShown: true, title: "Análisis" }} />
+            <Stack.Screen name="edit-entry" options={{ headerShown: true, title: "Editar alimento" }} />
+            <Stack.Screen name="session" options={{ headerShown: true, title: "Entreno en curso" }} />
+            <Stack.Screen name="exercise" options={{ headerShown: true, title: "Ejercicio" }} />
+            <Stack.Screen name="catalog" options={{ headerShown: true, title: "Ejercicios" }} />
+            <Stack.Screen name="routine" options={{ headerShown: true, title: "Mi rutina" }} />
+            <Stack.Screen name="gyms" options={{ headerShown: true, title: "Dónde entrenas" }} />
+            <Stack.Screen name="period" options={{ headerShown: true, title: "Ciclo menstrual" }} />
+            <Stack.Screen name="library" options={{ headerShown: true, title: "Biblioteca" }} />
+            <Stack.Screen name="meals" options={{ headerShown: true, title: "Comidas" }} />
+            <Stack.Screen name="diet" options={{ headerShown: true, title: "Mi dieta" }} />
+            <Stack.Screen name="link" options={{ headerShown: true, title: "Conexión directa" }} />
+            <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />
+            <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
+            <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
+            <Stack.Screen name="week-share" options={{ headerShown: true, title: "Compartir mi semana" }} />
+            <Stack.Screen name="challenges" options={{ headerShown: true, title: "Retos de 21 días" }} />
+            <Stack.Screen name="photos" options={{ headerShown: true, title: "Fotos de progreso" }} />
+            <Stack.Screen name="algorithm" options={{ headerShown: true, title: "Cómo se calcula" }} />
+            <Stack.Screen name="measurements" options={{ headerShown: true, title: "Medidas corporales" }} />
+            <Stack.Screen name="nutrients" options={{ headerShown: true, title: "Nutrientes" }} />
+            <Stack.Screen name="reminders" options={{ headerShown: true, title: "Recordatorios" }} />
+            <Stack.Screen name="analysis" options={{ headerShown: true, title: "Análisis" }} />
+            <Stack.Screen name="habits" options={{ headerShown: true, title: "Hábitos" }} />
+            <Stack.Screen name="wellbeing" options={{ headerShown: true, title: "Bienestar" }} />
+          </Stack>
+        </View>
       ) : null}
       {launch}
     </GestureHandlerRootView>

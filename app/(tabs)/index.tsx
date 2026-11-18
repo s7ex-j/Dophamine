@@ -6,7 +6,7 @@ import { TitledScroll } from "@/src/components/TitledScroll";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 
 import { IconButton, Segmented, Screen } from "@/src/components/ui";
-import { ViewerBanner, ViewerEmpty } from "@/src/features/backup/ViewerSections";
+import { ViewerBanner, ViewerEmpty, ViewerLayoutToggle } from "@/src/features/backup/ViewerSections";
 import { buildWeek } from "@/src/features/dashboard/dashboard";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import type { InsightMetric } from "@/src/features/dashboard/insights";
@@ -252,7 +252,9 @@ export default function DashboardScreen() {
         title="Panel"
         context={heading}
         actions={
-          VIEWER ? null : (
+          VIEWER ? (
+            <ViewerLayoutToggle />
+          ) : (
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {streak ? <StreakBadge summary={streak} onPress={() => router.push("/achievements")} /> : null}
               <IconButton

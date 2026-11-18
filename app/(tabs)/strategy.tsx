@@ -4,7 +4,7 @@ import { ScrollView, View } from "react-native";
 import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { Button, Card, ListRow, NavRow, Screen } from "@/src/components/ui";
+import { Button, Card, ListRow, NavRow, Screen, WideColumns } from "@/src/components/ui";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { DRAFT_KEY, Onboarding } from "@/src/features/profile/PlanWizard";
 import { DistributionCard } from "@/src/features/profile/DistributionCard";
@@ -72,39 +72,41 @@ export default function StrategyScreen() {
           }}
         />
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
-        <CheckInCard snapshot={snapshot} controls={controls} />
-        <DistributionCard profile={profile} />
-        <ReviewHistoryCard reviews={reviews} />
-        <View style={[AppTheme.card, { paddingVertical: 2 }]}>
-          <NavRow
-            title="Cómo se calcula"
-            detail="El motor por dentro, con tus números"
-            onPress={() => router.push("/algorithm")}
-          />
-          <NavRow
-            title="Análisis"
-            detail="Tendencia, ingesta y adherencia de las últimas semanas"
-            onPress={() => router.push("/analysis")}
-          />
-        </View>
-        <Card title="Tu plan">
-          <ListRow
-            title="Tipo de plan"
-            detail="Cómo se reparten carbohidratos y grasas"
-            value={DIET_TYPES.find((item) => item.value === (profile.dietType ?? "balanced"))?.label}
-          />
-          <ListRow
-            title="Actividad"
-            detail="Nivel declarado en tu evaluación"
-            value={activityLabels[profile.activity]}
-          />
-          {VIEWER ? null : (
-            <Button title="Reevaluar mi plan" variant="secondary" onPress={() => setEditing(true)} />
-          )}
-          <Text style={AppTheme.hint}>
-            Repite las preguntas de la evaluación inicial. Tus registros no se borran.
-          </Text>
-        </Card>
+        <WideColumns>
+          <CheckInCard snapshot={snapshot} controls={controls} />
+          <DistributionCard profile={profile} />
+          <ReviewHistoryCard reviews={reviews} />
+          <View style={[AppTheme.card, { paddingVertical: 2 }]}>
+            <NavRow
+              title="Cómo se calcula"
+              detail="El motor por dentro, con tus números"
+              onPress={() => router.push("/algorithm")}
+            />
+            <NavRow
+              title="Análisis"
+              detail="Tendencia, ingesta y adherencia de las últimas semanas"
+              onPress={() => router.push("/analysis")}
+            />
+          </View>
+          <Card title="Tu plan">
+            <ListRow
+              title="Tipo de plan"
+              detail="Cómo se reparten carbohidratos y grasas"
+              value={DIET_TYPES.find((item) => item.value === (profile.dietType ?? "balanced"))?.label}
+            />
+            <ListRow
+              title="Actividad"
+              detail="Nivel declarado en tu evaluación"
+              value={activityLabels[profile.activity]}
+            />
+            {VIEWER ? null : (
+              <Button title="Reevaluar mi plan" variant="secondary" onPress={() => setEditing(true)} />
+            )}
+            <Text style={AppTheme.hint}>
+              Repite las preguntas de la evaluación inicial. Tus registros no se borran.
+            </Text>
+          </Card>
+        </WideColumns>
       </ScrollView>
     </Screen>
   );
