@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.36.1 - 2026-11-18
+
+- Página de presentación: las cuatro capturas del teléfono (Panel, Dieta, Entreno, Estrategia) se rehicieron con la letra y el diseño de la 0.36.0, a doble densidad. `PANTALLAS=<carpeta> node e2e/flujos.mjs` las vuelve a generar en PNG con datos de varios días (luego se pasan a webp).
+- Primer APK independiente con todo lo de la 0.36 (no un development build): trae la app adentro y no necesita el servidor de Expo de la computadora.
+- 425 pruebas de dominio y 29 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.36.0 - 2026-11-18
 
 Pasada de diseño: letra propia, pantalla de carga nueva, bienvenida sin aspecto de consola, una cifra protagonista en el Panel y movimiento sin rebote.

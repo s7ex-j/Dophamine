@@ -91,6 +91,30 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 1200));
     await page.screenshot({ path: join(process.env.SHOTS, `${name}.png`), fullPage });
   };
+  // Con PANTALLAS=<carpeta>, guarda las capturas de la página de presentación (web/public/pantallas):
+  // 390 × 780 a doble densidad, con datos de varios días. Se convierten a webp aparte.
+  const pantalla = async (name, path, { scrollTo, prepare } = {}) => {
+    if (!process.env.PANTALLAS) return;
+    await page.setViewport({ width: 390, height: 780, deviceScaleFactor: 2 });
+    await open(path);
+    if (prepare) await prepare();
+    if (scrollTo) {
+      await waitText(scrollTo);
+      await page.evaluate((text) => {
+        const target = [...document.querySelectorAll("div[dir='auto'], span, div")].find(
+          (node) => node.childElementCount === 0 && node.textContent.trim() === text,
+        );
+        target?.scrollIntoView({ block: "start" });
+        // Deja ver el título debajo de la barra fina de arriba.
+        let parent = target?.parentElement;
+        while (parent && parent.scrollHeight <= parent.clientHeight) parent = parent.parentElement;
+        parent?.scrollBy(0, -60);
+      }, scrollTo);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1600));
+    await page.screenshot({ path: join(process.env.PANTALLAS, `${name}.png`) });
+    await page.setViewport({ width: 390, height: 844 });
+  };
   const store = () => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), STORE_KEY);
   // Los datos sembrados son de alguien que ya vio la bienvenida.
   const seed = (data) =>
@@ -751,6 +775,7 @@ async function main() {
       {},
       STORE_KEY,
     );
+    await pantalla("entreno", "/training", { scrollTo: "Músculos esta semana" });
   });
 
   await step("seguimiento: medidas, reparto semanal, nutrientes y ayuno", async () => {
@@ -1155,6 +1180,32 @@ async function main() {
         .map((entry) => `${entry.name} ${entry.grams ?? "-"} g`)
         .join(", ")}`,
     );
+    if (process.env.PANTALLAS) {
+      await pantalla("hoy", "/", { scrollTo: "Tu progreso" });
+      await pantalla("analisis", "/strategy");
+      // La dieta de ejemplo con horario semanal (la plantilla descargable del sitio).
+      const saved = await store();
+      const { diet_plan: _plan, diet_day_state: _state, ...settings } = saved.settings;
+      await seed({ ...saved, settings });
+      await pantalla("dieta", "/diet", {
+        prepare: async () => {
+          await waitText("Carga tu dieta");
+          const file = readFileSync(
+            resolve(import.meta.dirname, "..", "docs", "formatos", "dieta.dophamine-diet.json"),
+            "utf8",
+          );
+          await page.evaluate((text) => {
+            const area = document.querySelector("textarea");
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(area, text);
+            area.dispatchEvent(new Event("input", { bubbles: true }));
+          }, file);
+          await press("Leer dieta");
+          await press("Guardar dieta");
+          await waitText("Compartir como texto");
+        },
+      });
+      await seed(saved);
+    }
   });
 
   await step("ideas: retos, meta con fecha, etiqueta, aviso antes de entrenar y tema", async () => {
