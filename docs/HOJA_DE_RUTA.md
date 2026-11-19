@@ -156,13 +156,28 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
   los datos en el navegador. No tendría lo nativo (Apple Health, widget, dictado propio) y cambia la decisión de
   que la web sea solo un visor: decidirlo antes de hacerla.
 
-**Pasos**
+**Camino elegido (sin pagar primero)**
 
-1. Decidir: pagar el programa de Apple o empezar por la web instalable.
-2. Con el programa: compilar con EAS para iOS (no hace falta una Mac), probar en un iPhone por TestFlight y
-   corregir.
-3. Apple Health y el widget de iPhone.
-4. Publicar en la App Store (pasa por la revisión de Apple).
+1. **Web app instalable (PWA), la versión gratuita para iPhone.** La app completa, en una dirección aparte del
+   visor (por ejemplo `/Dophamine/pwa/`), que se instala desde Safari con "Agregar a pantalla de inicio".
+   - Guardar los datos en IndexedDB en lugar de `localStorage` (Safari da unos 5 MB por sitio y una sola entrada no
+     alcanza para meses de comidas).
+   - Service worker y manifiesto para que abra sin conexión y se vea como app.
+   - Lo que trae: registro, Panel, Estrategia, Entreno, gráficos, Term y respaldo. Código de barras, con una
+     librería web.
+   - Lo que no trae, y lo dice: recordatorios (en iOS la web solo avisa por push, que necesita servidor), Apple
+     Health, widget, sueño por uso, etiquetas con la cámara, análisis de fotos y dictado (en Safari la voz pasa
+     por los servidores de Apple).
+   - Respaldo bien a la vista: si se borran los datos de Safari, se pierden.
+   - Esfuerzo medio. Llega a cualquiera con iPhone.
+2. **`.ipa` sin firma, experimental y opcional.** Solo si alguien lo pide, y anunciado para usuarios avanzados.
+   - Se compila gratis con GitHub Actions (máquinas macOS gratuitas en repositorios públicos), sin firma; EAS no
+     compila para iPhone sin la cuenta paga.
+   - Se instala con AltStore o SideStore y un Apple ID gratis: dura 7 días sin renovar y como mucho 3 apps así.
+   - Con la firma gratuita no hay widget (necesita grupos de apps); las notificaciones locales sí funcionan.
+   - Esfuerzo medio-alto y sin forma de probarlo hasta que alguien lo instale.
+3. **Cuenta de Apple (99 USD al año)** cuando haya suficientes usuarios de iPhone: es la única forma de tener
+   Apple Health, widget y recordatorios en iPhone, y de publicar en TestFlight y la App Store.
 
 ## Etapa 3 — Solo si el proyecto crece
 
