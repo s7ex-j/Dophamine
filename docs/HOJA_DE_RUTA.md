@@ -128,6 +128,42 @@ pesa 113 MB y es la referencia).
 **No entra** (choca con las decisiones de arriba): nube obligatoria, cuentas, IA en servidores, redes sociales o
 rankings, publicidad, micronutrientes de una base enorme, puntuaciones de salud que parezcan diagnósticos.
 
+## iPhone — después de la 1.0.0
+
+Hoy Dophamine solo existe para Android: el APK no se instala en iPhone y nunca compilé ni probé la versión de iOS.
+El código ya está preparado en buena parte (Expo genera las dos plataformas y lo que es solo de Android se
+oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto.
+
+**Qué cambia en iPhone**
+
+| Función | En iPhone |
+|---|---|
+| Registro, Panel, Estrategia, Entreno, gráficos, temas, Term, respaldo | Igual que en Android (por probar) |
+| Código de barras, etiquetas con la cámara, dictado, fotos, recordatorios, conexión con la web | Las librerías tienen versión de iOS (por probar) |
+| Health Connect | No existe: integrar **Apple Health** (HealthKit) para peso, grasa, sueño, pasos y comida |
+| Sueño por uso del teléfono | iOS no deja leer el uso de la pantalla: no se puede |
+| Widget de inicio | Hacerlo aparte con WidgetKit (Swift), con los mismos datos |
+
+**Cómo se distribuye y cuánto cuesta**
+
+- **Programa de desarrolladores de Apple (99 USD al año):** necesario para compilar con EAS para un iPhone, para
+  TestFlight y para la App Store. TestFlight no es una alternativa gratuita: es parte del mismo programa.
+- **Sin pagar (Apple ID gratis):** solo para probar en mi propio iPhone, compilando desde una Mac con Xcode. La app
+  deja de abrir a los 7 días y hay que volver a instalarla; no se puede dar a otras personas.
+- **AltStore o SideStore (gratis, no oficial):** instalan apps con un Apple ID gratis, con el mismo límite de 7 días
+  y de 3 apps; sirven para probar, no para publicar.
+- **Opción sin Apple:** una versión web completa e instalable (se agrega a la pantalla de inicio desde Safari), con
+  los datos en el navegador. No tendría lo nativo (Apple Health, widget, dictado propio) y cambia la decisión de
+  que la web sea solo un visor: decidirlo antes de hacerla.
+
+**Pasos**
+
+1. Decidir: pagar el programa de Apple o empezar por la web instalable.
+2. Con el programa: compilar con EAS para iOS (no hace falta una Mac), probar en un iPhone por TestFlight y
+   corregir.
+3. Apple Health y el widget de iPhone.
+4. Publicar en la App Store (pasa por la revisión de Apple).
+
 ## Etapa 3 — Solo si el proyecto crece
 
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
