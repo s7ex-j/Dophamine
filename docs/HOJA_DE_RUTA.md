@@ -1,151 +1,120 @@
 # Hoja de ruta
 
-Lo que falta, en orden. Si algo cambia, se cambia primero este archivo.
+Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-**Quién:** `J` = Jharol (necesita su teléfono o su cuenta) · `C` = se hace en una sesión de Claude Code
-con el repo.
+## Estado al 18 de noviembre de 2026 (versión 0.40.0, Expo SDK 58)
 
-## Estado al 18 de noviembre de 2026 (versión 0.39.0, Expo SDK 58)
+**Decisiones que mandan:**
 
-**Decisiones de Jharol que mandan:**
-
-- La app principal es la de teléfono. La web publicada es un visor de solo lectura que carga un respaldo
-  (desde la 0.7.0). La app completa se abre en la web solo para desarrollo y pruebas
+- La app principal es la de teléfono. La web publicada es un visor de solo lectura: se conecta con el teléfono
+  por QR o carga un respaldo. La app completa en la web es solo para desarrollo y pruebas, en localhost
   (`dophamine.web-mode = full`).
 - Nada sale del dispositivo, salvo la búsqueda de alimentos en línea, que se enciende a propósito, y la
   conexión directa con la web, que la persona inicia y confirma (de dispositivo a dispositivo, sin servidor).
-- Primero se termina y pule la app en Expo Go; las animaciones van al final de esa etapa; el APK propio
-  (EAS) va después, para empaquetar todo y sumar lo que necesita código nativo.
-- La mascota es **Term** (desde la 0.28.0, en lugar de Dopi), con sus renders estáticos: sin animación para no
-  hacer la app más pesada. La sobriedad se quitó en la 0.15.0:
-  volverá con más trabajo de fondo.
-- **17 de noviembre de 2026 — licencia:** GPL-3.0-only (solo la versión 3, no "o posterior") desde la
-  próxima versión (0.24.0). Hasta la 0.23.0 el código sigue bajo MIT para quien ya lo tenga; la última versión
-  MIT queda marcada con la etiqueta `v0.23.0-mit`. El nombre "Dophamine", "Term" y sus ilustraciones tienen
-  una política de marca aparte (`TRADEMARK.md`).
-- **17 de noviembre de 2026 — donaciones:** solo un enlace en el README y en el sitio. Nada dentro de la app
-  hasta revisar las políticas de Google Play y de Apple sobre donaciones.
-- **17 de noviembre de 2026 — reparto:** el objetivo de calorías y macros es el mismo todos los días,
-  entrenes o no. Se quitó el reparto por entreno y a mano (los campos viejos se conservan en el perfil).
-- **17 de noviembre de 2026 — mapa muscular propio:** se diseña desde cero. No se copia código ni SVG de
-  openGym (AGPL-3.0); se puede tomar como referencia de qué mostrar (balance, fatiga, fuerza), no de cómo.
+  El respaldo automático de Android a la cuenta de Google está apagado (18 nov 2026).
+- La mascota es **Term** (desde la 0.28.0, en lugar de Dopi), con renders estáticos: sin animación pesada.
+- **Licencia:** GPL-3.0-only (solo la versión 3) desde la 0.24.0. Hasta la 0.23.0 el código sigue bajo MIT para
+  quien ya lo tenga; la última versión MIT es la etiqueta `v0.23.0-mit`. "Dophamine", "Term" y sus
+  ilustraciones tienen una política de marca aparte (`TRADEMARK.md`).
+- **Donaciones:** solo un enlace en el README y en el sitio. Nada dentro de la app hasta revisar las políticas de
+  Google Play y de Apple.
+- **Reparto:** el objetivo de calorías y macros es el mismo todos los días, entrenes o no.
+- **Mapa muscular propio:** hecho desde cero. No copio código ni SVG de openGym (AGPL-3.0).
+- **Un solo APK publicado**, siempre el de la última versión (`dophamine.apk`, ver `docs/RELEASING.md`).
+- **Versiones:** la serie 0.x se cierra con el primer APK definitivo; lo siguiente va en la 1.0.0 y después.
 
 **Lo que ya hace:**
 
-- Plan inicial completo (cuerpo, composición, actividad, entreno, ingesta conocida, meta, comidas por
-  nombre o por número) y gasto inicial con varias fórmulas.
-- Panel como único lugar de registro: peso y composición, comida por momento del día, sueño, agua, día
-  incompleto, comidas guardadas, racha con Term, chequeo breve de bienestar y resumen semanal.
-- Comida: 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas, registro rápido,
-  favoritos, código de barras y búsqueda opcional en Open Food Facts.
-- Gasto real adaptativo (tendencia suavizada, energía por kilo según composición, margen) y revisión cada
-  3 o 7 días que mira cumplimiento, sueño, entreno y cercanía a la meta. "Cómo se calcula" lo muestra paso
-  a paso. Con 15 días seguidos completos toma el relevo el motor de autoajuste (filtro de Kalman que
-  aprende el agua, el ruido y la deriva del gasto de cada persona).
-- Entreno: semana con un entreno por día (plantillas o armada a mano por enfoque muscular, cardio
-  incluido), catálogo de ~610 ejercicios con imagen (RepDB), sesión serie por serie con hora de inicio y
-  fin, carga sugerida, récords, mapa muscular, volumen semanal (series, tonelaje y sesiones).
-- Tu dieta: se carga como texto, el Panel dice qué comida toca y propone cambios según el entreno, cómo te
-  sientes, tus alergias y lo que indicó tu médico (análisis de sangre y digestivo). Nada se aplica solo.
-- Gráficos de detalle (1S–1A), cumplimiento automático, logros, fotos de progreso, recordatorios de
-  comidas, respaldo compatible entre teléfono y web, unidades kg/lb.
+- Plan inicial completo (cuerpo, composición, actividad, entreno, ingesta conocida, meta, comidas por nombre o
+  por número) y gasto inicial con varias fórmulas.
+- Panel como único lugar de registro: peso y composición, comida, sueño, agua, pasos, día incompleto, comidas
+  guardadas, racha con Term, chequeo breve de bienestar y resumen semanal.
+- Comida: 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas, registro rápido, favoritos,
+  código de barras, etiqueta con la cámara, dictado y búsqueda opcional en Open Food Facts.
+- Gasto real adaptativo y revisión cada 3 o 7 días; "Cómo se calcula" lo muestra paso a paso. Con 15 días
+  seguidos completos entra el motor de autoajuste (filtro de Kalman).
+- Entreno: semana con un entreno por día, catálogo de ~610 ejercicios con imagen (RepDB), sesión serie por
+  serie, carga sugerida, récords, mapa muscular y volumen semanal.
+- Tu dieta: se carga como texto o archivo y el Panel dice qué comida toca, con cambios según el entreno, cómo
+  te sientes, tus alergias y lo que indicó tu médico. Nada se aplica solo.
+- Health Connect, sueño estimado por uso del teléfono, widget de inicio y análisis de fotos de progreso.
 
-**Comprobado en teléfono:** Jharol usa la app en Expo Go (Android) desde la 0.9.0. **Sin comprobar en
-teléfono** (declarado en cada versión del CHANGELOG): cada cambio nuevo hasta que Jharol lo recorra; en
-particular, imágenes de ejercicios, fotos de progreso, compartir logros y el editor de semana.
+**Comprobado en teléfono:** la app en Expo Go (Android) desde la 0.9.0 y el APK 0.30.0. **Sin comprobar en
+teléfono** (lo dice cada versión del CHANGELOG): cada cambio nuevo hasta recorrerlo en el teléfono.
 
-## Etapa 1 — Completar en Expo Go (sin código nativo propio)
+## Etapa 1 — Completar la app (sin código nativo propio)
 
-Alcance revisado por Jharol el 13 de noviembre de 2026 (offline primero y APK liviano).
+| # | Paso | Estado |
+|---|---|---|
+| 1 | **Probar en un teléfono físico** las pantallas nuevas; lo que falle se anota con captura. | En curso con cada APK. |
+| 2 | Revisión técnica antes del pulido. | Hecho en la 0.20.0. |
+| 3 | Tu dieta y el asesor (alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo). | Hecho en la 0.21.0. |
+| 4 | Motor de autoajuste. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
+| 5 | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor. | Hecho en la 0.23.0 (web) y en el APK (teléfono). |
+| 6 | Marcar las fases del ciclo en el gráfico de peso. | Pendiente. |
+| 7 | Pulido visual y animaciones en toda la app. | Hecho entre la 0.32.0 y la 0.40.0. Falta revisar las pantallas que se abren encima. |
 
-| # | Quién | Paso | Notas |
-|---|---|---|---|
-| 1 | J | **Probar en un teléfono físico.** Desde la 0.9.0 cada versión se declara "no comprobada en teléfono". Recorrer las pantallas nuevas (0.14–0.19) en Expo Go o en un APK de prueba. | Lo más urgente: lo que falle se anota con captura. |
-| 2 | C ✔ | Revisión técnica antes del pulido: código sin uso quitado, pantalla de error, pruebas de navegador más estables, documentación al día. | Hecho en la 0.20.0. |
-| 3 | C ✔ | Tu dieta y el asesor: cargar la dieta, seguirla desde el Panel, alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo. | Hecho en la 0.21.0. |
-| 4 | C ✔ | Motor de autoajuste: con 15 días seguidos de datos completos, un filtro de estado estima peso real y gasto a la vez (agua, glucógeno, ciclo, días incompletos) y afina las revisiones. Complejo por dentro, simple a la vista. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
-| 5 | C ✔ | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor (WebRTC): ver las métricas en la web sin subir un archivo y enviar la dieta desde la web. | Hecho en la 0.23.0 del lado de la web y con toda la lógica compartida. El lado del teléfono se activa en la etapa 2 (ver abajo). |
-| 6 | C | Marcar las fases del ciclo en el gráfico de peso. | |
-| 7 | C | Pulido visual y animaciones en toda la app. | Primera pasada en la 0.36.0: letra propia, radios por jerarquía, cifra protagonista del Panel, encabezados que se encogen, estados vacíos con Term. Capturas de la web rehechas en la 0.36.1. Falta: revisar las pantallas que se abren encima. Cierra la etapa. |
+Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol, principales
+aportes, lados, superseries, parciales y myo-reps, calentamiento, gimnasios, mesociclos con descarga, exportar
+CSV, importar y exportar programas, ciclo menstrual, recordatorio de pesaje, fecha estimada a la meta, copiar y
+pegar comidas y días, biblioteca con recetas editables y borrado por fechas o por ejercicio.
 
-Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol,
-principales aportes, lados/superseries/parciales/myo-reps, calentamiento, gimnasios, mesociclos con
-descarga, exportar CSV, importar/exportar programas JSON/CSV, ciclo menstrual (funciona sin APK),
-recordatorio de pesaje, fecha estimada a la meta al ritmo real, copiar y pegar comidas y días,
-biblioteca con recetas editables y borrado por fechas o por ejercicio.
+**Plate view: no hace falta.** En Agregar se suman varios alimentos a la misma comida en una sola pantalla, con
+el total a la vista.
 
-**Ya estaba antes de esta lista:** recetas propias (0.9.0, editables desde la 0.19.0), sugerencias por
-momento del día (0.9.0: "historial inteligente" por comida, que es el equivalente por hora), copiar el día
-anterior (0.9.0) y fecha estimada a la meta al ritmo del plan (0.11.0).
+## Etapa 2 — APK propio (EAS)
 
-**Plate view: no hace falta.** En Agregar se pueden sumar varios alimentos a la misma comida en una sola
-pantalla, con el total de esa comida a la vista; cada uno se puede editar o quitar ahí mismo.
+Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
 
-## Etapa 2 — APK propio (EAS), al final
+| Qué | Dónde | Falta |
+|---|---|---|
+| Conexión directa con la web en el teléfono (WebRTC) | `src/features/link/` | Probar: leer el QR de la web, mismo Wi-Fi, redes que aíslan dispositivos |
+| Health Connect: peso, % de grasa, sueño, pasos y comida (30 días, a pedido) | `src/features/health/` (Más) | Probar con Samsung Health o Google Fit |
+| Pasos del día | Panel ("Hoy"), respaldo formato 10 | — |
+| Sueño estimado con el uso del teléfono | `modules/phone-usage` (Kotlin), `src/features/sleep/screenSleep.ts` | Probar el permiso de "Acceso al uso" |
+| Widget de pantalla de inicio (lo que queda del día, agua, pasos) | `src/features/widget/`, `index.js` | Probar en varios lanzadores; pantalla de bloqueo, después |
+| Dictado del alimento (reconocimiento dentro del teléfono) | `src/features/nutrition/dictation.ts` | Probar en teléfonos sin modelo de voz sin conexión |
+| Leer etiquetas nutricionales con la cámara (ML Kit) | `src/features/nutrition/labelCamera.ts` | Probar con etiquetas reales |
+| Análisis de fotos de progreso (MediaPipe + MoveNet) | `src/features/photos/photos.analysis.ts`, `assets/models/` | Probar con fotos reales; ajustar umbrales si la silueta sale mal |
 
-Necesitan código nativo que Expo Go no trae. Se hacen todas juntas cuando se pase a un APK propio.
+Pendiente:
 
-- Conexión directa con la web en el teléfono: instalar `react-native-webrtc` con su plugin de configuración
-  y llamar a `registerGlobals()` al iniciar. `src/features/link/peer.ts` ya usa `RTCPeerConnection` si
-  existe; no hay que tocar nada más. Probar: leer el QR de la web, mismo Wi-Fi, y redes que aíslan
-  dispositivos. STUN opcional (apagado por defecto) queda para después, si hace falta fuera de la red local.
-- Health Connect (Samsung Health, Google Fit): importar sueño, pasos, peso, composición y, la primera vez,
-  los últimos 30 días de peso y nutrición. En iPhone, el equivalente es Apple Health.
-- Sueño automático por uso del teléfono (último uso de noche, primero de la mañana): permiso de uso de
-  apps de Android en un módulo propio. No existe en iPhone.
-- Pasos diarios (desde Health Connect; el contador de Expo Go no da el historial en Android).
-- Respaldo automático en el Drive o iCloud de la persona (OAuth), como sincronización sin servidor propio.
-- Widgets de pantalla de inicio y de bloqueo.
-- Dictado de comidas con reconocimiento de voz propio (hoy ya se puede dictar con el micrófono del teclado).
-- Lectura de etiquetas nutricionales con la cámara (reconocimiento de texto en el teléfono).
-- Análisis de fotos de progreso en el teléfono, sin servidor. **La medición ya está hecha y probada**
-  (`src/features/photos/bodyShape.ts`, 0.30.0); falta conectar los modelos en
-  `src/features/photos/photos.analysis.ts` y poner `ANALYSIS_READY` en true. Viable con modelos ya entrenados que corren
-  en el dispositivo: `react-native-fast-tflite` (MIT, con plugin de Expo) y dos modelos de MediaPipe
-  (Apache-2.0, compatibles con la GPL): segmentación de persona (silueta) y puntos del cuerpo (hombros,
-  cadera, rodillas). Con eso se mide, en la misma pose y distancia: ancho de hombros, cintura y cadera
-  relativos a la altura en la foto, proporciones (hombro/cintura, cintura/cadera), un mapa de dónde cambió
-  la silueta entre dos fotos y una guía de pose para que las fotos sean comparables. Lo que **no** se
-  promete: centímetros exactos (una foto no tiene escala; se puede calibrar con la altura o con la cintura
-  medida con cinta) ni % de grasa (sigue siendo un dato opcional que la persona escribe si se lo midió).
-  Antes de empezar: confirmar la licencia de los archivos de modelo que se empaqueten y que la librería
-  funcione con React Native 0.88. Las fotos nunca salen del teléfono.
 - Publicar en Google Play (ver `docs/RELEASING.md`).
+- En iPhone: Apple Health en lugar de Health Connect; no hay sueño por uso ni este widget.
 
 ## Etapa 3 — Solo si el proyecto crece
 
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
 
-## Se quedan (decisión de Jharol, 13 nov 2026)
+## Se quedan
 
-- **Registro rápido:** sin él, una comida fuera de casa queda sin anotar y el gasto real sale mal (un hueco
-  daña más que una estimación). Desde la 0.20.0 va al final de Agregar, cada registro se marca "estimado" y,
-  si más de la mitad del día es estimada, se sugiere marcarlo como incompleto.
+- **Registro rápido:** sin él, una comida fuera de casa queda sin anotar y el gasto real sale mal (un hueco daña
+  más que una estimación). Va al final de Agregar, cada registro se marca "estimado" y, si más de la mitad del
+  día es estimada, se sugiere marcarlo como incompleto.
 - **Búsqueda en Open Food Facts:** viene apagada, solo sale a internet si se enciende, cada producto queda
-  guardado para usarlo sin red y no agrega peso a la app. Sin ella, el lector de códigos de barras casi no sirve.
+  guardado para usarlo sin red. Sin ella, el lector de códigos de barras casi no sirve.
 
 ## Descartado
 
-Decisión de Jharol, 13 nov 2026 (offline primero y APK liviano):
+Offline primero y APK liviano:
 
 - Base de datos externa grande (USDA completa): pesaría demasiado.
-- Fotos de comida con IA, descripción en lenguaje natural y dictado propio: necesitan un servidor.
+- Fotos de comida con IA y descripción de comidas en lenguaje natural: necesitan un servidor. (El dictado sí
+  entró, porque reconoce la voz dentro del teléfono.)
 - Importar recetas desde una URL: necesita red.
-- Micronutrientes, explorador de nutrientes y su reparto en el día: demasiados datos y una app más pesada; los
-  alimentos incluidos solo tienen calorías y macros, y Open Food Facts casi nunca trae los micros completos.
-- Videos de técnica y programas comerciales (por ejemplo, de Jeff Nippard): son contenido con licencia.
-- Sincronización cifrada propia y biblioteca de la comunidad: necesitan servidor (el respaldo en el Drive de la
-  persona queda en la Etapa 2).
-- Plate view: ver arriba.
+- Micronutrientes y su explorador: demasiados datos para una app liviana; los alimentos incluidos solo tienen
+  calorías y macros.
+- Videos de técnica y programas comerciales: son contenido con licencia.
+- Sincronización propia, biblioteca de la comunidad y respaldo automático en la nube: necesitan servidor o
+  sacar los datos del teléfono.
 - Cuentas obligatorias, anuncios o telemetría.
-- Cambiar el objetivo calórico sin que la persona lo haya decidido: o acepta cada propuesta, o eligió el
-  modo automático, que siempre avisa y se puede deshacer.
+- Cambiar el objetivo calórico sin que la persona lo haya decidido: o acepta cada propuesta, o eligió el modo
+  automático, que siempre avisa y se puede deshacer.
 - Presentar el gasto como una cifra exacta, o dar consejo médico.
 
 ## Ya hecho de la lista frente a MacroFactor
 
-Historial inteligente por momento del día (sugerencias por comida, 0.9.0), fecha estimada para llegar a la
-meta (0.11.0), tonelaje por sesión, por ejercicio y por semana (0.12.0–0.14.0), web como visor (0.7.0),
-comidas guardadas (0.14.0), gasto ajustado por el entreno real (0.15.0), medidas corporales, macros por
-día, tipos de plan, ayuno, alcohol y principales aportes (0.16.0), lados, superseries, calentamiento,
-gimnasios y mesociclos con descarga (0.17.0).
+Historial inteligente por momento del día (0.9.0), fecha estimada para llegar a la meta (0.11.0), tonelaje por
+sesión, ejercicio y semana (0.12.0–0.14.0), web como visor (0.7.0), comidas guardadas (0.14.0), gasto ajustado por
+el entreno real (0.15.0), medidas corporales, macros por día, tipos de plan, ayuno, alcohol y principales aportes
+(0.16.0), lados, superseries, calentamiento, gimnasios y mesociclos con descarga (0.17.0).

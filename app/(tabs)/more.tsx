@@ -7,6 +7,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Button, Card, ChoiceControl, NavRow, Screen } from "@/src/components/ui";
 import { BackupCard } from "@/src/features/backup/BackupCard";
 import { ExportCard } from "@/src/features/export/ExportCard";
+import { HealthConnectCard } from "@/src/features/health/HealthConnectCard";
 import { getOnlineLookup, setOnlineLookup } from "@/src/features/nutrition/nutrition.repository";
 import { OFF_ATTRIBUTION } from "@/src/features/nutrition/openfoodfacts";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
@@ -190,7 +191,10 @@ export default function MoreScreen() {
             intro="Carga un respaldo más reciente de tu teléfono para actualizar lo que ves aquí."
           />
         ) : (
-          <BackupCard onRestored={load} />
+          <>
+            <HealthConnectCard onImported={load} />
+            <BackupCard onRestored={load} />
+          </>
         )}
         <ExportCard />
         {VIEWER ? null : (

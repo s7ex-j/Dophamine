@@ -1,6 +1,6 @@
 import type { Landmark, Mask } from "@/src/features/photos/bodyShape";
 
-/** En la web no hay fotos (quedan en el teléfono), así que tampoco análisis. */
+// Variante web: las fotos de progreso viven solo en el teléfono y los modelos no viajan a la web.
 export const ANALYSIS_READY = false;
 
 export async function analyzePhoto(_file: string): Promise<{ mask: Mask; landmarks: Landmark[] } | null> {

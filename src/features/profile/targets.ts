@@ -53,7 +53,7 @@ export function targetsForWeekday(
   weekday: string,
   trainingDays: string[],
 ): DayTargets {
-  // Decisión de Jharol (17 nov 2026): el objetivo es el mismo todos los días, entrenes o no.
+  // Decisión del 17 nov 2026: el objetivo es el mismo todos los días, entrenes o no.
   // Los campos viejos de reparto (calorieSchedule…) se conservan en el perfil pero ya no cuentan.
   void weekday;
   void trainingDays;

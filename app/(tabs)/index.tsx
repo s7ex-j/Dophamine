@@ -64,6 +64,7 @@ import type { SleepEntry } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
+import { refreshWidget } from "@/src/features/widget/refresh";
 import { AppTheme } from "@/src/theme";
 
 const LAYOUT_KEY = "dashboard_layout";
@@ -113,6 +114,10 @@ export default function DashboardScreen() {
     );
   }, []);
   useEffect(load, [load]);
+  // Cada vez que el Panel se pone al día, el widget de la pantalla de inicio también.
+  useEffect(() => {
+    if (snapshot && !VIEWER) refreshWidget();
+  }, [snapshot]);
   useFocusEffect(load);
   const [range, setRange] = useState<7 | 30>(7);
   const controls = useCheckIn(snapshot, load);

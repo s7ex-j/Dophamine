@@ -77,6 +77,28 @@ under the SIL Open Font License 1.1 (not relicensed under the GPL):
 - **Bricolage Grotesque** (The Bricolage Grotesque Project Authors): large figures and headings.
 - **JetBrains Mono** (The JetBrains Mono Project Authors): Term's voice, versions and file names.
 
+# On-device models (progress photos)
+
+Bundled in `assets/models/` and run only on the phone; photos never leave it. Both are licensed under the
+Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0) and are not relicensed under the GPL:
+
+- `selfie_segmenter.tflite`: MediaPipe Selfie Segmentation, Copyright Google LLC. Source:
+  https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite
+- `movenet_lightning.tflite`: MoveNet SinglePose Lightning (float16), Copyright Google LLC. Source:
+  https://tfhub.dev/google/lite-model/movenet/singlepose/lightning/tflite/float16/4
+
+# Native libraries added for the Android app
+
+- `react-native-health-connect` (MIT): reads weight, body fat, sleep, steps and nutrition from Health Connect, only
+  after the person allows it.
+- `expo-text-extractor` (MIT): reads the text of a nutrition label photo with Google ML Kit through Google Play
+  services. Recognition runs on the phone; Play services may download the recognition model the first time. The photo
+  is deleted as soon as it is read.
+- `expo-speech-recognition` (MIT): dictation of a food name, only with on-device recognition.
+- `react-native-android-widget` (MIT): the home-screen widget.
+- `react-native-fast-tflite` and `react-native-nitro-modules` (MIT), `expo-image-manipulator` (MIT) and
+  `jpeg-js` (BSD-3-Clause): run the photo models.
+
 # Food data
 
 ## Built-in foods

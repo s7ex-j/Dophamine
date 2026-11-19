@@ -25,6 +25,8 @@ export type DailyBiometrics = {
   fasting?: boolean;
   /** Agua tomada en el día, en ml. */
   waterMl?: number;
+  /** Pasos del día (de Health Connect). */
+  steps?: number | null;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -45,6 +47,7 @@ type Row = {
   partial: number | null;
   fasting?: number | null;
   water_ml: number | null;
+  steps?: number | null;
 };
 
 const today = () => localDateKey();
@@ -64,6 +67,7 @@ const fromRow = (row: Row): DailyBiometrics => ({
   partial: row.partial === 1,
   fasting: row.fasting === 1,
   waterMl: row.water_ml ?? 0,
+  steps: row.steps ?? null,
 });
 
 /** Guarda el pesaje y la composición de un día sin tocar lo comido. */
@@ -127,6 +131,18 @@ export async function getBiometricsWindow(days: number): Promise<DailyBiometrics
 
 export async function getRecentBiometrics(): Promise<DailyBiometrics[]> {
   return getBiometricsWindow(7);
+}
+
+/** Guarda los pasos de un día (de Health Connect). */
+export async function setDaySteps(date: string, steps: number) {
+  const db = await getDatabase();
+  await db.runAsync(
+    `INSERT INTO daily_biometrics (id, date, steps) VALUES (?, ?, ?)
+    ON CONFLICT(date) DO UPDATE SET steps = excluded.steps, updated_at = CURRENT_TIMESTAMP`,
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    date,
+    Math.round(steps),
+  );
 }
 
 /** Marca o desmarca un día como incompleto (no se registró todo lo comido). */

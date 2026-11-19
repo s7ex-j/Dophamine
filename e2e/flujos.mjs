@@ -999,7 +999,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 9, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 10, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/more");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);

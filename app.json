@@ -4,7 +4,7 @@
     "slug": "dophamine",
     "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.39.0",
+    "version": "0.40.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
@@ -48,7 +48,7 @@
         "@config-plugins/react-native-webrtc",
         {
           "cameraPermission": "Dophamine usa la cámara para leer el código QR de la conexión directa con la web. La imagen no se guarda.",
-          "microphonePermission": "Dophamine no usa el micrófono."
+          "microphonePermission": "Dophamine usa el micrófono solo si dictas un alimento; la voz se reconoce en el teléfono."
         }
       ],
       "expo-audio",
@@ -56,10 +56,39 @@
         "expo-build-properties",
         {
           "android": {
-            "extraProguardRules": "-keep class org.webrtc.** { *; }\n-dontwarn org.webrtc.**"
+            "extraProguardRules": "-keep class org.webrtc.** { *; }\n-dontwarn org.webrtc.**",
+            "minSdkVersion": 26
           }
         }
-      ]
+      ],
+      "react-native-health-connect",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Dophamine usa el micrófono solo si dictas un alimento; la voz se reconoce en el teléfono.",
+          "speechRecognitionPermission": "Para entender el alimento que dictas, en el teléfono."
+        }
+      ],
+      "./plugins/withUsageAccess",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "Today",
+              "label": "Dophamine · Hoy",
+              "description": "Lo que te queda del día, agua y pasos",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "horizontal|vertical",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      "react-native-fast-tflite"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -74,15 +103,22 @@
       "versionCode": 1,
       "permissions": [
         "android.permission.VIBRATE",
-        "android.permission.CAMERA"
-      ],
-      "blockedPermissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA",
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_BODY_FAT",
+        "android.permission.health.READ_SLEEP",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_NUTRITION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#167B5B"
-      }
+      },
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.BLUETOOTH"
+      ]
     },
     "ios": {
       "bundleIdentifier": "com.s7ex.dophamine",

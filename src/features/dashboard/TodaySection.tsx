@@ -1,4 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+  hasUsageAccess,
+  openUsageAccessSettings,
+  phoneUsageAvailable,
+  screenEvents,
+} from "@/modules/phone-usage";
 import { haptic } from "@/src/lib/haptics";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
@@ -6,6 +12,7 @@ import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { BigInput, Button, Chips, Input, LinkButton, type IconName } from "@/src/components/ui";
+import { nightWindow, sleepFromScreen } from "@/src/features/sleep/screenSleep";
 import {
   addWater,
   getBiometricsByDate,
@@ -248,6 +255,12 @@ export function TodaySection({
           </View>
         </View>
       </View>
+      {day?.steps ? (
+        <View style={[AppTheme.legendRow, { paddingHorizontal: 4 }]}>
+          <Ionicons name="footsteps-outline" size={15} color={AppTheme.colors.accent} />
+          <Text style={AppTheme.hint}>{day.steps.toLocaleString("es-PE")} pasos · de Health Connect</Text>
+        </View>
+      ) : null}
 
       {editor === "weight" ? (
         <View style={AppTheme.card}>
@@ -332,6 +345,29 @@ export function TodaySection({
             options={[1, 2, 3, 4, 5].map((value) => ({ value, label: String(value) }))}
           />
           {draftMinutes ? <Text style={AppTheme.hint}>{formatDuration(draftMinutes)} de sueño</Text> : null}
+          {phoneUsageAvailable ? (
+            <LinkButton
+              title="Calcular con el uso del teléfono"
+              onPress={async () => {
+                if (!hasUsageAccess()) {
+                  setMessage({
+                    text: 'Activa Dophamine en "Acceso al uso" y vuelve a tocar aquí.',
+                    error: false,
+                  });
+                  return openUsageAccessSettings();
+                }
+                const window = nightWindow(date);
+                const night = sleepFromScreen(await screenEvents(window.start, window.end), date);
+                if (!night)
+                  return setMessage({
+                    text: "No encontré una noche clara en el uso del teléfono.",
+                    error: true,
+                  });
+                setSleepForm({ ...sleepForm, bedtime: night.bedtime, wakeTime: night.wakeTime });
+                setMessage({ text: "Calculado con el teléfono: revísalo y guarda.", error: false });
+              }}
+            />
+          ) : null}
           <Button title={sleep ? "Guardar cambios de sueño" : "Guardar sueño"} onPress={saveNight} />
           {sleep ? (
             <View style={AppTheme.rowActions}>

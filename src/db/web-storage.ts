@@ -19,6 +19,7 @@ export type Store = {
     partial?: boolean;
     fasting?: boolean;
     waterMl?: number;
+    steps?: number | null;
   }>;
   wellbeing: Array<{
     id: string;

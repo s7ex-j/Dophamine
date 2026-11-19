@@ -58,7 +58,7 @@ const answers: Answers = {
   deadlineLabel: "",
 };
 
-// El caso que reportó Jharol: 18 años, 170 cm, 56 kg, 15 % de grasa, estudiante que entrena fuerza.
+// Un caso real que se probó: 18 años, 170 cm, 56 kg, 15 % de grasa, estudiante que entrena fuerza.
 const young: ExpenditureInput = {
   sex: "male",
   age: 18,

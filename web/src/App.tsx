@@ -45,7 +45,7 @@ const faqs = [
   },
   {
     q: "¿Dónde se guardan mis datos?",
-    a: "En tu teléfono. Puedes exportar un respaldo cuando quieras y llevarlo a otro teléfono o a esta web. Si desinstalas la app sin un respaldo, los datos se pierden.",
+    a: "En tu teléfono, sin copia en la nube. Puedes exportar un respaldo cuando quieras y llevarlo a otro teléfono o a esta web. Si desinstalas la app sin un respaldo, los datos se pierden.",
   },
   {
     q: "¿Para qué sirve la versión web?",
@@ -648,10 +648,12 @@ function Tdee() {
 
 function Privacy() {
   const hechos = [
-    ["Datos en tu teléfono", "Todo se guarda en el teléfono. La web solo muestra lo que tú le pases."],
+    ["Datos en tu teléfono", "Todo se guarda en el teléfono, sin copia automática en la nube. La web solo muestra lo que tú le pases."],
     ["Sin rastreo", "Sin cuentas, analítica, anuncios ni telemetría. Esta página tampoco carga nada de terceros."],
-    ["Funciona sin conexión", "Registra y consulta tu progreso aunque no tengas internet."],
+    ["Cámara, voz y fotos, en el teléfono", "Las etiquetas, el dictado y el análisis de tus fotos de progreso se procesan dentro del teléfono. La foto de una etiqueta se borra en cuanto se lee."],
+    ["Permisos solo cuando los usas", "Health Connect solo lee lo que autorizas; cámara, micrófono y notificaciones se piden al usarlos."],
     ["Conexión directa y cifrada", "Para ver tus datos en la web, el teléfono y la computadora se conectan por código QR dentro de tu Wi-Fi, sin servidor. O usas un archivo de respaldo."],
+    ["Internet solo si lo pides", "Funciona sin conexión. La búsqueda de alimentos en Open Food Facts viene apagada y solo envía lo que buscas."],
   ]
   return (
     <section id="privacidad" className="scroll-mt-20 py-20 md:py-28">

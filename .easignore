@@ -14,8 +14,8 @@ dist/
 web-build/
 
 # Native build outputs
-android/
-ios/
+/android/
+/ios/
 *.apk
 *.aab
 
@@ -42,3 +42,7 @@ expo-env.d.ts
 # Build combinado de GitHub Pages (landing + app)
 site/
 *.tsbuildinfo
+
+# Archivos de trabajo locales
+CLAUDE.md
+.claude/

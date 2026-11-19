@@ -97,7 +97,8 @@ export default function PhotosScreen() {
     const latest = await getLatestBiometrics();
     // Con los modelos en el teléfono, se mide la silueta al guardar; si la pose no sirve, se avisa.
     let shape: BodyShape | null = null;
-    const found = ANALYSIS_READY ? await analyzePhoto(file) : null;
+    // Si el análisis falla (foto rara, modelo que no carga), la foto se guarda igual, sin medir.
+    const found = ANALYSIS_READY ? await analyzePhoto(file).catch(() => null) : null;
     if (found) {
       const problems = poseIssues(found.landmarks, pose);
       setIssues(problems);

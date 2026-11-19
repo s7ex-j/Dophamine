@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { TermTip } from "@/src/features/profile/TermTip";
+import { requestPermission } from "@/src/features/reminders/scheduler";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "@/src/components/Text";
 
@@ -171,6 +172,9 @@ export function Onboarding({
     if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
+    // La primera vez, el teléfono pregunta si la app puede avisar (recordatorios de comidas y
+    // pesaje). Si se niega, se puede activar después en Más → Recordatorios.
+    if (!profile) await requestPermission().catch(() => false);
     onSaved();
     if (theme !== THEME) switchTheme(theme);
   };

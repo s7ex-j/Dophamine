@@ -355,3 +355,30 @@ describe("agua en el respaldo del teléfono", () => {
     expect(back.waterMl).toBe(1750);
   });
 });
+
+describe("pasos en el respaldo del teléfono", () => {
+  const day = {
+    id: "d",
+    date: "2026-11-13",
+    weightKg: 56,
+    caloriesIn: 0,
+    proteinG: 0,
+    carbsG: 0,
+    fatsG: 0,
+    bodyFatPct: null,
+    muscleMassKg: null,
+    waterPct: null,
+    boneMassKg: null,
+  };
+  it("los pasos del día pasan por SQLite sin cambios", () => {
+    const back = storeFromTables(
+      tablesFromStore({ biometrics: [{ ...day, steps: 8432 }], wellbeing: [], workouts: [] }),
+    ).biometrics[0];
+    expect(back.steps).toBe(8432);
+  });
+  it("un día de un respaldo viejo, sin pasos, sigue sin pasos", () => {
+    const back = storeFromTables(tablesFromStore({ biometrics: [day], wellbeing: [], workouts: [] }))
+      .biometrics[0];
+    expect(back.steps).toBeUndefined();
+  });
+});

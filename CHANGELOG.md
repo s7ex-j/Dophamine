@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.40.0 - 2026-11-18
+
+APK definitivo de la etapa 2: todo lo que necesitaba código nativo, más bienvenida nueva, Term que habla bien y README nuevo.
+
+**Lo nativo (Android), sin probar en el teléfono:**
+
+- Health Connect completo: peso, % de grasa, sueño, **pasos** y **comida** de los últimos 30 días, a pedido desde Más. La comida solo llena días sin nada anotado aquí, para no contar dos veces. Los pasos se muestran en el Panel ("Hoy") y van en el respaldo (formato 10; los respaldos anteriores se leen igual).
+- **Sueño estimado con el uso del teléfono**: en el editor de sueño, "Calcular con el uso del teléfono" busca el tramo más largo con la pantalla apagada (al menos 3 h, entre las 18:00 del día anterior y las 14:00) y propone la hora de dormir y de despertar para revisar antes de guardar. Usa un módulo propio en Kotlin (`modules/phone-usage`) y el permiso de "Acceso al uso", que la persona activa en Ajustes.
+- **Widget de pantalla de inicio**: "Te quedan N kcal" del día, agua y pasos; al tocarlo abre la app. Se actualiza al abrir el Panel y cada media hora.
+- **Dictar el alimento** en la búsqueda (micrófono), solo con reconocimiento de voz dentro del teléfono. Si el teléfono no lo permite, el botón no aparece.
+- **Leer una etiqueta nutricional con la cámara**: el texto se reconoce en el teléfono (ML Kit) y pasa por el mismo lector que el texto pegado, que revisa que las calorías cuadren. La foto se borra en cuanto se lee.
+- **Análisis de fotos de progreso**: la silueta (MediaPipe Selfie Segmentation) y los puntos del cuerpo (MoveNet Lightning), dos modelos Apache-2.0 que van dentro de la app, alimentan la medición que ya existía. Si una foto no se puede analizar, se guarda igual.
+- Respaldo automático de Android a la cuenta de Google **apagado**: nada sale del teléfono salvo lo de siempre.
+- Permisos que no se usan, bloqueados (dibujar sobre otras apps, Bluetooth). Privacidad reescrita en `docs/PRIVACY.md`, con cada permiso y para qué sirve.
+- `.gitignore` y `.easignore` ya no esconden la carpeta nativa de los módulos propios (solo las de la raíz).
+
+**El resto de la versión:**
+
+- Bienvenida rediseñada: cada página muestra una vista previa de la app con números de ejemplo, hecha con las mismas piezas de las pantallas: el Panel con lo que queda del día y los macros, la tendencia del peso con la revisión cada 3 días, dónde viven tus datos y el plan que sale de la evaluación. Debajo, Term a la izquierda dice algo de la página en un globo a su lado, dentro de la pantalla; al tocarlo cambia de cara y dice otra frase.
+- Globo de diálogo propio (`SpeechBubble`): la cola va pegada al globo y apunta a quien habla. Los circulitos de antes eran de un globo de pensamiento.
+- Evaluación: el globo de Term va sobre su cabeza, centrado en el espacio libre que deja la pregunta. Term solo aparece si la pregunta deja espacio; en las que llenan la pantalla (por ejemplo, el entreno) no aparece.
+- Notificaciones: al crear el plan por primera vez, el teléfono pregunta si la app puede avisar (recordatorios de comidas y pesaje). Term lo anuncia en el último paso. Si se niega, se activa luego en Más → Recordatorios.
+- Health Connect (Android): en Más, "Importar de Health Connect" trae peso, % de grasa y sueño de los últimos 30 días desde Samsung Health, Google Fit u otras apps. Solo llena días vacíos (lo anotado a mano gana), toma el primer pesaje del día y cuenta cada noche para el día en que se despierta. Solo lee y todo queda en el teléfono. Librería `react-native-health-connect` (MIT); permisos de lectura de peso, grasa corporal y sueño; Android 8 o superior. Las reglas están en `src/features/health/healthConnect.ts`, con prueba.
+- README (y su versión en inglés) más comercial: portada con el ícono, la frase de la app, insignias y enlaces de descarga, galería con cuatro pantallas, por qué Dophamine, qué puedes hacer, cómo instalar y, al final, lo técnico y la licencia.
+- 444 pruebas de dominio y 29 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.39.0 - 2026-11-18
 
 Revisión de calidad: contraste, toques y limpieza.
@@ -33,7 +60,7 @@ Visor web: siempre empieza por conectar el teléfono, con un diseño más sobrio
 
 ## 0.37.0 - 2026-11-18
 
-Visor web pensado para la computadora (pedido de Jharol).
+Visor web pensado para la computadora.
 
 - Sin datos, el visor muestra solo cómo conectar el teléfono: los pasos numerados a la izquierda y, a la derecha, el código QR para leerlo con el teléfono y el campo para pegar su respuesta. Sin pestañas. Debajo, cargar un archivo de respaldo si no están en la misma red.
 - Con datos (por la conexión directa o un respaldo), aparecen Panel, Estrategia y Más. En la vista ancha el menú va a la izquierda, el Panel muestra cuatro tarjetas por fila y la Estrategia reparte sus tarjetas en dos columnas, ocupando el ancho de la pantalla.
@@ -52,9 +79,9 @@ Visor web pensado para la computadora (pedido de Jharol).
 
 Pasada de diseño: letra propia, pantalla de carga nueva, bienvenida sin aspecto de consola, una cifra protagonista en el Panel y movimiento sin rebote.
 
-- Tipografía propia, la misma de la página de presentación (elegida por Jharol): Instrument Sans para leer, Bricolage Grotesque para cifras grandes y títulos, y JetBrains Mono solo para la voz de Term (sus frases en la evaluación y los estados vacíos). Las fuentes van dentro de la app, no se descargan, y no necesitan otro development build (expo-font ya estaba). Cada peso es su propia familia, así la negrita no se engorda a la fuerza en Android ni en la web. Licencias (OFL 1.1) en `NOTICE.md`.
+- Tipografía propia, la misma de la página de presentación: Instrument Sans para leer, Bricolage Grotesque para cifras grandes y títulos, y JetBrains Mono solo para la voz de Term (sus frases en la evaluación y los estados vacíos). Las fuentes van dentro de la app, no se descargan, y no necesitan otro development build (expo-font ya estaba). Cada peso es su propia familia, así la negrita no se engorda a la fuerza en Android ni en la web. Licencias (OFL 1.1) en `NOTICE.md`.
 - Pantalla de carga nueva cada vez que se abre la app: el ícono, el nombre y una línea fina que avanza con la carga real (fuentes y base de datos). Dura lo que dura la carga, con un mínimo de 0,65 s para que no parpadee, y se desvanece sobre la app ya lista. Sin rebote; con reducir movimiento, solo un fundido corto.
-- Bienvenida (pedido de Jharol): sin estética de terminal (sin "> hola_", sin "dophamine ~ 01/04" ni letra monoespaciada); contador "1 de 4", títulos en la letra de titulares y puntos en lugar de "›". Al tocar a Term, además de cambiar de cara, dice una frase corta en un globo junto a su cabeza (seis frases que rotan), sin tapar el texto de la página.
+- Bienvenida: sin estética de terminal (sin "> hola_", sin "dophamine ~ 01/04" ni letra monoespaciada); contador "1 de 4", títulos en la letra de titulares y puntos en lugar de "›". Al tocar a Term, además de cambiar de cara, dice una frase corta en un globo junto a su cabeza (seis frases que rotan), sin tapar el texto de la página.
 - El sonido de Term suena más bajo (volumen 0,35).
 - Radios por jerarquía (tarjeta principal 22, tarjetas 16, controles 12, fichas 10, marcas 6) y espaciado en pasos de 4. Botones e inputs un poco más altos (52 y 48 px).
 - Colores: mismos tonos en Bosque, Pastel y Claro. El acento queda para lo que se toca; los valores de las listas van en el color del texto y la línea de contexto sobre un título (la fecha en el Panel, el día en Entreno) va callada en gris.
@@ -130,7 +157,7 @@ Primeras correcciones tras probar el APK: bienvenida, tema en vivo y la rutina s
 - Tema en la evaluación: al tocar un tema, toda la app cambia a ese tema para verlo; la evaluación sigue en el mismo paso con las respuestas que ya diste.
 - Entreno: quien no armó su rutina ya no recibe siempre "Glúteo y cadena posterior" (3 días). La rutina inicial sale de la evaluación: la plantilla que encaja con tu experiencia, repartida en los días que dijiste (5 días → 5 entrenos). En Rutina, a igual puntaje se recomienda la plantilla que usa más de tus días.
 - De 419 a 422 pruebas de dominio; 28 flujos de navegador (ahora con la bienvenida y el tema en la evaluación).
-- Comprobado por Jharol en el APK 0.30.0: el resto de la app funciona. No comprobado en teléfono: lo nuevo de esta versión.
+- Comprobado en el APK 0.30.0: el resto de la app funciona. No comprobado en teléfono: lo nuevo de esta versión.
 
 ## 0.30.0 - 2026-11-17
 
@@ -465,7 +492,7 @@ Registro de alimentos por comida.
 - El respaldo en el teléfono usa la API nueva de archivos de Expo (`File`, `Paths`).
 - En el visor web, Análisis se abre desde Más y Estrategia en lugar de ser una pestaña.
 - La prueba de navegador de Bienestar ahora llega desde Más, como en el teléfono.
-- Comprobado: tipos, 97 pruebas de dominio, 11 flujos de navegador, `expo-doctor` 20/20 y el empaquetado de JavaScript para Android (`expo export --platform android`). No comprobado: la app ejecutándose en un teléfono. (Actualización: desde la 0.9.0 Jharol usa la app en Expo Go en su teléfono Android, así que esta base quedó comprobada en un teléfono.)
+- Comprobado: tipos, 97 pruebas de dominio, 11 flujos de navegador, `expo-doctor` 20/20 y el empaquetado de JavaScript para Android (`expo export --platform android`). No comprobado: la app ejecutándose en un teléfono. (Actualización: desde la 0.9.0 uso la app en Expo Go en mi teléfono Android, así que esta base quedó comprobada en un teléfono.)
 
 ## 0.7.0 - 2026-11-11
 

@@ -88,6 +88,8 @@ import {
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { readLabel, type LabelField, type LabelReading } from "@/src/features/nutrition/label";
+import { labelCameraAvailable, scanLabelText } from "@/src/features/nutrition/labelCamera";
+import { useDictation } from "@/src/features/nutrition/dictation";
 import { AppTheme } from "@/src/theme";
 
 type Mode = "search" | "quick" | "new" | "barcode" | "recipe";
@@ -113,6 +115,8 @@ function AddFoodContent() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>([]);
   const [query, setQuery] = useState("");
+  // Dictar el alimento: lo entendido va a la búsqueda.
+  const dictation = useDictation((text) => setQuery(text));
   const [onlineResults, setOnlineResults] = useState<Food[]>([]);
   const [selected, setSelected] = useState<Food | null>(null);
   const [grams, setGrams] = useState("");
@@ -364,7 +368,22 @@ function AddFoodContent() {
                     autoCorrect={false}
                     style={AppTheme.searchInput}
                   />
+                  {dictation.available ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={dictation.listening ? "Dejar de dictar" : "Dictar el alimento"}
+                      onPress={dictation.listening ? dictation.stop : dictation.start}
+                      hitSlop={8}
+                    >
+                      <Ionicons
+                        name={dictation.listening ? "stop-circle" : "mic-outline"}
+                        size={20}
+                        color={dictation.listening ? AppTheme.colors.coral : AppTheme.colors.accent}
+                      />
+                    </Pressable>
+                  ) : null}
                 </View>
+                {dictation.error ? <Text style={AppTheme.hint}>{dictation.error}</Text> : null}
                 {query.trim() ? (
                   <>
                     {results.map((food) => (
@@ -694,6 +713,18 @@ function LabelReader({ onRead }: { onRead: (reading: LabelReading) => void }) {
     carbs: "carbohidratos",
     fats: "grasas",
   };
+  const [scanning, setScanning] = useState(false);
+  const read = (source: string) => {
+    const reading = readLabel(source);
+    onRead(reading);
+    setNote(
+      reading.fix
+        ? `Las calorías no cuadraban: puse ${NAMES[reading.fix.field]} en ${reading.fix.value} g. Revísalo con la etiqueta.`
+        : reading.suspicious.length
+          ? `Revisa: ${reading.suspicious.map((field) => NAMES[field]).join(", ")}.`
+          : "Listo: los valores cuadran con las calorías.",
+    );
+  };
   if (!open) return <LinkButton title="Leer el texto de una etiqueta" onPress={() => setOpen(true)} />;
   return (
     <View style={{ gap: 8 }}>
@@ -704,24 +735,32 @@ function LabelReader({ onRead }: { onRead: (reading: LabelReading) => void }) {
         multiline
         placeholder={"Porción 30 g\nEnergía 112 kcal\nProteínas 2,1 g\nCarbohidratos 17 g\nGrasas 3,7 g"}
       />
-      <Button
-        title="Leer etiqueta"
-        variant="secondary"
-        onPress={() => {
-          const reading = readLabel(text);
-          onRead(reading);
-          setNote(
-            reading.fix
-              ? `Las calorías no cuadraban: puse ${NAMES[reading.fix.field]} en ${reading.fix.value} g. Revísalo con la etiqueta.`
-              : reading.suspicious.length
-                ? `Revisa: ${reading.suspicious.map((field) => NAMES[field]).join(", ")}.`
-                : "Listo: los valores cuadran con las calorías.",
-          );
-        }}
-      />
+      {labelCameraAvailable() ? (
+        <Button
+          title={scanning ? "Leyendo…" : "Leer con la cámara"}
+          onPress={async () => {
+            if (scanning) return;
+            setScanning(true);
+            try {
+              const scanned = await scanLabelText();
+              if (scanned !== null) {
+                setText(scanned);
+                read(scanned);
+              }
+            } catch (error) {
+              setNote(error instanceof Error ? error.message : "No se pudo leer la foto.");
+            } finally {
+              setScanning(false);
+            }
+          }}
+        />
+      ) : null}
+      <Button title="Leer etiqueta" variant="secondary" onPress={() => read(text)} />
       {note ? <Text style={AppTheme.hint}>{note}</Text> : null}
       <Text style={AppTheme.hint}>
-        Con la app instalada se podrá leer con la cámara; por ahora copia el texto o escríbelo.
+        {labelCameraAvailable()
+          ? "La foto se lee en el teléfono y se borra en cuanto se lee. Revisa los números antes de guardar."
+          : "En el navegador, copia el texto de la etiqueta o escríbelo."}
       </Text>
     </View>
   );

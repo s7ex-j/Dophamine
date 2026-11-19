@@ -1,62 +1,80 @@
+<div align="center">
+
+<img src="assets/images/icon.png" alt="Dophamine" width="96" height="96" />
+
 # Dophamine
 
-> A local app that turns your nutrition, training and wellbeing logs into clear decisions.
+**One weigh-in says nothing. The trend does.**
 
+Food, weight, training, sleep and wellbeing in one app. Dophamine separates the signal from the noise and,<br />
+every few days, suggests a small adjustment and explains why. No accounts, no server, no ads.
+
+[![Release](https://img.shields.io/github/v/release/s7ex-j/Dophamine?display_name=tag&label=version&color=167B5B)](https://github.com/s7ex-j/Dophamine/releases/latest)
 [![Checks](https://github.com/s7ex-j/Dophamine/actions/workflows/checks.yml/badge.svg)](https://github.com/s7ex-j/Dophamine/actions/workflows/checks.yml)
-[![Deploy web](https://github.com/s7ex-j/Dophamine/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/s7ex-j/Dophamine/actions/workflows/deploy-web.yml)
-[![Release](https://img.shields.io/github/v/release/s7ex-j/Dophamine?display_name=tag&label=release)](https://github.com/s7ex-j/Dophamine/releases/latest)
-[![License](https://img.shields.io/github/license/s7ex-j/Dophamine)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--3.0--only-167B5B)](LICENSE)
+[![Platform](https://img.shields.io/badge/Android-APK-167B5B?logo=android&logoColor=white)](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)
+
+### [Download for Android](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk) · [See my progress on the web](https://s7ex-j.github.io/Dophamine/app/) · [Website](https://s7ex-j.github.io/Dophamine/)
 
 <sub>[Español](README.md) · **English**</sub>
 
-**[Open the web app](https://s7ex-j.github.io/Dophamine/app/)** · **[Project site](https://s7ex-j.github.io/Dophamine/)** · **[See the latest release](https://github.com/s7ex-j/Dophamine/releases/latest)** · **[Read the architecture](docs/ARCHITECTURE.md)**
+<br />
 
-Dophamine is an open source, offline-first project for people who want to understand their plan without turning every meal or workout into a spreadsheet. Set up an initial baseline, log the totals that matter and get a small, explainable weekly reading that stays under your control.
+<table>
+  <tr>
+    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Dashboard" width="200" /><br /><sub><b>Dashboard</b><br />What's left today and your progress</sub></td>
+    <td align="center"><img src="web/public/pantallas/analisis.webp" alt="Strategy" width="200" /><br /><sub><b>Strategy</b><br />Your plan and the 3- or 7-day review</sub></td>
+    <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Training" width="200" /><br /><sub><b>Training</b><br />Your week and the muscles you worked</sub></td>
+    <td align="center"><img src="web/public/pantallas/dieta.webp" alt="Diet" width="200" /><br /><sub><b>Diet</b><br />Your diet by day, on a schedule</sub></td>
+  </tr>
+</table>
 
-> The app interface and the docs in `docs/` are in Spanish.
+<sub>The app is in Spanish.</sub>
 
-## The product
+</div>
 
-| Today | Progress | Training | Wellbeing |
-| --- | --- | --- | --- |
-| Available energy, consistency, macros and next step. | Weight, intake and smoothed trend. | Routines, sets, load, reps and RIR. | Sleep, stress, energy, mood and private notes. |
+---
 
-### A short flow that keeps the context
+## Why Dophamine
 
-```text
-Initial assessment -> Log food, weight, sleep and training -> Check the trend -> Review every 3 or 7 days
-```
+The scale moves with water, salt and glycogen, and a fixed formula can't know how much *you* burn. Dophamine does what you would do with a spreadsheet if you had the time: it smooths your weigh-ins, compares what you eat with how your weight changes and estimates **your real expenditure**. Then it proposes an adjustment, tells you why, and **you decide**.
 
-The main screen is not a wall of numbers: it shows available energy, the day's habits, the full week and the next action that unlocks more information. Logging gaps are shown honestly; Dophamine does not invent precision when data is still missing.
+| | |
+| --- | --- |
+| **Explainable** | Every proposal shows what data it has and what it still needs. "How it's calculated" walks through it with your numbers. |
+| **You stay in control** | The plan never changes without your decision. Automatic mode tells you and can be undone. |
+| **Actually private** | Your data lives on your phone. No accounts, no analytics, no server. |
+| **Works offline** | Online food search is off by default and only used if you turn it on. |
 
-## What it includes
+## What you can do
 
-- **Daily decision dashboard.** Energy consumed/remaining, goal, macros, consistency and an actionable next step from the first screen.
-- **Initial nutrition plan.** Estimates BMR with Mifflin-St Jeor, applies activity and goal, and proposes reference calories and macronutrients.
-- **Compact logging.** Weight, calories and macros; you do not have to catalog food item by item to start finding signals.
-- **Transparent TDEE and weekly review.** They turn on once there is enough history, say whether the estimate is being built, updated or paused, and never change your goal without your approval.
-- **Monthly habits.** Plan, protein, movement, rest and a personal check-in, with a per-day consistency view.
-- **Configurable training.** Full body, upper/lower, push/pull, posterior chain or your own routine; editable days, exercises, sets, reps and RIR.
-- **Local generation and progression.** The routine can adapt to goal, duration and equipment; suggestions use the loads, reps and RIR from previous sessions.
-- **Wellbeing with context.** Mood, energy, stress, hours of sleep and a private note, with a reading of the recent trend.
-- **Private by default.** No accounts, ads or telemetry. SQLite on Android/iOS and `localStorage` on the web.
+**Food.** 230 built-in foods (raw and cooked), your own foods and recipes, barcodes, optional Open Food Facts search, saved meals, copy and paste days, alcohol tracked separately and diet types. Or load your diet and follow it with one tap, with swaps based on your training, allergies and your doctor's notes.
 
-## Philosophy
+**Weight and real expenditure.** Smoothed trend, observed expenditure with its margin and a review every 3 or 7 days. After 15 complete days in a row a self-tuning engine (a Kalman filter) learns how water, food and training move your weight.
 
-1. **Less friction, better data.** Logging food item by item, or following your diet with one tap, feeds the trend without spreadsheets.
-2. **Recommendations must be explainable.** Every state and proposal shows what data it has and what data it still needs.
-3. **The user has the last word.** A review proposes; it never changes the plan automatically.
-4. **Offline is not a limitation.** Your data stays on your device and the app works without a mandatory account.
+**Training.** One workout per day, templates by experience, ~610 exercises with images, set-by-set sessions with suggested load, records, supersets, warm-ups, mesocycles with deloads and a muscle map.
 
-## Getting started
+**Sleep and wellbeing.** Sleep, water, mood, energy and stress, a three-tap check-in, menstrual cycle, body measurements and progress photos that never leave the phone.
 
-### Requirements
+**Your progress on a computer.** Link your phone to the web with a QR code: the connection is encrypted device to device, with no server. The web only reads, in a wide or phone layout.
 
-- Node.js 20+
-- npm 10+
-- Expo Go or Android Studio, only to test on a device
+**Health Connect.** Import weight, body fat, sleep, steps and food from Samsung Health, Google Fit and other apps (Android) without overwriting what you logged by hand.
 
-### Local development
+**Built for the phone.** Read a nutrition label with the camera, dictate the food you're looking for, estimate your bedtime from phone usage, measure your silhouette in progress photos and see what's left of your day in a home-screen widget. All processed on the phone.
+
+## Install
+
+1. Download **[dophamine.apk](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)** on your Android phone (it is always the latest version).
+2. Open it and allow installing apps from that source if Android asks.
+3. Answer the initial assessment (a couple of minutes) and start logging.
+
+> Dophamine is a personal tracking tool. Expenditure is an estimate and the app does not give medical advice.
+
+---
+
+## For developers
+
+Expo SDK 58 · React Native 0.88 · expo-router · TypeScript · SQLite on the phone and `localStorage` on the web · Reanimated · Vitest.
 
 ```powershell
 git clone https://github.com/s7ex-j/Dophamine.git
@@ -67,66 +85,12 @@ npm test
 npm run web
 ```
 
-Other targets:
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/HOJA_DE_RUTA.md](docs/HOJA_DE_RUTA.md) (roadmap) and [docs/RELEASING.md](docs/RELEASING.md) (in Spanish). Changes per version are in [CHANGELOG.md](CHANGELOG.md).
 
-```powershell
-npm run start
-npm run android
-npm run ios
-```
+## License and credits
 
-Project site (landing page in `web/`, built with Vite, Tailwind and [shadcn/ui](https://github.com/shadcn-ui/ui)):
+Copyright (C) 2026 Jharol Vilca Ramos. Free software under the **GNU General Public License, version 3 only** (GPL-3.0-only); see [LICENSE](LICENSE). Up to 0.23.0 (tag `v0.23.0-mit`) the code was released under MIT and those copies keep it. "Dophamine", "Term" and their artwork are covered by [TRADEMARK.md](TRADEMARK.md), not by the code license.
 
-```powershell
-Set-Location web
-npm ci
-npm run dev
-```
+**Exercise data by [RepDB](https://repdb.co) (repdb.co)**, under its own license (not GPL, not redistributed as a dataset). Fonts, libraries and other third parties are listed in [NOTICE.md](NOTICE.md).
 
-The web version stores data in the browser. Those records are not synced automatically with the SQLite database of a mobile install.
-
-## Architecture
-
-```text
-app/                 Expo Router routes and screens
-src/components/      Reusable visual components
-src/db/              Native SQLite and localStorage adapter for web
-src/features/        Domain: profile, biometrics, TDEE, habits, routines and wellbeing (with *.test.ts tests)
-web/                 Project site: Vite + React + Tailwind + shadcn/ui
-docs/                Architecture, privacy, contributing and releases
-.github/workflows/   Typecheck, tests and continuous deployment to GitHub Pages
-```
-
-The separation between interface, domain and persistence is explained in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The math, limits and data criteria behind the TDEE live there too.
-
-## Quality and releases
-
-- Every push and pull request runs `npm run typecheck`, the domain tests (`npm test`, Vitest: nutrition profile, TDEE, weekly review and habits) and builds the site.
-- Every push to `main` publishes the site at `/Dophamine/` and the app at `/Dophamine/app/` on GitHub Pages; old links redirect to the app.
-- The code version is in `package.json`; changes are in [CHANGELOG.md](CHANGELOG.md) and published versions under [Releases](https://github.com/s7ex-j/Dophamine/releases).
-- APK/AAB and store preparation is documented in [docs/RELEASING.md](docs/RELEASING.md).
-- See [CHANGELOG.md](CHANGELOG.md) for the change history.
-
-## Scope and roadmap
-
-Dophamine is a personal tracking tool; it does not diagnose or replace health or nutrition professionals. It logs food item by item (built-in foods, your own, recipes and optional Open Food Facts search), loads your diet and routine from a file, and estimates your expenditure with a self-adjusting engine. What needs native code of its own (Health Connect, steps, widgets, direct link with the web on the phone) arrives with the APK.
-
-## Exercise data, privacy and license
-
-**Exercise data by [RepDB](https://repdb.co) (repdb.co).** The exercise illustrations, instructions and part of the exercise catalog come from RepDB's free catalog under its own license: they are not covered by the GPL, are used inside the app and are not redistributed as a dataset. Details in [NOTICE.md](NOTICE.md).
-
-Read [docs/PRIVACY.md](docs/PRIVACY.md) for the privacy and health limits.
-
-Copyright (C) 2026 Jharol Vilca Ramos. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 only (GPL-3.0-only).
-
-The full text is in [LICENSE](LICENSE). Up to version 0.23.0 (tag `v0.23.0-mit`) the code was published under the MIT license, and those copies keep it. The names "Dophamine" and "Term" and their artwork are not covered by the code license: see [TRADEMARK.md](TRADEMARK.md).
-
-## Support the project
-
-Dophamine is free and has no ads. If you want to support it, a link will be here soon. <!-- TODO(Jharol): donation link -->
-
-## Contributing
-
-Contributions on product, accessibility, testing, open data and design are welcome. Check [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
-
-Created by [Jharol Vilca Ramos](https://github.com/s7ex-j).
+<div align="center"><sub>Made by <a href="https://github.com/s7ex-j">Jharol Vilca Ramos</a></sub></div>

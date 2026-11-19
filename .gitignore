@@ -10,8 +10,8 @@ dist/
 web-build/
 
 # Native build outputs
-android/
-ios/
+/android/
+/ios/
 *.apk
 *.aab
 
@@ -46,3 +46,7 @@ assets/term/
 src/features/exercises/repdb.data.ts
 src/features/exercises/images.ts
 src/features/streak/term.images.ts
+
+# Archivos de trabajo locales
+CLAUDE.md
+.claude/

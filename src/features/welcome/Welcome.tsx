@@ -1,23 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Text } from "@/src/components/Text";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  FadeOut,
   runOnJS,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
-  withRepeat,
   withSequence,
   withTiming,
 } from "react-native-reanimated";
 
+import { SpeechBubble } from "@/src/components/SpeechBubble";
 import { Button, Screen } from "@/src/components/ui";
 import { Term, type TermExpression } from "@/src/features/streak/Term";
+import { WelcomePreview } from "@/src/features/welcome/WelcomePreviews";
 import { haptic } from "@/src/lib/haptics";
 import { playTermSound } from "@/src/lib/sound";
 import { AppTheme } from "@/src/theme";
@@ -25,16 +25,14 @@ import { AppTheme } from "@/src/theme";
 /** Se guarda en ajustes cuando la persona termina o salta la bienvenida. */
 export const WELCOME_KEY = "welcome_seen";
 
-type Page = { expression: TermExpression; title: string; lines: string[] };
+type Page = { expression: TermExpression; title: string; lines: string[]; says: string };
 
 const PAGES: Page[] = [
   {
     expression: "feliz",
     title: "Soy Term. Vamos a llevar tu progreso.",
-    lines: [
-      "Peso, comida, entreno, sueño y cómo te sientes, en un solo lugar.",
-      "Yo celebro tus rachas y te aviso cuando algo se puede mejorar.",
-    ],
+    lines: ["Peso, comida, entreno, sueño y cómo te sientes, en un solo lugar."],
+    says: "Cada día empieza aquí: lo que te queda y lo que falta anotar.",
   },
   {
     expression: "pensando",
@@ -42,25 +40,23 @@ const PAGES: Page[] = [
     lines: [
       "Registras el peso de la mañana y lo que comes.",
       "Cada 3 o 7 días reviso cómo vas y te propongo ajustar. Tú decides.",
-      "Con 15 días seguidos aprendo cómo te cambian el agua, la comida y el entreno.",
     ],
+    says: "Con 15 días seguidos aprendo cómo te cambian el agua y la comida.",
   },
   {
     expression: "guino",
     title: "Todo se queda en tu teléfono.",
-    lines: [
-      "Sin cuentas, sin servidor, sin publicidad.",
-      "Exportas un respaldo cuando quieras y lo ves en la web, que solo lee.",
-    ],
+    lines: ["Sin cuentas, sin servidor, sin publicidad. Exportas un respaldo cuando quieras."],
+    says: "Tus datos no salen de aquí.",
   },
   {
     expression: "orgullo",
     title: "Hecho por Jharol, con el código abierto.",
     lines: [
-      "React Native y Expo, bajo licencia GPL-3.0.",
-      "Los cálculos son estimaciones para orientarte, no consejo médico.",
+      "Bajo licencia GPL-3.0. Los cálculos son estimaciones para orientarte, no consejo médico.",
       "Ahora unas preguntas para armar tu plan: un par de minutos.",
     ],
+    says: "¿Empezamos? Son unas pocas preguntas.",
   },
 ];
 
@@ -111,25 +107,27 @@ export function Welcome({ onDone }: { onDone: () => void }) {
             )}
           </View>
 
-          <TouchableTerm base={page.expression} />
+          {/* Lo que la app hace en esta página, como se verá: una vista previa con números de ejemplo. */}
+          <Animated.View
+            key={`preview-${index}`}
+            entering={FadeInDown.duration(320)}
+            style={{ paddingTop: 8 }}
+          >
+            <WelcomePreview page={index} />
+          </Animated.View>
+
+          <TalkingTerm key={`term-${index}`} base={page.expression} says={page.says} />
 
           {/* El texto de cada página entra por partes: título y líneas. */}
-          <View key={index} style={{ gap: 16, minHeight: 230 }}>
+          <View key={index} style={{ gap: 12 }}>
             <Animated.View entering={FadeInDown.duration(300)}>
-              <Text style={[AppTheme.title, { fontSize: 28, lineHeight: 33 }]}>{page.title}</Text>
+              <Text style={[AppTheme.title, { fontSize: 26, lineHeight: 31 }]}>{page.title}</Text>
             </Animated.View>
-            <View style={{ gap: 10 }}>
-              {page.lines.map((line, position) => (
-                <Animated.View
-                  key={line}
-                  entering={FadeInDown.duration(300).delay(120 + position * 90)}
-                  style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}
-                >
-                  <View style={[styles.bullet, { backgroundColor: AppTheme.colors.accent }]} />
-                  <Text style={[AppTheme.body, { flex: 1 }]}>{line}</Text>
-                </Animated.View>
-              ))}
-            </View>
+            {page.lines.map((line, position) => (
+              <Animated.View key={line} entering={FadeInDown.duration(300).delay(100 + position * 80)}>
+                <Text style={[AppTheme.body, { color: AppTheme.colors.muted }]}>{line}</Text>
+              </Animated.View>
+            ))}
           </View>
 
           <View style={{ gap: 16 }}>
@@ -181,35 +179,22 @@ function Segment({ active }: { active: boolean }) {
 }
 
 /**
- * Term grande que responde al toque: suena, vibra, se aplasta y vuelve, y cambia
- * de cara un momento. Mientras tanto flota suave.
+ * Term a la izquierda, diciendo algo de la página en un globo a su lado. Al tocarlo suena,
+ * vibra, se aplasta y vuelve, cambia de cara y dice otra frase un momento.
  */
-function TouchableTerm({ base }: { base: TermExpression }) {
+function TalkingTerm({ base, says }: { base: TermExpression; says: string }) {
   const reduceMotion = useReducedMotion();
   const [reaction, setReaction] = useState<(typeof REACTIONS)[number] | null>(null);
-  const [touched, setTouched] = useState(false);
   const count = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const float = useSharedValue(0);
   const squash = useSharedValue(1);
-  useEffect(() => {
-    if (reduceMotion) return;
-    float.value = withRepeat(
-      withSequence(
-        withTiming(-6, { duration: 1500, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.sin) }),
-      ),
-      -1,
-    );
-  }, [reduceMotion, float]);
   useEffect(() => () => (timer.current ? clearTimeout(timer.current) : undefined), []);
   const style = useAnimatedStyle(() => ({
-    transform: [{ translateY: float.value }, { scaleX: 2 - squash.value }, { scaleY: squash.value }],
+    transform: [{ scaleX: 2 - squash.value }, { scaleY: squash.value }],
   }));
   const poke = () => {
     playTermSound();
     haptic.light();
-    setTouched(true);
     setReaction(REACTIONS[count.current++ % REACTIONS.length]);
     if (!reduceMotion)
       squash.value = withSequence(
@@ -220,50 +205,22 @@ function TouchableTerm({ base }: { base: TermExpression }) {
     timer.current = setTimeout(() => setReaction(null), REACTION_MS);
   };
   return (
-    <View style={{ alignItems: "center", gap: 6 }}>
-      <View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Tocar a Term" onPress={poke}>
-          <Animated.View style={style}>
-            <Term expression={reaction?.expression ?? base} size={190} />
-          </Animated.View>
-        </Pressable>
-        {/* Lo que dice Term, en un globo junto a su cabeza: no tapa el texto de la página. */}
-        {reaction ? (
-          <Animated.View
-            key={count.current}
-            entering={FadeInDown.duration(220)}
-            exiting={FadeOut.duration(160)}
-            pointerEvents="none"
-            accessibilityLiveRegion="polite"
-            style={[
-              styles.bubble,
-              { backgroundColor: AppTheme.colors.surface2, borderColor: AppTheme.colors.border },
-            ]}
-          >
-            <Text style={[AppTheme.body, { fontSize: 14, lineHeight: 19 }]}>{reaction.line}</Text>
-          </Animated.View>
-        ) : null}
-      </View>
-      {touched ? null : (
-        <Animated.View entering={FadeIn.delay(900)} exiting={FadeOut}>
-          <Text style={AppTheme.hint}>Toca a Term</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Tocar a Term" onPress={poke} hitSlop={8}>
+        <Animated.View style={style}>
+          <Term expression={reaction?.expression ?? base} size={76} />
         </Animated.View>
-      )}
+      </Pressable>
+      <Animated.View
+        key={reaction ? count.current : "page"}
+        entering={FadeIn.duration(200)}
+        style={{ flex: 1 }}
+        accessibilityLiveRegion="polite"
+      >
+        <SpeechBubble tail="left" tailOffset={14}>
+          <Text style={[AppTheme.body, { fontSize: 14, lineHeight: 20 }]}>{reaction?.line ?? says}</Text>
+        </SpeechBubble>
+      </Animated.View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  bullet: { width: 6, height: 6, borderRadius: 3, marginTop: 8 },
-  bubble: {
-    position: "absolute",
-    top: 4,
-    left: "60%",
-    width: 150,
-    borderWidth: 1,
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-});

@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { View } from "react-native";
 import { Text } from "@/src/components/Text";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import type { OnboardingStep } from "@/src/features/profile/onboarding";
 import { Term, type TermExpression } from "@/src/features/streak/Term";
+import { SpeechBubble } from "@/src/components/SpeechBubble";
 import { AppTheme } from "@/src/theme";
 
 /** Lo que Term piensa en cada pregunta de la evaluación: el porqué, en una o dos frases. */
@@ -50,58 +52,37 @@ const TIPS: Record<OnboardingStep, { expression: TermExpression; text: string }>
     expression: "pensando",
     text: "En automático ajusto solo, pero siempre te aviso y puedes deshacerlo.",
   },
-  summary: { expression: "muy-feliz", text: "Es un punto de partida: con tus registros lo voy afinando." },
+  summary: {
+    expression: "muy-feliz",
+    text: "Es un punto de partida: lo voy afinando. Luego te pediré permiso para recordarte comidas y pesaje.",
+  },
 };
 
+// Lo que ocupan Term y su globo: si la pregunta no deja ese espacio libre, Term no aparece.
+const TIP_HEIGHT = 176;
+
 /**
- * Term al pie de cada pregunta, con un globo de pensamiento que explica para
- * qué sirve. Ocupa el espacio libre bajo las opciones.
+ * Term al pie de cada pregunta, diciendo para qué sirve. Ocupa el espacio que dejan libre las
+ * opciones; en las preguntas que llenan la pantalla no aparece, para no empujar los botones.
  */
 export function TermTip({ step }: { step: OnboardingStep }) {
   const tip = TIPS[step];
+  const [space, setSpace] = useState(0);
   return (
-    <Animated.View
-      key={step}
-      entering={FadeInDown.duration(300).delay(150)}
-      style={{ marginTop: "auto", paddingTop: 16, flexDirection: "row", alignItems: "flex-end", gap: 4 }}
-    >
-      <Term expression={tip.expression} size={78} />
-      <View style={{ flex: 1, marginBottom: 34 }}>
-        <View
-          style={{
-            backgroundColor: AppTheme.colors.surface,
-            borderColor: AppTheme.colors.border,
-            borderWidth: 1,
-            borderRadius: 18,
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-          }}
+    <View style={{ flex: 1, minHeight: 0 }} onLayout={(event) => setSpace(event.nativeEvent.layout.height)}>
+      {space >= TIP_HEIGHT ? (
+        <Animated.View
+          key={step}
+          entering={FadeInDown.duration(300).delay(150)}
+          // Centrado en el espacio libre: ocupa el hueco que dejan las opciones, no se pega al pie.
+          style={{ position: "absolute", left: 0, right: 0, bottom: Math.max(8, (space - TIP_HEIGHT) / 2) }}
         >
-          <Text style={AppTheme.termVoice}>{tip.text}</Text>
-        </View>
-        {/* Las burbujas chicas que salen de la cabeza de Term. */}
-        <Bubble size={10} style={{ left: -2, bottom: -14 }} />
-        <Bubble size={6} style={{ left: -12, bottom: -24 }} />
-      </View>
-    </Animated.View>
-  );
-}
-
-function Bubble({ size, style }: { size: number; style: { left: number; bottom: number } }) {
-  return (
-    <View
-      style={[
-        {
-          position: "absolute",
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: AppTheme.colors.surface,
-          borderColor: AppTheme.colors.border,
-          borderWidth: 1,
-        },
-        style,
-      ]}
-    />
+          <SpeechBubble style={{ marginLeft: 58, marginBottom: 16 }} tailOffset={10}>
+            <Text style={[AppTheme.termVoice, { fontSize: 14, lineHeight: 21 }]}>{tip.text}</Text>
+          </SpeechBubble>
+          <Term expression={tip.expression} size={84} />
+        </Animated.View>
+      ) : null}
+    </View>
   );
 }

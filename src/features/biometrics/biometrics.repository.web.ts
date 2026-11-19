@@ -23,6 +23,8 @@ export type DailyBiometrics = {
   fasting?: boolean;
   /** Agua tomada en el día, en ml. */
   waterMl?: number;
+  /** Pasos del día (de Health Connect). */
+  steps?: number | null;
 };
 export type BodyInput = Pick<DailyBiometrics, "weightKg"> &
   Partial<Pick<DailyBiometrics, "bodyFatPct" | "muscleMassKg" | "waterPct" | "boneMassKg">>;
@@ -42,6 +44,7 @@ const normalize = (record: Partial<DailyBiometrics> & { id: string; date: string
   partial: record.partial === true,
   fasting: record.fasting === true,
   waterMl: record.waterMl ?? 0,
+  steps: record.steps ?? null,
 });
 
 // Devuelve el registro del día dentro del almacén, creándolo vacío si no existe.
@@ -116,6 +119,13 @@ export async function setDayPartial(date: string, partial: boolean) {
 }
 
 /** Suma (o resta) agua al día. Devuelve el total que quedó. */
+/** Guarda los pasos de un día (de Health Connect). */
+export async function setDaySteps(date: string, steps: number) {
+  const store = readStore();
+  dayIn(store, date).steps = Math.round(steps);
+  writeStore(store);
+}
+
 export async function addWater(date: string, deltaMl: number): Promise<number> {
   const store = readStore();
   const day = dayIn(store, date);

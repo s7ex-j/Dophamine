@@ -1,6 +1,6 @@
 # Arquitectura de Dophamine
 
-Estado de la 0.20.0. Para qué archivo tocar en cada caso, ver el mapa de `CLAUDE.md`.
+Estado de la 0.20.0. La estructura de carpetas está en el README.
 
 ## Mapa del repositorio
 
