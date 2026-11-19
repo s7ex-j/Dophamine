@@ -80,11 +80,53 @@ Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
 Con la 0.41.0 se cierra la serie 0.x: Health Connect se sincroniza solo una vez al día, el primer uso ofrece
 recordatorios e importación, hay una copia semanal dentro del teléfono y el APK solo lleva arquitecturas de teléfono.
 
-## Para la 1.0.0 y después
+## 0.41.1 — Correcciones de datos (antes de la 1.0.0)
 
-- Probar todo lo nativo en el teléfono y corregir lo que falle.
-- Publicar en Google Play (ver `docs/RELEASING.md`).
-- En iPhone: Apple Health en lugar de Health Connect; no hay sueño por uso ni este widget.
+Encontradas en una revisión del código de la 0.41.0. Necesitan un APK nuevo.
+
+| # | Corrección | Dónde | Por qué |
+|---|---|---|---|
+| 1 | Pasos y comida con agregación por día (`aggregateGroupByPeriod`) en lugar de sumar registros | `healthConnect.repository.ts` | Con dos apps (reloj y teléfono, Samsung Health y Google Fit) se cuentan dos veces |
+| 2 | Lectura paginada (`pageToken`) común para peso, grasa y sueño | `healthConnect.repository.ts` | Health Connect entrega como mucho 1000 registros por página |
+| 3 | `versionCode` calculado de la versión, con prueba | `app.json`, `docs/RELEASING.md` | Todos los APK salieron con el código 1; Google Play exige que crezca |
+| 4 | Al restaurar, quitar las fotos cuya imagen no está en el teléfono | `src/features/photos/`, restaurar respaldo | Hoy quedan referencias huérfanas que viajan en los respaldos siguientes |
+| 5 | Pruebas contra duplicados y reimportaciones de Health Connect | `healthConnect.test.ts` | Que la misma importación dos veces no cambie nada |
+
+## 1.0.0 — Primera versión estable
+
+La idea: que Dophamine no solo registre, sino que ayude a entender cómo evoluciona el cuerpo, qué funciona y por
+qué. Todo con los datos y piezas que ya existen: sin servidores, cuentas ni librerías pesadas (el APK de la 0.41.0
+pesa 113 MB y es la referencia).
+
+**Bloque A — Integridad de datos:** lo de la 0.41.1, si no salió antes.
+
+**Bloque B — Experiencia diaria**
+
+| Qué | Cómo | Dificultad |
+|---|---|---|
+| Centro de Health Connect (en Más) | Última sincronización, qué se importó por categoría, permisos dados y faltantes, errores y "Sincronizar ahora". Para marcar qué dato viene de Health Connect y cuál se anotó a mano hace falta guardar el origen en peso, pasos y comida (el sueño ya lo tiene): columna nueva y respaldo formato 11 | Media |
+| Temporizador de descanso entre series | Dentro de cada entrenamiento en curso: al marcar una serie como hecha arranca la cuenta regresiva con el descanso del ejercicio (`restSeconds` ya existe en el modelo), con +15 s, saltar, pausar y vibración al terminar. Se puede apagar en la sesión | Media |
+| Widget discreto | Ajuste con tres modos: normal (kcal, agua, pasos), discreto (sin cifras) y mínimo (solo el nombre) | Baja |
+
+**Bloque C — Entender el progreso**
+
+| Qué | Cómo | Dificultad |
+|---|---|---|
+| Fotos superpuestas | Tercera vista junto a "Lado a lado" y "Alternar": la foto anterior encima de la actual, con opacidad deslizable, misma pose y alineadas por hombros y cadera (los puntos de MoveNet ya están) | Media |
+| Informe mensual (imagen) | Peso y tendencia, gasto, promedio de calorías y macros, entrenos, sueño y dos fotos elegidas, en una imagen para guardar o compartir, como "Compartir mi semana" (ya usa `react-native-view-shot`, sin librerías nuevas) | Media-alta |
+| Fuerza por ejercicio, más visible | El gráfico ya existe en cada ejercicio (1RM estimado, carga máxima, volumen); falta llevarlo a Entreno: los ejercicios que más subieron o se estancaron en las últimas semanas | Baja |
+| Regularidad del sueño | Horas de dormir y despertar de los últimos 30 días y cuánto varían | Baja |
+
+**Bloque D — Validación (en el teléfono)**
+
+- Recorrer todo lo nativo de la 0.40.0 y la 0.41.0: Health Connect con Samsung Health y Google Fit, sueño por
+  uso, widget, dictado, etiquetas con la cámara, fotos, conexión directa con la web.
+- Memoria y rendimiento en un teléfono de gama media; respaldo y restauración entre teléfonos; migración desde
+  la 0.41.0 sin perder datos.
+- Publicar en Google Play.
+
+**No entra** (choca con las decisiones de arriba): nube obligatoria, cuentas, IA en servidores, redes sociales o
+rankings, publicidad, micronutrientes de una base enorme, puntuaciones de salud que parezcan diagnósticos.
 
 ## Etapa 3 — Solo si el proyecto crece
 

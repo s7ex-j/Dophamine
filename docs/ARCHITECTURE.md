@@ -1,6 +1,22 @@
 # Arquitectura de Dophamine
 
-Estado de la 0.20.0. La estructura de carpetas está en el README.
+Describe la base de la app (capas, datos y fórmulas). La escribí en la 0.20.0 y sigue vigente; la estructura de
+carpetas está en el README.
+
+## Lo nativo (desde la 0.40.0)
+
+Lo que solo existe en el APK de Android, cada pieza con su variante web vacía (`.web.ts`) para que la web compile:
+
+- **Health Connect:** `src/features/health/healthConnect.ts` (reglas, con prueba) y `healthConnect.repository.ts`
+  (lectura; la librería nativa se carga solo al usarla).
+- **Sueño por uso del teléfono:** `modules/phone-usage` (módulo propio en Kotlin, se enlaza solo) y
+  `src/features/sleep/screenSleep.ts`.
+- **Widget de inicio:** `src/features/widget/`; se registra en `index.js`, el punto de entrada.
+- **Dictado y etiquetas con la cámara:** `src/features/nutrition/dictation.ts` y `labelCamera.ts`.
+- **Análisis de fotos:** modelos en `assets/models/`, preparación de la imagen en
+  `src/features/photos/photoPixels.ts` (con prueba) y ejecución en `photos.analysis.ts`.
+
+Los pendientes conocidos de esta parte están en la hoja de ruta.
 
 ## Mapa del repositorio
 

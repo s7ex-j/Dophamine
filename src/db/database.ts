@@ -156,7 +156,7 @@ export async function initializeDatabase() {
   } catch {
     /* Ya existe. */
   }
-  // 0.41.0: pasos del día (de Health Connect).
+  // 0.40.0: pasos del día (de Health Connect).
   try {
     await db.execAsync("ALTER TABLE daily_biometrics ADD COLUMN steps INTEGER");
   } catch {

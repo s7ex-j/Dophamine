@@ -33,6 +33,12 @@ Las fotos de progreso y las de etiquetas se procesan en el teléfono con modelos
 foto de una etiqueta se borra en cuanto se lee. Para leer texto, Google Play Services puede descargar su modelo
 de reconocimiento la primera vez; la foto no se envía.
 
+## Fotos de progreso y respaldo
+
+Las imágenes de tus fotos de progreso no entran en el respaldo (pesan demasiado); sí van su fecha, la pose y las
+medidas de la silueta. Si restauras un respaldo en otro teléfono, esas fotos no aparecen: la app solo muestra las
+que tienen su imagen en el teléfono.
+
 ## Borrar tus datos
 
 Más → Borrar datos (por fechas o por ejercicio), o desinstala la app. En la web, borra los datos del sitio en tu
