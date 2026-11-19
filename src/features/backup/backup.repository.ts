@@ -3,7 +3,9 @@ import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
 import { getDatabase } from "@/src/db/database";
-import { backupFileName, buildBackup, type Backup } from "@/src/features/backup/backup";
+import { autoBackupDue, backupFileName, buildBackup, type Backup } from "@/src/features/backup/backup";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
+import { localDateKey } from "@/src/lib/dates";
 import {
   storeFromTables,
   tablesFromStore,
@@ -193,5 +195,46 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.suggested_calories,
         row.tdee,
       );
+  });
+}
+
+// Copia semanal dentro del teléfono: como no hay copia en la nube, la app guarda cada semana un
+// respaldo en su carpeta privada (y conserva el anterior). Se borra si se desinstala la app: por eso
+// se ofrece compartirla para guardarla fuera.
+const AUTO_KEY = "auto_backup_at";
+const autoFile = () => new File(Paths.document, "dophamine-copia-semanal.json");
+const previousFile = () => new File(Paths.document, "dophamine-copia-semanal-anterior.json");
+
+/** Guarda la copia semanal si toca. Devuelve la fecha de la copia más reciente, o null si no hay. */
+export async function autoBackupIfDue(): Promise<string | null> {
+  const today = localDateKey();
+  const saved = await getSetting(AUTO_KEY);
+  const last = typeof saved === "string" ? saved : null;
+  if (!autoBackupDue(last, today)) return last;
+  const current = autoFile();
+  if (current.exists) {
+    const previous = previousFile();
+    if (previous.exists) previous.delete();
+    current.move(previous);
+  }
+  const file = autoFile();
+  file.create();
+  file.write(JSON.stringify(buildBackup(await readAllData())));
+  await setSetting(AUTO_KEY, today);
+  return today;
+}
+
+/** La fecha de la última copia semanal, o null. */
+export async function lastAutoBackup(): Promise<string | null> {
+  const saved = await getSetting(AUTO_KEY);
+  return autoFile().exists && typeof saved === "string" ? saved : null;
+}
+
+/** Comparte la copia semanal para guardarla fuera del teléfono. */
+export async function shareAutoBackup(): Promise<void> {
+  if (!(await Sharing.isAvailableAsync())) throw new Error("Este dispositivo no permite compartir archivos.");
+  await Sharing.shareAsync(autoFile().uri, {
+    mimeType: "application/json",
+    dialogTitle: "Guardar la copia semanal de Dophamine",
   });
 }

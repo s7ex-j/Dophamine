@@ -53,7 +53,7 @@ export function DistributionCard({ profile }: { profile: NutritionProfile }) {
           return (
             <View key={day.id} style={{ flex: 1, alignItems: "center", gap: 4 }}>
               {uniform ? null : (
-                <Text style={[AppTheme.hint, { fontSize: 10, lineHeight: 12 }]}>{calories}</Text>
+                <Text style={[AppTheme.hint, { fontSize: 11, lineHeight: 14 }]}>{calories}</Text>
               )}
               <GrowColumn
                 height={height}

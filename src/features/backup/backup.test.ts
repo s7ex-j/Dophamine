@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  autoBackupDue,
   BACKUP_FORMAT,
   BackupError,
   backupFileName,
@@ -167,5 +168,16 @@ describe("respaldo formato 6", () => {
       data: { ...data, sleep: [{ ...night, bedtime: "nunca" }] },
     };
     expect(() => parseBackup(JSON.stringify(malo))).toThrow(/sueño/);
+  });
+});
+
+describe("autoBackupDue", () => {
+  it("toca la primera vez y cada siete días", () => {
+    expect(autoBackupDue(null, "2026-11-18")).toBe(true);
+    expect(autoBackupDue("2026-11-12", "2026-11-18")).toBe(false);
+    expect(autoBackupDue("2026-11-11", "2026-11-18")).toBe(true);
+  });
+  it("si la fecha guardada es del futuro (reloj cambiado), vuelve a guardar", () => {
+    expect(autoBackupDue("2026-12-01", "2026-11-18")).toBe(true);
   });
 });

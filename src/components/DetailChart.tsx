@@ -7,7 +7,7 @@ import { chartScale } from "@/src/components/chartGeometry";
 import type { Insight, SeriesColor } from "@/src/features/dashboard/insights";
 
 /** Lo que necesita el gráfico: sirve para el Panel y para el historial de un ejercicio. */
-export type ChartData = Pick<Insight, "title" | "unit" | "dates" | "series" | "reference">;
+export type ChartData = Pick<Insight, "title" | "unit" | "dates" | "series" | "reference" | "bands">;
 import { AppTheme, tint } from "@/src/theme";
 
 const HEIGHT = 220;
@@ -76,6 +76,23 @@ export function DetailChart({ insight }: { insight: ChartData }) {
       >
         {scale ? (
           <Svg width={width} height={HEIGHT}>
+            {/* Fases del ciclo, detrás de todo: un tono suave por tramo. */}
+            {insight.bands?.map((band) => {
+              const half = count > 1 ? (scale.x(1) - scale.x(0)) / 2 : 6;
+              const left = Math.max(36, scale.x(band.start) - half);
+              const right = Math.min(width - 8, scale.x(band.end) + half);
+              return (
+                <Rect
+                  key={`b${band.start}`}
+                  x={left}
+                  y={0}
+                  width={Math.max(1, right - left)}
+                  height={HEIGHT - BOTTOM}
+                  fill={band.tone === "menstrual" ? AppTheme.colors.coral : AppTheme.colors.violet}
+                  opacity={band.tone === "menstrual" ? 0.14 : 0.08}
+                />
+              );
+            })}
             {scale.ticks.map((tick) => (
               <SvgText
                 key={`t${tick}`}
@@ -228,6 +245,18 @@ export function DetailChart({ insight }: { insight: ChartData }) {
           </Svg>
         ) : null}
       </Pressable>
+      {insight.bands?.length ? (
+        <View style={AppTheme.chipRow}>
+          <View style={AppTheme.legendRow}>
+            <View style={[AppTheme.legendDot, { backgroundColor: AppTheme.colors.coral, opacity: 0.5 }]} />
+            <Text style={AppTheme.hint}>Periodo</Text>
+          </View>
+          <View style={AppTheme.legendRow}>
+            <View style={[AppTheme.legendDot, { backgroundColor: AppTheme.colors.violet, opacity: 0.4 }]} />
+            <Text style={AppTheme.hint}>Fase lútea: el peso suele subir por agua</Text>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }

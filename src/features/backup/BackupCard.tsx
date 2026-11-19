@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Text } from "@/src/components/Text";
 
-import { Button, Card } from "@/src/components/ui";
+import { Button, Card, LinkButton } from "@/src/components/ui";
 import { BackupError, describeBackup, parseBackup, type Backup } from "@/src/features/backup/backup";
 import {
   backupAvailable,
   backupPlace,
   downloadBackup,
   exportLabel,
+  lastAutoBackup,
   pickBackupFile,
   restoreBackup,
+  shareAutoBackup,
 } from "@/src/features/backup/backup.repository";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
@@ -33,6 +35,10 @@ export function BackupCard({
 }) {
   const [pending, setPending] = useState<Backup | null>(null);
   const [message, setMessage] = useState("");
+  const [weekly, setWeekly] = useState<string | null>(null);
+  useEffect(() => {
+    if (!VIEWER) lastAutoBackup().then(setWeekly);
+  }, []);
 
   if (!backupAvailable) return null;
 
@@ -95,6 +101,22 @@ export function BackupCard({
           )}
         </View>
       )}
+      {weekly && !pending ? (
+        <View style={{ gap: 4 }}>
+          <Text style={AppTheme.hint}>
+            Copia semanal guardada en el teléfono el {weekly}. Si desinstalas la app se borra: compártela para
+            guardarla fuera.
+          </Text>
+          <LinkButton
+            title="Compartir la copia semanal"
+            onPress={() =>
+              shareAutoBackup().catch((error) =>
+                setMessage(error instanceof Error ? error.message : "No se pudo compartir la copia."),
+              )
+            }
+          />
+        </View>
+      ) : null}
       {message ? <Text style={AppTheme.hint}>{message}</Text> : null}
     </Card>
   );

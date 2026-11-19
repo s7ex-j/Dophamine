@@ -9,6 +9,7 @@ import { getDashboardSnapshot } from "@/src/features/dashboard/dashboard.reposit
 import { algorithmGraph, LAYER_LABELS, type AlgorithmGraph, type GraphNode } from "@/src/features/tdee/graph";
 import { localDateKey } from "@/src/lib/dates";
 import { AppTheme } from "@/src/theme";
+import { FONTS } from "@/src/theming/fonts";
 
 // "Cómo se calcula": el motor como una red. Arriba lo que registras, abajo la
 // decisión; cada línea es un dato que alimenta a otro. Al tocar un nodo se ve
@@ -57,15 +58,14 @@ export default function AlgorithmScreen() {
           <Svg width={width} height={height}>
             {LAYER_LABELS.map((label, layer) => (
               <SvgText
-                fontFamily="sans-serif"
+                fontFamily={FONTS.text600}
                 key={label}
                 x={10}
                 y={TOP + layer * ROW_GAP - RADIUS - 10}
                 fill={AppTheme.colors.muted}
-                fontSize={10}
-                fontWeight="700"
+                fontSize={11}
               >
-                {label.toUpperCase()}
+                {label}
               </SvgText>
             ))}
             {graph.edges.map((edge) => {
@@ -147,24 +147,22 @@ function GraphDot({
         strokeWidth={selected ? 2.5 : 1.5}
       />
       <SvgText
-        fontFamily="sans-serif"
+        fontFamily={FONTS.text700}
         x={at.x}
         y={at.y + 3.5}
         textAnchor="middle"
         fill={AppTheme.colors.text}
         fontSize={9}
-        fontWeight="700"
       >
         {node.value.length > 6 ? node.value.slice(0, 6) : node.value}
       </SvgText>
       <SvgText
-        fontFamily="sans-serif"
+        fontFamily={FONTS.text600}
         x={at.x}
         y={at.y + RADIUS + 13}
         textAnchor="middle"
         fill={color}
         fontSize={10}
-        fontWeight="600"
       >
         {node.label}
       </SvgText>

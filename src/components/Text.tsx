@@ -28,7 +28,12 @@ function withFont(style: StyleProp<TextStyle>, nested: boolean): StyleProp<TextS
 /** `Text` de React Native con la tipografía de la app. Se usa en lugar del de "react-native". */
 export const Text = forwardRef<ComponentRef<typeof NativeText>, TextProps>(function Text(props, ref) {
   const nested = useContext(InsideText);
-  const text = <NativeText {...props} ref={ref} style={withFont(props.style, nested)} />;
+  const size = (StyleSheet.flatten(props.style) as TextStyle | undefined)?.fontSize ?? 0;
+  // Con texto grande del sistema, las cifras enormes crecen menos para no romper la pantalla; el resto
+  // del texto crece todo lo que la persona pidió.
+  const cap =
+    size >= 28 && props.maxFontSizeMultiplier === undefined ? { maxFontSizeMultiplier: 1.25 } : null;
+  const text = <NativeText {...cap} {...props} ref={ref} style={withFont(props.style, nested)} />;
   return nested ? text : <InsideText.Provider value>{text}</InsideText.Provider>;
 });
 

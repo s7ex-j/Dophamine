@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowRight, Download, Moon, Sun } from "lucide-react"
+import { Activity, ArrowRight, Camera, Download, Mic, Moon, MoonStar, ScanText, Smartphone, Sun } from "lucide-react"
 
 import {
   Accordion,
@@ -111,6 +111,7 @@ function Header() {
         </a>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           <a href="#vistas" className="hover:text-foreground">Qué hace</a>
+          <a href="#telefono" className="hover:text-foreground">En el teléfono</a>
           <a href="#formatos" className="hover:text-foreground">Plantillas</a>
           <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
           <a href="#privacidad" className="hover:text-foreground">Privacidad</a>
@@ -588,6 +589,99 @@ function Vistas() {
   )
 }
 
+const enElTelefono = [
+  {
+    icono: Activity,
+    titulo: "Health Connect",
+    texto: "Trae peso, % de grasa, sueño, pasos y comida de Samsung Health o Google Fit. Lo nuevo entra solo, una vez al día.",
+  },
+  {
+    icono: ScanText,
+    titulo: "Etiquetas con la cámara",
+    texto: "Apunta a la tabla nutricional: lee porción, calorías y macros, y revisa que cuadren antes de guardar.",
+  },
+  {
+    icono: Mic,
+    titulo: "Dicta el alimento",
+    texto: "Di lo que comiste y aparece en la búsqueda. La voz se reconoce dentro del teléfono.",
+  },
+  {
+    icono: MoonStar,
+    titulo: "Sueño sin anotar",
+    texto: "Estima a qué hora dormiste y despertaste por cuándo se apagó y encendió la pantalla. Tú lo revisas.",
+  },
+  {
+    icono: Smartphone,
+    titulo: "Widget de inicio",
+    texto: "Lo que te queda del día, el agua y los pasos, sin abrir la app.",
+  },
+  {
+    icono: Camera,
+    titulo: "Fotos que se miden",
+    texto: "Hombros, cintura y cadera en tus fotos de progreso, con modelos que corren en el teléfono.",
+  },
+]
+
+function EnElTelefono() {
+  return (
+    <section id="telefono" className="scroll-mt-20 py-20">
+      <div className="mx-auto max-w-6xl px-5">
+        <h2 className="max-w-[18ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
+          Hecho para tu teléfono.
+        </h2>
+        <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+          Menos teclear, más constancia. Todo se procesa en el teléfono: nada sale de él.
+        </p>
+        <div className="mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+          {enElTelefono.map(({ icono: Icono, titulo, texto }) => (
+            <div key={titulo} className="border-t pt-6">
+              <Icono className="size-5 text-primary" aria-hidden="true" />
+              <h3 className="mt-4 text-xl font-bold tracking-tight">{titulo}</h3>
+              <p className="mt-2 text-muted-foreground text-pretty">{texto}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function EnLaComputadora() {
+  return (
+    <section className="py-20">
+      <div className="mx-auto max-w-6xl px-5">
+        <h2 className="max-w-[20ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
+          Tu progreso, también en pantalla grande.
+        </h2>
+        <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+          Conecta el teléfono con un código QR y mira tu Panel y tu Estrategia en la computadora. Solo lectura, sin
+          subir nada a ningún servidor.
+        </p>
+        <figure className="mt-12 overflow-hidden rounded-2xl border bg-card shadow-[0_30px_80px_-30px_color-mix(in_oklch,var(--primary)_35%,transparent)]">
+          <div className="flex h-9 items-center gap-1.5 border-b px-4" aria-hidden="true">
+            <span className="size-2.5 rounded-full bg-muted" />
+            <span className="size-2.5 rounded-full bg-muted" />
+            <span className="size-2.5 rounded-full bg-muted" />
+          </div>
+          <img
+            src={`${import.meta.env.BASE_URL}pantallas/visor.webp`}
+            alt="El visor web de Dophamine en vista ancha: menú a la izquierda y las tarjetas de progreso del Panel"
+            width={1440}
+            height={900}
+            loading="lazy"
+            className="block h-auto w-full"
+          />
+        </figure>
+        <Button variant="outline" asChild className="mt-8 rounded-full px-5">
+          <a href={APP_URL}>
+            Abrir el visor <ArrowRight />
+          </a>
+        </Button>
+      </div>
+    </section>
+  )
+}
+
 function HowItWorks() {
   return (
     <section id="como-funciona" className="scroll-mt-20 border-t py-20">
@@ -811,6 +905,8 @@ export default function App() {
         <Hero />
         <Trend />
         <Vistas />
+        <EnElTelefono />
+        <EnLaComputadora />
         <HowItWorks />
         <Tdee />
         <Privacy />

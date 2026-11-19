@@ -13,6 +13,7 @@ import {
   stepsByDay,
   weightsToImport,
 } from "@/src/features/health/healthConnect";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 
@@ -59,13 +60,16 @@ export function openHealthConnect() {
  * Pide permiso (si falta) y trae peso, % de grasa y sueño de los últimos 30 días. Solo llena días
  * sin datos: lo anotado a mano no se toca. Devuelve cuántos días de peso y noches se agregaron.
  */
-export async function importFromHealthConnect(): Promise<HealthImport> {
-  const { initialize, readRecords, requestPermission } = native();
+export async function importFromHealthConnect({ ask = true }: { ask?: boolean } = {}): Promise<HealthImport> {
+  const { getGrantedPermissions, initialize, readRecords, requestPermission } = native();
   await initialize();
-  const granted = await requestPermission([...PERMISSIONS]);
+  // Al abrir la app no se pregunta nada: solo se usa lo que la persona ya permitió.
+  const granted = ask ? await requestPermission([...PERMISSIONS]) : await getGrantedPermissions();
   const allowed = (type: string) => granted.some((permission) => permission.recordType === type);
-  if (!PERMISSIONS.some((permission) => allowed(permission.recordType)))
+  if (!PERMISSIONS.some((permission) => allowed(permission.recordType))) {
+    if (!ask) return { weights: 0, nights: 0, stepDays: 0, foodDays: 0 };
     throw new Error("No se dio permiso para leer los datos.");
+  }
 
   const today = localDateKey();
   const from = addDays(today, -IMPORT_DAYS);
@@ -146,4 +150,19 @@ export async function importFromHealthConnect(): Promise<HealthImport> {
     foodDays = toSave.length;
   }
   return { weights, nights, stepDays, foodDays };
+}
+
+const SYNC_KEY = "health_connect_synced";
+
+/**
+ * Al abrir la app, una vez al día: si la persona ya dio permiso a Health Connect, trae lo nuevo sin
+ * preguntar. Si nunca lo usó, no hace nada. Devuelve lo importado, o null si no tocaba.
+ */
+export async function syncHealthConnectDaily(): Promise<HealthImport | null> {
+  const today = localDateKey();
+  if ((await getSetting(SYNC_KEY)) === today) return null;
+  if ((await healthConnectStatus()) !== "available") return null;
+  const result = await importFromHealthConnect({ ask: false });
+  await setSetting(SYNC_KEY, today);
+  return result;
 }

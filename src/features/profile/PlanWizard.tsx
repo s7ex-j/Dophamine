@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { TermTip } from "@/src/features/profile/TermTip";
-import { requestPermission } from "@/src/features/reminders/scheduler";
+import { FirstRunSetup } from "@/src/features/profile/FirstRunSetup";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "@/src/components/Text";
 
@@ -29,7 +29,7 @@ import { localDateKey } from "@/src/lib/dates";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { GOAL_DATE_KEY, readGoalDate } from "@/src/features/goals/goalDate";
 import { switchTheme } from "@/src/theming/live";
-import { suggestedTheme, THEME_KEY } from "@/src/theming/palettes";
+import { suggestedTheme, THEME_KEY, type ThemeId } from "@/src/theming/palettes";
 import { ThemePicker } from "@/src/theming/ThemePicker";
 import { pickTextFile } from "@/src/lib/files";
 import { MEAL_COUNTS, mealSlots } from "@/src/features/nutrition/meals";
@@ -161,6 +161,8 @@ export function Onboarding({
     if (index === 0) onCancel?.();
     else setIndex(index - 1);
   };
+  // Tras crear el primer plan: el tema que se eligió, para aplicarlo al salir del último paso.
+  const [finished, setFinished] = useState<ThemeId | null>(null);
   const save = async () => {
     const input = planInputFrom(answers, profile);
     await saveNutritionProfile({ ...buildNutritionProfile(input), dietType: answers.dietType });
@@ -172,12 +174,22 @@ export function Onboarding({
     if (answers.avoid.length || health.avoid.length) await saveHealth({ ...health, avoid: answers.avoid });
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
-    // La primera vez, el teléfono pregunta si la app puede avisar (recordatorios de comidas y
-    // pesaje). Si se niega, se puede activar después en Más → Recordatorios.
-    if (!profile) await requestPermission().catch(() => false);
+    // La primera vez, antes del Panel: recordatorios y Health Connect en un solo paso.
+    if (!profile) return setFinished(theme);
     onSaved();
     if (theme !== THEME) switchTheme(theme);
   };
+
+  if (finished)
+    return (
+      <FirstRunSetup
+        mealsPerDay={answers.mealsPerDay}
+        onDone={() => {
+          onSaved();
+          if (finished !== THEME) switchTheme(finished);
+        }}
+      />
+    );
 
   return (
     <Screen>

@@ -111,7 +111,7 @@ export function StrategyHeader({
             <Text style={[AppTheme.tileValue, { fontSize: 17 }]} numberOfLines={1} adjustsFontSizeToFit>
               {figure.value}
             </Text>
-            <Text style={[AppTheme.hint, { fontSize: 10 }]}>{figure.unit}</Text>
+            <Text style={[AppTheme.hint, { fontSize: 11 }]}>{figure.unit}</Text>
           </View>
         ))}
       </View>

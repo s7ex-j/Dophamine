@@ -124,3 +124,15 @@ export function describeBackup(backup: Backup): string {
   const date = backup.exportedAt ? ` del ${backup.exportedAt.slice(0, 10)}` : "";
   return `Respaldo${date}: ${parts.join(", ")}${data.profile ? " y tu plan" : ""}.`;
 }
+
+/** Cada cuántos días se guarda la copia semanal dentro del teléfono. */
+export const AUTO_BACKUP_DAYS = 7;
+
+/** Si toca guardar la copia semanal: nunca se guardó o pasaron `AUTO_BACKUP_DAYS` días o más. */
+export function autoBackupDue(last: string | null, today: string): boolean {
+  if (!last) return true;
+  const [y1, m1, d1] = last.split("-").map(Number);
+  const [y2, m2, d2] = today.split("-").map(Number);
+  const days = Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
+  return days >= AUTO_BACKUP_DAYS || days < 0;
+}

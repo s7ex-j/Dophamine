@@ -58,7 +58,7 @@ The scale moves with water, salt and glycogen, and a fixed formula can't know ho
 
 **Your progress on a computer.** Link your phone to the web with a QR code: the connection is encrypted device to device, with no server. The web only reads, in a wide or phone layout.
 
-**Health Connect.** Import weight, body fat, sleep, steps and food from Samsung Health, Google Fit and other apps (Android) without overwriting what you logged by hand.
+**Health Connect.** Import weight, body fat, sleep, steps and food from Samsung Health, Google Fit and other apps (Android) without overwriting what you logged by hand. After that, new data comes in once a day on its own.
 
 **Built for the phone.** Read a nutrition label with the camera, dictate the food you're looking for, estimate your bedtime from phone usage, measure your silhouette in progress photos and see what's left of your day in a home-screen widget. All processed on the phone.
 

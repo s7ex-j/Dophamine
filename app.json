@@ -4,7 +4,7 @@
     "slug": "dophamine",
     "owner": "s7exjs-team",
     "scheme": "dophamine",
-    "version": "0.40.0",
+    "version": "0.41.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
@@ -88,7 +88,8 @@
           ]
         }
       ],
-      "react-native-fast-tflite"
+      "react-native-fast-tflite",
+      "./plugins/withPhoneArchitectures"
     ],
     "experiments": {
       "typedRoutes": true,

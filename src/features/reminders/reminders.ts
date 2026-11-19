@@ -263,3 +263,16 @@ export function normalizeConfig(value: unknown, newId: () => string): ReminderCo
 
 /** El día de la semana de una fecha local, como clave. */
 export const weekdayOf = (date: Date): Weekday => WEEKDAYS[(date.getDay() + 6) % 7].id;
+
+/**
+ * Los recordatorios que se ofrecen al terminar la evaluación: las comidas del plan (tantas como
+ * comidas al día, entre las plantillas que hay) y el pesaje de la mañana, todos los días.
+ */
+export function starterConfig(newId: () => string, mealsPerDay: number | undefined): ReminderConfig {
+  const count = TEMPLATE_SIZES.includes(mealsPerDay ?? 0) ? (mealsPerDay as number) : 3;
+  const days = Object.fromEntries(WEEKDAYS.map((day) => [day.id, templateMeals(count, newId)])) as Record<
+    Weekday,
+    MealReminder[]
+  >;
+  return { enabled: true, leadMinutes: 5, days, weighIn: { enabled: true, time: "07:00" } };
+}

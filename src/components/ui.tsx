@@ -33,7 +33,9 @@ export function Screen({ children }: PropsWithChildren) {
 export function Card({ title, children }: PropsWithChildren<{ title: string }>) {
   return (
     <View style={AppTheme.card}>
-      <Text style={AppTheme.cardTitle}>{title}</Text>
+      <Text style={AppTheme.cardTitle} accessibilityRole="header">
+        {title}
+      </Text>
       {children}
     </View>
   );

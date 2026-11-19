@@ -16,16 +16,17 @@ bienestar, medidas, ciclo menstrual, fotos de progreso y tus ajustes. Todo queda
   teléfono pregunta antes de enviar o guardar algo.
 
 El respaldo automático de Android a la cuenta de Google está **apagado**: tus datos solo salen del teléfono si
-exportas un respaldo a propósito.
+exportas un respaldo a propósito. Cada semana la app guarda una copia en su propia carpeta del teléfono (no sale
+de él) y te ofrece compartirla para guardarla fuera.
 
 ## Permisos del teléfono
 
 | Permiso | Para qué | Cuándo se pide |
 | --- | --- | --- |
-| Notificaciones | Recordatorios de comidas y pesaje, programados en el teléfono | Al crear tu plan; puedes negarlo y activarlo después |
+| Notificaciones | Recordatorios de comidas y pesaje, programados en el teléfono | Si los activas al terminar la evaluación o en Más → Recordatorios |
 | Cámara | Código de barras, leer una etiqueta nutricional, fotos de progreso y el código QR de la web | Al usar cada una |
 | Micrófono | Dictar el nombre de un alimento. La voz se reconoce dentro del teléfono | Al tocar el micrófono |
-| Health Connect | Leer peso, % de grasa, sueño, pasos y comida de otras apps. Solo lectura | Al tocar "Importar de Health Connect" |
+| Health Connect | Leer peso, % de grasa, sueño, pasos y comida de otras apps. Solo lectura | Al tocar "Importar de Health Connect"; después, lo nuevo entra solo una vez al día |
 | Acceso al uso | Estimar a qué hora dormiste según cuándo se apagó y encendió la pantalla | Lo activas tú en Ajustes, si quieres |
 
 Las fotos de progreso y las de etiquetas se procesan en el teléfono con modelos que vienen dentro de la app. La

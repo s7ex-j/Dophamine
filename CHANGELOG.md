@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.41.0 - 2026-11-18
+
+La versión que cierra la serie 0.x: el primer APK definitivo. Lo que sigue va en la 1.0.0.
+
+- **APK más liviano:** solo lleva el código nativo de los teléfonos (arm64 y armv7), no el de los emuladores. La prueba de la 0.40.0 con las cuatro arquitecturas pesaba 229 MB.
+- **Health Connect automático:** si ya diste permiso, al abrir la app se trae lo nuevo una vez al día, sin preguntar ni tocar nada. Si nunca lo usaste, no hace nada.
+- **Primer uso completo:** al terminar la evaluación, "Tu plan está listo" ofrece en un solo paso activar los recordatorios (las comidas de tu plan y el pesaje a las 7:00) e importar de Health Connect. Todo se puede saltar y hacer después en Más.
+- **Copia semanal dentro del teléfono:** como no hay copia en la nube, cada semana la app guarda un respaldo en su carpeta privada (y conserva el anterior). En Más → Respaldo se puede compartir para guardarlo fuera, porque se borra si se desinstala la app.
+- **Fases del ciclo en el gráfico de peso:** con el ciclo anotado, el periodo y la fase lútea se sombrean detrás del peso, con su leyenda, para leer esas subidas de agua como lo que son.
+- **Pantallas secundarias pulidas:** en Comidas, la acción de quitar ya no se ve a través del alimento (pisaba las kcal); "Cómo se calcula" usa la letra de la app y sin mayúsculas; Agregar muestra "Hoy · miércoles 18 de noviembre" en lugar de la fecha técnica; los minigráficos del Panel llenan su tarjeta (en la web ancha se veían cortos).
+- **Accesibilidad:** los títulos de tarjeta son encabezados para el lector de pantalla; con texto grande del sistema, las cifras enormes crecen menos para no romper la pantalla (el resto crece todo); ningún texto de la app baja de 11 px. Revisé que todos los botones de solo ícono tengan nombre.
+- **Sitio:** secciones nuevas "Hecho para tu teléfono" (Health Connect, etiquetas con la cámara, dictado, sueño sin anotar, widget y fotos que se miden) y "Tu progreso, también en pantalla grande", con una captura del visor en vista ancha. Capturas del teléfono rehechas.
+- 450 pruebas de dominio y 29 flujos de navegador.
+- No comprobado en teléfono: lo nuevo de esta versión.
+
 ## 0.40.0 - 2026-11-18
 
 APK definitivo de la etapa 2: todo lo que necesitaba código nativo, más bienvenida nueva, Term que habla bien y README nuevo.

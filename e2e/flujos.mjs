@@ -300,6 +300,9 @@ async function main() {
     await waitText("Gasto estimado");
     await waitText("Metabolismo basal");
     await press("Crear mi plan");
+    // Último paso de la primera vez: recordatorios y Health Connect, que se pueden dejar para después.
+    await waitText("Tu plan está listo.");
+    await press("Empezar");
     await waitText("Nutrición y metas");
     const { profile, biometrics } = await store();
     assert(profile.calorieTarget >= 1200, "El plan no tiene objetivo calórico.");
@@ -659,6 +662,7 @@ async function main() {
     await open("/exercise?name=Sentadilla%20frontal");
     await waitText("Qué trabaja");
     await waitText("Cuádriceps");
+    await shot("ejercicio");
     if (HAS_REPDB) await waitText("Cómo se hace");
   });
 
@@ -680,6 +684,7 @@ async function main() {
     await open("/catalog");
     await pressLabel("Grupo Espalda");
     await waitText("Dorsales");
+    await shot("catalogo");
     await press("Cualquier equipo");
     await pressLabel("Dominadas");
     if (HAS_REPDB) await waitText("Cómo se hace");
@@ -689,6 +694,7 @@ async function main() {
   await step("entreno: plantilla PPL de 6 días y cardio en un día", async () => {
     await open("/routine");
     await waitText("¿Qué días entrenas?");
+    await shot("rutina");
     await press("Usar una plantilla");
     await waitText("Empuje / tirón / pierna intensivo");
     await page.evaluate(() => {
@@ -742,6 +748,7 @@ async function main() {
   await step("entreno: calentamiento, tipos de serie, lados, superserie y gimnasios", async () => {
     await open("/session?day=mon");
     await waitText("Press de banca");
+    await shot("sesion");
     await fillLabel("Carga serie 1", 60);
     await press("Calentamiento");
     const sets = async () => (await store()).settings.active_session.exercises[0].sets;
@@ -781,6 +788,7 @@ async function main() {
   await step("seguimiento: medidas, reparto semanal, nutrientes y ayuno", async () => {
     await open("/measurements");
     await waitText("Medir hoy");
+    await shot("medidas");
     await fillLabel("Cintura en cm", 82);
     await fillLabel("Cuello en cm", 37);
     await press("Guardar medidas");
@@ -805,6 +813,7 @@ async function main() {
     await waitText("Cómo repartes el día");
     await open("/meals");
     await waitText("Día de ayuno");
+    await shot("comidas");
     await pressLabel("Día de ayuno");
     await page.waitForFunction(
       (key, date) =>
@@ -924,6 +933,7 @@ async function main() {
     await open("/library");
     await press("Recetas");
     await waitText("Cena e2e");
+    await shot("biblioteca");
     await press("Editar");
     await press("Guardar receta");
     await waitText("porciones de");
@@ -1100,6 +1110,7 @@ async function main() {
     await open("/insight?metric=weight");
     await waitText("Tendencia actual");
     await waitText("Llegada estimada a la meta");
+    await shot("analisis-peso");
     await press("3M");
     await waitText("Cambio en el rango");
     await open("/insight?metric=consistency");
@@ -1110,6 +1121,7 @@ async function main() {
     await waitText("Activo");
     await open("/algorithm");
     await waitText("máxima verosimilitud");
+    await shot("algoritmo");
     const noise = await page.$('[aria-label^="Ruido: "]');
     assert(noise, "La red de Cómo se calcula no muestra el nodo de ruido.");
     await noise.click();
@@ -1234,6 +1246,7 @@ async function main() {
     // Leer una etiqueta: la grasa mal leída se corrige.
     await open("/add-food?slot=lunch");
     await waitText("Buscar alimento");
+    await shot("agregar");
     await press("Nuevo");
     await press("Leer el texto de una etiqueta");
     await fill(
@@ -1334,6 +1347,17 @@ async function main() {
     await tap("Reemplazar mis datos");
     await waitFor("Solo lectura");
     await waitFor("Nutrición y metas");
+    // Con PANTALLAS: el visor en vista ancha, para la página de presentación.
+    if (process.env.PANTALLAS) {
+      await viewer.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
+      await viewer.reload({ waitUntil: "networkidle0" });
+      await waitFor("Nutrición y metas");
+      await new Promise((resolve) => setTimeout(resolve, 1600));
+      await viewer.screenshot({ path: join(process.env.PANTALLAS, "visor.png") });
+      await viewer.setViewport({ width: 390, height: 844 });
+      await viewer.reload({ waitUntil: "networkidle0" });
+      await waitFor("Nutrición y metas");
+    }
     const shown = await text();
     for (const hidden of ["Cumplimiento de hoy", "Deshacer ajuste", "Buscar un alimento"])
       assert(!shown.includes(hidden), `El visor muestra "${hidden}", que es para registrar.`);

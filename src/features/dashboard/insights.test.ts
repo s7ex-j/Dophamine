@@ -46,6 +46,16 @@ describe("pantallas de detalle", () => {
     expect(insight.empty).toBeUndefined();
   });
 
+  it("peso: sombrea el periodo y la fase lútea si hay ciclo anotado", () => {
+    expect(buildInsight("weight", "1M", data).bands).toBeUndefined();
+    const withCycle = buildInsight("weight", "1M", {
+      ...data,
+      periods: [{ start: "2026-10-25", end: "2026-10-29" }],
+    });
+    expect(withCycle.bands?.some((band) => band.tone === "menstrual")).toBe(true);
+    expect(withCycle.bands?.some((band) => band.tone === "luteal")).toBe(true);
+  });
+
   it("gasto y balance con datos suficientes", () => {
     const expenditure = buildInsight("expenditure", "1M", data);
     expect(expenditure.series[0].values.filter((value) => value !== null).length).toBeGreaterThan(10);

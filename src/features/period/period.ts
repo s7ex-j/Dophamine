@@ -124,3 +124,21 @@ export function cycleStatus(periods: Period[], today: string): CycleStatus | nul
     late: day > length,
   };
 }
+
+export type PhaseBand = { start: number; end: number; phase: Phase };
+
+/**
+ * Las fases del ciclo sobre una serie de fechas (índices de `dates`), agrupando los días seguidos de la
+ * misma fase. Para sombrear el gráfico de peso: el periodo y la fase lútea suelen traer retención de agua.
+ */
+export function phaseBands(periods: Period[], dates: string[]): PhaseBand[] {
+  const bands: PhaseBand[] = [];
+  dates.forEach((date, index) => {
+    const phase = cycleStatus(periods, date)?.phase;
+    if (!phase) return;
+    const last = bands.at(-1);
+    if (last && last.phase === phase && last.end === index - 1) last.end = index;
+    else bands.push({ start: index, end: index, phase });
+  });
+  return bands;
+}

@@ -2,7 +2,7 @@
 
 Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-## Estado al 18 de noviembre de 2026 (versión 0.40.0, Expo SDK 58)
+## Estado al 18 de noviembre de 2026 (versión 0.41.0, Expo SDK 58)
 
 **Decisiones que mandan:**
 
@@ -51,8 +51,8 @@ teléfono** (lo dice cada versión del CHANGELOG): cada cambio nuevo hasta recor
 | 3 | Tu dieta y el asesor (alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo). | Hecho en la 0.21.0. |
 | 4 | Motor de autoajuste. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
 | 5 | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor. | Hecho en la 0.23.0 (web) y en el APK (teléfono). |
-| 6 | Marcar las fases del ciclo en el gráfico de peso. | Pendiente. |
-| 7 | Pulido visual y animaciones en toda la app. | Hecho entre la 0.32.0 y la 0.40.0. Falta revisar las pantallas que se abren encima. |
+| 6 | Marcar las fases del ciclo en el gráfico de peso. | Hecho en la 0.41.0. |
+| 7 | Pulido visual y animaciones en toda la app. | Hecho entre la 0.32.0 y la 0.41.0, pantallas secundarias incluidas. |
 
 Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol, principales
 aportes, lados, superseries, parciales y myo-reps, calentamiento, gimnasios, mesociclos con descarga, exportar
@@ -77,8 +77,12 @@ Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
 | Leer etiquetas nutricionales con la cámara (ML Kit) | `src/features/nutrition/labelCamera.ts` | Probar con etiquetas reales |
 | Análisis de fotos de progreso (MediaPipe + MoveNet) | `src/features/photos/photos.analysis.ts`, `assets/models/` | Probar con fotos reales; ajustar umbrales si la silueta sale mal |
 
-Pendiente:
+Con la 0.41.0 se cierra la serie 0.x: Health Connect se sincroniza solo una vez al día, el primer uso ofrece
+recordatorios e importación, hay una copia semanal dentro del teléfono y el APK solo lleva arquitecturas de teléfono.
 
+## Para la 1.0.0 y después
+
+- Probar todo lo nativo en el teléfono y corregir lo que falle.
 - Publicar en Google Play (ver `docs/RELEASING.md`).
 - En iPhone: Apple Health en lugar de Health Connect; no hay sueño por uso ni este widget.
 

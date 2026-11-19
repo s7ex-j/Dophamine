@@ -193,7 +193,7 @@ export default function DietScreen() {
                   >
                     {WEEKDAY_NAMES[id].slice(0, 3)}
                   </Text>
-                  <Text style={[AppTheme.hint, { fontSize: 10 }]}>{day?.gym ? "gym" : " "}</Text>
+                  <Text style={[AppTheme.hint, { fontSize: 11 }]}>{day?.gym ? "gym" : " "}</Text>
                 </Pressable>
               );
             })}

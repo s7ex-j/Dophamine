@@ -59,7 +59,7 @@ export function QuickCheckIn({ onDone }: { onDone: () => void }) {
                 }}
               >
                 <Text style={{ fontSize: 26 }}>{option.emoji}</Text>
-                <Text style={[AppTheme.hint, { fontSize: 10 }]} numberOfLines={1}>
+                <Text style={[AppTheme.hint, { fontSize: 11 }]} numberOfLines={1}>
                   {option.label}
                 </Text>
               </Pressable>

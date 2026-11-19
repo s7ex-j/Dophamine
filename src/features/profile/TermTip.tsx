@@ -54,7 +54,7 @@ const TIPS: Record<OnboardingStep, { expression: TermExpression; text: string }>
   },
   summary: {
     expression: "muy-feliz",
-    text: "Es un punto de partida: lo voy afinando. Luego te pediré permiso para recordarte comidas y pesaje.",
+    text: "Es un punto de partida: con tus registros lo voy afinando.",
   },
 };
 

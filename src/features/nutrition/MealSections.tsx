@@ -269,11 +269,14 @@ export function MealCard({
               </Pressable>
             )}
           >
-            <EntryRow
-              entry={entry}
-              onRemove={() => onRemove(entry)}
-              onPress={onEdit ? () => onEdit(entry) : undefined}
-            />
+            {/* Con fondo propio: la acción de quitar queda detrás y solo se ve al deslizar. */}
+            <View style={{ backgroundColor: AppTheme.colors.surface }}>
+              <EntryRow
+                entry={entry}
+                onRemove={() => onRemove(entry)}
+                onPress={onEdit ? () => onEdit(entry) : undefined}
+              />
+            </View>
           </ReanimatedSwipeable>
         </Animated.View>
       ))}

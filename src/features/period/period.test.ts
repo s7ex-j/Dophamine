@@ -6,6 +6,7 @@ import {
   cycleStatus,
   endPeriod,
   periodLength,
+  phaseBands,
   readPeriods,
   removePeriod,
 } from "@/src/features/period/period";
@@ -53,5 +54,15 @@ describe("ciclo menstrual", () => {
       { start: "2026-11-01" },
     ]);
     expect(readPeriods("nada")).toEqual([]);
+  });
+});
+
+describe("phaseBands", () => {
+  it("agrupa los días seguidos de cada fase y no marca nada antes del primer periodo", () => {
+    const periods = [{ start: "2026-11-03", end: "2026-11-07" }];
+    const dates = Array.from({ length: 10 }, (_, index) => `2026-11-${String(index + 1).padStart(2, "0")}`);
+    const bands = phaseBands(periods, dates);
+    expect(bands[0]).toEqual({ start: 2, end: 6, phase: "menstrual" });
+    expect(bands[1]).toMatchObject({ start: 7, phase: "follicular" });
   });
 });

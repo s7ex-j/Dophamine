@@ -42,3 +42,14 @@ export function pickBackupFile(): Promise<string | null> {
 export async function restoreBackup(backup: Backup): Promise<void> {
   writeStore(backup.data);
 }
+
+// En la web no hay copia semanal: los datos ya viven en este navegador. Mismas funciones que la nativa.
+export async function autoBackupIfDue(): Promise<string | null> {
+  return null;
+}
+
+export async function lastAutoBackup(): Promise<string | null> {
+  return null;
+}
+
+export async function shareAutoBackup(): Promise<void> {}

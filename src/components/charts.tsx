@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { View } from "react-native";
 import Svg, { Circle, Line, Path } from "react-native-svg";
@@ -10,17 +11,32 @@ import { AppTheme } from "@/src/theme";
 import { linePath, type ChartPoint } from "@/src/components/chartGeometry";
 
 /** Línea con puntos, para tendencias cortas. Con `area` rellena debajo de la línea. */
-export function LineChart({
+/** Línea con puntos. Sin `width`, ocupa todo el ancho de su contenedor (lo mide al dibujarse). */
+export function LineChart(props: Omit<Parameters<typeof SizedLineChart>[0], "width"> & { width?: number }) {
+  const [measured, setMeasured] = useState(0);
+  if (props.width) return <SizedLineChart {...props} width={props.width} />;
+  return (
+    <View onLayout={(event) => setMeasured(Math.round(event.nativeEvent.layout.width))}>
+      {measured ? (
+        <SizedLineChart {...props} width={measured} />
+      ) : (
+        <View style={{ height: props.height ?? 56 }} />
+      )}
+    </View>
+  );
+}
+
+function SizedLineChart({
   values,
   color = AppTheme.colors.accent,
-  width = 150,
+  width,
   height = 56,
   area = false,
   reference,
 }: {
   values: number[];
   color?: string;
-  width?: number;
+  width: number;
   height?: number;
   area?: boolean;
   /** Valor de referencia (una meta) dibujado como línea punteada. */

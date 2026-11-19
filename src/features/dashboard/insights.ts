@@ -1,6 +1,6 @@
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { compositionSeries } from "@/src/features/composition/composition";
-import type { Period } from "@/src/features/period/period";
+import { phaseBands, type Period } from "@/src/features/period/period";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { SLEEP_GOAL_MINUTES, sleepMinutes, sleepSummary, type SleepEntry } from "@/src/features/sleep/sleep";
 import { analyzeMetabolism, expenditureSeries, trendPoints } from "@/src/features/tdee/tdee";
@@ -46,6 +46,8 @@ export type Insight = {
   stats: Array<{ label: string; value: string }>;
   /** Mensaje si no hay datos suficientes para el gráfico. */
   empty?: string;
+  /** Tramos sombreados detrás de las series (fases del ciclo en el gráfico de peso). */
+  bands?: Array<{ start: number; end: number; tone: "menstrual" | "luteal" }>;
 };
 
 export type InsightData = {
@@ -108,7 +110,16 @@ function weightInsight({ records, profile, today, periods }: InsightData, dates:
       });
     }
   }
+  // El periodo y la fase lútea suelen subir el agua: se sombrean para leer esas subidas como lo que son.
+  const bands = periods?.length
+    ? phaseBands(periods, dates).flatMap((band) =>
+        band.phase === "menstrual" || band.phase === "luteal"
+          ? [{ start: band.start, end: band.end, tone: band.phase }]
+          : [],
+      )
+    : [];
   return {
+    ...(bands.length ? { bands } : {}),
     metric: "weight",
     title: INSIGHT_TITLES.weight,
     unit,

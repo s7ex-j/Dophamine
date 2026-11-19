@@ -65,6 +65,8 @@ import { getSleepSince } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { refreshWidget } from "@/src/features/widget/refresh";
+import { syncHealthConnectDaily } from "@/src/features/health/healthConnect.repository";
+import { autoBackupIfDue } from "@/src/features/backup/backup.repository";
 import { AppTheme } from "@/src/theme";
 
 const LAYOUT_KEY = "dashboard_layout";
@@ -114,6 +116,19 @@ export default function DashboardScreen() {
     );
   }, []);
   useEffect(load, [load]);
+  // Una vez al día, lo nuevo de Health Connect (si ya se dio permiso) entra solo y el Panel se recarga.
+  useEffect(() => {
+    if (VIEWER) return;
+    syncHealthConnectDaily()
+      .then((result) => {
+        if (result && (result.weights || result.nights || result.stepDays || result.foodDays)) load();
+      })
+      .catch(() => undefined);
+  }, [load]);
+  // Una vez por semana, una copia de los datos dentro del teléfono (Más → Respaldo la comparte).
+  useEffect(() => {
+    if (!VIEWER) autoBackupIfDue().catch(() => undefined);
+  }, []);
   // Cada vez que el Panel se pone al día, el widget de la pantalla de inicio también.
   useEffect(() => {
     if (snapshot && !VIEWER) refreshWidget();

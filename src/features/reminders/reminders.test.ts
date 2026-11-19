@@ -13,6 +13,7 @@ import {
   preWorkoutReminders,
   remindersToSchedule,
   sortMeals,
+  starterConfig,
   templateMeals,
   TEMPLATE_SIZES,
   weekdayOf,
@@ -185,5 +186,21 @@ describe("aviso antes de entrenar", () => {
     expect(preWorkoutReminders({ ...config, preWorkout: { ...config.preWorkout, enabled: false } })).toEqual(
       [],
     );
+  });
+});
+
+describe("starterConfig", () => {
+  let n = 0;
+  const newId = () => `id-${n++}`;
+  it("activa las comidas del plan y el pesaje de la mañana todos los días", () => {
+    const config = starterConfig(newId, 4);
+    expect(config.enabled).toBe(true);
+    expect(config.weighIn).toEqual({ enabled: true, time: "07:00" });
+    expect(config.days.mon).toHaveLength(4);
+    expect(config.days.sun).toHaveLength(4);
+  });
+  it("sin una plantilla para ese número de comidas, usa tres", () => {
+    expect(starterConfig(newId, 9).days.wed).toHaveLength(3);
+    expect(starterConfig(newId, undefined).days.wed).toHaveLength(3);
   });
 });

@@ -62,7 +62,7 @@ Sueño, agua, ánimo, energía y estrés, un chequeo de tres toques, ciclo menst
 Conecta el teléfono con la web por código QR: la conexión va cifrada de un dispositivo al otro, sin servidor. La web solo lee, en vista ancha o de celular.
 
 **Health Connect**
-Trae peso, % de grasa, sueño, pasos y comida desde Samsung Health, Google Fit y otras apps (Android), sin pisar lo que anotaste a mano.
+Trae peso, % de grasa, sueño, pasos y comida desde Samsung Health, Google Fit y otras apps (Android), sin pisar lo que anotaste a mano. Después, lo nuevo entra solo una vez al día.
 
 **Hecho para el teléfono**
 Lee una etiqueta nutricional con la cámara, dicta el alimento que buscas, estima tu hora de dormir con el uso del teléfono, mide tu silueta en las fotos de progreso y mira lo que te queda del día en un widget. Todo se procesa dentro del teléfono.

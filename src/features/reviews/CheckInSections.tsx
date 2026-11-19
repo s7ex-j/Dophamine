@@ -130,7 +130,7 @@ function ReviewRing({ days, left }: { days: number; left: number }) {
       </Svg>
       <Text style={[AppTheme.tileValue, { fontSize: 22, lineHeight: 26 }]}>{left || "Hoy"}</Text>
       {left ? (
-        <Text style={[AppTheme.hint, { fontSize: 10, lineHeight: 12 }]}>{left === 1 ? "día" : "días"}</Text>
+        <Text style={[AppTheme.hint, { fontSize: 11, lineHeight: 14 }]}>{left === 1 ? "día" : "días"}</Text>
       ) : null}
     </View>
   );

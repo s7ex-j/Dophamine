@@ -86,6 +86,20 @@ import {
   saveMealFromEntries,
 } from "@/src/features/nutrition/savedMeals.repository";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
+
+/** "Hoy · miércoles 18 de noviembre", o solo la fecha si no es hoy ni ayer. */
+const friendlyDate = (date: string) => {
+  const [year, month, day] = date.split("-").map(Number);
+  const full = new Date(year, month - 1, day).toLocaleDateString("es-PE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const label = dayLabel(date);
+  return label === "Hoy" || label === "Ayer"
+    ? `${label} · ${full}`
+    : full.replace(/^./, (letter) => letter.toUpperCase());
+};
 import { VIEWER } from "@/src/lib/mode";
 import { readLabel, type LabelField, type LabelReading } from "@/src/features/nutrition/label";
 import { labelCameraAvailable, scanLabelText } from "@/src/features/nutrition/labelCamera";
@@ -282,9 +296,7 @@ function AddFoodContent() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={AppTheme.content} keyboardShouldPersistTaps="handled">
-        <Text style={AppTheme.eyebrow}>
-          {dayLabel(date)}, {date}
-        </Text>
+        <Text style={AppTheme.eyebrow}>{friendlyDate(date)}</Text>
         <SlotPicker
           value={slot}
           onChange={setSlot}
