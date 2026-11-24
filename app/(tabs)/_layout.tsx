@@ -14,7 +14,11 @@ import { FONTS } from "@/src/theming/fonts";
 const tabIcon =
   (name: keyof typeof Ionicons.glyphMap) =>
   ({ color, size }: { color?: unknown; size: number }) => (
-    <Ionicons name={name} size={Platform.OS === "web" ? 22 : size} color={typeof color === "string" ? color : undefined} />
+    <Ionicons
+      name={name}
+      size={Platform.OS === "web" ? 22 : size}
+      color={typeof color === "string" ? color : undefined}
+    />
   );
 
 // Cinco pestañas en el teléfono. En la web (visor de solo lectura) se quitan las
