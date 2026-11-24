@@ -224,6 +224,7 @@ async function main() {
     await shot("bienvenida");
     await press("Siguiente");
     await waitText("Tu gasto real sale de tus datos");
+    await shot("bienvenida-2");
     await press("Siguiente");
     await press("Siguiente");
     await waitText("Hecho por Jharol");

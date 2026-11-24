@@ -158,12 +158,12 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
 
 **Camino elegido (sin pagar primero)**
 
-1. **Web app instalable (PWA), la versión gratuita para iPhone. Hecha, falta probarla en un iPhone.** Está en
+1. **Web app instalable (PWA), la versión gratuita para iPhone. Hecha y comprobada en un iPhone.** Está en
    `/Dophamine/pwa/`, aparte del visor: datos en IndexedDB, funciona sin conexión y explica cómo instalarla.
    - Probar: instalar, crear el plan, cerrar y volver a abrir, modo avión, compartir y restaurar un respaldo, cámara
      del QR, márgenes de la pantalla y teclado.
    - Pendiente: leer el código de barras con la cámara (necesita una librería web; hoy se escribe a mano).
-   - Anunciarla en el sitio y el README cuando esté probada.
+   - Anunciada en el sitio y el README, con la app nativa "en evaluación".
 2. **`.ipa` sin firma, experimental y opcional.** Solo si alguien lo pide, y anunciado para usuarios avanzados.
    - Se compila gratis con GitHub Actions (máquinas macOS gratuitas en repositorios públicos), sin firma; EAS no
      compila para iPhone sin la cuenta paga.

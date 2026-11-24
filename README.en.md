@@ -14,7 +14,7 @@ every few days, suggests a small adjustment and explains why. No accounts, no se
 [![License](https://img.shields.io/badge/license-GPL--3.0--only-167B5B)](LICENSE)
 [![Platform](https://img.shields.io/badge/Android-APK-167B5B?logo=android&logoColor=white)](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)
 
-### [Download for Android](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk) · [See my progress on the web](https://s7ex-j.github.io/Dophamine/app/) · [Website](https://s7ex-j.github.io/Dophamine/)
+### [Download for Android](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk) · [Open on iPhone](https://s7ex-j.github.io/Dophamine/pwa/) · [See my progress on the web](https://s7ex-j.github.io/Dophamine/app/) · [Website](https://s7ex-j.github.io/Dophamine/)
 
 <sub>[Español](README.md) · **English**</sub>
 
@@ -67,6 +67,12 @@ The scale moves with water, salt and glycogen, and a fixed formula can't know ho
 1. Download **[dophamine.apk](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)** on your Android phone (it is always the latest version).
 2. Open it and allow installing apps from that source if Android asks.
 3. Answer the initial assessment (a couple of minutes) and start logging.
+
+### On iPhone
+
+Open **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** in Safari, tap Share → "Add to Home Screen" and launch it from its icon. It works offline and keeps your data on the phone. It has no reminders, Apple Health, widget, dictation, camera reading or progress photos.
+
+A native iPhone app is under evaluation: Apple requires signing and its own checks. Depending on how people receive it, it could be an install each person signs with their own Apple ID (renewed every 7 days) or an App Store release with a developer account.
 
 > Dophamine is a personal tracking tool. Expenditure is an estimate and the app does not give medical advice.
 

@@ -13,6 +13,7 @@ const APP_URL = `${import.meta.env.BASE_URL}app/`
 const REPO_URL = "https://github.com/s7ex-j/Dophamine"
 const RELEASE_URL = `${REPO_URL}/releases/latest`
 // Un solo APK publicado, siempre el de la última versión, con el mismo nombre.
+const IPHONE_URL = `${import.meta.env.BASE_URL}pwa/`
 const APK_URL = `${RELEASE_URL}/download/dophamine.apk`
 
 const steps = [
@@ -112,6 +113,7 @@ function Header() {
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           <a href="#vistas" className="hover:text-foreground">Qué hace</a>
           <a href="#telefono" className="hover:text-foreground">En el teléfono</a>
+          <a href="#iphone" className="hover:text-foreground">iPhone</a>
           <a href="#formatos" className="hover:text-foreground">Plantillas</a>
           <a href="#como-funciona" className="hover:text-foreground">Cómo funciona</a>
           <a href="#privacidad" className="hover:text-foreground">Privacidad</a>
@@ -382,6 +384,11 @@ function Hero() {
               </a>
             </Button>
             <Button size="lg" variant="outline" asChild className="h-13 rounded-full px-6 text-base">
+              <a href={IPHONE_URL}>
+                <Smartphone /> Abrir en iPhone
+              </a>
+            </Button>
+            <Button size="lg" variant="ghost" asChild className="h-13 rounded-full px-5 text-base">
               <a href={APP_URL}>
                 Ver mi progreso en la web <ArrowRight />
               </a>
@@ -630,7 +637,7 @@ function EnElTelefono() {
           Hecho para tu teléfono.
         </h2>
         <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-          Menos teclear, más constancia. Todo se procesa en el teléfono: nada sale de él.
+          En la app de Android: menos teclear, más constancia. Todo se procesa en el teléfono.
         </p>
         <div className="mt-12 grid gap-x-10 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
           {enElTelefono.map(({ icono: Icono, titulo, texto }) => (
@@ -677,6 +684,79 @@ function EnLaComputadora() {
             Abrir el visor <ArrowRight />
           </a>
         </Button>
+      </div>
+    </section>
+  )
+}
+
+const pasosIphone = [
+  "Abre el enlace en Safari, desde tu iPhone.",
+  "Toca Compartir y elige \"Agregar a pantalla de inicio\".",
+  "Ábrela desde su ícono y crea tu plan ahí.",
+]
+
+const planesIphone = [
+  {
+    titulo: "Instalación con tu Apple ID",
+    texto: "Una app nativa que cada persona firma gratis con su propio Apple ID. Apple pide renovar esa firma cada 7 días.",
+  },
+  {
+    titulo: "App Store",
+    texto: "Con una cuenta de desarrollador de Apple y su revisión: instalación normal, recordatorios, Apple Health y widget.",
+  },
+]
+
+function Iphone() {
+  return (
+    <section id="iphone" className="scroll-mt-20 py-20">
+      <div className="mx-auto grid max-w-6xl gap-x-16 gap-y-14 px-5 lg:grid-cols-[1.1fr_1fr]">
+        <div>
+          <h2 className="max-w-[14ch] text-4xl font-extrabold leading-[1.02] tracking-[-0.025em] text-balance md:text-6xl">
+            También en tu iPhone.
+          </h2>
+          <p className="mt-5 max-w-xl text-lg text-muted-foreground text-pretty">
+            Se instala desde Safari, gratis y sin App Store. Registras comida, peso, sueño y entreno, con tus gráficos y
+            tu plan, incluso sin conexión.
+          </p>
+          <ol className="mt-8 max-w-xl">
+            {pasosIphone.map((paso, i) => (
+              <li key={paso} className="flex gap-4 border-t py-4 last:border-b">
+                <span className="font-display font-bold tabular-nums text-primary">{i + 1}</span>
+                {paso}
+              </li>
+            ))}
+          </ol>
+          <Button size="lg" asChild className="mt-8 h-13 rounded-full px-7 text-base">
+            <a href={IPHONE_URL}>
+              <Smartphone /> Abrir en iPhone
+            </a>
+          </Button>
+          <p className="mt-5 max-w-xl text-sm text-muted-foreground text-pretty">
+            Esta versión no trae recordatorios, Apple Health, widget, dictado, lectura con la cámara ni fotos de progreso.
+            Los datos quedan en el teléfono: comparte un respaldo de vez en cuando.
+          </p>
+        </div>
+        <div className="self-start rounded-3xl border bg-card p-6 md:p-8">
+          <h3 className="text-2xl font-bold tracking-tight">La app nativa para iPhone, en evaluación</h3>
+          <p className="mt-3 text-muted-foreground text-pretty">
+            Apple exige que toda app esté firmada y pase sus controles antes de instalarse. Según cómo la reciban quienes
+            la usen en iPhone, estos son los dos caminos posibles:
+          </p>
+          <dl className="mt-6">
+            {planesIphone.map(({ titulo, texto }) => (
+              <div key={titulo} className="border-t py-5 last:pb-0">
+                <dt className="font-semibold">{titulo}</dt>
+                <dd className="mt-1 text-muted-foreground text-pretty">{texto}</dd>
+              </div>
+            ))}
+          </dl>
+          <a
+            href={`${REPO_URL}/issues`}
+            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+          >
+            Contar cómo te fue en tu iPhone <ArrowRight className="size-4" />
+          </a>
+        </div>
       </div>
     </section>
   )
@@ -906,6 +986,7 @@ export default function App() {
         <Trend />
         <Vistas />
         <EnElTelefono />
+        <Iphone />
         <EnLaComputadora />
         <HowItWorks />
         <Tdee />

@@ -4,8 +4,10 @@
 
 - **Web instalable (PWA), para iPhone:** la app completa en `/Dophamine/pwa/`, aparte del visor. Se instala desde Safari con "Agregar a pantalla de inicio" y abre sin conexión. Los datos van en IndexedDB (probado con más de 5 MB) y el respaldo sale por la hoja de compartir. En Safari sin instalar, primero explica cómo instalarla y qué no trae.
 - No trae recordatorios, Apple Health, widget, sueño por uso, cámara para códigos y etiquetas, dictado ni fotos de progreso. El código de barras se escribe a mano.
+- Bienvenida: el gráfico de Tendencia se rehízo con cuatro semanas de pesajes, escala, curva suavizada y el valor de hoy marcado.
+- Sitio y README: enlace para abrir en iPhone, cómo instalarla y en qué está la app nativa.
 - En la web, los nombres de las pestañas ya no salen cortados.
-- `npm run pwa` la compila y `npm run e2e:pwa` la prueba en Chrome, con el servidor apagado. No comprobado en un iPhone.
+- `npm run pwa` la compila y `npm run e2e:pwa` la prueba en Chrome, con el servidor apagado. Comprobado en un iPhone: se instala, funciona y se ve bien.
 
 ## 0.41.0 - 2026-11-18
 

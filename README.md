@@ -14,7 +14,7 @@ cada pocos días, te propone un ajuste pequeño con su porqué. Sin cuentas, sin
 [![Licencia](https://img.shields.io/badge/licencia-GPL--3.0--only-167B5B)](LICENSE)
 [![Plataforma](https://img.shields.io/badge/Android-APK-167B5B?logo=android&logoColor=white)](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)
 
-### [Descargar para Android](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk) · [Ver mi progreso en la web](https://s7ex-j.github.io/Dophamine/app/) · [Sitio](https://s7ex-j.github.io/Dophamine/)
+### [Descargar para Android](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk) · [Abrir en iPhone](https://s7ex-j.github.io/Dophamine/pwa/) · [Ver mi progreso en la web](https://s7ex-j.github.io/Dophamine/app/) · [Sitio](https://s7ex-j.github.io/Dophamine/)
 
 <sub>**Español** · [English](README.en.md)</sub>
 
@@ -76,6 +76,14 @@ Term es la mascota de Dophamine: te recibe, te explica cada pregunta de la evalu
 1. Descarga **[dophamine.apk](https://github.com/s7ex-j/Dophamine/releases/latest/download/dophamine.apk)** en tu teléfono Android (siempre es la última versión).
 2. Ábrelo y permite instalar apps de esa fuente si Android lo pide.
 3. Responde la evaluación inicial (un par de minutos) y empieza a registrar.
+
+### En iPhone
+
+Abre **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** en Safari, toca Compartir → "Agregar a pantalla de inicio" y ábrela desde su ícono. Funciona sin conexión y guarda los datos en el teléfono. No trae recordatorios, Apple Health, widget, dictado, lectura con la cámara ni fotos de progreso.
+
+La app nativa para iPhone está en evaluación: Apple exige firma y controles propios. Según cómo la reciban quienes la usen, podría ser una instalación que cada persona firma con su Apple ID (se renueva cada 7 días) o una publicación en la App Store con cuenta de desarrollador.
+
+### En la computadora
 
 ¿Prefieres verlo en la computadora? Abre **[el visor web](https://s7ex-j.github.io/Dophamine/app/)** y conecta tu teléfono con el código QR.
 

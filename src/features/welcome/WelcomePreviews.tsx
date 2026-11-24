@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
-import Svg, { Circle, Path } from "react-native-svg";
+import Svg, { Circle, Defs, G, Line, LinearGradient, Path, Stop, Text as SvgText } from "react-native-svg";
 
 import { Text } from "@/src/components/Text";
-import { GrowBar } from "@/src/components/motion";
+import { GrowBar, RevealX } from "@/src/components/motion";
 import { AppTheme } from "@/src/theme";
+import { FONTS } from "@/src/theming/fonts";
 
 /**
  * Lo que muestra cada página de la bienvenida: una vista previa de la app con números de ejemplo,
@@ -86,41 +88,142 @@ function MiniTile({
   );
 }
 
-// Pesajes de ejemplo: suben y bajan día a día; la tendencia baja tranquila.
-const WEIGHTS = [79.4, 79.9, 79.1, 79.6, 78.9, 79.3, 78.6, 79.0, 78.4, 78.8, 78.2, 78.5];
+// Pesajes de ejemplo de cuatro semanas: el agua los mueve día a día; debajo, el peso baja tranquilo.
+const NOISE = [
+  0.3, -0.4, 0.6, 0.1, -0.5, 0.7, -0.2, 0.4, -0.6, 0.2, 0.8, -0.3, -0.7, 0.5, 0.1, -0.4, 0.6, -0.1, -0.6, 0.4,
+  0.7, -0.5, 0.2, -0.3, 0.5, -0.6, 0.3, -0.2,
+];
+const WEIGHTS = NOISE.map((noise, index) => 80 - index * 0.057 + noise);
+const REACH = 5;
+const TREND = WEIGHTS.map((_, index) => {
+  // Cerca de los bordes se promedia lo que hay, siempre parejo a los dos lados.
+  const reach = Math.max(2, Math.min(REACH, index, WEIGHTS.length - 1 - index));
+  const near = WEIGHTS.slice(Math.max(0, index - reach), index + reach + 1);
+  return near.reduce((sum, value) => sum + value, 0) / near.length;
+});
+const WEEKLY = ((TREND[TREND.length - 1] - TREND[0]) / (TREND.length - 1)) * 7;
+const TICKS = [81, 80, 79, 78];
+const CHART = { height: 168, left: 30, right: 14, top: 10, bottom: 24 };
 
-/** La tendencia: los pesajes con su ruido y la línea suavizada que usa el cálculo. */
+type Point = { x: number; y: number };
+const straight = (points: Point[]) => points.map(({ x, y }, i) => `${i ? "L" : "M"}${x} ${y}`).join(" ");
+/** Curva que pasa por todos los puntos, sin picos. */
+const curve = (points: Point[]) =>
+  points.reduce((path, point, i) => {
+    if (!i) return `M${point.x} ${point.y}`;
+    const before = points[i - 2] ?? points[i - 1];
+    const from = points[i - 1];
+    const after = points[i + 1] ?? point;
+    const c1 = { x: from.x + (point.x - before.x) / 6, y: from.y + (point.y - before.y) / 6 };
+    const c2 = { x: point.x - (after.x - from.x) / 6, y: point.y - (after.y - from.y) / 6 };
+    return `${path} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${point.x} ${point.y}`;
+  }, "");
+
+function TrendChart({ width }: { width: number }) {
+  const { colors } = AppTheme;
+  const { height, left, right, top, bottom } = CHART;
+  const x = (index: number) => left + (index * (width - left - right)) / (WEIGHTS.length - 1);
+  const y = (value: number) => top + ((81 - value) / 3) * (height - top - bottom);
+  const weights = WEIGHTS.map((value, index) => ({ x: x(index), y: y(value) }));
+  const trend = TREND.map((value, index) => ({ x: x(index), y: y(value) }));
+  const last = trend[trend.length - 1];
+  const floor = height - bottom;
+  const line = curve(trend);
+  const label = { fontSize: 11, fill: colors.muted, fontFamily: FONTS.text400 };
+  return (
+    <View style={{ height }}>
+      <Svg width={width} height={height} style={{ position: "absolute" }}>
+        {TICKS.map((tick) => (
+          <G key={tick}>
+            <Line
+              x1={left}
+              x2={width - right}
+              y1={y(tick)}
+              y2={y(tick)}
+              stroke={colors.border}
+              strokeWidth={1}
+            />
+            <SvgText {...label} x={left - 8} y={y(tick) + 4} textAnchor="end">
+              {String(tick)}
+            </SvgText>
+          </G>
+        ))}
+        <SvgText {...label} x={left} y={height - 6}>
+          Hace 4 semanas
+        </SvgText>
+        <SvgText {...label} x={width - right} y={height - 6} textAnchor="end">
+          Hoy
+        </SvgText>
+        <Path d={straight(weights)} stroke={colors.muted} strokeOpacity={0.3} strokeWidth={1} fill="none" />
+        {weights.map((point, index) => (
+          <Circle key={index} cx={point.x} cy={point.y} r={2.5} fill={colors.muted} opacity={0.65} />
+        ))}
+      </Svg>
+      {/* La tendencia se dibuja al llegar, encima del ruido. */}
+      <RevealX width={width} style={{ height }}>
+        <Svg width={width} height={height}>
+          <Defs>
+            <LinearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={colors.violet} stopOpacity={0.28} />
+              <Stop offset="1" stopColor={colors.violet} stopOpacity={0} />
+            </LinearGradient>
+          </Defs>
+          <Path d={`${line} L${last.x} ${floor} L${trend[0].x} ${floor} Z`} fill="url(#trendFill)" />
+          <Path d={line} stroke={colors.violet} strokeWidth={3} fill="none" strokeLinecap="round" />
+          <Circle cx={last.x} cy={last.y} r={10} fill={colors.violet} opacity={0.22} />
+          <Circle
+            cx={last.x}
+            cy={last.y}
+            r={5}
+            fill={colors.violet}
+            stroke={colors.surface}
+            strokeWidth={2}
+          />
+        </Svg>
+      </RevealX>
+    </View>
+  );
+}
+
+/** La tendencia: los pesajes con su ruido y la línea suavizada, lo que de verdad cambia. */
 function TrendPreview() {
   const { colors } = AppTheme;
-  const width = 300;
-  const height = 120;
-  const min = 77.8;
-  const max = 80.2;
-  const x = (index: number) => 10 + (index * (width - 20)) / (WEIGHTS.length - 1);
-  const y = (value: number) => 8 + ((max - value) / (max - min)) * (height - 16);
-  const trend = WEIGHTS.map((_, index) => 79.5 - index * 0.11);
-  const line = trend.map((value, index) => `${index ? "L" : "M"}${x(index)} ${y(value)}`).join(" ");
+  const [width, setWidth] = useState(0);
   return (
     <View style={{ gap: 10 }}>
-      <View style={[AppTheme.card, { gap: 10 }]}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <View style={[AppTheme.card, { gap: 12 }]}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
           <View>
             <Text style={AppTheme.tileTitle}>Tendencia</Text>
-            <Text style={AppTheme.tileSubtitle}>Peso suavizado · 12 días</Text>
+            <Text style={AppTheme.tileSubtitle}>Peso suavizado · 4 semanas</Text>
           </View>
-          <Text style={[AppTheme.tileValue, { fontSize: 22 }]}>
-            78.4 <Text style={AppTheme.tileUnit}>kg</Text>
-          </Text>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={[AppTheme.tileValue, { fontSize: 26, lineHeight: 30 }]}>
+              {TREND[TREND.length - 1].toFixed(1)} <Text style={AppTheme.tileUnit}>kg</Text>
+            </Text>
+            <Text style={[AppTheme.tileSubtitle, { color: colors.accentText }]}>
+              −{Math.abs(WEEKLY).toFixed(1)} kg por semana
+            </Text>
+          </View>
         </View>
-        <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-          {WEIGHTS.map((value, index) => (
-            <Circle key={index} cx={x(index)} cy={y(value)} r={3.5} fill={colors.muted} opacity={0.6} />
-          ))}
-          <Path d={line} stroke={colors.violet} strokeWidth={3} fill="none" strokeLinecap="round" />
-        </Svg>
-        <Text style={AppTheme.hint}>
-          Los puntos son tus pesajes; la línea, tu peso real: −0.4 kg por semana.
-        </Text>
+        <View
+          accessible
+          accessibilityLabel="Gráfico de ejemplo: los pesajes suben y bajan, la tendencia baja pareja"
+          onLayout={(event) => setWidth(Math.round(event.nativeEvent.layout.width))}
+          style={{ height: CHART.height }}
+        >
+          {width ? <TrendChart width={width} /> : null}
+        </View>
+        <View style={{ flexDirection: "row", gap: 16 }}>
+          <View style={[AppTheme.legendRow, { gap: 6 }]}>
+            <View style={[AppTheme.legendDot, { width: 7, height: 7, backgroundColor: colors.muted }]} />
+            <Text style={AppTheme.hint}>Cada pesaje</Text>
+          </View>
+          <View style={[AppTheme.legendRow, { gap: 6 }]}>
+            <View style={{ width: 16, height: 3, borderRadius: 2, backgroundColor: colors.violet }} />
+            <Text style={AppTheme.hint}>Lo que de verdad cambia</Text>
+          </View>
+        </View>
       </View>
       <View style={[AppTheme.card, AppTheme.iconRow]}>
         <View style={[AppTheme.iconChip, { backgroundColor: colors.accentSoft }]}>
