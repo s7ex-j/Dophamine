@@ -9,16 +9,14 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     env:
       ASSETS_TOKEN: ${{ secrets.DOPHAMINE_ASSETS_TOKEN }}
@@ -59,5 +57,24 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub tarda a veces en mostrar el paquete recién subido; publicarlo antes falla.
+      - name: Esperar el paquete
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 30); do
+            count=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '[.artifacts[] | select(.name == "github-pages")] | length')
+            [ "$count" -ge 1 ] && exit 0
+            sleep 5
+          done
+          echo "El paquete no apareció" && exit 1
       - id: deployment
         uses: actions/deploy-pages@v4
