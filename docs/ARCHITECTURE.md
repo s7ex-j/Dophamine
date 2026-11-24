@@ -3,6 +3,13 @@
 Describe la base de la app (capas, datos y fórmulas). La escribí en la 0.20.0 y sigue vigente; la estructura de
 carpetas está en el README.
 
+## La web instalable (PWA)
+
+Otra compilación de la misma app (`EXPO_PUBLIC_PWA=1`, dirección en `app.config.js`). `src/lib/pwa.web.ts` la
+identifica; `src/db/pwa-storage.ts` guarda en IndexedDB y `web-storage.ts` elige entre eso y `localStorage`, así que
+los repositorios no cambian. `scripts/pwa.mjs` agrega el manifiesto y el service worker. Una versión nueva entra
+cuando se cierra la anterior.
+
 ## Lo nativo (desde la 0.40.0)
 
 Lo que solo existe en el APK de Android, cada pieza con su variante web vacía (`.web.ts`) para que la web compile:

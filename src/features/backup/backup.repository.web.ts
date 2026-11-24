@@ -1,5 +1,6 @@
 import { readStore, writeStore } from "@/src/db/web-storage";
 import { backupFileName, buildBackup, type Backup } from "@/src/features/backup/backup";
+import { shareTextFile } from "@/src/lib/files";
 
 // Variante web: los datos están en el almacenamiento del navegador, así que el
 // respaldo es un archivo que la persona descarga y guarda donde quiera.
@@ -14,14 +15,7 @@ export async function readAllData() {
 
 export async function downloadBackup(): Promise<void> {
   const contenido = JSON.stringify(buildBackup(readStore()), null, 2);
-  const url = URL.createObjectURL(new Blob([contenido], { type: "application/json" }));
-  const enlace = document.createElement("a");
-  enlace.href = url;
-  enlace.download = backupFileName();
-  document.body.appendChild(enlace);
-  enlace.click();
-  enlace.remove();
-  URL.revokeObjectURL(url);
+  await shareTextFile(backupFileName(), contenido, "application/json");
 }
 
 /** Abre el selector de archivos del navegador. Devuelve el texto del archivo o null si se cancela. */

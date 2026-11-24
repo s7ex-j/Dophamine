@@ -14,7 +14,9 @@
     "test": "vitest run",
     "format": "prettier --write \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\" \"e2e/**/*.mjs\"",
     "format:check": "prettier --check \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\" \"e2e/**/*.mjs\"",
-    "e2e": "expo export --platform web && node e2e/flujos.mjs"
+    "e2e": "expo export --platform web && node e2e/flujos.mjs",
+    "pwa": "node scripts/pwa-build.mjs && node scripts/pwa.mjs",
+    "e2e:pwa": "node e2e/pwa.mjs"
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^15.0.2",

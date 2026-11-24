@@ -8,6 +8,8 @@ import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ErrorScreen } from "@/src/components/ErrorScreen";
+import { InstallScreen } from "@/src/components/InstallScreen";
+import { needsInstall } from "@/src/lib/pwa";
 import { initializeDatabase } from "@/src/db/database";
 import { configureNotifications } from "@/src/features/reminders/scheduler";
 import { enableWebRTC } from "@/src/features/link/webrtc";
@@ -44,6 +46,8 @@ export default function RootLayout() {
     const timer = setTimeout(() => setMinElapsed(true), LAUNCH_MIN_MS);
     return () => clearTimeout(timer);
   }, []);
+  const [install, setInstall] = useState(false);
+  useEffect(() => setInstall(needsInstall()), []);
   const hideLaunch = useCallback(() => setLaunchGone(true), []);
   useEffect(() => onThemeChange(() => setThemeVersion((version) => version + 1)), []);
   useEffect(() => {
@@ -89,7 +93,8 @@ export default function RootLayout() {
     >
       <StatusBar style={THEME === "light" ? "dark" : "light"} />
       {/* La navegación se monta debajo de la pantalla de carga cuando todo está listo. */}
-      {appReady ? (
+      {appReady && install ? <InstallScreen onSkip={() => setInstall(false)} /> : null}
+      {appReady && !install ? (
         <View
           style={
             PHONE_FRAME

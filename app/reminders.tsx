@@ -212,7 +212,7 @@ function RemindersContent() {
         <Button title="Guardar recordatorios" onPress={save} />
         {!remindersAvailable ? (
           <Text style={AppTheme.hint}>
-            En el navegador no hay avisos: se programan en la app del teléfono.
+            En la web no hay avisos: el sistema solo los permite en la app de Android.
           </Text>
         ) : null}
       </ScrollView>

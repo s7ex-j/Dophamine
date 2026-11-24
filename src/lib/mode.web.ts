@@ -4,6 +4,8 @@
 // Para desarrollo y para las pruebas de navegador se puede abrir la app completa
 // guardando "full" en esta clave de localStorage antes de cargar la página:
 //   localStorage.setItem("dophamine.web-mode", "full")
+import { PWA } from "@/src/lib/pwa";
+
 const MODE_KEY = "dophamine.web-mode";
 
 const readMode = () => {
@@ -18,4 +20,5 @@ const readMode = () => {
 const isLocal = () =>
   typeof window !== "undefined" && ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
 
-export const VIEWER = !(isLocal() && readMode() === "full");
+// La web instalable (PWA) es la app completa; el resto del sitio publicado es el visor.
+export const VIEWER = !PWA && !(isLocal() && readMode() === "full");

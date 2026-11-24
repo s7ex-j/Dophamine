@@ -355,7 +355,7 @@ const BASE = {
     setHead: { color: "#8B968F", fontSize: 11, fontWeight: "700" },
     setNumber: { color: "#F1F5F2", fontSize: 14, fontWeight: "700", textAlign: "center" },
     setInputBox: { width: 62, textAlign: "center" },
-    setInput: { minHeight: 38, paddingHorizontal: 4, paddingVertical: 6, textAlign: "center", fontSize: 15 },
+    setInput: { minHeight: 38, paddingHorizontal: 4, paddingVertical: 6, textAlign: "center", fontSize: 16 },
     setCheck: {
       width: 36,
       height: 36,

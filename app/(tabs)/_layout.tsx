@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ViewerSidebar } from "@/src/features/backup/ViewerChrome";
@@ -13,7 +14,7 @@ import { FONTS } from "@/src/theming/fonts";
 const tabIcon =
   (name: keyof typeof Ionicons.glyphMap) =>
   ({ color, size }: { color?: unknown; size: number }) => (
-    <Ionicons name={name} size={size} color={typeof color === "string" ? color : undefined} />
+    <Ionicons name={name} size={Platform.OS === "web" ? 22 : size} color={typeof color === "string" ? color : undefined} />
   );
 
 // Cinco pestañas en el teléfono. En la web (visor de solo lectura) se quitan las
@@ -49,7 +50,13 @@ export default function TabsLayout() {
                 minWidth: 200,
               }
             : { borderTopColor: AppTheme.colors.border, backgroundColor: AppTheme.colors.surface },
-        tabBarLabelStyle: { fontFamily: FONTS.text600, fontSize: 11 },
+        // En la web la barra es más baja: sin alto de línea propio, el nombre se corta.
+        tabBarLabelStyle: {
+          fontFamily: FONTS.text600,
+          fontSize: 11,
+          ...(Platform.OS === "web" ? { lineHeight: 13 } : {}),
+        },
+        ...(Platform.OS === "web" ? { tabBarIconStyle: { height: 24 } } : {}),
       }}
     >
       <Tabs.Screen

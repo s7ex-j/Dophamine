@@ -11,6 +11,7 @@ work/
 # Expo
 .expo/
 dist/
+dist-pwa/
 web-build/
 
 # Native build outputs

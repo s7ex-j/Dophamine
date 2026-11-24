@@ -1,4 +1,5 @@
 import { VIEWER } from "@/src/lib/mode";
+import { PWA } from "@/src/lib/pwa";
 import { isThemeId, THEME_KEY, type ThemeId } from "@/src/theming/palettes";
 
 const STORE_KEY = "dophamine.web-store.v1";
@@ -7,6 +8,10 @@ const STORE_KEY = "dophamine.web-store.v1";
 export function currentTheme(): ThemeId {
   try {
     if (typeof window === "undefined") return "forest";
+    if (PWA) {
+      const saved = window.localStorage.getItem("dophamine.pwa-theme");
+      return isThemeId(saved) ? saved : "forest";
+    }
     // El visor no toca los ajustes de los datos: su tema se guarda aparte.
     const viewerTheme = window.localStorage.getItem("dophamine.viewer-theme");
     if (VIEWER && isThemeId(viewerTheme)) return viewerTheme;

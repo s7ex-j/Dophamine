@@ -1,3 +1,5 @@
+import { readPwa, themeOf, writePwa } from "@/src/db/pwa-storage";
+import { PWA } from "@/src/lib/pwa";
 import { localDateKey } from "@/src/lib/dates";
 import type { Food } from "@/src/features/nutrition/foods";
 import type { MealEntry } from "@/src/features/nutrition/meals";
@@ -118,6 +120,10 @@ const key = "dophamine.web-store.v1";
 const empty = (): Store => ({ biometrics: [], wellbeing: [], workouts: [] });
 
 export function readStore(): Store {
+  if (PWA) {
+    const text = readPwa();
+    return text ? (JSON.parse(text) as Store) : empty();
+  }
   try {
     return JSON.parse(window.localStorage.getItem(key) ?? "") as Store;
   } catch {
@@ -126,6 +132,7 @@ export function readStore(): Store {
 }
 
 export function writeStore(store: Store) {
+  if (PWA) return writePwa(JSON.stringify(store), themeOf(store));
   window.localStorage.setItem(key, JSON.stringify(store));
 }
 

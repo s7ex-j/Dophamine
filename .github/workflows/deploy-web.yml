@@ -42,6 +42,8 @@ jobs:
       # App de Expo, servida en /Dophamine/app/ (experiments.baseUrl en app.json)
       - run: npm ci
       - run: npx expo export --platform web
+      # Web instalable (PWA), servida en /Dophamine/pwa/
+      - run: npm run pwa
       # Landing (Vite + shadcn/ui), servida en /Dophamine/
       - run: npm ci && npm run build
         working-directory: web
@@ -50,6 +52,7 @@ jobs:
           mkdir -p site
           cp -r web/dist/. site/
           cp -r dist site/app
+          cp -r dist-pwa site/pwa
       - uses: actions/configure-pages@v5
         with:
           enablement: true

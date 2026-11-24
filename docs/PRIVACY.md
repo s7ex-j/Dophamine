@@ -39,6 +39,11 @@ Las imágenes de tus fotos de progreso no entran en el respaldo (pesan demasiado
 medidas de la silueta. Si restauras un respaldo en otro teléfono, esas fotos no aparecen: la app solo muestra las
 que tienen su imagen en el teléfono.
 
+## Web instalable (iPhone)
+
+Guarda todo en el almacenamiento del navegador de ese teléfono. Si se borra la app o los datos del sitio, se pierde:
+comparte un respaldo de vez en cuando. El servidor solo entrega los archivos de la app.
+
 ## Borrar tus datos
 
 Más → Borrar datos (por fechas o por ejercicio), o desinstala la app. En la web, borra los datos del sitio en tu
