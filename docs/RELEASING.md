@@ -10,8 +10,8 @@ cuando Pages esté configurado para usar GitHub Actions. La URL final será:
 ## Código de versión de Android
 
 Hasta la 0.41.0 todos los APK salieron con `versionCode` 1 (instalar uno encima de otro funciona, pero Google Play
-exige que crezca). Desde la próxima versión, el código sale de la versión: `mayor × 10000 + menor × 100 + parche`
-(0.41.1 → 4101, 1.0.0 → 10000), en `app.json`, con una prueba que falla si no coincide.
+exige que crezca). Desde la 0.42.0, el código sale de la versión: `mayor × 10000 + menor × 100 + parche`
+(0.42.0 → 4200, 1.0.0 → 10000), en `app.json`, con una prueba que falla si no coincide.
 
 ## APK de Android (uno solo, siempre el último)
 

@@ -26,3 +26,12 @@ export function dayLabel(dateKey: string, today = localDateKey()): string {
     .toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short" })
     .replace(/[.,]/g, "");
 }
+
+const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"];
+/** Fecha para leer dentro de un texto ("12 ene 2027"). Lo que no es una fecha queda igual. */
+export function longDate(dateKey: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match || !MONTHS[Number(match[2]) - 1]) return dateKey;
+  // Espacios que no se parten: la fecha no queda en dos líneas.
+  return `${Number(match[3])} ${MONTHS[Number(match[2]) - 1]} ${match[1]}`;
+}

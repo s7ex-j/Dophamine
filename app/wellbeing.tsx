@@ -15,7 +15,7 @@ import {
   getRecentWellbeingEntries,
   type WellbeingEntry,
 } from "@/src/features/wellbeing/wellbeing.repository";
-import { addDays, localDateKey } from "@/src/lib/dates";
+import { addDays, localDateKey, longDate } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
@@ -126,7 +126,7 @@ function WellbeingScreenContent() {
                     {emoji("stress", entry.stress)}
                   </Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={AppTheme.entryName}>{entry.date}</Text>
+                    <Text style={AppTheme.entryName}>{longDate(entry.date)}</Text>
                     {tags.length || text ? (
                       <Text style={AppTheme.entryDetail} numberOfLines={2}>
                         {[tags.join(", "), text].filter(Boolean).join(" · ")}

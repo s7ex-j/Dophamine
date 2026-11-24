@@ -1,3 +1,4 @@
+import { longDate } from "@/src/lib/dates";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Text } from "@/src/components/Text";
@@ -104,8 +105,8 @@ export function BackupCard({
       {weekly && !pending ? (
         <View style={{ gap: 4 }}>
           <Text style={AppTheme.hint}>
-            Copia semanal guardada en el teléfono el {weekly}. Si desinstalas la app se borra: compártela para
-            guardarla fuera.
+            Copia semanal guardada en el teléfono el {longDate(weekly)}. Si desinstalas la app se borra:
+            compártela para guardarla fuera.
           </Text>
           <LinkButton
             title="Compartir la copia semanal"

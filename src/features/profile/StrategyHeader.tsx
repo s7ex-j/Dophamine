@@ -14,7 +14,7 @@ import {
   type NutritionProfile,
 } from "@/src/features/profile/profile";
 import type { MetabolicAnalysis } from "@/src/features/tdee/tdee";
-import { localDateKey } from "@/src/lib/dates";
+import { localDateKey, longDate } from "@/src/lib/dates";
 import { formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
@@ -75,7 +75,7 @@ export function StrategyHeader({
             {progress.reached
               ? "Llegaste a tu peso meta."
               : eta?.direction === "toward"
-                ? `Faltan ${formatWeight(progress.remainingKg, unit, 1)}. A tu ritmo real llegarías hacia el ${eta.actualDate}.`
+                ? `Faltan ${formatWeight(progress.remainingKg, unit, 1)}. A tu ritmo real llegarías hacia el ${longDate(eta.actualDate ?? "")}.`
                 : eta?.direction === "away"
                   ? `Faltan ${formatWeight(progress.remainingKg, unit, 1)}. Tu ritmo real te está alejando de la meta.`
                   : `Faltan ${formatWeight(progress.remainingKg, unit, 1)}${progress.weeksLeft ? `, unas ${progress.weeksLeft} semanas al ritmo del plan` : ""}.`}
@@ -159,7 +159,7 @@ function DeadlineLine({
   return (
     <View style={{ gap: 6, borderTopWidth: 1, borderTopColor: AppTheme.colors.border, paddingTop: 12 }}>
       <Text style={AppTheme.label}>
-        {goal.label ?? "Meta con fecha"}: {formatWeight(goal.weightKg, unit, 1)} para el {goal.date}
+        {goal.label ?? "Meta con fecha"}: {formatWeight(goal.weightKg, unit, 1)} para el {longDate(goal.date)}
       </Text>
       <Text style={AppTheme.hint}>{status}</Text>
       {advice ? <Text style={AppTheme.hint}>{advice}</Text> : null}

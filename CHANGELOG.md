@@ -2,10 +2,22 @@
 
 ## Próxima versión
 
+Nada todavía.
+
+## 0.42.0 - 2026-11-24
+
 - **Web instalable (PWA), para iPhone:** la app completa en `/Dophamine/pwa/`, aparte del visor. Se instala desde Safari con "Agregar a pantalla de inicio" y abre sin conexión. Los datos van en IndexedDB (probado con más de 5 MB) y el respaldo sale por la hoja de compartir. En Safari sin instalar, primero explica cómo instalarla y qué no trae.
 - No trae recordatorios, Apple Health, widget, sueño por uso, cámara para códigos y etiquetas, dictado ni fotos de progreso. El código de barras se escribe a mano.
 - Bienvenida: el gráfico de Tendencia se rehízo con cuatro semanas de pesajes, escala, curva suavizada y el valor de hoy marcado.
 - Sitio y README: enlace para abrir en iPhone, cómo instalarla y en qué está la app nativa.
+- **Panel más ordenado:** arriba, los últimos siete días con su anillo de objetivos (tocar uno lleva a ese día) y el botón del calendario. La tarjeta del día tiene dos vistas que se deslizan, los anillos o un arco, y recuerda la última. "Registrar comida" queda justo debajo.
+- **Calendario:** cada día es un anillo que se llena con los seis objetivos. Al tocar un día se ven por separado, con su color y su dato, y desde ahí se abre en el Panel.
+- **Cierre del día:** "¿Cómo va tu día?" sale del Panel. Desde las 20:00, una vez, sube una hoja con los objetivos y las tres preguntas; se quita deslizando, tocando fuera o con "Ahora no".
+- Panel, calendario y cierre del día: no probados en un teléfono.
+- Colores revisados en los tres temas: agua y sueño tienen tono propio en los objetivos, y la prueba de contraste ahora también los mide.
+- Las fechas dentro de los textos se leen ("12 ene 2027") y no se parten en dos líneas.
+- **Código de versión de Android** calculado de la versión (4200), con una prueba que falla si no coincide.
+- **Más, rediseñada:** tu plan arriba, cuatro mosaicos con el dato de hoy (hábitos, bienestar, racha y medidas), el resto por grupos con ícono y los ajustes en la misma fila. Respaldo, Health Connect y exportar pasan a su propia pantalla. No probado en un teléfono.
 - En la web, los nombres de las pestañas ya no salen cortados.
 - `npm run pwa` la compila y `npm run e2e:pwa` la prueba en Chrome, con el servidor apagado. Comprobado en un iPhone: se instala, funciona y se ve bien.
 

@@ -50,6 +50,9 @@ const MAP: Record<string, [string, string]> = {
   "#F87171": ["#F7A8A8", "#C81E1E"],
   "#FBBF24": ["#F5D98B", "#8F5E06"],
   "#FB923C": ["#F7B89B", "#B03A0A"],
+  // Agua y sueño en los objetivos del día
+  "#22D3EE": ["#86E3DA", "#0E7490"],
+  "#F472B6": ["#F4B3D4", "#BE185D"],
   "#A78BFA": ["#C9B8F7", "#6D28D9"],
   // Fondos suaves de avisos
   "#16243A": ["#262C3D", "#DBE7FB"],

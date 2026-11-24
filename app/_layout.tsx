@@ -139,6 +139,8 @@ export default function RootLayout() {
             <Stack.Screen name="diet" options={{ headerShown: true, title: "Mi dieta" }} />
             <Stack.Screen name="link" options={{ headerShown: true, title: "Conexión directa" }} />
             <Stack.Screen name="health" options={{ headerShown: true, title: "Salud y restricciones" }} />
+            <Stack.Screen name="calendar" options={{ headerShown: true, title: "Calendario" }} />
+            <Stack.Screen name="data" options={{ headerShown: true, title: "Respaldo" }} />
             <Stack.Screen name="cleanup" options={{ headerShown: true, title: "Borrar datos" }} />
             <Stack.Screen name="achievements" options={{ headerShown: true, title: "Racha y logros" }} />
             <Stack.Screen name="week-share" options={{ headerShown: true, title: "Compartir mi semana" }} />

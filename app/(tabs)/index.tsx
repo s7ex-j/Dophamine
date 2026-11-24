@@ -42,7 +42,9 @@ import { AutoAdjustBanner, CheckInCard } from "@/src/features/reviews/CheckInSec
 import { useCheckIn } from "@/src/features/reviews/useCheckIn";
 import { TodaySection } from "@/src/features/dashboard/TodaySection";
 import { StreakBadge } from "@/src/features/streak/StreakCard";
-import { TermCheckIn } from "@/src/features/wellbeing/TermCheckIn";
+import { isClosingHour } from "@/src/features/calendar/calendar";
+import { takePickedDay } from "@/src/features/calendar/pickedDay";
+import { DayCloseSheet } from "@/src/features/wellbeing/DayCloseSheet";
 import { DietCoachCard } from "@/src/features/diet/DietCoachCard";
 import { getCoachToday, type CoachToday } from "@/src/features/diet/coach.data";
 import {
@@ -88,6 +90,14 @@ export default function DashboardScreen() {
   const [period, setPeriod] = useState<CycleStatus | null>(null);
   const [welcomed, setWelcomed] = useState<boolean | null>(null);
   const navigation = useNavigation();
+  // El día que se mira; el calendario lo cambia al volver con una fecha.
+  const [date, setDate] = useState(localDateKey());
+  useFocusEffect(
+    useCallback(() => {
+      const picked = takePickedDay();
+      if (picked) setDate(picked);
+    }, []),
+  );
 
   const load = useCallback(() => {
     getSetting(WELCOME_KEY).then((seen) => setWelcomed(Boolean(seen)));
@@ -105,7 +115,10 @@ export default function DashboardScreen() {
     ]).then(
       ([nextSnapshot, days, nights, savedLayout, nextStreak, nextWeekly, checked, dismissed, periods]) => {
         setPeriod(cycleStatus(readPeriods(periods), localDateKey()));
-        setOfferCheckIn(shouldOfferCheckIn(localDateKey(), checked.includes(localDateKey()), dismissed));
+        setOfferCheckIn(
+          isClosingHour(new Date().getHours()) &&
+            shouldOfferCheckIn(localDateKey(), checked.includes(localDateKey()), dismissed),
+        );
         setStreak(nextStreak);
         setWeekly(nextWeekly);
         setSnapshot(nextSnapshot);
@@ -289,6 +302,11 @@ export default function DashboardScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {streak ? <StreakBadge summary={streak} onPress={() => router.push("/achievements")} /> : null}
               <IconButton
+                icon="calendar-outline"
+                label="Abrir el calendario"
+                onPress={() => router.push({ pathname: "/calendar", params: { date } })}
+              />
+              <IconButton
                 icon={customizing ? "checkmark" : "options-outline"}
                 label="Personalizar el Panel"
                 onPress={() => setCustomizing(!customizing)}
@@ -300,7 +318,28 @@ export default function DashboardScreen() {
         {VIEWER && !VIEWER_WIDE ? <ViewerBanner /> : null}
         <AutoAdjustBanner snapshot={snapshot} controls={controls} />
         {controls.action === "propose" ? <CheckInCard snapshot={snapshot} controls={controls} /> : null}
-        {offerCheckIn && !VIEWER ? <TermCheckIn level={streak?.stage.level ?? 1} onDone={load} /> : null}
+        {offerCheckIn && compliance && !VIEWER ? (
+          <DayCloseSheet compliance={compliance} onDone={load} />
+        ) : null}
+        {VIEWER ? null : (
+          <TodaySection
+            profile={profile}
+            date={date}
+            onDate={setDate}
+            refresh={compliance}
+            onChanged={load}
+            action={
+              dietToday ? (
+                <DietCoachCard
+                  today={dietToday}
+                  onChanged={load}
+                  onOpenDiet={() => router.push("/diet")}
+                  onOpenMeals={() => router.push({ pathname: "/meals", params: { date } })}
+                />
+              ) : undefined
+            }
+          />
+        )}
         {period ? (
           <Pressable
             accessibilityRole="button"
@@ -313,15 +352,6 @@ export default function DashboardScreen() {
             <Text style={AppTheme.tileSubtitle}>{PHASE_NOTES[period.phase]}</Text>
           </Pressable>
         ) : null}
-        {dietToday && !VIEWER ? (
-          <DietCoachCard
-            today={dietToday}
-            onChanged={load}
-            onOpenDiet={() => router.push("/diet")}
-            onOpenMeals={() => router.push("/meals")}
-          />
-        ) : null}
-        {VIEWER ? null : <TodaySection profile={profile} onChanged={load} withMealsButton={!dietToday} />}
         <View style={[AppTheme.sectionHeader, { marginTop: 4 }]}>
           <Text style={AppTheme.sectionTitle}>Tu progreso</Text>
           <View style={{ width: 150 }}>

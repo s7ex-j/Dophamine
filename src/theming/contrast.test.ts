@@ -27,6 +27,9 @@ const TEXT = {
   amber: "#FBBF24",
   kcal: "#60A5FA",
   warning: "#FB923C",
+  violet: "#A78BFA",
+  water: "#22D3EE",
+  sleep: "#F472B6",
 };
 const THEMES: ThemeId[] = ["forest", "pastel", "light"];
 

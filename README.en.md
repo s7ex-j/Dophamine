@@ -22,10 +22,14 @@ every few days, suggests a small adjustment and explains why. No accounts, no se
 
 <table>
   <tr>
-    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Dashboard" width="200" /><br /><sub><b>Dashboard</b><br />What's left today and your progress</sub></td>
+    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Dashboard" width="200" /><br /><sub><b>Dashboard</b><br />What's left today and your last days</sub></td>
+    <td align="center"><img src="web/public/pantallas/calendario.webp" alt="Goal calendar" width="200" /><br /><sub><b>Calendar</b><br />Six daily goals at a glance</sub></td>
     <td align="center"><img src="web/public/pantallas/analisis.webp" alt="Strategy" width="200" /><br /><sub><b>Strategy</b><br />Your plan and the 3- or 7-day review</sub></td>
+  </tr>
+  <tr>
     <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Training" width="200" /><br /><sub><b>Training</b><br />Your week and the muscles you worked</sub></td>
     <td align="center"><img src="web/public/pantallas/dieta.webp" alt="Diet" width="200" /><br /><sub><b>Diet</b><br />Your diet by day, on a schedule</sub></td>
+    <td align="center"><img src="web/public/pantallas/mas.webp" alt="More" width="200" /><br /><sub><b>More</b><br />Your plan, your data and settings</sub></td>
   </tr>
 </table>
 
@@ -54,7 +58,7 @@ The scale moves with water, salt and glycogen, and a fixed formula can't know ho
 
 **Training.** One workout per day, templates by experience, ~610 exercises with images, set-by-set sessions with suggested load, records, supersets, warm-ups, mesocycles with deloads and a muscle map.
 
-**Sleep and wellbeing.** Sleep, water, mood, energy and stress, a three-tap check-in, menstrual cycle, body measurements and progress photos that never leave the phone.
+**Sleep and wellbeing.** Sleep, water, mood, energy and stress, a three-tap check-in at the end of the day, a calendar of six daily goals, menstrual cycle, body measurements and progress photos that never leave the phone.
 
 **Your progress on a computer.** Link your phone to the web with a QR code: the connection is encrypted device to device, with no server. The web only reads, in a wide or phone layout.
 

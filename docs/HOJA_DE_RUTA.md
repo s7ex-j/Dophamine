@@ -2,7 +2,7 @@
 
 Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-## Estado al 18 de noviembre de 2026 (versión 0.41.0, Expo SDK 58)
+## Estado al 24 de noviembre de 2026 (versión 0.42.0, Expo SDK 58)
 
 **Decisiones que mandan:**
 
@@ -21,14 +21,15 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 - **Reparto:** el objetivo de calorías y macros es el mismo todos los días, entrenes o no.
 - **Mapa muscular propio:** hecho desde cero. No copio código ni SVG de openGym (AGPL-3.0).
 - **Un solo APK publicado**, siempre el de la última versión (`dophamine.apk`, ver `docs/RELEASING.md`).
-- **Versiones:** la serie 0.x se cierra con el primer APK definitivo; lo siguiente va en la 1.0.0 y después.
+- **Versiones:** la 0.41.0 fue el primer APK definitivo. La 0.42.0 ordena el Panel y Más; lo siguiente grande va en la
+  1.0.0.
 
 **Lo que ya hace:**
 
 - Plan inicial completo (cuerpo, composición, actividad, entreno, ingesta conocida, meta, comidas por nombre o
   por número) y gasto inicial con varias fórmulas.
 - Panel como único lugar de registro: peso y composición, comida, sueño, agua, pasos, día incompleto, comidas
-  guardadas, racha con Term, chequeo breve de bienestar y resumen semanal.
+  guardadas, racha con Term, chequeo breve de bienestar al cerrar el día, calendario de objetivos y resumen semanal.
 - Comida: 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas, registro rápido, favoritos,
   código de barras, etiqueta con la cámara, dictado y búsqueda opcional en Open Food Facts.
 - Gasto real adaptativo y revisión cada 3 o 7 días; "Cómo se calcula" lo muestra paso a paso. Con 15 días
@@ -80,7 +81,7 @@ Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
 Con la 0.41.0 se cierra la serie 0.x: Health Connect se sincroniza solo una vez al día, el primer uso ofrece
 recordatorios e importación, hay una copia semanal dentro del teléfono y el APK solo lleva arquitecturas de teléfono.
 
-## 0.41.1 — Correcciones de datos (antes de la 1.0.0)
+## 0.42.1 — Correcciones de datos (antes de la 1.0.0)
 
 Encontradas en una revisión del código de la 0.41.0. Necesitan un APK nuevo.
 
@@ -88,7 +89,7 @@ Encontradas en una revisión del código de la 0.41.0. Necesitan un APK nuevo.
 |---|---|---|---|
 | 1 | Pasos y comida con agregación por día (`aggregateGroupByPeriod`) en lugar de sumar registros | `healthConnect.repository.ts` | Con dos apps (reloj y teléfono, Samsung Health y Google Fit) se cuentan dos veces |
 | 2 | Lectura paginada (`pageToken`) común para peso, grasa y sueño | `healthConnect.repository.ts` | Health Connect entrega como mucho 1000 registros por página |
-| 3 | `versionCode` calculado de la versión, con prueba | `app.json`, `docs/RELEASING.md` | Todos los APK salieron con el código 1; Google Play exige que crezca |
+| 3 | `versionCode` calculado de la versión, con prueba | `app.json`, `src/lib/version.test.ts` | Hecho en la 0.42.0 |
 | 4 | Al restaurar, quitar las fotos cuya imagen no está en el teléfono | `src/features/photos/`, restaurar respaldo | Hoy quedan referencias huérfanas que viajan en los respaldos siguientes |
 | 5 | Pruebas contra duplicados y reimportaciones de Health Connect | `healthConnect.test.ts` | Que la misma importación dos veces no cambie nada |
 
@@ -98,7 +99,7 @@ La idea: que Dophamine no solo registre, sino que ayude a entender cómo evoluci
 qué. Todo con los datos y piezas que ya existen: sin servidores, cuentas ni librerías pesadas (el APK de la 0.41.0
 pesa 113 MB y es la referencia).
 
-**Bloque A — Integridad de datos:** lo de la 0.41.1, si no salió antes.
+**Bloque A — Integridad de datos:** lo de la 0.42.1, si no salió antes.
 
 **Bloque B — Experiencia diaria**
 
@@ -123,6 +124,8 @@ pesa 113 MB y es la referencia).
   uso, widget, dictado, etiquetas con la cámara, fotos, conexión directa con la web.
 - Memoria y rendimiento en un teléfono de gama media; respaldo y restauración entre teléfonos; migración desde
   la 0.41.0 sin perder datos.
+- En la 0.42.0: deslizar entre anillos y arco, la tira de fechas, el calendario, y el cierre del día (bajar la hoja,
+  tocar fuera, escribir la nota con el teclado).
 - Publicar en Google Play.
 
 **No entra** (choca con las decisiones de arriba): nube obligatoria, cuentas, IA en servidores, redes sociales o

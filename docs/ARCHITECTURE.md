@@ -30,6 +30,8 @@ Los pendientes conocidos de esta parte están en la hoja de ruta.
 ```
 app/                      rutas (expo-router). Cada pantalla compone secciones; no calcula.
   (tabs)/index.tsx          Panel: "Hoy" (todo se anota aquí) y el progreso
+  calendar.tsx              Calendario: los seis objetivos de cada día
+  data.tsx                  Respaldo, Health Connect y exportar
   (tabs)/strategy.tsx       Estrategia: plan, reparto de calorías, revisión, "Cómo se calcula"
   (tabs)/training.tsx       Entreno: semana, entreno del día, mapa muscular, volumen
   (tabs)/more.tsx           Más: secciones, respaldo, exportar, borrar datos

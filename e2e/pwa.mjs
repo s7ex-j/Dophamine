@@ -187,7 +187,7 @@ try {
     ["/training", "Empezar"],
     ["/insight?metric=weight", "Tendencia actual"],
     ["/add-food?slot=lunch", "Buscar alimento"],
-    ["/more", "Todo lo demás"],
+    ["/more", "Tus datos"],
   ]) {
     await page.goto(`${base}${path}`, { waitUntil: "load" });
     await ready();

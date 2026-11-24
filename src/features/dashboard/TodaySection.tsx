@@ -6,7 +6,7 @@ import {
   screenEvents,
 } from "@/modules/phone-usage";
 import { haptic } from "@/src/lib/haptics";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -23,7 +23,8 @@ import {
 import { buildBodyInput, emptyForm, formFromRecord, type BodyForm } from "@/src/features/biometrics/dailyLog";
 import { leanMassKg } from "@/src/features/composition/composition";
 import { dailyTip } from "@/src/features/dashboard/dashboard";
-import { DaySummary } from "@/src/features/nutrition/MealSections";
+import { DayStrip } from "@/src/features/calendar/DayStrip";
+import { DaySummary } from "@/src/features/nutrition/DaySummary";
 import { totalsOf, type MealEntry } from "@/src/features/nutrition/meals";
 import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
@@ -34,7 +35,7 @@ import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/slee
 import type { Routine } from "@/src/features/training/training.plans";
 import { getRoutine } from "@/src/features/training/training.repository";
 import { formatWater, waterTargetMl } from "@/src/features/water/water";
-import { addDays, dayLabel, localDateKey } from "@/src/lib/dates";
+import { localDateKey } from "@/src/lib/dates";
 import { formatDuration, normalizeTime } from "@/src/lib/time";
 import { formatWeight, toKg } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
@@ -49,16 +50,23 @@ type Editor = "weight" | "sleep" | null;
  */
 export function TodaySection({
   profile,
+  date,
+  onDate,
+  refresh,
   onChanged,
-  withMealsButton = true,
+  action,
 }: {
   profile: NutritionProfile;
   onChanged: () => void;
-  /** Con dieta cargada, registrar va por la tarjeta de la dieta: aquí no se repite el botón. */
-  withMealsButton?: boolean;
+  /** El día que se mira (lo eligen la tira de fechas y el calendario). */
+  date: string;
+  onDate: (date: string) => void;
+  /** Cambia en cada lectura del Panel: la tira vuelve a leer sus anillos. */
+  refresh: unknown;
+  /** Con dieta cargada, registrar va por su tarjeta en lugar del botón. */
+  action?: ReactNode;
 }) {
   const router = useRouter();
-  const [date, setDate] = useState(localDateKey());
   const [day, setDay] = useState<DailyBiometrics | null>(null);
   const [entries, setEntries] = useState<MealEntry[]>([]);
   const [lastWeight, setLastWeight] = useState<number | null>(null);
@@ -164,29 +172,7 @@ export function TodaySection({
 
   return (
     <View style={{ gap: 12 }}>
-      <View style={AppTheme.dateNav}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Día anterior"
-          onPress={() => setDate(addDays(date, -1))}
-          style={AppTheme.dateNavButton}
-        >
-          <Ionicons name="chevron-back" size={20} color={AppTheme.colors.accentText} />
-        </Pressable>
-        <View style={AppTheme.dateNavCenter}>
-          <Text style={AppTheme.dateNavTitle}>{dayLabel(date)}</Text>
-          <Text style={AppTheme.hint}>{date}</Text>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Día siguiente"
-          disabled={date >= today}
-          onPress={() => setDate(addDays(date, 1))}
-          style={[AppTheme.dateNavButton, date >= today && AppTheme.dateNavButtonDisabled]}
-        >
-          <Ionicons name="chevron-forward" size={20} color={AppTheme.colors.accentText} />
-        </Pressable>
-      </View>
+      <DayStrip date={date} onChange={onDate} refresh={refresh} />
 
       {dayTargets.offset ? (
         <Text style={[AppTheme.hint, { paddingHorizontal: 4 }]}>
@@ -195,15 +181,35 @@ export function TodaySection({
         </Text>
       ) : null}
       <DaySummary totals={totals} targets={dayTargets} />
-      {date === today && dailyTip(totals, dayTargets, new Date().getHours()) ? (
+      {date === today && totals.kcal > 0 && dailyTip(totals, dayTargets, new Date().getHours()) ? (
         <View style={[AppTheme.banner, { paddingVertical: 10 }]}>
           <Text style={AppTheme.bannerText}>{dailyTip(totals, dayTargets, new Date().getHours())}</Text>
         </View>
       ) : null}
 
+      {action ?? (
+        <View style={{ gap: 6 }}>
+          <Button
+            title="Registrar comida"
+            onPress={() => router.push({ pathname: "/meals", params: { date } })}
+          />
+          {entries.length || day?.fasting || day?.partial ? (
+            <Text style={[AppTheme.hint, { textAlign: "center" }]}>
+              {entries.length
+                ? `${entries.length} ${entries.length === 1 ? "alimento registrado" : "alimentos registrados"} · ${totals.kcal} kcal`
+                : day?.fasting
+                  ? "Día de ayuno"
+                  : "Día"}
+              {day?.partial ? (entries.length || day.fasting ? " · incompleto" : " incompleto") : ""}
+            </Text>
+          ) : null}
+        </View>
+      )}
+
       <View style={AppTheme.quickRow}>
         <QuickTile
           icon="scale-outline"
+          color={AppTheme.colors.violet}
           label="Peso"
           value={day?.weightKg ? formatWeight(day.weightKg, unit) : "Anotar"}
           active={editor === "weight"}
@@ -212,8 +218,9 @@ export function TodaySection({
         />
         <QuickTile
           icon="moon-outline"
+          color={AppTheme.colors.blue}
           label="Sueño"
-          value={nightMinutes ? formatDuration(nightMinutes) : "Anotar"}
+          value={nightMinutes ? formatDuration(nightMinutes).replace(/(h \d+) min$/, "$1") : "Anotar"}
           active={editor === "sleep"}
           done={Boolean(nightMinutes)}
           onPress={() => toggle("sleep")}
@@ -223,7 +230,12 @@ export function TodaySection({
             <Ionicons name="water-outline" size={16} color={AppTheme.colors.blue} />
             <Text style={AppTheme.quickLabel}>Agua</Text>
           </View>
-          <Text style={AppTheme.quickValue}>{formatWater(waterMl)}</Text>
+          <View>
+            <Text style={AppTheme.quickValue} numberOfLines={1}>
+              {formatWater(waterMl)}
+            </Text>
+            <Text style={AppTheme.quickHint}>de {formatWater(waterTarget)}</Text>
+          </View>
           <View style={[AppTheme.progressTrack, { height: 6 }]}>
             <View
               style={{
@@ -239,16 +251,15 @@ export function TodaySection({
               accessibilityRole="button"
               accessibilityLabel="Quitar un vaso de agua"
               onPress={() => water(-250)}
-              hitSlop={6}
+              hitSlop={11}
             >
               <Ionicons name="remove-circle-outline" size={22} color={AppTheme.colors.muted} />
             </Pressable>
-            <Text style={AppTheme.quickHint}>de {formatWater(waterTarget)}</Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Agregar un vaso de agua"
               onPress={() => water(250)}
-              hitSlop={6}
+              hitSlop={11}
             >
               <Ionicons name="add-circle" size={22} color={AppTheme.colors.blue} />
             </Pressable>
@@ -388,29 +399,13 @@ export function TodaySection({
       {message ? (
         <Text style={message.error ? AppTheme.errorText : AppTheme.body}>{message.text}</Text>
       ) : null}
-
-      {withMealsButton ? (
-        <View style={{ gap: 6 }}>
-          <Button
-            title="Registrar comida"
-            onPress={() => router.push({ pathname: "/meals", params: { date } })}
-          />
-          <Text style={[AppTheme.hint, { textAlign: "center" }]}>
-            {entries.length
-              ? `${entries.length} ${entries.length === 1 ? "alimento registrado" : "alimentos registrados"} · ${totals.kcal} kcal`
-              : day?.fasting
-                ? "Día de ayuno"
-                : "Nada registrado todavía"}
-            {day?.partial ? " · incompleto" : ""}
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
 }
 
 function QuickTile({
   icon,
+  color,
   label,
   value,
   active,
@@ -418,6 +413,7 @@ function QuickTile({
   onPress,
 }: {
   icon: IconName;
+  color: string;
   label: string;
   value: string;
   active: boolean;
@@ -432,13 +428,13 @@ function QuickTile({
       style={[AppTheme.quickTile, done && AppTheme.quickTileDone, active && AppTheme.quickTileActive]}
     >
       <View style={AppTheme.legendRow}>
-        <Ionicons name={icon} size={16} color={AppTheme.colors.accent} />
+        <Ionicons name={icon} size={16} color={color} />
         <Text style={AppTheme.quickLabel}>{label}</Text>
       </View>
-      <Text style={AppTheme.quickValue}>{value}</Text>
-      <Text style={AppTheme.quickHint}>
-        {active ? "Cerrar" : done ? "Tocar para editar" : "Tocar para anotar"}
+      <Text style={AppTheme.quickValue} numberOfLines={1} adjustsFontSizeToFit>
+        {value}
       </Text>
+      <Text style={AppTheme.quickHint}>{active ? "Cerrar" : done ? "Editar" : "Sin dato"}</Text>
     </Pressable>
   );
 }

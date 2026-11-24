@@ -19,7 +19,7 @@ import {
 } from "@/src/features/profile/profile";
 import type { MetabolicAnalysis } from "@/src/features/tdee/tdee";
 import { convertWeight, formatWeight } from "@/src/lib/units";
-import { localDateKey } from "@/src/lib/dates";
+import { localDateKey, longDate } from "@/src/lib/dates";
 import { AppTheme } from "@/src/theme";
 
 // Tarjetas de progreso: meta de peso, tendencia, gasto y composición corporal.
@@ -59,7 +59,7 @@ export function GoalProgressCard({
       {eta ? (
         <Text style={AppTheme.body}>
           {eta.direction === "toward"
-            ? `Al ritmo real de tus últimas semanas llegarías hacia el ${eta.actualDate} (~${eta.actualWeeks} semanas).`
+            ? `Al ritmo real de tus últimas semanas llegarías hacia el ${longDate(eta.actualDate ?? "")} (~${eta.actualWeeks} semanas).`
             : eta.direction === "away"
               ? "Al ritmo real de tus últimas semanas te estás alejando de la meta: revisa tu plan o tu registro."
               : "Tu peso está casi estable: a este ritmo no hay fecha estimada."}

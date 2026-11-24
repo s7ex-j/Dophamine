@@ -82,6 +82,14 @@ async function main() {
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 844 });
   await page.evaluateOnNewDocument(() => localStorage.setItem("dophamine.web-mode", "full"));
+  // De noche el Panel abre la hoja de cierre del día: aquí no pasa de las 19 h, salvo en su paso.
+  await page.evaluateOnNewDocument(() => {
+    const real = Date.prototype.getHours;
+    Date.prototype.getHours = function () {
+      if (window.name === "noche") return 21;
+      return Math.min(19, real.call(this));
+    };
+  });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
@@ -465,7 +473,7 @@ async function main() {
 
   await step("panel · hoy: un día solo con comida, sin pesaje, y borrarlo", async () => {
     await open("/");
-    await pressLabel("Día anterior");
+    await page.click('[aria-label^="Ayer,"]');
     await waitText("Ayer");
     await press("Registrar comida");
     await waitText("Nada registrado todavía.");
@@ -573,7 +581,7 @@ async function main() {
 
   await step("recordatorios: 4 comidas toda la semana", async () => {
     await open("/more");
-    await press("Recordatorios de comidas");
+    await press("Recordatorios");
     await waitText("Avisar 5 min antes");
     await pressLabel("Recordatorios encendidos");
     await press("4");
@@ -806,7 +814,7 @@ async function main() {
       await waitText("Tu progreso");
       await shot("panel", true);
       await open("/more");
-      await waitText("Todo lo demás");
+      await waitText("Comida y salud");
       await shot("mas", true);
     }
     await open("/nutrients");
@@ -831,6 +839,8 @@ async function main() {
     const session = await page.createCDPSession();
     await session.send("Page.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
     await open("/more");
+    await press("Respaldo");
+    await waitText("Exportar a CSV");
     await press("Diario (peso, comida, sueño)");
     for (
       let attempt = 0;
@@ -962,6 +972,51 @@ async function main() {
     );
   });
 
+  await step("panel: calendario, dos vistas del día y cierre de noche", async () => {
+    await open("/");
+    await pressLabel("Vista de arco");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings.day_view === 1,
+      {},
+      STORE_KEY,
+    );
+    await shot("panel-arco");
+    await pressLabel("Vista de anillos");
+    await page.waitForFunction(
+      (key) => JSON.parse(localStorage.getItem(key)).settings.day_view === 0,
+      {},
+      STORE_KEY,
+    );
+    await pressLabel("Abrir el calendario");
+    await waitText("Ver y editar este día");
+    await shot("calendario", true);
+    await pressLabel("Mes anterior");
+    await press("Ver y editar este día");
+    await waitText("Volver a hoy");
+    await press("Volver a hoy");
+    await page.waitForFunction(() => !document.body.innerText.includes("Volver a hoy"));
+    // De noche sube la hoja; "Ahora no" la quita y no vuelve a salir ese día.
+    await page.evaluate(() => (window.name = "noche"));
+    await open("/");
+    await waitText("Así va tu");
+    await shot("cierre");
+    await press("Ahora no");
+    await page.waitForFunction(
+      (key, date) => JSON.parse(localStorage.getItem(key)).settings.checkin_dismissed === date,
+      {},
+      STORE_KEY,
+      dateKey(),
+    );
+    await open("/");
+    await waitText("Registrar comida");
+    await new Promise((done) => setTimeout(done, 1500));
+    assert(
+      !(await page.evaluate(() => document.body.innerText.includes("Así va tu"))),
+      "La hoja volvió a salir.",
+    );
+    await page.evaluate(() => (window.name = ""));
+  });
+
   await step("más → racha y logros", async () => {
     await open("/more");
     await press("Racha y logros");
@@ -997,7 +1052,7 @@ async function main() {
     const downloads = mkdtempSync(join(tmpdir(), "dophamine-e2e-"));
     const session = await page.createCDPSession();
     await session.send("Page.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
-    await open("/more");
+    await open("/data");
     const before = await store();
     await press("Descargar respaldo");
     await waitText("Respaldo listo");
@@ -1012,7 +1067,7 @@ async function main() {
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
     assert(backup.app === "dophamine" && backup.format === 10, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
-    await open("/more");
+    await open("/data");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);
     await chooser.accept([join(downloads, file)]);
     await waitText("Restaurar reemplaza todo");
@@ -1194,11 +1249,75 @@ async function main() {
         .join(", ")}`,
     );
     if (process.env.PANTALLAS) {
-      await pantalla("hoy", "/", { scrollTo: "Tu progreso" });
       await pantalla("analisis", "/strategy");
-      // La dieta de ejemplo con horario semanal (la plantilla descargable del sitio).
       const saved = await store();
       const { diet_plan: _plan, diet_day_state: _state, ...settings } = saved.settings;
+      // Un mes de ejemplo con días completos y días a medias, para el Panel, el calendario y Más.
+      const month = Array.from({ length: 45 }, (_, index) => 44 - index);
+      const hit = (index, every) => (index + 2) % every !== 0;
+      const example = {
+        ...saved,
+        biometrics: month.map((ago) => ({
+          id: `demo-${ago}`,
+          date: daysAgo(ago),
+          weightKg: hit(ago, 5)
+            ? Math.round((78.4 + ago * 0.06 + Math.sin(ago * 2.1) * 0.4) * 10) / 10
+            : null,
+          caloriesIn: ago === 0 ? 1180 : hit(ago, 4) ? 2230 + ((ago * 37) % 130) : 2750,
+          proteinG: ago === 0 ? 88 : 158,
+          carbsG: ago === 0 ? 124 : 240,
+          fatsG: ago === 0 ? 34 : 66,
+          waterMl: ago === 0 ? 1750 : hit(ago, 6) ? 3750 : 1500,
+        })),
+        meals: [],
+        sleep: month.map((ago) => ({
+          id: `noche-${ago}`,
+          date: daysAgo(ago),
+          bedtime: ago !== 1 && hit(ago, 7) ? "23:00" : "01:30",
+          wakeTime: "06:45",
+          quality: 4,
+          source: "manual",
+        })),
+        wellbeing: month
+          .filter((ago) => ago > 0 && hit(ago, 8))
+          .map((ago) => ({
+            id: `animo-${ago}`,
+            date: daysAgo(ago),
+            mood: 4,
+            energy: 4,
+            stress: 2,
+            sleepHours: null,
+            note: "",
+          })),
+        workouts: month
+          .filter((ago) => ago > 0 && hit(ago, 9))
+          .map((ago) => ({
+            id: `entreno-${ago}`,
+            name: "Empuje",
+            completedAt: `${daysAgo(ago)}T19:00:00`,
+            sets: [],
+          })),
+        settings: {
+          ...settings,
+          body_measurements: [
+            { date: daysAgo(40), waistCm: 85 },
+            { date: daysAgo(2), waistCm: 82 },
+          ],
+        },
+        profile: { ...saved.profile, startWeightKg: 81.5, goalWeightKg: 74, calorieTarget: 2300 },
+      };
+      await seed(example);
+      await pantalla("hoy", "/");
+      await pantalla("calendario", "/calendar", { prepare: () => page.click('[aria-label^="Ayer,"]') });
+      await pantalla("mas", "/more");
+      // Los otros temas, solo para revisarlos a ojo.
+      for (const theme of ["pastel", "light"]) {
+        await seed({ ...example, settings: { ...example.settings, app_theme: theme } });
+        await pantalla(`${theme}-panel`, "/");
+        await pantalla(`${theme}-calendario`, "/calendar");
+        await pantalla(`${theme}-arco`, "/", { prepare: () => pressLabel("Vista de arco") });
+      }
+      // La dieta de ejemplo con horario semanal (la plantilla descargable del sitio).
       await seed({ ...saved, settings });
       await pantalla("dieta", "/diet", {
         prepare: async () => {
@@ -1276,7 +1395,7 @@ async function main() {
 
     // Tema: elegir Pastel recarga la app con otros colores; luego se vuelve a Bosque.
     await open("/more");
-    await waitText("Estilo de la app");
+    await waitText("Unidad de peso");
     const before = await page.evaluate(
       () => getComputedStyle(document.body.querySelector("div")).backgroundColor,
     );
@@ -1284,7 +1403,7 @@ async function main() {
       page.waitForNavigation({ timeout: 20000 }).catch(() => null),
       pressLabel("Tema Pastel"),
     ]);
-    await waitText("Estilo de la app");
+    await waitText("Unidad de peso");
     assert((await store()).settings.app_theme === "pastel", "No se guardó el tema.");
     const background = await page.evaluate(() => {
       const colors = [...document.querySelectorAll("div")].map(
@@ -1297,7 +1416,7 @@ async function main() {
       page.waitForNavigation({ timeout: 20000 }).catch(() => null),
       pressLabel("Tema Bosque"),
     ]);
-    await waitText("Estilo de la app");
+    await waitText("Unidad de peso");
     assert((await store()).settings.app_theme === "forest", "No se volvió al tema Bosque.");
   });
 
@@ -1445,7 +1564,7 @@ async function main() {
 
       // 2. El teléfono lo recibe y muestra el suyo.
       await open("/more");
-      await press("Conexión directa por código QR");
+      await press("Conectar con la web");
       await waitText("Lee el código de la web");
       await fill("Código de la web", offer);
       await press("Conectar");

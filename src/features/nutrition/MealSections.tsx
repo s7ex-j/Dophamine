@@ -1,4 +1,3 @@
-import Svg, { Circle, G } from "react-native-svg";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { ENTER, EXIT, SETTLE } from "@/src/components/motion";
 import Animated from "react-native-reanimated";
@@ -8,7 +7,6 @@ import { Pressable, View } from "react-native";
 import { Text, TextInput } from "@/src/components/Text";
 
 import { StackBar } from "@/src/components/charts";
-import { CountUp, ProgressArc } from "@/src/components/motion";
 import { IconButton, LinkButton, type IconName } from "@/src/components/ui";
 import { stateLabels, type Food, type Nutrients } from "@/src/features/nutrition/foods";
 import { isEstimate, type MealEntry, type MealSlot } from "@/src/features/nutrition/meals";
@@ -26,117 +24,6 @@ const ICONS: Record<string, IconName> = {
 };
 /** Icono de un momento del día; las comidas por número usan el mismo. */
 export const slotIcon = (slot: MealSlot): IconName => ICONS[slot] ?? "nutrition-outline";
-
-type Targets = { calories: number; protein: number; carbs: number; fats: number } | null;
-
-/** Anillo de calorías y barras de macros del día. */
-export function DaySummary({ totals, targets }: { totals: Nutrients; targets: Targets }) {
-  const { colors } = AppTheme;
-  const remaining = targets ? targets.calories - totals.kcal : 0;
-  const rings = [
-    {
-      label: "Calorías",
-      value: totals.kcal,
-      target: targets?.calories,
-      color: remaining < 0 ? colors.coral : colors.kcal,
-      unit: "",
-    },
-    {
-      label: "Proteína",
-      value: totals.proteinG,
-      target: targets?.protein,
-      color: colors.protein,
-      unit: " g",
-    },
-    { label: "Carbos", value: totals.carbsG, target: targets?.carbs, color: colors.carbs, unit: " g" },
-    { label: "Grasas", value: totals.fatsG, target: targets?.fats, color: colors.fats, unit: " g" },
-  ];
-  const size = 92;
-  // La cifra del día: lo que queda (o lo que sobra) frente a la meta; sin meta, lo comido.
-  const over = remaining < 0;
-  const figure = targets ? Math.abs(remaining) : totals.kcal;
-  const figureLabel = !targets ? "Comiste" : over ? "Te pasaste por" : "Te quedan";
-  return (
-    <View style={[AppTheme.card, { gap: 16 }]}>
-      <View style={[AppTheme.iconRow, { gap: 16 }]}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={AppTheme.hint}>{figureLabel}</Text>
-          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
-            <CountUp value={figure} style={[AppTheme.dayFigure, over && { color: colors.coral }]} />
-            <Text style={AppTheme.dayFigureUnit}>kcal</Text>
-          </View>
-          {targets ? (
-            <Text style={AppTheme.hint}>
-              {Math.round(totals.kcal)} de {targets.calories} kcal
-            </Text>
-          ) : null}
-        </View>
-        <Svg
-          width={size}
-          height={size}
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-        >
-          {rings.map((ring, index) => {
-            const stroke = index === 0 ? 8 : 5;
-            const radius = size / 2 - 5 - (index === 0 ? 0 : 9 + (index - 1) * 7);
-            const done = ring.target ? Math.min(1, ring.value / ring.target) : 0;
-            return (
-              <G key={ring.label}>
-                <Circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke={ring.color}
-                  strokeOpacity={0.15}
-                  strokeWidth={stroke}
-                  fill="none"
-                />
-                <ProgressArc
-                  cx={size / 2}
-                  cy={size / 2}
-                  radius={radius}
-                  progress={done}
-                  delay={index * 90}
-                  stroke={ring.color}
-                  strokeWidth={stroke}
-                  fill="none"
-                  strokeLinecap="round"
-                  transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                />
-              </G>
-            );
-          })}
-        </Svg>
-      </View>
-      <View style={{ gap: 8 }}>
-        {rings.slice(1).map((ring) => (
-          <View key={ring.label} style={AppTheme.legendRow}>
-            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: ring.color }} />
-            <Text style={[AppTheme.legendLabel, { flex: 1 }]}>{ring.label}</Text>
-            <Text style={AppTheme.legendValue}>
-              {Math.round(ring.value)}
-              {ring.target ? (
-                <Text style={AppTheme.macroTarget}>
-                  {" "}
-                  / {ring.target}
-                  {ring.unit}
-                </Text>
-              ) : (
-                ring.unit
-              )}
-            </Text>
-          </View>
-        ))}
-        {totals.alcoholG ? (
-          <Text style={AppTheme.hint}>
-            Alcohol: {totals.alcoholG} g ({Math.round(totals.alcoholG * 7)} kcal, fuera de los macros)
-          </Text>
-        ) : null}
-      </View>
-    </View>
-  );
-}
 
 /** Una comida del día: encabezado con icono y total, y cada alimento en su fila. */
 /** Guardar los alimentos de un momento como una comida propia, para repetirla con un toque. */

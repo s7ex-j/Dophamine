@@ -40,7 +40,7 @@ import {
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
-import { localDateKey } from "@/src/lib/dates";
+import { localDateKey, longDate } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { formatWeight } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
@@ -174,7 +174,7 @@ export default function PhotosScreen() {
                       source={{ uri: photoUri(photo.file) ?? undefined }}
                       style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 12 }}
                     />
-                    <Text style={AppTheme.hint}>{photo.date}</Text>
+                    <Text style={AppTheme.hint}>{longDate(photo.date)}</Text>
                   </View>
                 ))}
               </View>
