@@ -63,6 +63,20 @@ const base64ToHex = (text: string) => {
 };
 
 const isIpv4 = (host: string) => /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+const isIpv6 = (host: string) => {
+  const halves = host.split("::");
+  const groups = halves.flatMap((half) => (half ? half.split(":") : []));
+  if (halves.length > 2 || !groups.every((group) => /^[0-9A-Fa-f]{1,4}$/.test(group))) return false;
+  return halves.length === 2 ? groups.length < 8 : groups.length === 8;
+};
+// Una dirección que se puede escribir en el SDP: IPv4, IPv6 o un nombre `.local` (los que usa el navegador).
+const isHost = (host: string) =>
+  isIpv4(host)
+    ? host.split(".").every((part) => Number(part) <= 255)
+    : host.endsWith(".local")
+      ? /^[0-9A-Za-z-]{1,63}\.local$/.test(host)
+      : isIpv6(host);
+const isPort = (port: string) => /^\d{1,5}$/.test(port) && Number(port) > 0 && Number(port) < 65536;
 const isPrivate = (host: string) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
 // Orden de preferencia: red local IPv4, otras IPv4, nombres .local y al final IPv6.
 const rank = (host: string) => (isPrivate(host) ? 0 : isIpv4(host) ? 1 : host.endsWith(".local") ? 2 : 3);
@@ -84,6 +98,7 @@ export function readSdp(sdp: string, type: SignalType): Signal {
       const [, component, protocol, , host, port, , kind] = line.split(" ");
       if (component !== "1" || protocol.toLowerCase() !== "udp" || kind !== "host") return [];
       if (host.startsWith("fe80") || host === "127.0.0.1" || host === "::1") return [];
+      if (!isHost(host) || !isPort(port)) return [];
       const key = `${host}:${port}`;
       if (seen.has(key)) return [];
       seen.add(key);
@@ -166,26 +181,25 @@ export function unpackSignal(code: string, expected?: SignalType, now = Date.now
     );
   const fingerprint = base64ToHex(print);
   const setup = (Object.keys(SETUP_CODES) as Signal["setup"][]).find((key) => SETUP_CODES[key] === setupCode);
-  const candidates = list
-    .split(",")
-    .filter(Boolean)
-    .map((item) => {
-      const at = item.indexOf("@");
-      return { host: item.slice(at + 1), port: Number(item.slice(0, at)) };
-    });
+  const items = list.split(",").filter(Boolean);
+  // El otro lado nunca manda más: un código con más direcciones no lo hizo Dophamine.
+  if (items.length > MAX_CANDIDATES)
+    throw new LinkError("Ese código trae demasiadas direcciones. Pide uno nuevo en la otra pantalla.");
+  const addresses = items.map((item) => {
+    const at = item.indexOf("@");
+    return { host: item.slice(at + 1), port: item.slice(0, Math.max(0, at)) };
+  });
   if (
     !ufrag ||
     !pwd ||
     fingerprint.length !== 64 ||
     !setup ||
-    candidates.some(
-      (candidate) =>
-        !/^[0-9A-Za-z.:-]+$/.test(candidate.host) || !(candidate.port > 0 && candidate.port < 65536),
-    ) ||
+    addresses.some(({ host, port }) => !isHost(host) || !isPort(port)) ||
     !/^[0-9A-Za-z+/]+$/.test(ufrag) ||
     !/^[0-9A-Za-z+/]+$/.test(pwd)
   )
     throw new LinkError("El código está incompleto. Vuelve a leerlo.");
+  const candidates = addresses.map(({ host, port }) => ({ host, port: Number(port) }));
   if (!candidates.length)
     throw new LinkError("El otro dispositivo no informó ninguna dirección de red. Revisa que tenga Wi-Fi.");
   return { type, ufrag, pwd, fingerprint, setup, candidates, issuedAt };

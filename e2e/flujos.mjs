@@ -317,9 +317,7 @@ async function main() {
     await waitText("Gasto estimado");
     await waitText("Metabolismo basal");
     await press("Crear mi plan");
-    // Último paso de la primera vez: recordatorios y Health Connect, que se pueden dejar para después.
-    await waitText("Tu plan está listo.");
-    await press("Empezar");
+    // En la web no hay recordatorios ni Health Connect: tras el plan se entra directo al Panel.
     await waitText("Nutrición y metas");
     const { profile, biometrics } = await store();
     assert(profile.calorieTarget >= 1200, "El plan no tiene objetivo calórico.");
@@ -1185,9 +1183,49 @@ async function main() {
     await waitText("Motor de autoajuste");
     await waitText("Activo");
     await open("/algorithm");
+    await waitText("La cuenta");
+    await waitText("Gastas, al día");
+    await waitText("Lo que no puede saber");
+    await waitText("Cuánto acierta");
+    await press("Energía de cada kilo");
+    await waitText("Convierte kilos en calorías");
+    if (process.env.SHOTS) {
+      await page.setViewport({ width: 390, height: 2600 });
+      await shot("como-se-calcula");
+      await page.setViewport({ width: 390, height: 844 });
+    }
     await waitText("máxima verosimilitud");
     await shot("algoritmo");
-    const noise = await page.$('[aria-label^="Ruido: "]');
+    // Con diez semanas de datos compara lo que esperaba con lo que pasó.
+    const long = await store();
+    const last = long.biometrics.at(-1);
+    await seed({
+      ...long,
+      biometrics: Array.from({ length: 71 }, (_, index) => {
+        const day = new Date();
+        day.setDate(day.getDate() - (70 - index));
+        const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+        return {
+          ...last,
+          id: `largo${index}`,
+          date,
+          caloriesIn: 2300,
+          partial: false,
+          weightKg: 80 - index * 0.07 + (index % 3) * 0.2,
+        };
+      }),
+    });
+    await open("/algorithm");
+    await waitText("Error medio a 14 días");
+    await waitText("acierta más");
+    if (process.env.SHOTS) {
+      await page.setViewport({ width: 390, height: 2900 });
+      await shot("acierto");
+      await page.setViewport({ width: 390, height: 844 });
+    }
+    await seed(long);
+    await open("/algorithm");
+    const noise = await page.waitForSelector('[aria-label^="Ruido: "]');
     assert(noise, "La red de Cómo se calcula no muestra el nodo de ruido.");
     await noise.click();
     await waitText("sin motivo");

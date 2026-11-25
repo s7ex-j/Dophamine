@@ -8,7 +8,7 @@ import { getBiometricsWindow, type DailyBiometrics } from "@/src/features/biomet
 import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting } from "@/src/features/settings/settings.repository";
-import { analyzeMetabolism, rangeText, weeklyRecommendation } from "@/src/features/tdee/tdee";
+import { analyzeMetabolism, bodyPriorOf, rangeText, weeklyRecommendation } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
 import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { CompositionCard } from "@/src/features/dashboard/ProgressSections";
@@ -47,6 +47,7 @@ export default function AnalysisScreen() {
     history,
     asOf: VIEWER ? undefined : localDateKey(),
     planStart: profile?.startDate,
+    body: bodyPriorOf(profile),
   });
   const points = analysis.points.slice(-14);
   const columns = trendColumns(points);

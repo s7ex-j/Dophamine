@@ -143,7 +143,8 @@ export function contextualCheckIn(
     );
 
   // Ritmo buscado, más lento cerca de la meta.
-  let offset = goalCalorieOffset(profile, currentKg);
+  // Con la misma energía por kilo con que se midió el gasto: si no, yendo justo al ritmo se propondría cambiar.
+  let offset = goalCalorieOffset(profile, currentKg, analysis.energyPerKg);
   const targetRate = targetWeeklyRateKg(profile, currentKg);
   if (goal && targetRate) {
     const factor = taperFactor(goal - currentKg, targetRate);

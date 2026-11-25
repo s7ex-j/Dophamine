@@ -4,6 +4,21 @@
 
 Nada todavía.
 
+## 0.42.2 - 2026-11-25
+
+- **Cómo se calcula, reescrito:** empieza con la cuenta central y tus números (lo que comes, lo que cambia tu peso y lo que gastas), sigue con los siete pasos desplegables, el mapa y lo que el cálculo no puede saber.
+- **Energía por kilo:** al bajar de peso sin entrenar fuerza (menos de dos días por semana) y con % de grasa anotado, ya no parte de 7700 kcal/kg sino de la ecuación de Forbes: con menos grasa, más de lo que se pierde es masa magra. Puede bajar el gasto estimado (unas 90 kcal a 80 kg con 20 % de grasa y 0.5 kg por semana). Quien entrena fuerza, sube de peso o no tiene esos datos sigue igual.
+- **Revisión:** el ajuste de la meta usa la misma energía por kilo que el gasto. Antes usaba siempre 7700 y, con composición medida, podía proponer un cambio aunque ya fueras al ritmo.
+- **Cuánto acierta:** en Cómo se calcula, el peso que el motor esperaba a 14 días frente al que marcó la báscula, con solo lo que se sabía entonces y al lado de suponer que el peso no cambia. Se recalcula de los registros y no cambia el plan.
+- **Pesaje:** al anotar el peso se explica por qué conviene la misma hora cada día, con acceso al aviso diario.
+- **Conexión directa:** quien envía tiene el mismo tope de tamaño que quien recibe y avisa antes de empezar. Un código con más de seis direcciones, o con una dirección o un puerto imposibles, se rechaza.
+- **Health Connect:** si una versión anterior dejó a medias la comida de hoy, se quita al abrir la app y mañana entra completa. Lo anotado a mano no se toca.
+- **Panel:** la barra de la tarjeta Meta queda separada de su texto y centrada en su espacio.
+- **Primera evaluación en la web instalable:** ya no aparece un último paso vacío; los recordatorios y Health Connect no existen ahí y se entra directo al Panel.
+- **Web instalable fuera de un iPhone:** explica que esa versión es para iPhone, con un código QR para abrirla allí y los pasos para instalarla, y deja seguir en el navegador.
+- No probado en un teléfono.
+- La 0.42.1 se probó en un teléfono antes de publicarla; sus notas de abajo se escribieron antes de esa prueba.
+
 ## 0.42.1 - 2026-11-25
 
 Correcciones de cálculo y de datos, cada una con una prueba que reproduce el fallo. La cobertura del margen queda medida en las pruebas.

@@ -13,7 +13,7 @@ import { rangeText } from "@/src/features/tdee/tdee";
 export type GraphLayer = 0 | 1 | 2 | 3;
 export const LAYER_LABELS = [
   "Lo que registras",
-  "Lo que estima el filtro",
+  "Lo que estima el motor",
   "Lo que aprende de ti",
   "La decisión",
 ];
@@ -61,7 +61,7 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       "Comida",
       intake ? `${Math.round(intake)}` : "—",
       analysis.loggedDays > 0,
-      `${analysis.loggedDays} días con comida completa${analysis.partialDays ? ` y ${analysis.partialDays} incompletos (no cuentan)` : ""}. Los días con calorías estimadas suman incertidumbre en lugar de sesgar.`,
+      `${analysis.loggedDays} días de comida completa${analysis.partialDays ? ` y ${analysis.partialDays} incompletos (no cuentan)` : ""}. Un día estimado cuenta, pero con menos seguridad.`,
       "ingesta del día → peso real de mañana = peso real + (comido − gasto) ÷ energía por kilo",
     ),
     node(
@@ -70,7 +70,7 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       "Báscula",
       `${analysis.points.length}`,
       analysis.points.length > 0,
-      `${analysis.points.length} pesajes. La báscula no mide tu peso real: mide peso real + agua + ruido.`,
+      `${analysis.points.length} pesajes. Marcan tu peso real más el agua y las variaciones del día.`,
       "báscula = peso real + agua (carbohidratos, comida de ayer, ciclo) + ruido",
     ),
     node(
@@ -147,8 +147,8 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       engine ? `±${engine.noiseKg.toFixed(2)}` : "—",
       Boolean(engine),
       engine
-        ? `Tu peso varía ±${engine.noiseKg.toFixed(2)} kg de un día a otro sin motivo. Los pesajes a más de 2.5 desviaciones pesan menos${engine.outliers.length ? ` (${engine.outliers.length} atípicos)` : ""}.`
-        : "Se aprende de lo que el modelo no logra explicar de cada pesaje.",
+        ? `Tu peso varía ±${engine.noiseKg.toFixed(2)} kg de un día a otro sin motivo. Los pesajes muy raros cuentan menos${engine.outliers.length ? ` (${engine.outliers.length} atípicos)` : ""}.`
+        : "Cuánto se mueve tu báscula sin motivo. Se aprende cuando el motor se activa.",
       "ruido² ← 0.9 · ruido² + 0.1 · (residuo² + incertidumbre); pérdida de Huber > 2.5σ",
     ),
     node(
@@ -197,8 +197,10 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       Boolean(analysis.tdeeMargin),
       engine
         ? `Margen del 95 % del gasto: ±${analysis.tdeeMargin} kcal (desviación ${Math.round(engine.totalSd)}). Incluye un 3 % por errores que se repiten al anotar; la revisión no lo cuenta porque supone que anotas igual antes y después. Da por buena la energía de cada kilo.${analysis.tdeeRange ? ` ${rangeText(analysis.tdeeRange)}` : ""}`
-        : "Margen aproximado del gasto según lo estable que es la tendencia.",
-      "margen = 1.96 · √(σ²gasto + (3 % de la ingesta)²)",
+        : "Cuánto puede moverse el gasto con estos datos: por lo que varía tu peso, por los días sin anotar y por un 3 % de errores al anotar.",
+      engine
+        ? "margen = 1.96 · √(desviación del gasto² + (3 % de la ingesta)²)"
+        : "margen = 1.96 · √(error de la recta² + error por días sin anotar² + (3 % de la ingesta)²)",
     ),
     // 3. La decisión.
     node(
@@ -208,7 +210,9 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       snapshot.checkIn?.ready && snapshot.checkIn.delta !== null ? signed(snapshot.checkIn.delta) : "—",
       Boolean(snapshot.checkIn?.ready),
       step("review")?.detail ?? "",
-      "solo se mueve si el intervalo del 95 % (99 % para recortar en volumen) de (objetivo buscado − actual) no incluye el cero; usa la desviación de los datos, sin el 3 % de registro",
+      engine
+        ? "solo se mueve si el intervalo del 95 % (99 % para recortar en volumen) de (objetivo buscado − actual) no incluye el cero; usa la desviación de los datos, sin el 3 % de registro"
+        : "cambio = gasto + ajuste de tu meta − objetivo actual, limitado al paso; los cambios de menos de 25 kcal no se sugieren",
     ),
     node(
       "target",

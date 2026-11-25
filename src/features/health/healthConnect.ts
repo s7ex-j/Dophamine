@@ -77,6 +77,18 @@ export type HealthMeal = {
 export type DaySteps = { date: string; steps: number };
 export type DayFood = { date: string; kcal: number; proteinG: number; carbsG: number; fatsG: number };
 
+/**
+ * Hasta la 0.42.0 la comida de hoy se importaba a medias y ya no se completaba. Se reconoce porque el día
+ * tiene total pero ninguna comida (todo lo anotado aquí tiene la suya) y ya se había importado alguna vez.
+ */
+export function isLeftoverImport(
+  day: { caloriesIn: number; fasting?: boolean } | null,
+  entries: number,
+  importedBefore: boolean,
+): boolean {
+  return importedBefore && entries === 0 && day !== null && day.caloriesIn > 0 && !day.fasting;
+}
+
 type Page<T> = { records: T[]; pageToken?: string };
 /** Más páginas que esto en 30 días es un error de lectura, no datos. */
 const MAX_PAGES = 200;

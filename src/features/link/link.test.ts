@@ -8,6 +8,7 @@ import {
   MAX_PENDING,
   MAX_PENDING_CHARS,
   PENDING_LIFETIME_MS,
+  MAX_FRAMES,
   toFrames,
   type LinkMessage,
 } from "@/src/features/link/protocol";
@@ -94,6 +95,41 @@ describe("señal para el código QR", () => {
     expect(() => readSdp("v=0", "offer")).toThrow(LinkError);
   });
 
+  it("no acepta más direcciones que las que se envían ni direcciones o puertos imposibles", () => {
+    const withList = (list: string) => packSignal(signal).replace(/[^|]*$/, list);
+    const many = (count: number) =>
+      Array.from({ length: count }, (_, index) => `5000${index}@192.168.1.${index + 1}`).join(",");
+    expect(unpackSignal(withList(many(6))).candidates).toHaveLength(6);
+    expect(() => unpackSignal(withList(many(7)))).toThrow("demasiadas direcciones");
+    for (const good of ["1@10.0.0.1", "65535@fd00::1", "80@::ffff", "80@1:2:3:4:5:6:7:8", "80@a-b.local"])
+      expect(unpackSignal(withList(good)).candidates).toHaveLength(1);
+    for (const bad of [
+      "80@256.1.1.1",
+      "80@1.2.3",
+      "80@ejemplo.com",
+      "80@.local",
+      "80@1::2::3",
+      "80@1:2:3",
+      "80@:::",
+      "80@",
+      "0@10.0.0.1",
+      "65536@10.0.0.1",
+      "1e3@10.0.0.1",
+      "8.5@10.0.0.1",
+      "10.0.0.1",
+    ])
+      expect(() => unpackSignal(withList(bad)), bad).toThrow("incompleto");
+  });
+
+  it("no pone en el código lo que el otro lado rechazaría", () => {
+    const bad = SDP.replaceAll("192.168.1.20", "999.168.1.20");
+    const hosts = readSdp(bad, "offer").candidates.map((candidate) => candidate.host);
+    expect(hosts).not.toContain("999.168.1.20");
+    expect(hosts).toEqual(
+      signal.candidates.map((item) => item.host).filter((host) => !host.startsWith("192.")),
+    );
+  });
+
   it("cabe en un QR que se lee de vuelta", () => {
     const code = packSignal(signal);
     const { size, d } = qrPath(qrMatrix(code));
@@ -137,6 +173,19 @@ describe("código de verificación", () => {
 });
 
 describe("mensajes troceados", () => {
+  it("quien envía y quien recibe tienen el mismo tope", () => {
+    const empty = JSON.stringify({ t: "diet", plan: "" }).length;
+    const of = (length: number): LinkMessage => ({ t: "diet", plan: "x".repeat(length - empty) });
+    const max = FRAME_SIZE * MAX_FRAMES;
+    const frames = toFrames(of(max), 1);
+    expect(frames).toHaveLength(MAX_FRAMES);
+    const assembler = new Assembler();
+    let last: LinkMessage | null = null;
+    for (const frame of frames) last = assembler.push(frame);
+    expect(last).not.toBeNull();
+    expect(() => toFrames(of(max + 1), 2)).toThrow("demasiado grandes");
+  });
+
   it("un mensaje grande se parte y se arma aunque las tramas lleguen desordenadas", () => {
     const message: LinkMessage = { t: "backup", backup: { texto: "día ñ ".repeat(20_000) } };
     const frames = toFrames(message, 7, 1000);

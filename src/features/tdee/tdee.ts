@@ -35,6 +35,8 @@ export type MetabolicAnalysis = {
   status: ExpenditureStatus;
   /** Motor de autoajuste: su avance hacia los 15 días o, ya activo, todo lo que estima. */
   adaptive?: Adaptive;
+  /** Lo que se sabía del cuerpo al calcular: la serie por día usa lo mismo. */
+  body?: BodyPrior;
 };
 /** El cálculo simple, con lo que el motor necesita para repetirse en otro escenario. */
 export type SimpleAnalysis = MetabolicAnalysis & {
@@ -53,6 +55,8 @@ export type AnalysisOptions = {
   asOf?: string;
   /** Inicio del plan: en sus primeras semanas se suma un escenario más bajo (agua y glucógeno). */
   planStart?: string;
+  /** Grasa y entreno del plan (`bodyPriorOf`), para el punto de partida de la energía por kilo. */
+  body?: BodyPrior;
 };
 export type WeeklyCheckIn = {
   status: ExpenditureStatus;
@@ -93,13 +97,78 @@ const PRIOR_FAT_SHARE_SD = 0.25;
 /** Error mínimo de una lectura de % de grasa (en proporción del peso): nunca se toma como exacta. */
 const BODY_FAT_NOISE = 0.005;
 
+/** Kilos de grasa con los que la mitad de lo que cambia es grasa (Forbes; Hall 2007). */
+const FORBES_KG = 10.4;
+/** Ritmo (kg por semana) desde el que el punto de partida es por completo el de Forbes; se llega de a poco desde 0. */
+const FORBES_FULL_RATE = 0.25;
+const BODY_FAT_LIMITS = [3, 60];
+
+/** Lo que el plan sabe del cuerpo, para partir de un valor de energía por kilo más propio. */
+export type BodyPrior = {
+  bodyFatPct?: number;
+  /** Entrena fuerza con regularidad: en déficit se conserva más masa magra de lo que dice Forbes. */
+  strength: boolean;
+};
+
+/** Días de fuerza (o mixto) por semana desde los que la ecuación de Forbes deja de valer. */
+const STRENGTH_DAYS = 2;
+
+/** Sin datos de entreno en el plan no se supone nada: se sigue con 7700. */
+export function bodyPriorOf(
+  profile:
+    | { bodyFatPct?: number; trainingDays?: number; trainingType?: "strength" | "cardio" | "mixed" }
+    | null
+    | undefined,
+): BodyPrior | undefined {
+  if (!profile || profile.trainingDays === undefined) return undefined;
+  return {
+    bodyFatPct: profile.bodyFatPct,
+    strength: profile.trainingDays >= STRENGTH_DAYS && profile.trainingType !== "cardio",
+  };
+}
+
+/**
+ * Qué parte de un kilo perdido se espera que sea grasa, antes de medirla. Lo habitual (7700 kcal/kg), salvo
+ * al bajar de peso sin entrenar fuerza y con % de grasa conocido: quien tiene menos grasa pierde más masa
+ * magra (Forbes: grasa ÷ (grasa + 10.4 kg)).
+ */
+function priorFatShare(records: DailyBiometrics[], body: BodyPrior | undefined): number {
+  if (!body || body.strength) return PRIOR_FAT_SHARE;
+  const weighed = records
+    .filter((record) => (record.weightKg ?? 0) > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  if (weighed.length < 2) return PRIOR_FAT_SHARE;
+  const readings = weighed.flatMap((record) =>
+    (record.bodyFatPct ?? 0) > 0 ? [record.bodyFatPct as number] : [],
+  );
+  const pct = readings.length ? median(readings) : body.bodyFatPct;
+  if (!pct || pct < BODY_FAT_LIMITS[0] || pct > BODY_FAT_LIMITS[1]) return PRIOR_FAT_SHARE;
+  const kg = weighed.map((record) => record.weightKg as number);
+  const { slope } = linearTrend(
+    weighed.map((record) => dayIndex(record.date) - dayIndex(weighed[0].date)),
+    kg,
+  );
+  const losing = Math.max(0, Math.min(1, (-slope * 7) / FORBES_FULL_RATE));
+  const fatKg = (median(kg) * pct) / 100;
+  return PRIOR_FAT_SHARE + losing * (fatKg / (fatKg + FORBES_KG) - PRIOR_FAT_SHARE);
+}
+
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+const densityOf = (fatShare: number) =>
+  Math.round(fatShare * KCAL_PER_KG_FAT + (1 - fatShare) * KCAL_PER_KG_LEAN);
+
 /**
  * Energía por kg de cambio de peso según lo medido. Qué parte del cambio fue grasa sale de dos rectas
  * (grasa y peso en el tiempo) con su error, y se combina con el valor habitual: cuanto más ruido traen
- * las lecturas, más manda 7700 kcal/kg. Si lo medido no es posible (baja el peso y sube la grasa más
+ * las lecturas, más manda el punto de partida (`priorFatShare`). Si lo medido no es posible (baja el peso y sube la grasa más
  * allá del error), la báscula no es fiable y se usa 7700.
  */
-export function energyPerKg(records: DailyBiometrics[]): number {
+export function energyPerKg(records: DailyBiometrics[], body?: BodyPrior): number {
+  const prior = priorFatShare(records, body);
   const measured = records
     .flatMap((record) =>
       (record.weightKg ?? 0) > 0 && (record.bodyFatPct ?? 0) > 0
@@ -108,13 +177,13 @@ export function energyPerKg(records: DailyBiometrics[]): number {
     )
     .sort((a, b) => a.day - b.day);
   const span = measured.length ? measured[measured.length - 1].day - measured[0].day : 0;
-  if (measured.length < 3 || span < 7) return KCAL_PER_KG_DEFAULT;
+  if (measured.length < 3 || span < 7) return densityOf(prior);
   const xs = measured.map((item) => item.day - measured[0].day);
   const weight = linearTrend(
     xs,
     measured.map((item) => item.kg),
   ).slope;
-  if (Math.abs(weight * span) < 0.5) return KCAL_PER_KG_DEFAULT;
+  if (Math.abs(weight * span) < 0.5) return densityOf(prior);
   const fatKg = measured.map((item) => (item.kg * item.pct) / 100);
   const share = linearTrend(xs, fatKg).slope / weight;
   // Error de la proporción: lo que la grasa se aparta de `share` veces el peso.
@@ -128,8 +197,8 @@ export function energyPerKg(records: DailyBiometrics[]): number {
   const error = Math.max(rest.standardError, floor) / Math.abs(weight);
   if (share < -1.96 * error || share > 1 + 1.96 * error) return KCAL_PER_KG_DEFAULT;
   const trust = PRIOR_FAT_SHARE_SD ** 2 / (PRIOR_FAT_SHARE_SD ** 2 + error ** 2);
-  const fatShare = Math.max(0, Math.min(1, PRIOR_FAT_SHARE + trust * (share - PRIOR_FAT_SHARE)));
-  return Math.round(fatShare * KCAL_PER_KG_FAT + (1 - fatShare) * KCAL_PER_KG_LEAN);
+  const fatShare = Math.max(0, Math.min(1, prior + trust * (share - prior)));
+  return densityOf(fatShare);
 }
 
 /**
@@ -257,7 +326,12 @@ export function analyzeMetabolism(
   records: DailyBiometrics[],
   options: AnalysisOptions = {},
 ): MetabolicAnalysis {
-  const { scenarios, tdeeAt, ...simple } = simpleAnalysis(records, options.asOf, options.planStart);
+  const { scenarios, tdeeAt, ...simple } = simpleAnalysis(
+    records,
+    options.asOf,
+    options.planStart,
+    options.body,
+  );
   const engineAt = (density: number, drift?: number) =>
     adaptiveEngine(options.history ?? records, {
       energyPerKg: density,
@@ -297,6 +371,7 @@ export function simpleAnalysis(
   records: DailyBiometrics[],
   asOf?: string,
   planStart?: string,
+  body?: BodyPrior,
 ): SimpleAnalysis {
   const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
   const lastDay = sorted.length ? dayIndex(sorted[sorted.length - 1].date) : 0;
@@ -319,7 +394,7 @@ export function simpleAnalysis(
   // Solo lo comido entre el primer y el último pesaje explica el cambio de peso; con un solo pesaje o
   // ninguno todavía no hay periodo.
   const intakeDays = points.length > 1 ? logged.filter((day) => day.date >= from && day.date < to) : logged;
-  const density = energyPerKg(ordered);
+  const density = energyPerKg(ordered, body);
   // Un plan que empieza más adelante todavía no está en sus primeras semanas.
   const elapsed = planStart === undefined ? -1 : today - dayIndex(planStart);
   const early = elapsed >= 0 && elapsed < EARLY_DAYS;
@@ -327,6 +402,7 @@ export function simpleAnalysis(
     scenarios: scenariosFor(density, early),
     tdeeAt: null,
     tdeeRange: null,
+    body,
     points,
     energyPerKg: density,
     loggedDays: intakeDays.length,
@@ -397,11 +473,17 @@ export function expenditureSeries(
 ): Array<{ date: string; tdee: number }> {
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
   // Desde que el motor se activó, cada día tiene su propia estimación; antes, el cálculo simple.
-  const engine = (options.analysis ?? analyzeMetabolism(ordered, options)).adaptive;
+  const { adaptive: engine, body } = options.analysis ?? analyzeMetabolism(ordered, options);
   const byEngine = new Map(engine?.active ? engine.series.map((point) => [point.date, point.tdee]) : []);
   return ordered.slice(-days).flatMap((record) => {
     const tdee =
-      byEngine.get(record.date) ?? simpleAnalysis(ordered.filter((item) => item.date <= record.date)).tdee;
+      byEngine.get(record.date) ??
+      simpleAnalysis(
+        ordered.filter((item) => item.date <= record.date),
+        undefined,
+        undefined,
+        body,
+      ).tdee;
     return tdee === null ? [] : [{ date: record.date, tdee }];
   });
 }

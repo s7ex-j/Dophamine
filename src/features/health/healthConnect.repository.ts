@@ -10,11 +10,13 @@ import {
   dayRange,
   foodToImport,
   IMPORT_DAYS,
+  isLeftoverImport,
   nightsToImport,
   readAllPages,
   stepsToImport,
   weightsToImport,
 } from "@/src/features/health/healthConnect";
+import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
@@ -171,6 +173,19 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
 }
 
 const SYNC_KEY = "health_connect_synced";
+
+/** Quita la comida de hoy que dejó a medias una versión anterior; mañana entra completa. Dice si quitó algo. */
+export async function dropTodayImport(): Promise<boolean> {
+  const today = localDateKey();
+  const [day, entries, synced] = await Promise.all([
+    getBiometricsByDate(today),
+    getMealEntries(today),
+    getSetting(SYNC_KEY),
+  ]);
+  if (!isLeftoverImport(day, entries.length, synced !== null)) return false;
+  await saveDayNutrition({ kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 }, today);
+  return true;
+}
 
 /**
  * Al abrir la app, una vez al día: si la persona ya dio permiso a Health Connect, trae lo nuevo sin

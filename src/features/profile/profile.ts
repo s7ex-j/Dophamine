@@ -137,9 +137,10 @@ export function targetWeeklyRateKg(
 export function goalCalorieOffset(
   profile: Pick<NutritionProfile, "goal" | "pace" | "experience">,
   weightKg: number,
+  kcalPerKg = KCAL_PER_KG,
 ): number {
   const rate = targetWeeklyRateKg(profile, weightKg);
-  return rate === null ? goalAdjustments[profile.goal] : Math.round((rate * KCAL_PER_KG) / 7);
+  return rate === null ? goalAdjustments[profile.goal] : Math.round((rate * kcalPerKg) / 7);
 }
 
 /**

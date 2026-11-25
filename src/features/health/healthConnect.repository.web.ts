@@ -15,3 +15,7 @@ export async function importFromHealthConnect(_options: { ask?: boolean } = {}):
 export async function syncHealthConnectDaily(): Promise<HealthImport | null> {
   return null;
 }
+
+export async function dropTodayImport(): Promise<boolean> {
+  return false;
+}

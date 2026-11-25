@@ -4,7 +4,13 @@ import {
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
 import { VIEWER } from "@/src/lib/mode";
-import { analyzeMetabolism, type MetabolicAnalysis, type WeeklyCheckIn } from "@/src/features/tdee/tdee";
+import {
+  analyzeMetabolism,
+  bodyPriorOf,
+  type MetabolicAnalysis,
+  type WeeklyCheckIn,
+} from "@/src/features/tdee/tdee";
+import { forecastAccuracy, type ForecastAccuracy } from "@/src/features/tdee/accuracy";
 import { contextualCheckIn } from "@/src/features/tdee/checkin";
 import { sleepSummary } from "@/src/features/sleep/sleep";
 import { getSleepSince } from "@/src/features/sleep/sleep.repository";
@@ -52,6 +58,45 @@ export type DashboardSnapshot = {
   /** Periodos anotados: el motor de autoajuste los usa para el agua del ciclo. */
   periods: Period[];
 };
+/** Para el motor: qué parte de cada día fue estimada y cuándo empezó un plan nuevo. */
+function engineInputs(
+  meals: MealEntry[],
+  profile: NutritionProfile | null,
+  dietStart: string | undefined,
+  reviews: WeeklyReview[],
+) {
+  const byDate = new Map<string, MealEntry[]>();
+  for (const entry of meals) byDate.set(entry.date, [...(byDate.get(entry.date) ?? []), entry]);
+  return {
+    estimated: Object.fromEntries([...byDate].map(([date, entries]) => [date, estimatedShare(entries)])),
+    transitions: [
+      profile?.startDate,
+      dietStart,
+      ...reviews.filter((review) => review.decision !== "dismissed").map((review) => review.date),
+    ].filter((date): date is string => Boolean(date)),
+  };
+}
+
+/** Días que se miran hacia atrás para medir el acierto. */
+const ACCURACY_DAYS = 200;
+
+/** Cuánto acertó el motor en el pasado. Se calcula aparte: lo corre varias veces y solo se ve en un lugar. */
+export async function getForecastAccuracy(): Promise<ForecastAccuracy | null> {
+  const [history, profile, reviews, savedPeriods, meals, diet] = await Promise.all([
+    getBiometricsWindow(ACCURACY_DAYS),
+    getNutritionProfile(),
+    getWeeklyReviews(60),
+    getSetting(PERIODS_KEY),
+    getMealHistory(4000),
+    getDiet(),
+  ]);
+  return forecastAccuracy(history, {
+    periods: readPeriods(savedPeriods),
+    body: bodyPriorOf(profile),
+    ...engineInputs(meals, profile, diet?.createdAt, reviews),
+  });
+}
+
 export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   const [latest, history, mood, profile, reviews, sessions, routine, savedPeriods, meals, diet] =
     await Promise.all([
@@ -74,15 +119,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
   const since = addDays(localDateKey(), -(period - 1));
   const nights = await getSleepSince(since);
   const lastReview = reviews[0] ?? null;
-  // Para el motor: qué parte de cada día fue estimada y cuándo empezó un plan nuevo.
-  const byDate = new Map<string, MealEntry[]>();
-  for (const entry of meals) byDate.set(entry.date, [...(byDate.get(entry.date) ?? []), entry]);
-  const estimated = Object.fromEntries([...byDate].map(([date, entries]) => [date, estimatedShare(entries)]));
-  const transitions = [
-    profile?.startDate,
-    diet?.createdAt,
-    reviews[0] && reviews[0].decision !== "dismissed" ? reviews[0].date : undefined,
-  ].filter((date): date is string => Boolean(date));
+  const { estimated, transitions } = engineInputs(meals, profile, diet?.createdAt, reviews);
   // En el teléfono se mira desde hoy; el visor, desde el último dato del respaldo que muestra.
   const asOf = VIEWER ? undefined : localDateKey();
   const analysis = analyzeMetabolism(records, {
@@ -92,6 +129,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     transitions,
     asOf,
     planStart: profile?.startDate,
+    body: bodyPriorOf(profile),
   });
   const sleepMinutes = nights.length ? sleepSummary(nights, period).averageMinutes : null;
   // Entreno del periodo: lo hecho (horario real y MET) frente a lo que dice la rutina.

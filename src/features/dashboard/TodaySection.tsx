@@ -28,7 +28,9 @@ import { DaySummary } from "@/src/features/nutrition/DaySummary";
 import { totalsOf, type MealEntry } from "@/src/features/nutrition/meals";
 import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
-import { weekdayOf } from "@/src/features/reminders/reminders";
+import { normalizeConfig, REMINDERS_KEY, weekdayOf } from "@/src/features/reminders/reminders";
+import { remindersAvailable } from "@/src/features/reminders/scheduler";
+import { getSetting } from "@/src/features/settings/settings.repository";
 import { targetsForWeekday } from "@/src/features/profile/targets";
 import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
 import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
@@ -76,6 +78,7 @@ export function TodaySection({
   const [form, setForm] = useState<BodyForm>(emptyForm);
   const [sleepForm, setSleepForm] = useState({ bedtime: "", wakeTime: "", quality: 0 });
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [weighTime, setWeighTime] = useState<string | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
 
@@ -87,7 +90,10 @@ export function TodaySection({
         getRecentBiometrics(),
         getSleepSince(current),
         getRoutine(),
-      ]).then(([record, meals, rows, nights, nextRoutine]) => {
+        getSetting(REMINDERS_KEY),
+      ]).then(([record, meals, rows, nights, nextRoutine, reminders]) => {
+        const { weighIn } = normalizeConfig(reminders, () => "");
+        setWeighTime(remindersAvailable && weighIn?.enabled ? weighIn.time : null);
         const night = nights.find((entry) => entry.date === current) ?? null;
         setDay(record);
         setEntries(meals);
@@ -321,8 +327,22 @@ export function TodaySection({
           <Text style={AppTheme.hint}>
             {weightKg > 0 && bodyFat > 0 && bodyFat < 100
               ? `Magra ${formatWeight(leanMassKg(weightKg, bodyFat), unit, 1)} · Grasa ${formatWeight(weightKg - leanMassKg(weightKg, bodyFat), unit, 1)}`
-              : "Pésate al despertar. La composición es opcional: llena solo lo que mida tu balanza."}
+              : "La composición es opcional: llena solo lo que mida tu balanza."}
           </Text>
+          <View style={[AppTheme.legendRow, { alignItems: "flex-start" }]}>
+            <Ionicons name="time-outline" size={16} color={AppTheme.colors.muted} style={{ marginTop: 1 }} />
+            <Text style={[AppTheme.hint, { flex: 1 }]}>
+              Mejor a la misma hora todos los días: al despertar, después del baño y antes de comer. Así hay
+              menos agua de por medio y el cálculo es más preciso.
+              {weighTime ? ` Te aviso a las ${weighTime}.` : ""}
+            </Text>
+          </View>
+          {remindersAvailable ? (
+            <LinkButton
+              title={weighTime ? "Cambiar la hora del aviso" : "Avisarme cada día"}
+              onPress={() => router.push("/reminders")}
+            />
+          ) : null}
           <Button title={day?.weightKg ? "Guardar cambios de peso" : "Guardar peso"} onPress={saveBody} />
         </View>
       ) : null}

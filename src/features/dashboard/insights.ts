@@ -3,7 +3,7 @@ import { compositionSeries } from "@/src/features/composition/composition";
 import { phaseBands, type Period } from "@/src/features/period/period";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { SLEEP_GOAL_MINUTES, sleepMinutes, sleepSummary, type SleepEntry } from "@/src/features/sleep/sleep";
-import { analyzeMetabolism, expenditureSeries, trendPoints } from "@/src/features/tdee/tdee";
+import { analyzeMetabolism, bodyPriorOf, expenditureSeries, trendPoints } from "@/src/features/tdee/tdee";
 import { addDays, localDateKey } from "@/src/lib/dates";
 import { formatDuration } from "@/src/lib/time";
 import { convertWeight, formatWeight } from "@/src/lib/units";
@@ -80,7 +80,7 @@ function weightInsight({ records, profile, today, periods }: InsightData, dates:
   const shown = present(trends);
   const analysis = analyzeMetabolism(
     records.filter((record) => record.date <= (today ?? localDateKey())),
-    { periods, range: false },
+    { periods, range: false, body: bodyPriorOf(profile) },
   );
   const stats: Insight["stats"] = [];
   if (shown.length) {
@@ -137,7 +137,11 @@ function weightInsight({ records, profile, today, periods }: InsightData, dates:
 }
 
 function expenditureInsight({ records, profile, periods }: InsightData, dates: string[]): Insight {
-  const analysis = analyzeMetabolism(records, { periods, planStart: profile.startDate });
+  const analysis = analyzeMetabolism(records, {
+    periods,
+    planStart: profile.startDate,
+    body: bodyPriorOf(profile),
+  });
   const series = new Map(
     expenditureSeries(records, dates.length, { analysis }).map((point) => [point.date, point.tdee]),
   );
@@ -178,8 +182,12 @@ function expenditureInsight({ records, profile, periods }: InsightData, dates: s
   };
 }
 
-function balanceInsight({ records, periods }: InsightData, dates: string[]): Insight {
-  const tdee = analyzeMetabolism(records, { periods, range: false }).tdee;
+function balanceInsight({ records, profile, periods }: InsightData, dates: string[]): Insight {
+  const { tdee, energyPerKg } = analyzeMetabolism(records, {
+    periods,
+    range: false,
+    body: bodyPriorOf(profile),
+  });
   const byDate = new Map(records.map((record) => [record.date, record]));
   const values = dates.map((date) => {
     const record = byDate.get(date);
@@ -214,7 +222,7 @@ function balanceInsight({ records, periods }: InsightData, dates: string[]): Ins
             label: "Equivale a",
             value: `${signed(
               shown.reduce((a, b) => a + b, 0),
-              String(Math.abs(round(shown.reduce((a, b) => a + b, 0) / 7700, 2))),
+              String(Math.abs(round(shown.reduce((a, b) => a + b, 0) / energyPerKg, 2))),
             )} kg`,
           },
         ]

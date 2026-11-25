@@ -98,6 +98,23 @@ try {
 
   // 1. Abre la app completa (no el visor), con manifiesto y service worker.
   await page.goto(`${base}/`, { waitUntil: "networkidle0" });
+  // Fuera de un iPhone primero se explica para qué es; si se sigue, no vuelve a preguntar.
+  await waitText("Esta versión es para iPhone");
+  await ready();
+  if (process.env.SHOTS) {
+    await page.setViewport({ width: 1280, height: 900 });
+    await new Promise((done) => setTimeout(done, 800));
+    await page.screenshot({ path: join(process.env.SHOTS, "pwa-computadora.png"), fullPage: true });
+    await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  }
+  const seguir = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[role="button"]')]
+        .find((node) => node.innerText.includes("Seguir en este navegador"))
+        ?.click(),
+    );
+  await waitText("Seguir en este navegador");
+  await seguir();
   await waitText("Soy Term. Vamos a llevar tu progreso.");
   const manifest = await page.evaluate(async () =>
     (await fetch(document.querySelector('link[rel="manifest"]').href)).json(),

@@ -150,7 +150,8 @@ function RemindersContent() {
             />
           ) : null}
           <Text style={AppTheme.hint}>
-            Pesarte a diario a la misma hora hace la tendencia más fiable; no importa el número de un día.
+            Pesarte cada día a la misma hora, antes de comer, hace el cálculo más preciso; no importa el
+            número de un día.
           </Text>
         </Card>
 

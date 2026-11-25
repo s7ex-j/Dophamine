@@ -28,9 +28,11 @@ const signed = (value: number, decimals = 0) =>
   `${value > 0 ? "+" : value < 0 ? "−" : "±"}${Math.abs(value).toFixed(decimals)}`;
 
 const WEEKDAYS = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
+/** Los días con los que el motor mide el ritmo. */
+const RATE_DAYS = 14;
 const CONFIDENCE = { high: "alta", medium: "media", low: "baja" } as const;
 const ENGINE_FORMULA =
-  "Filtro de Kalman: peso real de mañana = peso real + (comido − gasto) ÷ energía por kilo; báscula = peso real + agua (carbohidratos, comida de ayer, ciclo) + ruido. El ruido y cuánto deriva el gasto se aprenden de tus datos; los pesajes atípicos pesan menos.";
+  "peso real de mañana = peso real + (comido − gasto) ÷ energía por kilo. Báscula = peso real + agua + ruido. Un filtro de Kalman corrige el peso real y el gasto con cada pesaje.";
 
 export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): AlgorithmStep[] {
   const { profile, analysis } = snapshot;
@@ -63,8 +65,8 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
         ? kcal(profile.initialExpenditure)
         : "—",
     detail: estimate
-      ? `Basal ${estimate.bmr} + día a día ${estimate.dailyActivity} + entreno ${estimate.training} kcal, ajustado ${signed(estimate.calibration)} al combinarlo con la ecuación del IOM${estimate.usedKnownIntake ? " y con lo que dijiste que comes" : ""}.`
-      : "Sale de tu evaluación inicial. Se usa solo hasta tener tu gasto real.",
+      ? `El punto de partida, antes de tener datos tuyos: basal ${estimate.bmr} + día a día ${estimate.dailyActivity} + entreno ${estimate.training} kcal, con un ajuste de ${signed(estimate.calibration)} por la ecuación del IOM${estimate.usedKnownIntake ? " y por lo que dijiste que comes" : ""}. Deja de usarse cuando aparece tu gasto real.`
+      : "El punto de partida, según tu evaluación inicial. Se usa solo hasta tener tu gasto real.",
     formula:
       "Basal (Mifflin-St Jeor, o Katch-McArdle si sabes tu % de grasa) × actividad + MET del entreno × peso × horas, promediado con la ecuación del IOM.",
     pending: false,
@@ -78,10 +80,10 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     title: "Tendencia de peso",
     value: last ? `${last.trendKg.toFixed(1)} kg` : "—",
     detail: last
-      ? `${analysis.points.length} pesajes suavizados${damped ? `, ${damped} con poco peso por parecer agua` : ""}. Ritmo: ${analysis.weeklyRateKg === null ? "aún sin calcular" : `${signed(analysis.weeklyRateKg, 2)} kg por semana`}.`
+      ? `Un pesaje suelto engaña: el agua mueve la báscula más que la grasa. Por eso miro ${analysis.points.length} pesajes juntos${damped ? `, ${damped} con poco peso por parecer agua` : ""}. Ritmo: ${analysis.weeklyRateKg === null ? "aún sin calcular" : `${signed(analysis.weeklyRateKg, 2)} kg por semana`}.`
       : "Anota tu peso para empezar la tendencia.",
     formula:
-      "Media móvil exponencial (cada pesaje diario mueve la tendencia un 28 %, o un 10 % si parece agua; tras varios días sin pesarte, más). El ritmo es la pendiente de una recta ajustada a tus pesajes.",
+      "Media móvil exponencial: cada pesaje mueve la tendencia un 28 %, o un 10 % si parece agua. Tras varios días sin pesarte, más. El ritmo es la pendiente de una recta ajustada a tus pesajes.",
     pending: !last,
   });
 
@@ -92,11 +94,13 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     value: `${analysis.energyPerKg} kcal/kg`,
     detail: `${
       analysis.energyPerKg === 7700
-        ? "Valor estándar. Si anotas tu % de grasa, se calcula cuánto del cambio es grasa y cuánto masa magra."
-        : "Calculado con tu composición: la grasa aporta ~9400 kcal/kg y la masa magra ~1800."
+        ? "Convierte kilos en calorías. Uso 7700, el valor habitual; si anotas tu % de grasa, lo calculo con lo que cambió en ti."
+        : analysis.body && !analysis.body.strength
+          ? "Convierte kilos en calorías. Parte de cuánta grasa tienes (con menos grasa, más de lo que se pierde es masa magra) y se acerca a lo que mida tu báscula: un kilo de grasa guarda unas 9400 kcal y uno de masa magra, unas 1800."
+          : "Convierte kilos en calorías. Sale de tu composición: un kilo de grasa guarda unas 9400 kcal y uno de masa magra, unas 1800."
     }${analysis.tdeeRange ? ` ${rangeText(analysis.tdeeRange)}` : ""}`,
     formula:
-      "proporción de grasa × 9400 + proporción de masa magra × 1800. Cuanto más ruido traen las lecturas, más se acerca a 7700; si no son posibles, se usa 7700.",
+      "proporción de grasa × 9400 + proporción de masa magra × 1800. El punto de partida es 7700, o grasa ÷ (grasa + 10.4 kg) si bajas de peso sin entrenar fuerza. Cuanto más ruido traen las lecturas, más se acerca a él; si no son posibles, se usa 7700.",
     pending: false,
   });
 
@@ -109,12 +113,12 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     value: analysis.tdee ? `${analysis.tdee} ± ${analysis.tdeeMargin ?? 0} kcal` : "—",
     detail: analysis.tdee
       ? engine?.active
-        ? `Lo estima el motor de autoajuste con ${engine.days} días de datos: comiste en promedio ${intake ? kcal(intake) : "—"} y tu peso real cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana.`
-        : `Comiste en promedio ${intake ? kcal(intake) : "—"} y tu tendencia cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana: eso equivale a ${kcal(analysis.tdee)} de gasto.`
+        ? `Lo que gastas de verdad, medido con ${engine.days} días tuyos por el motor de autoajuste. El margen dice cuánto puede moverse con estos datos.`
+        : `Lo que gastas de verdad: comiste en promedio ${intake ? kcal(intake) : "—"} y tu peso cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg por semana. El margen dice cuánto puede moverse con estos datos.`
       : `Se activa con 14 días de tendencia y 10 de comida completos. Días de comida antes de tu último pesaje: ${analysis.loggedDays}.`,
     formula: engine?.active
-      ? "El gasto es parte del estado del motor de autoajuste (paso siguiente): se corrige con cada pesaje."
-      : "ingesta media − (cambio de peso por día × energía por kilo), las dos del primer al último pesaje. Los días marcados como incompletos no cuentan.",
+      ? "El motor (paso siguiente) corrige el gasto con cada pesaje. Margen = 1.96 · √(desviación del gasto² + (3 % de lo que comes)²)."
+      : "gasto = lo que comes − cambio de peso por día × energía por kilo, los dos del primer al último pesaje. Los días incompletos no cuentan.",
     pending: !analysis.tdee,
   });
 
@@ -168,7 +172,7 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
       title: "Motor de autoajuste",
       value: `${engine?.streak ?? 0}/${ENGINE_DAYS} días seguidos`,
       detail:
-        "Se activa cuando juntas 15 días seguidos con peso y comida completos. Desde ahí aprende de ti: cuánto varía tu peso sin motivo, cuánta agua retienes y cómo cambia tu gasto con el tiempo.",
+        "Se activa con 15 días seguidos de peso y comida completos. Desde ahí aprende de ti: cuánto varía tu peso sin motivo, cuánta agua retienes y cómo cambia tu gasto.",
       formula: ENGINE_FORMULA,
       pending: true,
     });
@@ -223,3 +227,41 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
   });
   return steps;
 }
+
+/** La cuenta central en una frase: lo que comes menos lo que tu peso dice que sobró (o faltó). */
+export type EnergyBalance = {
+  intake: number;
+  weeklyRateKg: number;
+  energyPerKg: number;
+  /** Lo que el cambio de peso equivale por día; negativo si el cuerpo puso la diferencia. */
+  fromWeight: number;
+  tdee: number;
+  margin: number;
+  /** El motor pesa cada día por separado: su gasto no es exactamente la resta. */
+  engine: boolean;
+};
+
+export function energyBalance({ analysis, records }: DashboardSnapshot): EnergyBalance | null {
+  const { tdee, tdeeMargin, weeklyRateKg, energyPerKg } = analysis;
+  const engine = Boolean(analysis.adaptive?.active);
+  // El ritmo del motor es el de los últimos 14 días: la ingesta tiene que ser la de los mismos días.
+  const intake = engine ? averageIntake(records.slice(0, RATE_DAYS)) : analysis.averageIntake;
+  if (tdee === null || weeklyRateKg === null || intake === null) return null;
+  return {
+    intake: Math.round(intake),
+    weeklyRateKg,
+    energyPerKg,
+    fromWeight: Math.round((weeklyRateKg / 7) * energyPerKg),
+    tdee,
+    margin: tdeeMargin ?? 0,
+    engine,
+  };
+}
+
+/** Lo que el cálculo no puede saber, por bueno que sea. */
+export const LIMITS = [
+  "Si anotas siempre de menos, tu gasto sale más bajo en la misma medida. Como tu objetivo se mide igual, el plan suele seguir funcionando mientras anotes del mismo modo.",
+  "En pocos días el agua pesa más que la grasa. Por eso hacen falta dos semanas, y cada día con peso y comida completos estrecha el margen.",
+  "Nadie sabe con exactitud cuánta energía guarda cada kilo tuyo. Por eso ves el gasto con varios supuestos.",
+  "Pasos, sueño y entreno no se suman a tu gasto: ya están dentro de lo que mide tu peso. Sumarlos otra vez los contaría dos veces.",
+];

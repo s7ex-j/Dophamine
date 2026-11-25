@@ -2,7 +2,7 @@
 
 Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-## Estado al 25 de noviembre de 2026 (versión 0.42.1, Expo SDK 58)
+## Estado al 25 de noviembre de 2026 (versión 0.42.2, Expo SDK 58)
 
 **Decisiones que mandan:**
 
@@ -90,6 +90,13 @@ Hechas y probadas fuera del teléfono; falta confirmarlas con Health Connect rea
 - `versionCode` calculado de la versión, con prueba.
 - Al restaurar: recordatorios reprogramados, fotos sin imagen fuera y copia semanal si no existe.
 - Pruebas contra duplicados y reimportaciones.
+
+## 0.42.2 — Acierto, energía por kilo y textos
+
+"Cómo se calcula" reescrito con la cuenta central y cuánto acertó el motor a 14 días; energía por kilo según la grasa al
+bajar de peso sin entrenar fuerza; la revisión usa la misma energía por kilo que el gasto; topes iguales en los dos lados
+de la conexión directa; la web instalable explica que es para iPhone. Falta probarla en un teléfono. La importación real de
+Health Connect al día siguiente sigue pendiente de alguien que lo use.
 
 ## 0.42.1 — Correcciones de cálculo y datos
 

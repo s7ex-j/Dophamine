@@ -131,10 +131,17 @@ energía por kilo, del más bajo al más alto de todos.
 - **La báscula de grasa no lo estrecha:** puede errar siempre igual y eso no se ve en sus lecturas.
 - **No es un intervalo del 95 %:** no hay distribución de la energía por kilo. La cobertura de las pruebas describe esas
   simulaciones; no es una garantía.
-- **No cambia** el gasto ni la revisión. El objetivo sale de `ingesta + ρ (ritmo objetivo − ritmo observado)`: si los
+- **No cambia** el gasto ni la revisión. La revisión convierte el ritmo con la misma ρ que midió el gasto: el objetivo sale de `ingesta + ρ (ritmo objetivo − ritmo observado)`: si los
   ritmos coinciden ρ se cancela; si no, la propuesta sí depende de ρ.
 - **El motor** se vuelve a correr en cada escenario con sus mismos datos y la deriva que ya eligió.
-- 7700 sigue como valor central provisional: su acierto depende de la grasa inicial y de cuánto se pierde.
+- **Acierto del motor** (`tdee/accuracy.ts`): vuelve a fechas pasadas con solo los datos de entonces y compara el peso
+  esperado a 14 días, con lo que de verdad se comió, con la media de los pesajes finales. No sirve para elegir la energía
+  por kilo: comiendo parejo, el error de ρ y el del gasto se compensan.
+- **Punto de partida de la energía por kilo** (`priorFatShare`): 7700, o la parte de grasa de Forbes
+  (`grasa ÷ (grasa + 10.4 kg)`, Hall 2007, Br J Nutr 97:1059) si el plan dice que no se entrena fuerza dos o más días, hay
+  % de grasa y se baja de peso; entra de a poco entre 0 y 0.25 kg por semana. Forbes describe adultos que adelgazan sin
+  entrenar fuerza: con fuerza y déficit se conserva más masa magra, así que ahí sigue 7700. Es un promedio, no la persona.
+- 7700 sigue como valor central en los demás casos.
 
 ## Entreno
 

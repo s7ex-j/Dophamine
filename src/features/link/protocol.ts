@@ -5,6 +5,8 @@
  * pesar varios megas: cada mensaje se parte en tramas numeradas y el otro lado
  * las junta. Módulo puro: no sabe nada de WebRTC.
  */
+import { LinkError } from "@/src/features/link/signal";
+
 export const LINK_VERSION = 1;
 
 export type LinkMessage =
@@ -23,7 +25,7 @@ const TYPES = ["hello", "get", "backup", "diet", "ack", "bye"];
 /** Caracteres por trama: cabe holgado en el límite de un canal de datos. */
 export const FRAME_SIZE = 12_000;
 /** Tope de un mensaje ya armado (unos 60 MB de texto). */
-const MAX_FRAMES = 5_000;
+export const MAX_FRAMES = 5_000;
 
 export function isLinkMessage(value: unknown): value is LinkMessage {
   if (typeof value !== "object" || value === null) return false;
@@ -44,10 +46,17 @@ export function isLinkMessage(value: unknown): value is LinkMessage {
   return true;
 }
 
-/** Parte un mensaje en tramas `id:posición/total:trozo`. */
+/**
+ * Parte un mensaje en tramas `id:posición/total:trozo`. Con el mismo tope que quien recibe: un mensaje que el
+ * otro lado va a rechazar falla aquí, antes de enviar nada.
+ */
 export function toFrames(message: LinkMessage, id: number, size = FRAME_SIZE): string[] {
   const text = JSON.stringify(message);
   const total = Math.max(1, Math.ceil(text.length / size));
+  if (total > MAX_FRAMES)
+    throw new LinkError(
+      "Los datos son demasiado grandes para la conexión directa. Comparte el respaldo como archivo.",
+    );
   return Array.from(
     { length: total },
     (_, index) => `${id}:${index}/${total}:${text.slice(index * size, (index + 1) * size)}`,

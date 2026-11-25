@@ -158,7 +158,7 @@ export function remindersToSchedule(config: ReminderConfig): ScheduledReminder[]
           hour: Math.floor(weigh / 60),
           minute: weigh % 60,
           title: "Hora de pesarte",
-          body: "Después del baño y antes de comer: así tu tendencia es más fiable.",
+          body: "A la misma hora de siempre, después del baño y antes de comer: así el cálculo es más preciso.",
         }));
   const workouts = preWorkoutReminders(config);
   if (!config.enabled) return [...weighIns, ...workouts];

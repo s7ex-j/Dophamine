@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   dayRange,
   foodToImport,
+  isLeftoverImport,
   nightsToImport,
   readAllPages,
   stepsToImport,
@@ -106,6 +107,20 @@ describe("foodToImport", () => {
         TODAY,
       ).map((day) => day.kcal),
     ).toEqual([1000]);
+  });
+});
+
+describe("isLeftoverImport", () => {
+  const day = { caloriesIn: 600 };
+  it("reconoce el total de hoy que dejó una importación a medias", () => {
+    expect(isLeftoverImport(day, 0, true)).toBe(true);
+  });
+  it("no toca lo anotado aquí, los ayunos, los días vacíos ni a quien nunca importó", () => {
+    expect(isLeftoverImport(day, 1, true)).toBe(false);
+    expect(isLeftoverImport({ ...day, fasting: true }, 0, true)).toBe(false);
+    expect(isLeftoverImport({ caloriesIn: 0 }, 0, true)).toBe(false);
+    expect(isLeftoverImport(null, 0, true)).toBe(false);
+    expect(isLeftoverImport(day, 0, false)).toBe(false);
   });
 });
 

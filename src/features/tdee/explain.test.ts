@@ -4,7 +4,7 @@ import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repos
 import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { buildNutritionProfile } from "@/src/features/profile/profile";
 import { contextualCheckIn } from "@/src/features/tdee/checkin";
-import { explainAlgorithm } from "@/src/features/tdee/explain";
+import { energyBalance, explainAlgorithm } from "@/src/features/tdee/explain";
 import { analyzeMetabolism } from "@/src/features/tdee/tdee";
 
 const record = (index: number): DailyBiometrics => {
@@ -79,7 +79,7 @@ describe("cómo se calcula", () => {
       "review",
     ]);
     expect(steps[0].value).toMatch(/kcal$/);
-    expect(steps[0].detail).toContain("Basal");
+    expect(steps[0].detail).toContain("basal");
     expect(steps[3].value).toContain("2500");
     expect(steps[3].detail).toContain("motor de autoajuste");
     expect(steps[4].value).toMatch(/^Activo · certeza/);
@@ -88,6 +88,32 @@ describe("cómo se calcula", () => {
     expect(steps[5].value).toBe("3/4 sesiones");
     expect(steps[6].detail).toContain("7 h 30 min");
     expect(steps.every((step) => !step.pending)).toBe(true);
+  });
+
+  it("la cuenta central usa lo comido y el peso de los mismos días", () => {
+    const steady = energyBalance(snapshot(Array.from({ length: 21 }, (_, index) => record(index))));
+    expect(steady).toMatchObject({ intake: 2500, energyPerKg: 7700, engine: true });
+    expect(Math.abs(steady?.fromWeight ?? 99)).toBeLessThan(20);
+    // Bajando 0.1 kg al día, el cuerpo pone unas 770 kcal.
+    const losing = Array.from({ length: 20 }, (_, index) => ({
+      ...record(index),
+      weightKg: index % 5 === 4 ? null : 70 - index * 0.1,
+    }));
+    const simple = energyBalance(snapshot(losing));
+    expect(simple?.engine).toBe(false);
+    expect(simple?.fromWeight).toBeCloseTo(-770, -1);
+    expect(
+      Math.abs((simple?.tdee ?? 0) - ((simple?.intake ?? 0) - (simple?.fromWeight ?? 0))),
+    ).toBeLessThanOrEqual(10);
+    expect(energyBalance(snapshot([record(0), record(1)]))).toBeNull();
+  });
+
+  it("con el motor, comida vieja no entra en la cuenta de los últimos 14 días", () => {
+    const records = Array.from({ length: 30 }, (_, index) => ({
+      ...record(index),
+      caloriesIn: index < 16 ? 3200 : 2500,
+    }));
+    expect(energyBalance(snapshot(records))?.intake).toBe(2500);
   });
 
   it("marca como pendientes los pasos sin datos suficientes", () => {

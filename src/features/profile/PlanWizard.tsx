@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { TermTip } from "@/src/features/profile/TermTip";
-import { FirstRunSetup } from "@/src/features/profile/FirstRunSetup";
+import { FirstRunSetup, hasFirstRunSetup } from "@/src/features/profile/FirstRunSetup";
 import { Pressable, ScrollView, View } from "react-native";
 import { Text } from "@/src/components/Text";
 
@@ -175,7 +175,7 @@ export function Onboarding({
     if (weightKg === null)
       await saveDayBody({ weightKg: input.weightKg, bodyFatPct: input.bodyFatPct ?? null });
     // La primera vez, antes del Panel: recordatorios y Health Connect en un solo paso.
-    if (!profile) return setFinished(theme);
+    if (!profile && hasFirstRunSetup) return setFinished(theme);
     onSaved();
     if (theme !== THEME) switchTheme(theme);
   };

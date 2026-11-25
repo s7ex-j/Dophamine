@@ -150,7 +150,7 @@ function Tile({
         </View>
         <Ionicons name={icon} size={18} color={AppTheme.colors.muted} />
       </View>
-      <View style={{ minHeight: 56, justifyContent: "center" }}>{children}</View>
+      <View style={{ flexGrow: 1, minHeight: 56, justifyContent: "center" }}>{children}</View>
       <View
         style={[
           AppTheme.sectionHeader,
@@ -309,7 +309,7 @@ export function GoalTile({
       onPress={onPress}
     >
       {progress ? (
-        <>
+        <View style={{ gap: 8, paddingVertical: 6 }}>
           <View style={AppTheme.goalTrack}>
             <View style={[AppTheme.goalFill, { width: `${progress.percent}%` }]} />
           </View>
@@ -323,7 +323,7 @@ export function GoalTile({
           ) : eta?.direction === "away" ? (
             <Text style={[AppTheme.tileSubtitle, { color: AppTheme.colors.warning }]}>Te estás alejando</Text>
           ) : null}
-        </>
+        </View>
       ) : (
         <Waiting text={target === 0 ? "Objetivo: peso estable" : "Define una meta en Estrategia."} />
       )}

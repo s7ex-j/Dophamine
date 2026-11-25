@@ -67,7 +67,7 @@ import { getSleepSince } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
 import { VIEWER } from "@/src/lib/mode";
 import { refreshWidget } from "@/src/features/widget/refresh";
-import { syncHealthConnectDaily } from "@/src/features/health/healthConnect.repository";
+import { dropTodayImport, syncHealthConnectDaily } from "@/src/features/health/healthConnect.repository";
 import { autoBackupIfDue } from "@/src/features/backup/backup.repository";
 import { AppTheme } from "@/src/theme";
 
@@ -132,7 +132,11 @@ export default function DashboardScreen() {
   // Una vez al día, lo nuevo de Health Connect (si ya se dio permiso) entra solo y el Panel se recarga.
   useEffect(() => {
     if (VIEWER) return;
-    syncHealthConnectDaily()
+    dropTodayImport()
+      .then((dropped) => {
+        if (dropped) load();
+        return syncHealthConnectDaily();
+      })
       .then((result) => {
         if (result && (result.weights || result.nights || result.stepDays || result.foodDays)) load();
       })

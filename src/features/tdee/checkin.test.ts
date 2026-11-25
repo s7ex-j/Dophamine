@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
-import { buildNutritionProfile } from "@/src/features/profile/profile";
+import { buildNutritionProfile, targetWeeklyRateKg } from "@/src/features/profile/profile";
 import { addWaterMl, formatWater, waterTargetMl } from "@/src/features/water/water";
 import { analyzeMetabolism } from "./tdee";
 import { adherenceGap, averageIntake, contextualCheckIn, inDeadZone, taperFactor } from "./checkin";
@@ -47,6 +47,24 @@ describe("revisión con contexto", () => {
     const checkIn = contextualCheckIn(analysis, profile, { recent, sleepMinutes: 450 });
     expect(checkIn.delta).toBe(-100);
     expect(checkIn.reasons).toEqual([]);
+  });
+
+  it("yendo justo al ritmo no propone cambios, sea cual sea la energía por kilo", () => {
+    const rate = targetWeeklyRateKg(profile, 75) as number;
+    for (const density of [5000, 7700, 9400]) {
+      const onPace = {
+        ...analysis,
+        adaptive: undefined,
+        energyPerKg: density,
+        weeklyRateKg: rate,
+        tdee: Math.round(profile.calorieTarget - (rate * density) / 7),
+      };
+      const goalFar = { ...profile, goalWeightKg: 60 };
+      const eaten = recent.map((record) => ({ ...record, caloriesIn: profile.calorieTarget }));
+      expect(
+        Math.abs(contextualCheckIn(onPace, goalFar, { recent: eaten, sleepMinutes: 450 }).delta ?? 99),
+      ).toBeLessThan(5);
+    }
   });
 
   it("con el motor de autoajuste, una diferencia menor que su incertidumbre no se persigue", () => {

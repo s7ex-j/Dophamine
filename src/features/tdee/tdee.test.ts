@@ -7,6 +7,7 @@ import {
   analyzeMetabolism,
   simpleAnalysis,
   energyBalance,
+  bodyPriorOf,
   energyPerKg,
   expenditureSeries,
   KCAL_PER_KG_DEFAULT,
@@ -613,5 +614,105 @@ describe("0.42.1: composición que no es posible o trae mucho ruido", () => {
     }).sort((a, b) => a - b);
     expect(values[10]).toBeGreaterThan(6500);
     expect(values[100]).toBeGreaterThan(7700);
+  });
+});
+
+describe("punto de partida de la energía por kilo", () => {
+  const body = { bodyFatPct: 15, strength: false };
+  const at = (perDay: number, start = 70) =>
+    days(30, (index) => ({ weightKg: start + perDay * index, caloriesIn: 2000 }));
+  /** Forbes con los kilos de grasa de la mitad del periodo. */
+  const forbes = (kg: number, pct: number) => {
+    const fat = (kg * pct) / 100;
+    const share = fat / (fat + 10.4);
+    return 9400 * share + 1800 * (1 - share);
+  };
+
+  it("al bajar sin entrenar fuerza parte de Forbes, según la grasa", () => {
+    const records = at(-0.07);
+    const middle = 70 - 0.07 * 14.5;
+    expect(energyPerKg(records, body)).toBeCloseTo(forbes(middle, 15), -1);
+    expect(energyPerKg(records, { ...body, bodyFatPct: 35 })).toBeCloseTo(forbes(middle, 35), -1);
+    expect(energyPerKg(records, body)).toBeLessThan(energyPerKg(records, { ...body, bodyFatPct: 25 }));
+  });
+
+  it("sigue en 7700 con fuerza, sin datos, al subir, estable o con un % imposible", () => {
+    const losing = at(-0.07);
+    for (const [records, prior] of [
+      [losing, undefined],
+      [losing, { ...body, strength: true }],
+      [losing, { strength: false }],
+      [losing, { ...body, bodyFatPct: 2 }],
+      [losing, { ...body, bodyFatPct: 75 }],
+      [at(0.07), body],
+      [at(0), body],
+      [losing.slice(0, 1), body],
+      [[], body],
+    ] as const)
+      expect(energyPerKg([...records], prior)).toBe(KCAL_PER_KG_DEFAULT);
+  });
+
+  it("entra de a poco: un ritmo apenas distinto no hace saltar el valor", () => {
+    const values = Array.from({ length: 41 }, (_, step) => energyPerKg(at(-step * 0.001), body));
+    values.slice(1).forEach((value, index) => {
+      expect(value).toBeLessThanOrEqual(values[index]);
+      expect(values[index] - value).toBeLessThan(90);
+    });
+  });
+
+  it("las lecturas mandan sobre el % del plan y, si muestran qué se pierde, sobre Forbes", () => {
+    const records = at(-0.07);
+    const fixed = records.map((record, index) => (index < 2 ? { ...record, bodyFatPct: 30 } : record));
+    expect(energyPerKg(fixed, body)).toBeCloseTo(forbes(70 - 0.07 * 14.5, 30), -1);
+    // Todo lo perdido es grasa, bien medido: queda cerca de 9400 aunque Forbes diga mucho menos.
+    const onlyFat = records.map((record, index) => ({
+      ...record,
+      bodyFatPct: ((10.5 - 0.07 * index) / (record.weightKg as number)) * 100,
+    }));
+    expect(energyPerKg(onlyFat, body)).toBeGreaterThan(8300);
+    // Una báscula imposible no sirve ni como punto de partida.
+    const broken = records.map((record, index) => ({ ...record, bodyFatPct: 15 + index * 0.15 }));
+    expect(energyPerKg(broken, body)).toBe(KCAL_PER_KG_DEFAULT);
+  });
+
+  it("acerca el gasto al real en quien pierde según Forbes, también con el motor", () => {
+    const gauss = noise(21);
+    let weight = 70;
+    let fat = 10.5;
+    const records = days(40, () => ({ weightKg: 0, caloriesIn: 0 }));
+    for (const record of records) {
+      record.caloriesIn = Math.round(1900 + 150 * gauss());
+      record.weightKg = weight + 0.3 * gauss();
+      const share = fat / (fat + 10.4);
+      const change = (record.caloriesIn - 2400) / (9400 * share + 1800 * (1 - share));
+      weight += change;
+      fat += change * share;
+    }
+    for (const run of [
+      (prior?: typeof body) => simpleAnalysis(records, undefined, undefined, prior).tdee ?? 0,
+      (prior?: typeof body) => analyzeMetabolism(records, { body: prior, range: false }).tdee ?? 0,
+    ]) {
+      expect(Math.abs(run(body) - 2400)).toBeLessThan(90);
+      expect(Math.abs(run() - 2400)).toBeGreaterThan(Math.abs(run(body) - 2400) + 60);
+    }
+  });
+
+  it("el plan solo lo activa si dice que no se entrena fuerza", () => {
+    expect(bodyPriorOf(null)).toBeUndefined();
+    expect(bodyPriorOf({ bodyFatPct: 20 })).toBeUndefined();
+    expect(bodyPriorOf({ trainingDays: 0, bodyFatPct: 20 })).toEqual({ bodyFatPct: 20, strength: false });
+    expect(bodyPriorOf({ trainingDays: 4, trainingType: "cardio" })?.strength).toBe(false);
+    expect(bodyPriorOf({ trainingDays: 1, trainingType: "strength" })?.strength).toBe(false);
+    expect(bodyPriorOf({ trainingDays: 2, trainingType: "mixed" })?.strength).toBe(true);
+    expect(bodyPriorOf({ trainingDays: 3 })?.strength).toBe(true);
+  });
+
+  it("la serie por día usa el mismo punto de partida que el gasto", () => {
+    const records = at(-0.07).map((record, index) =>
+      index % 6 === 5 ? { ...record, caloriesIn: 0 } : record,
+    );
+    const analysis = analyzeMetabolism(records, { body });
+    expect(analysis.adaptive?.active).toBe(false);
+    expect(expenditureSeries(records, 1, { analysis })[0].tdee).toBe(analysis.tdee);
   });
 });

@@ -12,6 +12,9 @@ import { Term } from "@/src/features/streak/Term";
 import { haptic } from "@/src/lib/haptics";
 import { AppTheme } from "@/src/theme";
 
+/** En la web no hay ni recordatorios ni Health Connect: el paso no tendría nada y se salta. */
+export const hasFirstRunSetup = remindersAvailable;
+
 const REMINDERS_KEY = "meal_reminders";
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -38,7 +41,7 @@ export function FirstRunSetup({ mealsPerDay, onDone }: { mealsPerDay?: number; o
           <View style={{ flex: 1 }}>
             <SpeechBubble tail="left" tailOffset={14}>
               <Text style={[AppTheme.body, { fontSize: 14, lineHeight: 20 }]}>
-                Dos cosas más y empezamos. Puedes saltarlas y hacerlas después en Más.
+                Un último paso y empezamos. Puedes saltarlo y hacerlo después en Más.
               </Text>
             </SpeechBubble>
           </View>
