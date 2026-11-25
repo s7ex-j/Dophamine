@@ -108,15 +108,22 @@ async function main() {
     if (prepare) await prepare();
     if (scrollTo) {
       await waitText(scrollTo);
+      // Espera a que la pantalla termine de cargar: si no, se vuelve a dibujar arriba.
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       await page.evaluate((text) => {
-        const target = [...document.querySelectorAll("div[dir='auto'], span, div")].find(
-          (node) => node.childElementCount === 0 && node.textContent.trim() === text,
-        );
-        target?.scrollIntoView({ block: "start" });
-        // Deja ver el título debajo de la barra fina de arriba.
-        let parent = target?.parentElement;
-        while (parent && parent.scrollHeight <= parent.clientHeight) parent = parent.parentElement;
-        parent?.scrollBy(0, -60);
+        const target = [...document.querySelectorAll("div[dir='auto'], span, div")]
+          .filter((node) => node.childElementCount === 0 && node.textContent.trim() === text)
+          .pop();
+        if (!target) return;
+        // Se mueve la lista que de verdad se desplaza, dejando libre la barra fina de arriba.
+        let list = target.parentElement;
+        while (
+          list &&
+          !(list.scrollHeight > list.clientHeight + 5 && /auto|scroll/.test(getComputedStyle(list).overflowY))
+        )
+          list = list.parentElement;
+        if (list)
+          list.scrollTop += target.getBoundingClientRect().top - list.getBoundingClientRect().top - 72;
       }, scrollTo);
     }
     await new Promise((resolve) => setTimeout(resolve, 1600));
@@ -1307,8 +1314,7 @@ async function main() {
         profile: { ...saved.profile, startWeightKg: 81.5, goalWeightKg: 74, calorieTarget: 2300 },
       };
       await seed(example);
-      await pantalla("hoy", "/");
-      await pantalla("calendario", "/calendar", { prepare: () => page.click('[aria-label^="Ayer,"]') });
+      await pantalla("hoy", "/", { scrollTo: "Tu progreso" });
       await pantalla("mas", "/more");
       // Los otros temas, solo para revisarlos a ojo.
       for (const theme of ["pastel", "light"]) {

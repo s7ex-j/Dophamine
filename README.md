@@ -22,13 +22,9 @@ cada pocos días, te propone un ajuste pequeño con su porqué. Sin cuentas, sin
 
 <table>
   <tr>
-    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Panel del día" width="200" /><br /><sub><b>Panel</b><br />Lo que te queda y tus últimos días</sub></td>
-    <td align="center"><img src="web/public/pantallas/calendario.webp" alt="Calendario de objetivos" width="200" /><br /><sub><b>Calendario</b><br />Seis objetivos por día, de un vistazo</sub></td>
+    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Panel con los gráficos de progreso" width="200" /><br /><sub><b>Panel</b><br />Tu progreso en gráficos</sub></td>
+    <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Entreno con la silueta muscular" width="200" /><br /><sub><b>Entreno</b><br />Los músculos de tu semana</sub></td>
     <td align="center"><img src="web/public/pantallas/analisis.webp" alt="Estrategia" width="200" /><br /><sub><b>Estrategia</b><br />Tu plan y la revisión cada 3 o 7 días</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Entreno" width="200" /><br /><sub><b>Entreno</b><br />Tu semana y los músculos trabajados</sub></td>
-    <td align="center"><img src="web/public/pantallas/dieta.webp" alt="Dieta" width="200" /><br /><sub><b>Dieta</b><br />Tu dieta por día, con horario</sub></td>
     <td align="center"><img src="web/public/pantallas/mas.webp" alt="Más" width="200" /><br /><sub><b>Más</b><br />Tu plan, tus datos y los ajustes</sub></td>
   </tr>
 </table>

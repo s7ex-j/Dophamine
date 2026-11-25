@@ -283,10 +283,8 @@ function TrendChart() {
    Es un teléfono genérico dibujado con CSS (ver index.css), sin marca. */
 
 const pantallas = [
-  { id: "hoy", nombre: "Panel", texto: "Lo que te queda del día, tus últimos días y tu progreso." },
-  { id: "calendario", nombre: "Calendario", texto: "Cada día se llena con sus seis objetivos: toca uno y mira qué faltó." },
-  { id: "dieta", nombre: "Dieta", texto: "Tu dieta por día de la semana, con la comida de antes y después de entrenar." },
-  { id: "entreno", nombre: "Entreno", texto: "Tu semana de entreno y los músculos que trabajaste." },
+  { id: "hoy", nombre: "Panel", texto: "Tu progreso en gráficos: gasto, tendencia, balance, meta, macros y sueño." },
+  { id: "entreno", nombre: "Entreno", texto: "Los músculos que trabajaste esta semana, sobre la silueta." },
   { id: "analisis", nombre: "Estrategia", texto: "Tu plan, la revisión cada 3 o 7 días y el progreso hacia tu meta." },
   { id: "mas", nombre: "Más", texto: "Tu plan, tus datos de hoy y los ajustes, en un solo lugar." },
 ]

@@ -22,13 +22,9 @@ every few days, suggests a small adjustment and explains why. No accounts, no se
 
 <table>
   <tr>
-    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Dashboard" width="200" /><br /><sub><b>Dashboard</b><br />What's left today and your last days</sub></td>
-    <td align="center"><img src="web/public/pantallas/calendario.webp" alt="Goal calendar" width="200" /><br /><sub><b>Calendar</b><br />Six daily goals at a glance</sub></td>
+    <td align="center"><img src="web/public/pantallas/hoy.webp" alt="Dashboard with progress charts" width="200" /><br /><sub><b>Dashboard</b><br />Your progress in charts</sub></td>
+    <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Training with the muscle map" width="200" /><br /><sub><b>Training</b><br />The muscles of your week</sub></td>
     <td align="center"><img src="web/public/pantallas/analisis.webp" alt="Strategy" width="200" /><br /><sub><b>Strategy</b><br />Your plan and the 3- or 7-day review</sub></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="web/public/pantallas/entreno.webp" alt="Training" width="200" /><br /><sub><b>Training</b><br />Your week and the muscles you worked</sub></td>
-    <td align="center"><img src="web/public/pantallas/dieta.webp" alt="Diet" width="200" /><br /><sub><b>Diet</b><br />Your diet by day, on a schedule</sub></td>
     <td align="center"><img src="web/public/pantallas/mas.webp" alt="More" width="200" /><br /><sub><b>More</b><br />Your plan, your data and settings</sub></td>
   </tr>
 </table>
