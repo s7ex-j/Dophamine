@@ -210,8 +210,9 @@ export async function autoBackupIfDue(): Promise<string | null> {
   const today = localDateKey();
   const saved = await getSetting(AUTO_KEY);
   const last = typeof saved === "string" ? saved : null;
-  if (!autoBackupDue(last, today)) return last;
   const current = autoFile();
+  // Tras restaurar en otro teléfono la fecha viene del respaldo, pero la copia no existe aquí: toca hacerla.
+  if (current.exists && !autoBackupDue(last, today)) return last;
   if (current.exists) {
     const previous = previousFile();
     if (previous.exists) previous.delete();

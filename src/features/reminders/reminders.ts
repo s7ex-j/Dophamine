@@ -48,6 +48,13 @@ export const WEEKDAYS: Array<{ id: Weekday; short: string; label: string }> = [
 const SYSTEM_WEEKDAY: Record<Weekday, number> = { sun: 1, mon: 2, tue: 3, wed: 4, thu: 5, fri: 6, sat: 7 };
 const MINUTES_PER_DAY = 24 * 60;
 
+/** Ajuste donde se guarda la configuración. */
+export const REMINDERS_KEY = "meal_reminders";
+
+/** Hay algún aviso encendido (comidas, pesaje o antes de entrenar). */
+export const anyReminder = (config: ReminderConfig) =>
+  config.enabled || Boolean(config.weighIn?.enabled) || Boolean(config.preWorkout?.enabled);
+
 export const MOTIVATION = [
   "Cada comida a tiempo suma a tu meta.",
   "La constancia gana a la perfección.",

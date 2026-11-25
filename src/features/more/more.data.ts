@@ -13,6 +13,7 @@ import {
   type TileText,
 } from "@/src/features/more/more";
 import { goalLabels, goalProgress, weightUnitOf } from "@/src/features/profile/profile";
+import { REMINDERS_KEY } from "@/src/features/reminders/reminders";
 import { getSetting } from "@/src/features/settings/settings.repository";
 import { getStreakSummary } from "@/src/features/streak/streak.data";
 import { getRecentWellbeingEntries } from "@/src/features/wellbeing/wellbeing.repository";
@@ -46,7 +47,7 @@ export async function getMoreSummary(): Promise<MoreSummary> {
       getHealth(),
       getSetting(CHALLENGES_KEY),
       lastAutoBackup(),
-      getSetting("meal_reminders"),
+      getSetting(REMINDERS_KEY),
     ]);
   const { profile, trendKg } = snapshot;
   const unit = profile ? weightUnitOf(profile) : "kg";

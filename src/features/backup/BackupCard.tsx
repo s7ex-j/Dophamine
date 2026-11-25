@@ -4,6 +4,7 @@ import { View } from "react-native";
 import { Text } from "@/src/components/Text";
 
 import { Button, Card, LinkButton } from "@/src/components/ui";
+import { afterRestore } from "@/src/features/backup/afterRestore";
 import { BackupError, describeBackup, parseBackup, type Backup } from "@/src/features/backup/backup";
 import {
   backupAvailable,
@@ -66,12 +67,16 @@ export function BackupCard({
     if (!pending) return;
     try {
       await restoreBackup(pending);
-      setPending(null);
-      setMessage("Datos restaurados.");
-      onRestored();
     } catch {
       setMessage("No se pudo restaurar el respaldo. Tus datos anteriores siguen intactos.");
+      return;
     }
+    setPending(null);
+    setMessage("Datos restaurados.");
+    // El visor no programa avisos ni toca los datos que muestra.
+    const notice = VIEWER ? null : await afterRestore();
+    if (notice) setMessage(`Datos restaurados. ${notice}`);
+    onRestored();
   };
 
   return (

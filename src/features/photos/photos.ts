@@ -42,6 +42,10 @@ export function readPhotos(value: unknown): ProgressPhoto[] {
     .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 }
 
+/** Solo las fotos cuya imagen está en este teléfono (tras restaurar un respaldo de otro). */
+export const keepPhotos = (list: ProgressPhoto[], exists: (file: string) => boolean) =>
+  list.filter((photo) => exists(photo.file));
+
 export const addPhoto = (list: ProgressPhoto[], photo: ProgressPhoto) => readPhotos([photo, ...list]);
 export const removePhoto = (list: ProgressPhoto[], id: string) => list.filter((item) => item.id !== id);
 

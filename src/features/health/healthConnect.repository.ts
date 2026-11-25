@@ -7,10 +7,12 @@ import {
   setDaySteps,
 } from "@/src/features/biometrics/biometrics.repository";
 import {
+  dayRange,
   foodToImport,
   IMPORT_DAYS,
   nightsToImport,
-  stepsByDay,
+  readAllPages,
+  stepsToImport,
   weightsToImport,
 } from "@/src/features/health/healthConnect";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
@@ -61,7 +63,7 @@ export function openHealthConnect() {
  * sin datos: lo anotado a mano no se toca. Devuelve cuántos días de peso y noches se agregaron.
  */
 export async function importFromHealthConnect({ ask = true }: { ask?: boolean } = {}): Promise<HealthImport> {
-  const { getGrantedPermissions, initialize, readRecords, requestPermission } = native();
+  const { aggregateRecord, getGrantedPermissions, initialize, readRecords, requestPermission } = native();
   await initialize();
   // Al abrir la app no se pregunta nada: solo se usa lo que la persona ya permitió.
   const granted = ask ? await requestPermission([...PERMISSIONS]) : await getGrantedPermissions();
@@ -91,8 +93,12 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
 
   let weights = 0;
   if (allowed("Weight")) {
-    const weightRecords = (await readRecords("Weight", { timeRangeFilter })).records;
-    const fatRecords = allowed("BodyFat") ? (await readRecords("BodyFat", { timeRangeFilter })).records : [];
+    const weightRecords = await readAllPages((pageToken) =>
+      readRecords("Weight", { timeRangeFilter, pageToken }),
+    );
+    const fatRecords = allowed("BodyFat")
+      ? await readAllPages((pageToken) => readRecords("BodyFat", { timeRangeFilter, pageToken }))
+      : [];
     const toSave = weightsToImport(
       weightRecords.map((record) => ({ time: record.time, kg: record.weight.inKilograms })),
       fatRecords.map((record) => ({ time: record.time, pct: record.percentage })),
@@ -105,7 +111,9 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
 
   let nights = 0;
   if (allowed("SleepSession")) {
-    const sleepRecords = (await readRecords("SleepSession", { timeRangeFilter })).records;
+    const sleepRecords = await readAllPages((pageToken) =>
+      readRecords("SleepSession", { timeRangeFilter, pageToken }),
+    );
     const toSave = nightsToImport(
       sleepRecords.map((record) => ({ start: record.startTime, end: record.endTime })),
       daysWithSleep,
@@ -121,17 +129,25 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
   // Los pasos no se anotan a mano: lo de Health Connect manda.
   let stepDays = 0;
   if (allowed("Steps")) {
-    const stepRecords = (await readRecords("Steps", { timeRangeFilter })).records;
-    const toSave = stepsByDay(
-      stepRecords.map((record) => ({ start: record.startTime, count: record.count })),
-    );
+    // El total del día lo da Health Connect: si el reloj y el teléfono anotan los mismos pasos, no se suman.
+    const totals: Array<{ date: string; total: number | null | undefined }> = [];
+    for (const date of days) {
+      const day = await aggregateRecord({
+        recordType: "Steps",
+        timeRangeFilter: { operator: "between", ...dayRange(date) },
+      });
+      totals.push({ date, total: day.COUNT_TOTAL });
+    }
+    const toSave = stepsToImport(totals);
     for (const day of toSave) await setDaySteps(day.date, day.steps);
     stepDays = toSave.length;
   }
 
   let foodDays = 0;
   if (allowed("Nutrition")) {
-    const mealRecords = (await readRecords("Nutrition", { timeRangeFilter })).records;
+    const mealRecords = await readAllPages((pageToken) =>
+      readRecords("Nutrition", { timeRangeFilter, pageToken }),
+    );
     const toSave = foodToImport(
       mealRecords.map((record) => ({
         start: record.startTime,
@@ -139,6 +155,7 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
         proteinG: record.protein?.inGrams ?? 0,
         carbsG: record.totalCarbohydrate?.inGrams ?? 0,
         fatsG: record.totalFat?.inGrams ?? 0,
+        source: record.metadata?.dataOrigin ?? "",
       })),
       daysWithFood,
     );

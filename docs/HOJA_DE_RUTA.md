@@ -81,17 +81,15 @@ Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
 Con la 0.41.0 se cierra la serie 0.x: Health Connect se sincroniza solo una vez al día, el primer uso ofrece
 recordatorios e importación, hay una copia semanal dentro del teléfono y el APK solo lleva arquitecturas de teléfono.
 
-## 0.42.1 — Correcciones de datos (antes de la 1.0.0)
+## 0.42.0 — Correcciones de datos
 
-Encontradas en una revisión del código de la 0.41.0. Necesitan un APK nuevo.
+Hechas y probadas fuera del teléfono; falta confirmarlas con Health Connect real.
 
-| # | Corrección | Dónde | Por qué |
-|---|---|---|---|
-| 1 | Pasos y comida con agregación por día (`aggregateGroupByPeriod`) en lugar de sumar registros | `healthConnect.repository.ts` | Con dos apps (reloj y teléfono, Samsung Health y Google Fit) se cuentan dos veces |
-| 2 | Lectura paginada (`pageToken`) común para peso, grasa y sueño | `healthConnect.repository.ts` | Health Connect entrega como mucho 1000 registros por página |
-| 3 | `versionCode` calculado de la versión, con prueba | `app.json`, `src/lib/version.test.ts` | Hecho en la 0.42.0 |
-| 4 | Al restaurar, quitar las fotos cuya imagen no está en el teléfono | `src/features/photos/`, restaurar respaldo | Hoy quedan referencias huérfanas que viajan en los respaldos siguientes |
-| 5 | Pruebas contra duplicados y reimportaciones de Health Connect | `healthConnect.test.ts` | Que la misma importación dos veces no cambie nada |
+- Pasos: total diario con `aggregateRecord` (un día local a la vez). Comida: una sola app por día, la más completa.
+- Lectura paginada (`readAllPages`) para peso, grasa, sueño y comida.
+- `versionCode` calculado de la versión, con prueba.
+- Al restaurar: recordatorios reprogramados, fotos sin imagen fuera y copia semanal si no existe.
+- Pruebas contra duplicados y reimportaciones.
 
 ## 1.0.0 — Primera versión estable
 
@@ -99,7 +97,7 @@ La idea: que Dophamine no solo registre, sino que ayude a entender cómo evoluci
 qué. Todo con los datos y piezas que ya existen: sin servidores, cuentas ni librerías pesadas (el APK de la 0.41.0
 pesa 113 MB y es la referencia).
 
-**Bloque A — Integridad de datos:** lo de la 0.42.1, si no salió antes.
+**Bloque A — Integridad de datos:** hecho en la 0.42.0; falta confirmarlo en el teléfono.
 
 **Bloque B — Experiencia diaria**
 

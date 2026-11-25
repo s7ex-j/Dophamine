@@ -19,6 +19,8 @@ Nada todavía.
 - **Estrategia rediseñada:** la trayectoria de tu peso hasta la meta con su fecha, lo que gastas contra lo que comes, la revisión con el cambio sugerido aparte y la semana con un día elegible. El plan y lo demás van en filas con ícono. No probada en un teléfono.
 - **Cuatro temas:** Bosque y Claro (verde), Rosa noche y Rosa día. Rosa noche reemplaza a Pastel, donde los colores de los datos se confundían; quien usaba Pastel pasa a Rosa noche al actualizar.
 - **Respaldo explicado:** la pantalla Respaldo dice cómo actualizar sin perder datos, guardar un respaldo, recuperarlo y qué incluye.
+- **Restaurar un respaldo** vuelve a programar los recordatorios, quita las fotos cuya imagen no está en el teléfono y hace la copia semanal si aquí no existe.
+- **Health Connect:** los pasos usan el total diario que da el sistema, así dos apps no se suman; la comida usa una sola app por día, la más completa; y se leen todas las páginas, no solo los primeros 1000 registros. Con pruebas de importar dos veces. No probado en un teléfono.
 - **Código de versión de Android** calculado de la versión (4200), con una prueba que falla si no coincide.
 - **Más, rediseñada:** tu plan arriba, cuatro mosaicos con el dato de hoy (hábitos, bienestar, racha y medidas), el resto por grupos con ícono y los ajustes en la misma fila. Respaldo, Health Connect y exportar pasan a su propia pantalla. No probado en un teléfono.
 - En la web, los nombres de las pestañas ya no salen cortados.

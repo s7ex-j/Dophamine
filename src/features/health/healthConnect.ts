@@ -65,41 +65,74 @@ export function nightsToImport(sleeps: HealthSleep[], daysWithSleep: Set<string>
   return [...longest.values()].map((item) => item.night).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export type HealthSteps = { start: string; count: number };
-export type HealthMeal = { start: string; kcal: number; proteinG: number; carbsG: number; fatsG: number };
+export type HealthMeal = {
+  start: string;
+  kcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatsG: number;
+  /** La app que lo escribió en Health Connect. */
+  source: string;
+};
 export type DaySteps = { date: string; steps: number };
 export type DayFood = { date: string; kcal: number; proteinG: number; carbsG: number; fatsG: number };
 
-/** Los pasos de cada día, sumados por el día en que empezó cada tramo. */
-export function stepsByDay(steps: HealthSteps[]): DaySteps[] {
-  const totals = new Map<string, number>();
-  for (const item of steps) {
-    if (!(item.count > 0)) continue;
-    const date = localDateKey(new Date(item.start));
-    totals.set(date, (totals.get(date) ?? 0) + item.count);
+type Page<T> = { records: T[]; pageToken?: string };
+/** Más páginas que esto en 30 días es un error de lectura, no datos. */
+const MAX_PAGES = 50;
+
+/** Lee todas las páginas: Health Connect entrega hasta 1000 registros por vez. */
+export async function readAllPages<T>(read: (pageToken?: string) => Promise<Page<T>>): Promise<T[]> {
+  const all: T[] = [];
+  const seen = new Set<string>();
+  let token: string | undefined;
+  for (let page = 0; page < MAX_PAGES; page += 1) {
+    const result = await read(token);
+    all.push(...result.records);
+    // Sin página siguiente, o una repetida: se terminó.
+    if (!result.pageToken || seen.has(result.pageToken)) return all;
+    seen.add(result.pageToken);
+    token = result.pageToken;
   }
-  return [...totals.entries()]
-    .map(([date, total]) => ({ date, steps: Math.round(total) }))
+  return all;
+}
+
+/** Inicio y fin de un día local, como instantes (sirve también en los cambios de hora). */
+export function dayRange(date: string): { startTime: string; endTime: string } {
+  const [year, month, day] = date.split("-").map(Number);
+  return {
+    startTime: new Date(year, month - 1, day).toISOString(),
+    endTime: new Date(year, month - 1, day + 1).toISOString(),
+  };
+}
+
+/** Los pasos de cada día a partir de su total (Health Connect ya descarta lo repetido entre apps). */
+export function stepsToImport(totals: Array<{ date: string; total: number | null | undefined }>): DaySteps[] {
+  return totals
+    .flatMap(({ date, total }) => (total && total > 0 ? [{ date, steps: Math.round(total) }] : []))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 /**
- * Lo comido cada día según otras apps, solo en los días sin comida anotada en Dophamine: así un día
- * registrado aquí nunca se suma dos veces.
+ * Lo comido cada día según otras apps, solo en los días sin comida anotada en Dophamine. Si varias apps
+ * anotaron el mismo día se usa una sola, la más completa: sumarlas contaría dos veces lo mismo.
  */
 export function foodToImport(meals: HealthMeal[], daysWithFood: Set<string>): DayFood[] {
-  const totals = new Map<string, DayFood>();
+  const byDay = new Map<string, Map<string, DayFood>>();
   for (const meal of meals) {
     const date = localDateKey(new Date(meal.start));
     if (daysWithFood.has(date)) continue;
-    const day = totals.get(date) ?? { date, kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 };
+    const sources = byDay.get(date) ?? new Map<string, DayFood>();
+    const day = sources.get(meal.source) ?? { date, kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 };
     day.kcal += meal.kcal;
     day.proteinG += meal.proteinG;
     day.carbsG += meal.carbsG;
     day.fatsG += meal.fatsG;
-    totals.set(date, day);
+    sources.set(meal.source, day);
+    byDay.set(date, sources);
   }
-  return [...totals.values()]
+  return [...byDay.values()]
+    .map((sources) => [...sources.values()].reduce((best, day) => (day.kcal > best.kcal ? day : best)))
     .filter((day) => day.kcal > 0)
     .map((day) => ({
       date: day.date,

@@ -11,6 +11,7 @@ import {
   dayError,
   defaultConfig,
   normalizeConfig,
+  REMINDERS_KEY,
   normalizeTime,
   sortMeals,
   templateMeals,
@@ -25,7 +26,7 @@ import { getSetting, setSetting } from "@/src/features/settings/settings.reposit
 import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
-const KEY = "meal_reminders";
+const KEY = REMINDERS_KEY;
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export default function RemindersScreen() {
