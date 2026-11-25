@@ -21,8 +21,7 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 - **Reparto:** el objetivo de calorías y macros es el mismo todos los días, entrenes o no.
 - **Mapa muscular propio:** hecho desde cero. No copio código ni SVG de openGym (AGPL-3.0).
 - **Un solo APK publicado**, siempre el de la última versión (`dophamine.apk`, ver `docs/RELEASING.md`).
-- **Versiones:** la 0.41.0 fue el primer APK definitivo. La 0.42.0 ordena el Panel y Más; lo siguiente grande va en la
-  1.0.0.
+- **Versiones:** lo siguiente grande va en la 1.0.0. Lo ya hecho está en `CHANGELOG.md`, no aquí.
 
 **Lo que ya hace:**
 
@@ -40,72 +39,24 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
   te sientes, tus alergias y lo que indicó tu médico. Nada se aplica solo.
 - Health Connect, sueño estimado por uso del teléfono, widget de inicio y análisis de fotos de progreso.
 
-**Comprobado en teléfono:** la app en Expo Go (Android) desde la 0.9.0 y el APK 0.30.0. **Sin comprobar en
-teléfono** (lo dice cada versión del CHANGELOG): cada cambio nuevo hasta recorrerlo en el teléfono.
+**Comprobado en teléfono:** la 0.42.1 y la 0.42.2 se instalaron y probaron en un teléfono Android antes de publicarlas,
+en una revisión general. La web instalable se probó en un iPhone antes de la 0.42.2. Lo que falta está abajo.
 
-## Etapa 1 — Completar la app (sin código nativo propio)
+## Por probar
 
-| # | Paso | Estado |
-|---|---|---|
-| 1 | **Probar en un teléfono físico** las pantallas nuevas; lo que falle se anota con captura. | En curso con cada APK. |
-| 2 | Revisión técnica antes del pulido. | Hecho en la 0.20.0. |
-| 3 | Tu dieta y el asesor (alternativas según entreno, ánimo y salud; alergias, análisis de sangre y digestivo). | Hecho en la 0.21.0. |
-| 4 | Motor de autoajuste. | Hecho en la 0.22.0. Falta contrastarlo con datos reales de varias semanas. |
-| 5 | Conexión directa teléfono ↔ web por QR, cifrada y sin servidor. | Hecho en la 0.23.0 (web) y en el APK (teléfono). |
-| 6 | Marcar las fases del ciclo en el gráfico de peso. | Hecho en la 0.41.0. |
-| 7 | Pulido visual y animaciones en toda la app. | Hecho entre la 0.32.0 y la 0.41.0, pantallas secundarias incluidas. |
+| Qué | Falta |
+|---|---|
+| Health Connect | Con Samsung Health o Google Fit y datos reales; que la comida de un día entre completa al día siguiente |
+| Conexión directa con la web | Redes que aíslan dispositivos |
+| Sueño por uso del teléfono | El permiso de "Acceso al uso" en varias marcas |
+| Widget de inicio | Varios lanzadores; pantalla de bloqueo, después |
+| Dictado | Teléfonos sin modelo de voz sin conexión |
+| Etiquetas con la cámara | Etiquetas reales |
+| Análisis de fotos | Fotos reales; ajustar umbrales si la silueta sale mal |
+| Motor | Contrastarlo con varias semanas de datos reales ("Cuánto acierta") y medir en Android lo que tarda cada escenario |
+| Web instalable | La 0.42.2 en un iPhone |
 
-Hecho en la 0.16.0–0.19.0: medidas corporales, calorías por día y tipos de plan, ayuno, alcohol, principales
-aportes, lados, superseries, parciales y myo-reps, calentamiento, gimnasios, mesociclos con descarga, exportar
-CSV, importar y exportar programas, ciclo menstrual, recordatorio de pesaje, fecha estimada a la meta, copiar y
-pegar comidas y días, biblioteca con recetas editables y borrado por fechas o por ejercicio.
-
-**Plate view: no hace falta.** En Agregar se suman varios alimentos a la misma comida en una sola pantalla, con
-el total a la vista.
-
-## Etapa 2 — APK propio (EAS)
-
-Hecho en código en la 0.40.0, **sin probar todavía en un teléfono**:
-
-| Qué | Dónde | Falta |
-|---|---|---|
-| Conexión directa con la web en el teléfono (WebRTC) | `src/features/link/` | Probar: leer el QR de la web, mismo Wi-Fi, redes que aíslan dispositivos |
-| Health Connect: peso, % de grasa, sueño, pasos y comida (30 días, a pedido) | `src/features/health/` (Más) | Probar con Samsung Health o Google Fit |
-| Pasos del día | Panel ("Hoy"), respaldo formato 10 | — |
-| Sueño estimado con el uso del teléfono | `modules/phone-usage` (Kotlin), `src/features/sleep/screenSleep.ts` | Probar el permiso de "Acceso al uso" |
-| Widget de pantalla de inicio (lo que queda del día, agua, pasos) | `src/features/widget/`, `index.js` | Probar en varios lanzadores; pantalla de bloqueo, después |
-| Dictado del alimento (reconocimiento dentro del teléfono) | `src/features/nutrition/dictation.ts` | Probar en teléfonos sin modelo de voz sin conexión |
-| Leer etiquetas nutricionales con la cámara (ML Kit) | `src/features/nutrition/labelCamera.ts` | Probar con etiquetas reales |
-| Análisis de fotos de progreso (MediaPipe + MoveNet) | `src/features/photos/photos.analysis.ts`, `assets/models/` | Probar con fotos reales; ajustar umbrales si la silueta sale mal |
-
-Con la 0.41.0 se cierra la serie 0.x: Health Connect se sincroniza solo una vez al día, el primer uso ofrece
-recordatorios e importación, hay una copia semanal dentro del teléfono y el APK solo lleva arquitecturas de teléfono.
-
-## 0.42.0 — Correcciones de datos
-
-Hechas y probadas fuera del teléfono; falta confirmarlas con Health Connect real.
-
-- Pasos: total diario con `aggregateRecord` (un día local a la vez). Comida: una sola app por día, la más completa.
-- Lectura paginada (`readAllPages`) para peso, grasa, sueño y comida.
-- `versionCode` calculado de la versión, con prueba.
-- Al restaurar: recordatorios reprogramados, fotos sin imagen fuera y copia semanal si no existe.
-- Pruebas contra duplicados y reimportaciones.
-
-## 0.42.2 — Acierto, energía por kilo y textos
-
-"Cómo se calcula" reescrito con la cuenta central y cuánto acertó el motor a 14 días; energía por kilo según la grasa al
-bajar de peso sin entrenar fuerza; la revisión usa la misma energía por kilo que el gasto; topes iguales en los dos lados
-de la conexión directa; la web instalable explica que es para iPhone. Falta probarla en un teléfono. La importación real de
-Health Connect al día siguiente sigue pendiente de alguien que lo use.
-
-## 0.42.1 — Correcciones de cálculo y datos
-
-Hechas, con prueba de regresión: periodos del cálculo simple, error de la pendiente, composición, validación de
-respaldos, comida del día en curso, migraciones, covarianzas, topes de la conexión directa y rango de sensibilidad por
-energía por kilo. Falta medir en Android lo que cuesta correr el motor en cada escenario, y probar en el
-teléfono la actualización desde la 0.42.0 (migración con versión) y Health Connect.
-
-**Después, por separado:**
+## Pendiente, por separado
 
 - Respaldo cifrado con contraseña (el actual sin cifrar se conserva).
 - Compilar Android en CI.
@@ -120,9 +71,7 @@ La idea: que Dophamine no solo registre, sino que ayude a entender cómo evoluci
 qué. Todo con los datos y piezas que ya existen: sin servidores, cuentas ni librerías pesadas (el APK de la 0.41.0
 pesa 113 MB y es la referencia).
 
-**Bloque A — Integridad de datos:** hecho en la 0.42.0; falta confirmarlo en el teléfono.
-
-**Bloque B — Experiencia diaria**
+**Bloque A — Experiencia diaria**
 
 | Qué | Cómo | Dificultad |
 |---|---|---|
@@ -130,7 +79,7 @@ pesa 113 MB y es la referencia).
 | Temporizador de descanso entre series | Dentro de cada entrenamiento en curso: al marcar una serie como hecha arranca la cuenta regresiva con el descanso del ejercicio (`restSeconds` ya existe en el modelo), con +15 s, saltar, pausar y vibración al terminar. Se puede apagar en la sesión | Media |
 | Widget discreto | Ajuste con tres modos: normal (kcal, agua, pasos), discreto (sin cifras) y mínimo (solo el nombre) | Baja |
 
-**Bloque C — Entender el progreso**
+**Bloque B — Entender el progreso**
 
 | Qué | Cómo | Dificultad |
 |---|---|---|
@@ -139,12 +88,11 @@ pesa 113 MB y es la referencia).
 | Fuerza por ejercicio, más visible | El gráfico ya existe en cada ejercicio (1RM estimado, carga máxima, volumen); falta llevarlo a Entreno: los ejercicios que más subieron o se estancaron en las últimas semanas | Baja |
 | Regularidad del sueño | Horas de dormir y despertar de los últimos 30 días y cuánto varían | Baja |
 
-**Bloque D — Validación (en el teléfono)**
+**Bloque C — Validación (en el teléfono)**
 
-- Recorrer todo lo nativo de la 0.40.0 y la 0.41.0: Health Connect con Samsung Health y Google Fit, sueño por
-  uso, widget, dictado, etiquetas con la cámara, fotos, conexión directa con la web.
-- Memoria y rendimiento en un teléfono de gama media; respaldo y restauración entre teléfonos; migración desde
-  la 0.41.0 sin perder datos.
+- Cerrar la lista de "Por probar".
+- Memoria y rendimiento en un teléfono de gama media; respaldo y restauración entre
+  teléfonos.
 - En la 0.42.0: deslizar entre anillos y arco, la tira de fechas, el calendario, y el cierre del día (bajar la hoja,
   tocar fuera, escribir la nota con el teclado).
 - Publicar en Google Play.
@@ -154,7 +102,7 @@ rankings, publicidad, micronutrientes de una base enorme, puntuaciones de salud 
 
 ## iPhone — después de la 1.0.0
 
-Hoy Dophamine solo existe para Android: el APK no se instala en iPhone y nunca compilé ni probé la versión de iOS.
+La app nativa solo existe para Android; en iPhone hay una web instalable. Nunca compilé ni probé la versión de iOS.
 El código ya está preparado en buena parte (Expo genera las dos plataformas y lo que es solo de Android se
 oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto.
 
@@ -176,9 +124,7 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
   deja de abrir a los 7 días y hay que volver a instalarla; no se puede dar a otras personas.
 - **AltStore o SideStore (gratis, no oficial):** instalan apps con un Apple ID gratis, con el mismo límite de 7 días
   y de 3 apps; sirven para probar, no para publicar.
-- **Opción sin Apple:** una versión web completa e instalable (se agrega a la pantalla de inicio desde Safari), con
-  los datos en el navegador. No tendría lo nativo (Apple Health, widget, dictado propio) y cambia la decisión de
-  que la web sea solo un visor: decidirlo antes de hacerla.
+- **Sin Apple:** la web instalable (abajo).
 
 **Camino elegido (sin pagar primero)**
 
@@ -197,7 +143,7 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
 3. **Cuenta de Apple (99 USD al año)** cuando haya suficientes usuarios de iPhone: es la única forma de tener
    Apple Health, widget y recordatorios en iPhone, y de publicar en TestFlight y la App Store.
 
-## Etapa 3 — Solo si el proyecto crece
+## Solo si el proyecto crece
 
 - Licencia de GIFs de Gym Visual para las animaciones de ejercicios.
 
@@ -226,10 +172,3 @@ Offline primero y APK liviano:
 - Cambiar el objetivo calórico sin que la persona lo haya decidido: o acepta cada propuesta, o eligió el modo
   automático, que siempre avisa y se puede deshacer.
 - Presentar el gasto como una cifra exacta, o dar consejo médico.
-
-## Ya hecho de la lista frente a MacroFactor
-
-Historial inteligente por momento del día (0.9.0), fecha estimada para llegar a la meta (0.11.0), tonelaje por
-sesión, ejercicio y semana (0.12.0–0.14.0), web como visor (0.7.0), comidas guardadas (0.14.0), gasto ajustado por
-el entreno real (0.15.0), medidas corporales, macros por día, tipos de plan, ayuno, alcohol y principales aportes
-(0.16.0), lados, superseries, calentamiento, gimnasios y mesociclos con descarga (0.17.0).

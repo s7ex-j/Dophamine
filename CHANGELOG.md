@@ -2,7 +2,7 @@
 
 ## Próxima versión
 
-Nada todavía.
+- **Documentación:** la hoja de ruta queda solo con decisiones y pendientes (lo hecho está aquí); guía de contribución y arquitectura al día.
 
 ## 0.42.2 - 2026-11-25
 
@@ -16,8 +16,7 @@ Nada todavía.
 - **Panel:** la barra de la tarjeta Meta queda separada de su texto y centrada en su espacio.
 - **Primera evaluación en la web instalable:** ya no aparece un último paso vacío; los recordatorios y Health Connect no existen ahí y se entra directo al Panel.
 - **Web instalable fuera de un iPhone:** explica que esa versión es para iPhone, con un código QR para abrirla allí y los pasos para instalarla, y deja seguir en el navegador.
-- No probado en un teléfono.
-- La 0.42.1 se probó en un teléfono antes de publicarla; sus notas de abajo se escribieron antes de esa prueba.
+- Probada en un teléfono Android antes de publicarla. Sin confirmar: Health Connect con datos reales y la web instalable en un iPhone.
 
 ## 0.42.1 - 2026-11-25
 
@@ -35,7 +34,7 @@ Correcciones de cálculo y de datos, cada una con una prueba que reproduce el fa
 - **Health Connect:** la comida del día en curso entra al día siguiente, completa. Una lectura que no llega al final falla en vez de darse por buena.
 - **Base de datos:** migraciones con versión que miran el esquema; un error real se muestra en lugar de ocultarse. Probadas en SQLite real con bases de la 0.5.0 y la 0.42.0. Una sola conexión aunque se pida a la vez.
 - **Conexión directa:** tope de mensajes, tamaño y tiempo para lo que llega a medias. `PRIVACY.md` explica qué lleva el código si se envía por otra app.
-- No probado en un teléfono.
+- Probada en un teléfono Android antes de publicarla. Sin confirmar: Health Connect al día siguiente.
 
 ## 0.42.0 - 2026-11-24
 

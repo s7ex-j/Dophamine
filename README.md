@@ -124,6 +124,9 @@ app/                 Pantallas (expo-router); componen secciones y no calculan
 src/features/        Dominio por área, con sus pruebas (*.test.ts) y repositorios (.ts / .web.ts)
 src/components/      Piezas visuales compartidas
 src/db/              SQLite en el teléfono y almacén local en la web
+modules/, plugins/   Módulo propio de Android y ajustes de compilación
+scripts/, e2e/       Herramientas y recorridos en el navegador
+pwa/                 Íconos de la web instalable (iPhone)
 web/                 Sitio del proyecto (Vite, React 19, Tailwind 4)
 docs/                Arquitectura, privacidad, hoja de ruta y publicación
 ```
@@ -136,6 +139,6 @@ Copyright (C) 2026 Jharol Vilca Ramos. Software libre bajo la **GNU General Publ
 
 **Exercise data by [RepDB](https://repdb.co) (repdb.co).** Las ilustraciones, instrucciones y parte del catálogo de ejercicios vienen del catálogo gratuito de RepDB, con su propia licencia: no quedan bajo la GPL y no se redistribuyen como dataset. Fuentes, librerías y demás terceros en [NOTICE.md](NOTICE.md). Privacidad y salud en [docs/PRIVACY.md](docs/PRIVACY.md).
 
-¿Quieres contribuir? Revisa [CONTRIBUTING.md](CONTRIBUTING.md). Dophamine es gratis y sin anuncios. <!-- TODO: enlace de donaciones -->
+¿Quieres contribuir? Revisa [CONTRIBUTING.md](CONTRIBUTING.md). Dophamine es gratis y sin anuncios.
 
 <div align="center"><sub>Hecho por <a href="https://github.com/s7ex-j">Jharol Vilca Ramos</a></sub></div>

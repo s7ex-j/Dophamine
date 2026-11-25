@@ -1,7 +1,6 @@
 # Arquitectura de Dophamine
 
-Describe la base de la app (capas, datos y fórmulas). La escribí en la 0.20.0 y sigue vigente; la estructura de
-carpetas está en el README.
+Describe la base de la app: capas, datos y fórmulas.
 
 ## La web instalable (PWA)
 
@@ -191,12 +190,12 @@ energía por kilo, del más bajo al más alto de todos.
   datos" y guarda una dieta recibida cuando pulsa "Guardar dieta". La copia llega al visor por el mismo
   camino que un respaldo cargado desde archivo (`parseBackup` → `restoreBackup`).
 - **Plataformas**: en la web usa el WebRTC del navegador. En el teléfono, `peer.ts` usa
-  `globalThis.RTCPeerConnection` si existe; lo registrará `react-native-webrtc` en la app instalada. En Expo
+  `globalThis.RTCPeerConnection`, que registra `react-native-webrtc` en la app instalada. En Expo
   Go no existe y la pantalla lo explica.
 
 ## Respaldo, exportar y borrar
 
-- `backup/backup.ts` arma y valida el respaldo (formato 9, lee del 1 al 8). En el teléfono se comparte con
+- `backup/backup.ts` arma y valida el respaldo (formato 10, lee del 1 al 9). En el teléfono se comparte con
   la hoja del sistema y se restaura en una transacción; en la web se descarga y se carga.
 - `export/export.ts`: CSV del diario, las comidas y las series, y programas en JSON o CSV.
 - `cleanup/cleanup.ts`: borrar por fechas y tipo, o un ejercicio, sobre una copia de los datos que se
@@ -208,13 +207,10 @@ energía por kilo, del más bajo al más alto de todos.
   `toISOString()` ni `date('now')`, que dan el día en UTC.
 - El formato lo decide Prettier (`npm run format`); CI falla si un archivo no está formateado.
 - Lo que cambia la forma de los datos sube `BACKUP_FORMAT` y conserva la lectura del formato anterior.
-- Las columnas nuevas de SQLite se agregan con `ALTER TABLE` dentro de `try` en `src/db/database.ts`.
+- Los cambios de esquema de SQLite van en `src/db/migrations.ts`, con versión y prueba.
 
 ## Límites actuales
 
-- Todo lo nativo (SQLite, cámara, notificaciones, archivos, fotos) compila y pasa los tipos, pero desde la
-  0.14.0 no se ha recorrido en un teléfono físico.
-- Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera. La
-  conexión directa con la web está probada navegador con navegador; en el teléfono espera al APK.
+- Lo nativo se probó de forma general en un teléfono Android; lo que falta recorrer está en la hoja de ruta.
+- Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera.
 - Los alimentos incluidos tienen calorías y macros, no micronutrientes.
-- Health Connect, pasos, widgets y sueño automático esperan al APK propio (ver la hoja de ruta).
