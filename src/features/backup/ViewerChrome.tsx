@@ -27,7 +27,7 @@ export function Brand({ size = 28 }: { size?: number }) {
   );
 }
 
-/** Los tres temas como muestras de color; el elegido lleva un aro. */
+/** Los temas como muestras de color; el elegido lleva un aro. */
 export function ThemeSwitch() {
   const choose = (theme: ThemeId) => {
     if (theme === THEME) return;

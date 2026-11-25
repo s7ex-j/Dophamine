@@ -256,11 +256,12 @@ async function main() {
     await fill("Peso actual", 80);
     await press("Continuar");
     await waitText("Tu estilo");
-    assert(await page.$('[aria-label="Tema Pastel"]'), "La evaluación no ofrece elegir el tema.");
+    await shot("evaluacion-tema");
+    assert(await page.$('[aria-label="Tema Rosa noche"]'), "La evaluación no ofrece elegir el tema.");
     // Tocar un tema lo muestra en toda la app: se reinicia y la evaluación sigue en el mismo paso.
     await Promise.all([
       page.waitForNavigation({ timeout: 20000 }).catch(() => null),
-      pressLabel("Tema Pastel"),
+      pressLabel("Tema Rosa noche"),
     ]);
     await waitText("Tu estilo");
     let draft = await store();
@@ -1318,7 +1319,7 @@ async function main() {
       await pantalla("hoy", "/", { scrollTo: "Tu progreso" });
       await pantalla("mas", "/more");
       // Los otros temas, solo para revisarlos a ojo.
-      for (const theme of ["pastel", "light"]) {
+      for (const theme of ["pastel", "light", "rose"]) {
         await seed({ ...example, settings: { ...example.settings, app_theme: theme } });
         await pantalla(`${theme}-panel`, "/");
         await pantalla(`${theme}-calendario`, "/calendar");
@@ -1400,7 +1401,7 @@ async function main() {
       STORE_KEY,
     );
 
-    // Tema: elegir Pastel recarga la app con otros colores; luego se vuelve a Bosque.
+    // Tema: elegir Rosa noche recarga la app con otros colores; luego se vuelve a Bosque.
     await open("/more");
     await waitText("Unidad de peso");
     const before = await page.evaluate(
@@ -1408,7 +1409,7 @@ async function main() {
     );
     await Promise.all([
       page.waitForNavigation({ timeout: 20000 }).catch(() => null),
-      pressLabel("Tema Pastel"),
+      pressLabel("Tema Rosa noche"),
     ]);
     await waitText("Unidad de peso");
     assert((await store()).settings.app_theme === "pastel", "No se guardó el tema.");
@@ -1416,9 +1417,9 @@ async function main() {
       const colors = [...document.querySelectorAll("div")].map(
         (node) => getComputedStyle(node).backgroundColor,
       );
-      return colors.includes("rgb(28, 26, 34)");
+      return colors.includes("rgb(29, 21, 25)");
     });
-    assert(background, `El tema Pastel no cambió el fondo (antes ${before}).`);
+    assert(background, `El tema Rosa noche no cambió el fondo (antes ${before}).`);
     await Promise.all([
       page.waitForNavigation({ timeout: 20000 }).catch(() => null),
       pressLabel("Tema Bosque"),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { themed, type ThemeId } from "./palettes";
+import { isThemeId, themed, THEMES as THEMES_INFO, type ThemeId } from "./palettes";
 
 // Contraste WCAG: el texto se lee en los tres temas (4.5:1 para texto normal).
 const luminance = (hex: string) => {
@@ -31,7 +31,15 @@ const TEXT = {
   water: "#22D3EE",
   sleep: "#F472B6",
 };
-const THEMES: ThemeId[] = ["forest", "pastel", "light"];
+const THEMES: ThemeId[] = ["forest", "light", "pastel", "rose"];
+
+describe("temas guardados", () => {
+  it("el morado de antes pasa a Rosa noche y lo desconocido se descarta", () => {
+    expect(isThemeId("pastel")).toBe(true);
+    expect(THEMES_INFO.find((theme) => theme.value === "pastel")?.label).toBe("Rosa noche");
+    expect(isThemeId("otro")).toBe(false);
+  });
+});
 
 describe("contraste de los temas", () => {
   for (const theme of THEMES)

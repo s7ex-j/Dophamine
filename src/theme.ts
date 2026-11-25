@@ -4,7 +4,7 @@ import { currentTheme } from "@/src/theming/current";
 import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { remapColors, themed, type ThemeId } from "@/src/theming/palettes";
 
-/** El tema de color elegido (Bosque, Pastel o Claro). Se lee al arrancar y cambia con `setTheme`. */
+/** El tema de color elegido (Bosque, Claro, Rosa noche o Rosa día). Se lee al arrancar y cambia con `setTheme`. */
 export let THEME = currentTheme();
 /** Un color escrito en su tono de Bosque, en el tema actual (para colores fuera de este archivo). */
 export const tint = (hex: string) => themed(hex, THEME);

@@ -5,12 +5,12 @@ import { THEMES, themed, type ThemeId } from "@/src/theming/palettes";
 import { AppTheme } from "@/src/theme";
 
 /**
- * Elegir el tema: tres miniaturas con los colores de cada uno (fondo, anillo
+ * Elegir el tema: cuatro miniaturas con los colores de cada uno (fondo, anillo
  * de calorías, barras de macros y botón), una al lado de otra.
  */
 export function ThemePicker({ value, onChange }: { value: ThemeId; onChange: (theme: ThemeId) => void }) {
   return (
-    <View accessibilityRole="radiogroup" style={{ flexDirection: "row", gap: 10 }}>
+    <View accessibilityRole="radiogroup" style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
       {THEMES.map((theme) => {
         const active = theme.value === value;
         const c = (hex: string) => themed(hex, theme.value);
@@ -21,12 +21,12 @@ export function ThemePicker({ value, onChange }: { value: ThemeId; onChange: (th
             accessibilityState={{ selected: active }}
             accessibilityLabel={`Tema ${theme.label}`}
             onPress={() => onChange(theme.value)}
-            style={{ flex: 1, alignItems: "center", gap: 6 }}
+            style={{ flexBasis: "46%", flexGrow: 1, alignItems: "center", gap: 6 }}
           >
             <View
               style={{
                 width: "100%",
-                height: 150,
+                height: 132,
                 borderRadius: 14,
                 borderWidth: 2,
                 borderColor: active ? AppTheme.colors.accent : c("#27302B"),

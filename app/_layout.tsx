@@ -17,6 +17,7 @@ import { VIEWER } from "@/src/lib/mode";
 import { VIEWER_WIDE } from "@/src/lib/viewerLayout";
 import { AppTheme, THEME } from "@/src/theme";
 import { FONTS } from "@/src/theming/fonts";
+import { isLightTheme } from "@/src/theming/palettes";
 import { FONT_FILES } from "@/src/theming/fontFiles";
 
 enableWebRTC();
@@ -91,7 +92,7 @@ export default function RootLayout() {
         backgroundColor: PHONE_FRAME ? AppTheme.colors.surface2 : AppTheme.colors.background,
       }}
     >
-      <StatusBar style={THEME === "light" ? "dark" : "light"} />
+      <StatusBar style={isLightTheme(THEME) ? "dark" : "light"} />
       {/* La navegación se monta debajo de la pantalla de carga cuando todo está listo. */}
       {appReady && install ? <InstallScreen onSkip={() => setInstall(false)} /> : null}
       {appReady && !install ? (

@@ -17,6 +17,7 @@ Nada todavía.
 - Colores revisados en los tres temas: agua y sueño tienen tono propio en los objetivos, y la prueba de contraste ahora también los mide.
 - Las fechas dentro de los textos se leen ("12 ene 2027") y no se parten en dos líneas.
 - **Estrategia rediseñada:** la trayectoria de tu peso hasta la meta con su fecha, lo que gastas contra lo que comes, la revisión con el cambio sugerido aparte y la semana con un día elegible. El plan y lo demás van en filas con ícono. No probada en un teléfono.
+- **Cuatro temas:** Bosque y Claro (verde), Rosa noche y Rosa día. Rosa noche reemplaza a Pastel, donde los colores de los datos se confundían; quien usaba Pastel pasa a Rosa noche al actualizar.
 - **Respaldo explicado:** la pantalla Respaldo dice cómo actualizar sin perder datos, guardar un respaldo, recuperarlo y qué incluye.
 - **Código de versión de Android** calculado de la versión (4200), con una prueba que falla si no coincide.
 - **Más, rediseñada:** tu plan arriba, cuatro mosaicos con el dato de hoy (hábitos, bienestar, racha y medidas), el resto por grupos con ícono y los ajustes en la misma fila. Respaldo, Health Connect y exportar pasan a su propia pantalla. No probado en un teléfono.

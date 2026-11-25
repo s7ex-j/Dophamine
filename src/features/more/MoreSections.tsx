@@ -211,7 +211,7 @@ export function MoreDisclosure({
   );
 }
 
-/** Los temas como tres muestras de color: se toca una y cambia. */
+/** Los temas como muestras de color: se toca una y cambia. */
 export function ThemeDots({ value, onChange }: { value: ThemeId; onChange: (theme: ThemeId) => void }) {
   return (
     <View accessibilityRole="radiogroup" style={{ flexDirection: "row", marginRight: -8 }}>
