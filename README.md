@@ -77,6 +77,14 @@ Term es la mascota de Dophamine: te recibe, te explica cada pregunta de la evalu
 2. Ábrelo y permite instalar apps de esa fuente si Android lo pide.
 3. Responde la evaluación inicial (un par de minutos) y empieza a registrar.
 
+### Actualizar sin perder tus datos
+
+1. Por precaución, abre Más → Respaldo → "Compartir respaldo" y guarda el archivo fuera de la app (Drive, Archivos).
+2. Instala el APK nuevo encima del actual, **sin desinstalar**. Tus datos se quedan.
+3. Si cambias de teléfono o desinstalaste: Más → Respaldo → "Restaurar desde un archivo".
+
+El respaldo no incluye las imágenes de las fotos de progreso.
+
 ### En iPhone
 
 Abre **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** en Safari, toca Compartir → "Agregar a pantalla de inicio" y ábrela desde su ícono. Funciona sin conexión y guarda los datos en el teléfono. No trae recordatorios, Apple Health, widget, dictado, lectura con la cámara ni fotos de progreso.

@@ -16,6 +16,7 @@ Nada todavía.
 - Panel, calendario y cierre del día: no probados en un teléfono.
 - Colores revisados en los tres temas: agua y sueño tienen tono propio en los objetivos, y la prueba de contraste ahora también los mide.
 - Las fechas dentro de los textos se leen ("12 ene 2027") y no se parten en dos líneas.
+- **Respaldo explicado:** la pantalla Respaldo dice cómo actualizar sin perder datos, guardar un respaldo, recuperarlo y qué incluye.
 - **Código de versión de Android** calculado de la versión (4200), con una prueba que falla si no coincide.
 - **Más, rediseñada:** tu plan arriba, cuatro mosaicos con el dato de hoy (hábitos, bienestar, racha y medidas), el resto por grupos con ícono y los ajustes en la misma fila. Respaldo, Health Connect y exportar pasan a su propia pantalla. No probado en un teléfono.
 - En la web, los nombres de las pestañas ya no salen cortados.

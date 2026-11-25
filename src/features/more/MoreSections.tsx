@@ -185,9 +185,10 @@ export function MoreDisclosure({
   icon,
   title,
   control,
+  startOpen = false,
   children,
-}: PropsWithChildren<{ icon: IconName; title: string; control?: ReactNode }>) {
-  const [open, setOpen] = useState(false);
+}: PropsWithChildren<{ icon: IconName; title: string; control?: ReactNode; startOpen?: boolean }>) {
+  const [open, setOpen] = useState(startOpen);
   const { colors } = AppTheme;
   return (
     <View>

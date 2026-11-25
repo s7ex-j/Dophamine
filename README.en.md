@@ -68,6 +68,14 @@ The scale moves with water, salt and glycogen, and a fixed formula can't know ho
 2. Open it and allow installing apps from that source if Android asks.
 3. Answer the initial assessment (a couple of minutes) and start logging.
 
+### Updating without losing your data
+
+1. To be safe, open Más → Respaldo → "Compartir respaldo" and save the file outside the app (Drive, Files).
+2. Install the new APK on top of the current one, **without uninstalling**. Your data stays.
+3. New phone, or already uninstalled? Más → Respaldo → "Restaurar desde un archivo".
+
+The backup does not include progress photo images.
+
 ### On iPhone
 
 Open **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** in Safari, tap Share → "Add to Home Screen" and launch it from its icon. It works offline and keeps your data on the phone. It has no reminders, Apple Health, widget, dictation, camera reading or progress photos.
