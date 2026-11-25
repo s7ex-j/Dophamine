@@ -128,7 +128,7 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
 
 **Camino elegido (sin pagar primero)**
 
-1. **Web app instalable (PWA), la versión gratuita para iPhone. Hecha y comprobada en un iPhone.** Está en
+1. **Web app instalable (PWA), la versión gratuita para iPhone. Hecha; en pruebas en iPhone.** Está en
    `/Dophamine/pwa/`, aparte del visor: datos en IndexedDB, funciona sin conexión y explica cómo instalarla.
    - Probar: instalar, crear el plan, cerrar y volver a abrir, modo avión, compartir y restaurar un respaldo, cámara
      del QR, márgenes de la pantalla y teclado.
