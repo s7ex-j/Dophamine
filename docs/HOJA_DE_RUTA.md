@@ -39,8 +39,8 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
   te sientes, tus alergias y lo que indicó tu médico. Nada se aplica solo.
 - Health Connect, sueño estimado por uso del teléfono, widget de inicio y análisis de fotos de progreso.
 
-**Comprobado en teléfono:** la 0.42.1 y la 0.42.2 se instalaron y probaron en un teléfono Android antes de publicarlas,
-en una revisión general. La web instalable se probó en un iPhone antes de la 0.42.2. Lo que falta está abajo.
+**Comprobado en teléfono:** la 0.42.2 se usó en un teléfono Android y funcionó bien, en uso general (no cada función por
+separado). La web instalable se está probando en iPhone. Lo que falta está abajo.
 
 ## Por probar
 
@@ -54,7 +54,7 @@ en una revisión general. La web instalable se probó en un iPhone antes de la 0
 | Etiquetas con la cámara | Etiquetas reales |
 | Análisis de fotos | Fotos reales; ajustar umbrales si la silueta sale mal |
 | Motor | Contrastarlo con varias semanas de datos reales ("Cuánto acierta") y medir en Android lo que tarda cada escenario |
-| Web instalable | La 0.42.2 en un iPhone |
+| Web instalable | La 0.42.2 en un iPhone: en curso |
 
 ## Pendiente, por separado
 
@@ -102,7 +102,7 @@ rankings, publicidad, micronutrientes de una base enorme, puntuaciones de salud 
 
 ## iPhone — después de la 1.0.0
 
-La app nativa solo existe para Android; en iPhone hay una web instalable. Nunca compilé ni probé la versión de iOS.
+La app nativa solo existe para Android; en iPhone hay una web instalable. La nativa firmada estará en proceso más adelante. Nunca compilé ni probé la versión de iOS.
 El código ya está preparado en buena parte (Expo genera las dos plataformas y lo que es solo de Android se
 oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto.
 
@@ -133,7 +133,7 @@ oculta en iPhone), pero falta compilarlo, probarlo y resolver lo que es distinto
    - Probar: instalar, crear el plan, cerrar y volver a abrir, modo avión, compartir y restaurar un respaldo, cámara
      del QR, márgenes de la pantalla y teclado.
    - Pendiente: leer el código de barras con la cámara (necesita una librería web; hoy se escribe a mano).
-   - Anunciada en el sitio y el README, con la app nativa "en evaluación".
+   - Anunciada en el sitio y el README, con la app nativa firmada para más adelante.
 2. **`.ipa` sin firma, experimental y opcional.** Solo si alguien lo pide, y anunciado para usuarios avanzados.
    - Se compila gratis con GitHub Actions (máquinas macOS gratuitas en repositorios públicos), sin firma; EAS no
      compila para iPhone sin la cuenta paga.

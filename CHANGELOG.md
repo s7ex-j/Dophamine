@@ -3,6 +3,7 @@
 ## Próxima versión
 
 - **Documentación:** la hoja de ruta queda solo con decisiones y pendientes (lo hecho está aquí); guía de contribución y arquitectura al día.
+- **iPhone:** el sitio y el README dicen que la web instalable se está probando y que la app nativa firmada queda para más adelante.
 
 ## 0.42.2 - 2026-11-25
 
@@ -16,7 +17,7 @@
 - **Panel:** la barra de la tarjeta Meta queda separada de su texto y centrada en su espacio.
 - **Primera evaluación en la web instalable:** ya no aparece un último paso vacío; los recordatorios y Health Connect no existen ahí y se entra directo al Panel.
 - **Web instalable fuera de un iPhone:** explica que esa versión es para iPhone, con un código QR para abrirla allí y los pasos para instalarla, y deja seguir en el navegador.
-- Probada en un teléfono Android antes de publicarla. Sin confirmar: Health Connect con datos reales y la web instalable en un iPhone.
+- Usada en un teléfono Android con buen funcionamiento. La web instalable se está probando en iPhone. Sin confirmar: Health Connect con datos reales.
 
 ## 0.42.1 - 2026-11-25
 

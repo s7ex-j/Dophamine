@@ -80,7 +80,9 @@ The backup does not include progress photo images.
 
 Open **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** in Safari, tap Share → "Add to Home Screen" and launch it from its icon. It works offline and keeps your data on the phone. It has no reminders, Apple Health, widget, dictation, camera reading or progress photos.
 
-A native iPhone app is under evaluation: Apple requires signing and its own checks. Depending on how people receive it, it could be an install each person signs with their own Apple ID (renewed every 7 days) or an App Store release with a developer account.
+**Status:** 0.42.2 was used on an Android phone and worked well; the iPhone version is being tested.
+
+A signed native iPhone app is planned for later: Apple requires signing and its own checks. Depending on how people receive this version, it could be an install each person signs with their own Apple ID (renewed every 7 days) or an App Store release with a developer account.
 
 > Dophamine is a personal tracking tool. Expenditure is an estimate and the app does not give medical advice.
 

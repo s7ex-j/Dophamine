@@ -737,9 +737,10 @@ function Iphone() {
           </p>
         </div>
         <div className="self-start rounded-3xl border bg-card p-6 md:p-8">
-          <h3 className="text-2xl font-bold tracking-tight">La app nativa para iPhone, en evaluación</h3>
+          <h3 className="text-2xl font-bold tracking-tight">La app nativa firmada, más adelante</h3>
           <p className="mt-3 text-muted-foreground text-pretty">
-            Apple exige que toda app esté firmada y pase sus controles antes de instalarse. Según cómo la reciban quienes
+            La versión instalable se está probando en iPhone. La nativa firmada estará en proceso en el futuro: Apple exige que
+            toda app esté firmada y pase sus controles antes de instalarse. Según cómo la reciban quienes
             la usen en iPhone, estos son los dos caminos posibles:
           </p>
           <dl className="mt-6">

@@ -89,7 +89,9 @@ El respaldo no incluye las imágenes de las fotos de progreso.
 
 Abre **[s7ex-j.github.io/Dophamine/pwa](https://s7ex-j.github.io/Dophamine/pwa/)** en Safari, toca Compartir → "Agregar a pantalla de inicio" y ábrela desde su ícono. Funciona sin conexión y guarda los datos en el teléfono. No trae recordatorios, Apple Health, widget, dictado, lectura con la cámara ni fotos de progreso.
 
-La app nativa para iPhone está en evaluación: Apple exige firma y controles propios. Según cómo la reciban quienes la usen, podría ser una instalación que cada persona firma con su Apple ID (se renueva cada 7 días) o una publicación en la App Store con cuenta de desarrollador.
+**Estado:** la 0.42.2 se usó en un teléfono Android y funcionó bien; la versión para iPhone se está probando.
+
+La app nativa firmada para iPhone estará en proceso más adelante: Apple exige firma y controles propios. Según cómo la reciban quienes usan esta versión, podría ser una instalación que cada persona firma con su Apple ID (se renueva cada 7 días) o una publicación en la App Store con cuenta de desarrollador.
 
 ### En la computadora
 
