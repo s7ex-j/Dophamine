@@ -1,4 +1,4 @@
-import Svg, { Circle } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Text } from "@/src/components/Text";
 
@@ -7,6 +7,7 @@ import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repos
 import { adjustModeLabels, adjustModeOf, checkInDaysOf } from "@/src/features/profile/profile";
 import { describeReview, nextReviewDate, type WeeklyReview } from "@/src/features/reviews/reviews";
 import type { CheckInControls } from "@/src/features/reviews/useCheckIn";
+import { signed } from "@/src/features/strategy/strategy";
 import { dayLabel, localDateKey } from "@/src/lib/dates";
 import { AppTheme } from "@/src/theme";
 
@@ -53,35 +54,67 @@ export function CheckInCard({
   const next = nextReviewDate(snapshot.lastReview, days);
   const today = localDateKey();
   const left = next && next > today ? daysBetween(today, next) : 0;
-  const status =
-    checkIn.status === "updating"
-      ? "Con datos suficientes"
-      : checkIn.status === "holding"
-        ? "En pausa"
-        : "Reuniendo datos";
+  const proposal = controls.action === "propose" ? checkIn.suggestedCalories : null;
+  const change = proposal === null ? 0 : proposal - profile.calorieTarget;
   return (
-    <View style={[AppTheme.card, { gap: 12 }]}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-        <ReviewRing days={days} left={left} />
+    <View style={[AppTheme.card, { gap: 14 }]}>
+      <View style={[AppTheme.sectionHeader, { gap: 12 }]}>
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={AppTheme.cardTitle}>Revisión cada {days} días</Text>
-          <Text style={AppTheme.hint}>
-            {left ? `Próxima: ${dayLabel(next as string).toLowerCase()}` : "Toca hoy"} · modo{" "}
-            {adjustModeLabels[mode].toLowerCase()}
+          <Text style={AppTheme.cardTitle} accessibilityRole="header">
+            {left ? "Próxima revisión" : "Revisión de hoy"}
           </Text>
           <Text style={AppTheme.hint}>
-            {status} · {snapshot.analysis.nutritionDaysLast7}/7 comidas · {snapshot.analysis.weightDaysLast7}
-            /7 pesajes
+            {left
+              ? `${dayLabel(next as string)}, en ${left} ${left === 1 ? "día" : "días"}`
+              : `Toca cada ${days} días`}
           </Text>
         </View>
+        <View style={{ alignItems: "flex-end", gap: 2 }}>
+          <Text style={AppTheme.hint}>Modo</Text>
+          <Text style={AppTheme.label}>{adjustModeLabels[mode]}</Text>
+        </View>
       </View>
-      <Text style={AppTheme.body}>{checkIn.message}</Text>
-      {controls.action === "propose" ? (
-        <>
-          <Button title={`Aplicar ${checkIn.suggestedCalories} kcal`} onPress={controls.apply} />
+      <View style={{ flexDirection: "row", gap: 20 }}>
+        <WeekDots label="Comidas" done={snapshot.analysis.nutritionDaysLast7} color={AppTheme.colors.kcal} />
+        <WeekDots label="Pesajes" done={snapshot.analysis.weightDaysLast7} color={AppTheme.colors.violet} />
+      </View>
+      {proposal !== null ? (
+        <View style={{ gap: 12, borderTopWidth: 1, borderTopColor: AppTheme.colors.border, paddingTop: 14 }}>
+          <View
+            accessible
+            accessibilityLabel={`Cambio sugerido: de ${profile.calorieTarget} a ${proposal} kcal al día`}
+            style={{ flexDirection: "row", alignItems: "flex-end", gap: 12 }}
+          >
+            <View>
+              <Text style={AppTheme.hint}>Ahora</Text>
+              <Text style={[AppTheme.tileValue, { color: AppTheme.colors.muted }]}>
+                {profile.calorieTarget}
+              </Text>
+            </View>
+            <Ionicons
+              name="arrow-forward"
+              size={18}
+              color={AppTheme.colors.muted}
+              style={{ marginBottom: 6 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={AppTheme.hint}>Sugerido</Text>
+              <Text style={AppTheme.tileValue}>
+                {proposal}
+                <Text style={AppTheme.tileUnit}> kcal al día</Text>
+              </Text>
+            </View>
+            <Text style={[AppTheme.tileTitle, { color: AppTheme.colors.accentText, marginBottom: 4 }]}>
+              {signed(change)}
+            </Text>
+          </View>
+          <Text style={AppTheme.body}>{checkIn.message}</Text>
+          <Button title={`Aplicar ${proposal} kcal`} onPress={controls.apply} />
           <Button title="Mantener mi objetivo actual" variant="secondary" onPress={controls.dismiss} />
-        </>
-      ) : null}
+        </View>
+      ) : (
+        <Text style={AppTheme.body}>{checkIn.message}</Text>
+      )}
       {controls.action === "inform" ? (
         <Text style={AppTheme.hint}>
           Estás en modo manual: la app no cambia tu objetivo. Si quieres aplicar esta sugerencia, reevalúa tu
@@ -95,43 +128,27 @@ export function CheckInCard({
 const daysBetween = (from: string, to: string) =>
   Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 
-/** Un anillo que se va llenando hasta la próxima revisión; en el centro, los días que faltan. */
-function ReviewRing({ days, left }: { days: number; left: number }) {
-  const size = 68;
-  const stroke = 6;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const done = days ? (days - left) / days : 1;
+/** Cuántos de los últimos siete días tienen ese dato. */
+function WeekDots({ label, done, color }: { label: string; done: number; color: string }) {
   return (
-    <View
-      accessibilityLabel={left ? `Faltan ${left} días para la revisión` : "La revisión toca hoy"}
-      style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}
-    >
-      <Svg width={size} height={size} style={{ position: "absolute" }}>
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={AppTheme.colors.border}
-          strokeWidth={stroke}
-          fill="none"
-        />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={AppTheme.colors.accent}
-          strokeWidth={stroke}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={`${circumference * done} ${circumference}`}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </Svg>
-      <Text style={[AppTheme.tileValue, { fontSize: 22, lineHeight: 26 }]}>{left || "Hoy"}</Text>
-      {left ? (
-        <Text style={[AppTheme.hint, { fontSize: 11, lineHeight: 14 }]}>{left === 1 ? "día" : "días"}</Text>
-      ) : null}
+    <View accessible accessibilityLabel={`${label}: ${done} de 7 días`} style={{ flex: 1, gap: 6 }}>
+      <View style={AppTheme.sectionHeader}>
+        <Text style={AppTheme.hint}>{label}</Text>
+        <Text style={AppTheme.label}>{done} de 7</Text>
+      </View>
+      <View style={{ flexDirection: "row", gap: 4 }}>
+        {Array.from({ length: 7 }, (_, index) => (
+          <View
+            key={index}
+            style={{
+              flex: 1,
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: index < done ? color : AppTheme.colors.border,
+            }}
+          />
+        ))}
+      </View>
     </View>
   );
 }
@@ -139,16 +156,20 @@ function ReviewRing({ days, left }: { days: number; left: number }) {
 export function ReviewHistoryCard({ reviews }: { reviews: WeeklyReview[] }) {
   return (
     <Card title="Historial de revisiones">
-      {reviews.length ? (
-        reviews.map((review) => {
-          const { title, detail, value } = describeReview(review);
-          return <ListRow key={review.id} title={title} detail={detail} value={value} />;
-        })
-      ) : (
-        <Text style={AppTheme.body}>
-          Aquí quedará cada ajuste que la app aplique, proponga o que decidas no aplicar.
-        </Text>
-      )}
+      <ReviewList reviews={reviews} />
     </Card>
   );
+}
+
+export function ReviewList({ reviews }: { reviews: WeeklyReview[] }) {
+  if (!reviews.length)
+    return (
+      <Text style={AppTheme.body}>
+        Aquí quedará cada ajuste que la app aplique, proponga o que decidas no aplicar.
+      </Text>
+    );
+  return reviews.map((review) => {
+    const { title, detail, value } = describeReview(review);
+    return <ListRow key={review.id} title={title} detail={detail} value={value} />;
+  });
 }

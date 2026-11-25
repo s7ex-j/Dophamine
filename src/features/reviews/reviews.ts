@@ -1,4 +1,4 @@
-import { addDays, localDateKey } from "@/src/lib/dates";
+import { addDays, localDateKey, longDate } from "@/src/lib/dates";
 
 /**
  * Historial de revisiones semanales: cada propuesta de ajuste calórico que la
@@ -68,12 +68,12 @@ export function describeReview(review: WeeklyReview): { title: string; detail: s
   return review.decision !== "dismissed"
     ? {
         title: review.decision === "auto" ? "Ajuste automático" : "Ajuste aceptado",
-        detail: `${review.date} · ${review.previousCalories} → ${review.suggestedCalories} kcal${tdee}`,
+        detail: `${longDate(review.date)} · ${review.previousCalories} → ${review.suggestedCalories} kcal${tdee}`,
         value: change,
       }
     : {
         title: "Propuesta descartada",
-        detail: `${review.date} · se mantuvo ${review.previousCalories} kcal (propuesta: ${change})${tdee}`,
+        detail: `${longDate(review.date)} · se mantuvo ${review.previousCalories} kcal (propuesta: ${change})${tdee}`,
         value: "Sin cambio",
       };
 }

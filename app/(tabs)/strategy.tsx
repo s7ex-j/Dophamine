@@ -1,17 +1,18 @@
 import { useCallback, useState } from "react";
 import { ScreenSkeleton } from "@/src/components/Skeleton";
-import { ScrollView, View } from "react-native";
+import { TitledScroll } from "@/src/components/TitledScroll";
+import { MoreControl, MoreDisclosure, MoreGroup, MoreRow } from "@/src/features/more/MoreSections";
 import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { Button, Card, ListRow, NavRow, Screen, WideColumns } from "@/src/components/ui";
+import { Screen, WideColumns } from "@/src/components/ui";
 import { getDashboardSnapshot, type DashboardSnapshot } from "@/src/features/dashboard/dashboard.repository";
 import { DRAFT_KEY, Onboarding } from "@/src/features/profile/PlanWizard";
 import { DistributionCard } from "@/src/features/profile/DistributionCard";
 import { StrategyHeader } from "@/src/features/profile/StrategyHeader";
 import { DIET_TYPES } from "@/src/features/profile/targets";
-import { activityLabels, goalLabels } from "@/src/features/profile/profile";
-import { AutoAdjustBanner, CheckInCard, ReviewHistoryCard } from "@/src/features/reviews/CheckInSections";
+import { activityLabels, adjustModeLabels, adjustModeOf, goalLabels } from "@/src/features/profile/profile";
+import { AutoAdjustBanner, CheckInCard, ReviewList } from "@/src/features/reviews/CheckInSections";
 import type { WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { GOAL_DATE_KEY, readGoalDate, type GoalDate } from "@/src/features/goals/goalDate";
@@ -62,7 +63,7 @@ export default function StrategyScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={AppTheme.content}>
+      <TitledScroll title="Estrategia" context={goalLabels[profile.goal]}>
         <StrategyHeader
           profile={profile}
           trendKg={snapshot.trendKg ?? snapshot.weightKg}
@@ -77,39 +78,35 @@ export default function StrategyScreen() {
         <WideColumns>
           <CheckInCard snapshot={snapshot} controls={controls} />
           <DistributionCard profile={profile} />
-          <ReviewHistoryCard reviews={reviews} />
-          <View style={[AppTheme.card, { paddingVertical: 2 }]}>
-            <NavRow
+          <MoreGroup title="Tu plan">
+            <MoreControl icon="pie-chart-outline" title="Tipo de plan">
+              <Text style={AppTheme.hint}>
+                {DIET_TYPES.find((item) => item.value === (profile.dietType ?? "balanced"))?.label}
+              </Text>
+            </MoreControl>
+            <MoreControl icon="walk-outline" title="Actividad">
+              <Text style={AppTheme.hint}>{activityLabels[profile.activity]}</Text>
+            </MoreControl>
+            <MoreControl icon="options-outline" title="Modo de ajuste">
+              <Text style={AppTheme.hint}>{adjustModeLabels[adjustModeOf(profile)]}</Text>
+            </MoreControl>
+            {VIEWER ? null : (
+              <MoreRow icon="refresh-outline" title="Reevaluar mi plan" onPress={() => setEditing(true)} />
+            )}
+          </MoreGroup>
+          <MoreGroup title="Entender">
+            <MoreRow
+              icon="git-network-outline"
               title="Cómo se calcula"
-              detail="El motor por dentro, con tus números"
               onPress={() => router.push("/algorithm")}
             />
-            <NavRow
-              title="Análisis"
-              detail="Tendencia, ingesta y adherencia de las últimas semanas"
-              onPress={() => router.push("/analysis")}
-            />
-          </View>
-          <Card title="Tu plan">
-            <ListRow
-              title="Tipo de plan"
-              detail="Cómo se reparten carbohidratos y grasas"
-              value={DIET_TYPES.find((item) => item.value === (profile.dietType ?? "balanced"))?.label}
-            />
-            <ListRow
-              title="Actividad"
-              detail="Nivel declarado en tu evaluación"
-              value={activityLabels[profile.activity]}
-            />
-            {VIEWER ? null : (
-              <Button title="Reevaluar mi plan" variant="secondary" onPress={() => setEditing(true)} />
-            )}
-            <Text style={AppTheme.hint}>
-              Repite las preguntas de la evaluación inicial. Tus registros no se borran.
-            </Text>
-          </Card>
+            <MoreRow icon="analytics-outline" title="Análisis" onPress={() => router.push("/analysis")} />
+            <MoreDisclosure icon="time-outline" title="Historial de revisiones">
+              <ReviewList reviews={reviews} />
+            </MoreDisclosure>
+          </MoreGroup>
         </WideColumns>
-      </ScrollView>
+      </TitledScroll>
     </Screen>
   );
 }

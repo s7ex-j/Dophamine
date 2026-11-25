@@ -41,7 +41,7 @@ describe("revisiones semanales", () => {
   it("describe una revisión aceptada y una descartada", () => {
     expect(describeReview(accepted)).toEqual({
       title: "Ajuste aceptado",
-      detail: "2026-11-04 · 2400 → 2500 kcal · TDEE estimado 2510 kcal",
+      detail: "4\u00A0nov\u00A02026 · 2400 → 2500 kcal · TDEE estimado 2510 kcal",
       value: "+100 kcal",
     });
     const dismissed = describeReview({
@@ -51,7 +51,7 @@ describe("revisiones semanales", () => {
       tdee: null,
     });
     expect(dismissed.title).toBe("Propuesta descartada");
-    expect(dismissed.detail).toBe("2026-11-04 · se mantuvo 2400 kcal (propuesta: -80 kcal)");
+    expect(dismissed.detail).toBe("4\u00A0nov\u00A02026 · se mantuvo 2400 kcal (propuesta: -80 kcal)");
     expect(dismissed.value).toBe("Sin cambio");
   });
 

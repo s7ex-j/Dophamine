@@ -1141,6 +1141,7 @@ async function main() {
       "El modo colaborativo cambió el plan sin aceptación.",
     );
     await press("Mantener mi objetivo actual");
+    await press("Historial de revisiones");
     await waitText("Propuesta descartada");
     const after = await store();
     assert(
