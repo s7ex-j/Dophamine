@@ -1,7 +1,16 @@
 import jsQR from "jsqr";
 import { describe, expect, it } from "vitest";
 
-import { Assembler, isLinkMessage, toFrames, type LinkMessage } from "@/src/features/link/protocol";
+import {
+  Assembler,
+  FRAME_SIZE,
+  isLinkMessage,
+  MAX_PENDING,
+  MAX_PENDING_CHARS,
+  PENDING_LIFETIME_MS,
+  toFrames,
+  type LinkMessage,
+} from "@/src/features/link/protocol";
 import { qrMatrix, qrPath } from "@/src/features/link/qr";
 import { sha256Hex, verificationCode } from "@/src/features/link/sha256";
 import { buildSdp, LinkError, packSignal, readSdp, unpackSignal } from "@/src/features/link/signal";
@@ -160,5 +169,56 @@ describe("mensajes troceados", () => {
     expect(isLinkMessage({ t: "ack", of: "diet", ok: true })).toBe(true);
     expect(isLinkMessage({ t: "ack", of: "diet" })).toBe(false);
     expect(isLinkMessage(null)).toBe(false);
+  });
+});
+
+describe("0.42.1: lo que llega a medias tiene tope", () => {
+  it("de cantidad de mensajes, y los completos siguen pasando al liberarse sitio", () => {
+    const assembler = new Assembler();
+    for (let id = 0; id < 2000; id += 1) assembler.push(`${id}:0/5000:x`);
+    expect(assembler.pending().messages).toBe(MAX_PENDING);
+    assembler.clear();
+    expect(assembler.pending()).toEqual({ messages: 0, chars: 0 });
+    expect(assembler.push(toFrames({ t: "bye" }, 9)[0])).toEqual({ t: "bye" });
+  });
+
+  it("de tamaño por trama y en total", () => {
+    const assembler = new Assembler();
+    expect(assembler.push(`1:0/2:${"x".repeat(FRAME_SIZE + 1)}`)).toBeNull();
+    expect(assembler.pending().messages).toBe(0);
+    const piece = "x".repeat(FRAME_SIZE);
+    for (let id = 1; id <= 2; id += 1)
+      for (let i = 0; i < 4999; i += 1) assembler.push(`${id}:${i}/5000:${piece}`);
+    expect(assembler.pending().chars).toBeLessThanOrEqual(MAX_PENDING_CHARS);
+  });
+
+  it("de tiempo: lo abandonado se olvida y deja sitio", () => {
+    let now = 0;
+    const assembler = new Assembler(() => now);
+    for (let id = 0; id < MAX_PENDING; id += 1) assembler.push(`${id}:0/2:x`);
+    now = PENDING_LIFETIME_MS + 1;
+    expect(assembler.push(toFrames({ t: "bye" }, 50)[0])).toEqual({ t: "bye" });
+    expect(assembler.pending().messages).toBe(0);
+  });
+
+  it("una trama repetida no cambia lo recibido ni cuenta dos veces", () => {
+    const assembler = new Assembler();
+    const [a, b] = toFrames({ t: "diet", plan: "y".repeat(60) }, 3, 50);
+    assembler.push(a);
+    const before = assembler.pending();
+    assembler.push(a.replace("diet", "evil"));
+    expect(assembler.pending()).toEqual(before);
+    const rest = toFrames({ t: "diet", plan: "y".repeat(60) }, 3, 50).slice(2);
+    let result = assembler.push(b);
+    for (const frame of rest) result = assembler.push(frame);
+    expect(result).toMatchObject({ t: "diet" });
+  });
+
+  it("un respaldo grande normal sigue pasando entero", () => {
+    const backup = { texto: "z".repeat(3_000_000) };
+    const assembler = new Assembler();
+    const results = toFrames({ t: "backup", backup }, 1).map((frame) => assembler.push(frame));
+    expect(results.at(-1)).toEqual({ t: "backup", backup });
+    expect(assembler.pending()).toEqual({ messages: 0, chars: 0 });
   });
 });

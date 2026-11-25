@@ -79,22 +79,28 @@ export type DayFood = { date: string; kcal: number; proteinG: number; carbsG: nu
 
 type Page<T> = { records: T[]; pageToken?: string };
 /** Más páginas que esto en 30 días es un error de lectura, no datos. */
-const MAX_PAGES = 50;
+const MAX_PAGES = 200;
 
-/** Lee todas las páginas: Health Connect entrega hasta 1000 registros por vez. */
-export async function readAllPages<T>(read: (pageToken?: string) => Promise<Page<T>>): Promise<T[]> {
+/**
+ * Lee todas las páginas: Health Connect entrega hasta 1000 registros por vez. Si no llega al final, falla:
+ * una lectura a medias no debe pasar por completa.
+ */
+export async function readAllPages<T>(
+  read: (pageToken?: string) => Promise<Page<T>>,
+  maxPages = MAX_PAGES,
+): Promise<T[]> {
   const all: T[] = [];
   const seen = new Set<string>();
   let token: string | undefined;
-  for (let page = 0; page < MAX_PAGES; page += 1) {
+  for (let page = 0; page < maxPages; page += 1) {
     const result = await read(token);
     all.push(...result.records);
-    // Sin página siguiente, o una repetida: se terminó.
-    if (!result.pageToken || seen.has(result.pageToken)) return all;
+    if (!result.pageToken) return all;
+    if (seen.has(result.pageToken)) break;
     seen.add(result.pageToken);
     token = result.pageToken;
   }
-  return all;
+  throw new Error("Health Connect no entregó todos los datos. Vuelve a intentarlo más tarde.");
 }
 
 /** Inicio y fin de un día local, como instantes (sirve también en los cambios de hora). */
@@ -115,13 +121,14 @@ export function stepsToImport(totals: Array<{ date: string; total: number | null
 
 /**
  * Lo comido cada día según otras apps, solo en los días sin comida anotada en Dophamine. Si varias apps
- * anotaron el mismo día se usa una sola, la más completa: sumarlas contaría dos veces lo mismo.
+ * anotaron el mismo día se usa una sola, la de más calorías: sumarlas contaría dos veces lo mismo.
+ * El día en curso no entra: quedaría a medias y, al tener ya comida, no se completaría después.
  */
-export function foodToImport(meals: HealthMeal[], daysWithFood: Set<string>): DayFood[] {
+export function foodToImport(meals: HealthMeal[], daysWithFood: Set<string>, today: string): DayFood[] {
   const byDay = new Map<string, Map<string, DayFood>>();
   for (const meal of meals) {
     const date = localDateKey(new Date(meal.start));
-    if (daysWithFood.has(date)) continue;
+    if (date >= today || daysWithFood.has(date)) continue;
     const sources = byDay.get(date) ?? new Map<string, DayFood>();
     const day = sources.get(meal.source) ?? { date, kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 };
     day.kcal += meal.kcal;

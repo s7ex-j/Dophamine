@@ -6,6 +6,7 @@ import {
   ENGINE_DAYS,
   forecastWeight,
   isCovariance,
+  repaired,
   type AdaptiveEstimate,
 } from "@/src/features/tdee/adaptive";
 import { addDays } from "@/src/lib/dates";
@@ -266,5 +267,67 @@ describe("proyección de peso", () => {
     expect(month.sd).toBeGreaterThan(week.sd);
     const deficit = forecastWeight(result, result.tdee - 550, 14);
     expect(deficit.kg).toBeCloseTo(result.weightKg - 1, 1);
+  });
+});
+
+describe("0.42.1: covarianzas", () => {
+  it("rechaza una relación sin varianza propia y acepta las singulares válidas", () => {
+    expect(
+      isCovariance([
+        [0, 1],
+        [1, 0],
+      ]),
+    ).toBe(false);
+    expect(
+      isCovariance([
+        [0, 0],
+        [0, 1],
+      ]),
+    ).toBe(true);
+    expect(
+      isCovariance([
+        [1, 1],
+        [1, 1],
+      ]),
+    ).toBe(true);
+    expect(
+      isCovariance([
+        [1, 1, 0],
+        [1, 1, 1],
+        [0, 1, 1],
+      ]),
+    ).toBe(false);
+  });
+  it("reparar siempre entrega una covarianza, y no toca la que ya lo era", () => {
+    const good = [
+      [2, 0.5],
+      [0.5, 1],
+    ];
+    expect(repaired(good)).toEqual(good);
+    for (const bad of [
+      [
+        [0, 1],
+        [1, 0],
+      ],
+      [
+        [1, 5],
+        [5, 1],
+      ],
+      [
+        [-3, 2],
+        [2, 1],
+      ],
+      [
+        [1, 0.9, -0.9],
+        [0.9, 1, 0.9],
+        [-0.9, 0.9, 1],
+      ],
+    ])
+      expect(isCovariance(repaired(bad), 1e-9)).toBe(true);
+  });
+  it("el margen mostrado incluye el error que se repite al anotar", () => {
+    const result = estimate(simulate({ days: 45, tdee: () => 2500 }));
+    expect(result.totalSd).toBeGreaterThan(result.tdeeSd);
+    expect(result.margin).toBe(Math.round((1.96 * result.totalSd) / 10) * 10);
   });
 });

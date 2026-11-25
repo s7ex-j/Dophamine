@@ -57,6 +57,8 @@ const DRIFTS = [2, 5, 10, 18, 30, 45];
 const DRIFT_TYPICAL = 15;
 /** Cambio de peso real no explicado por la energía, en kg por día. */
 const DRIFT_WEIGHT = 0.02;
+/** Error que se repite al anotar la comida (de más o de menos): entra en el margen que se muestra y se usa. */
+export const LOGGING_BIAS = 0.03;
 /** Error al anotar la comida de un día completo. */
 const LOGGING_ERROR = 0.05;
 /** Error extra de las calorías estimadas a ojo (registro rápido). */
@@ -101,6 +103,8 @@ export type AdaptiveOptions = {
   estimated?: Record<string, number>;
   /** Fechas en que empezó un plan nuevo (dieta cargada, objetivo cambiado). */
   transitions?: string[];
+  /** Deriva ya elegida (para repetir el cálculo en otro escenario). Sin ella se busca la mejor. */
+  drift?: number;
 };
 export type Learned = { value: number; sd: number; learned: boolean };
 export type AdaptiveProgress = { active: false; streak: number; needed: number };
@@ -113,6 +117,8 @@ export type AdaptiveEstimate = {
   days: number;
   tdee: number;
   tdeeSd: number;
+  /** Desviación con la que se decide y se muestra: la del filtro más el error que se repite al anotar. */
+  totalSd: number;
   /** Margen (±) ya con el error típico al anotar la comida. */
   margin: number;
   weightKg: number;
@@ -177,19 +183,33 @@ export function isCovariance(matrix: Matrix, tolerance = 1e-12): boolean {
       if (i === j) {
         if (sum < -tolerance) return false;
         lower[i][i] = Math.sqrt(Math.max(sum, 0));
-      } else lower[i][j] = lower[j][j] > 1e-15 ? sum / lower[j][j] : 0;
+      } else if (lower[j][j] > 1e-15) lower[i][j] = sum / lower[j][j];
+      // Sin varianza propia no puede quedar relación con otro estado: si queda, no es una covarianza.
+      else if (Math.abs(sum) > Math.sqrt(tolerance * Math.max(matrix[i][i], tolerance))) return false;
     }
   }
   return true;
 }
 
-/** Repara una covarianza que perdió la forma por redondeo: simétrica y sin varianzas negativas. */
-function repaired(matrix: Matrix): Matrix {
+/**
+ * Repara una covarianza que perdió la forma por redondeo: simétrica y sin varianzas negativas. Si hace
+ * falta suma lo mínimo a la diagonal; el último paso la hace dominante, que siempre es válida.
+ */
+export function repaired(matrix: Matrix): Matrix {
+  const size = matrix.length;
   const fixed = symmetric(matrix);
-  for (let i = 0; i < N; i++) if (fixed[i][i] < 1e-12) fixed[i][i] = 1e-12;
-  return isCovariance(fixed)
-    ? fixed
-    : fixed.map((row, i) => row.map((value, j) => (i === j ? value + 1e-9 : value)));
+  for (let i = 0; i < size; i++) if (fixed[i][i] < 1e-12) fixed[i][i] = 1e-12;
+  if (isCovariance(fixed)) return fixed;
+  const raised = (add: number) =>
+    fixed.map((row, i) => row.map((value, j) => (i === j ? value + add : value)));
+  const dominant = Math.max(
+    ...fixed.map((row, i) => row.reduce((sum, value, j) => (j === i ? sum : sum + Math.abs(value)), 0)),
+  );
+  for (let add = 1e-9; add < dominant; add *= 10) {
+    const candidate = raised(add);
+    if (isCovariance(candidate)) return candidate;
+  }
+  return raised(dominant);
 }
 
 /** Inversa por Gauss-Jordan con pivoteo parcial; null si la matriz no se puede invertir. */
@@ -428,8 +448,9 @@ export function adaptiveEngine(records: DailyBiometrics[], options: AdaptiveOpti
     const run = runFilter(days, rho, priorTdee, drift, base, Math.sqrt(first.noise));
     return { ...run, drift, score: run.logLikelihood - 0.5 * Math.log(drift / DRIFT_TYPICAL) ** 2 };
   };
-  let chosen = tuned(DRIFTS[0]);
-  for (const drift of DRIFTS.slice(1)) {
+  const drifts = options.drift ? [options.drift] : DRIFTS;
+  let chosen = tuned(drifts[0]);
+  for (const drift of drifts.slice(1)) {
     const run = tuned(drift);
     if (run.score > chosen.score) chosen = run;
   }
@@ -438,6 +459,7 @@ export function adaptiveEngine(records: DailyBiometrics[], options: AdaptiveOpti
   const final = chosen.steps[lastIndex];
   const tdee = final.x[D] * rho;
   const tdeeSd = Math.sqrt(Math.max(0, final.p[D][D])) * rho;
+  const totalSd = Math.sqrt(tdeeSd ** 2 + (LOGGING_BIAS * base.intake) ** 2);
 
   const back = Math.min(14, lastIndex);
   const weeklyRateKg = back ? ((smoothed[lastIndex].x[W] - smoothed[lastIndex - back].x[W]) / back) * 7 : 0;
@@ -488,7 +510,8 @@ export function adaptiveEngine(records: DailyBiometrics[], options: AdaptiveOpti
     days: days.length,
     tdee,
     tdeeSd,
-    margin: Math.round((1.96 * Math.sqrt(tdeeSd ** 2 + (0.03 * base.intake) ** 2)) / 10) * 10,
+    totalSd,
+    margin: Math.round((1.96 * totalSd) / 10) * 10,
     weightKg: final.x[W],
     weightSd: Math.sqrt(Math.max(0, final.p[W][W])),
     weeklyRateKg,

@@ -56,7 +56,7 @@ describe("revisión con contexto", () => {
     const checkIn = contextualCheckIn(unsure, profile, { recent, sleepMinutes: 450 });
     expect(checkIn.delta).toBe(0);
     expect(checkIn.reasons).toEqual(["withinMargin"]);
-    expect(checkIn.message).toContain("incertidumbre de tu gasto (± 980 kcal)");
+    expect(checkIn.message).toContain("lo que varían tus datos (± 980 kcal)");
   });
 
   it("zona muerta: solo se mueve si el intervalo del 95 % no incluye el cero", () => {

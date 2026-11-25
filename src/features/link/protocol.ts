@@ -54,22 +54,52 @@ export function toFrames(message: LinkMessage, id: number, size = FRAME_SIZE): s
   );
 }
 
-/** Junta las tramas que van llegando y entrega cada mensaje cuando está completo. */
+/** Mensajes a medias a la vez, caracteres retenidos entre todos y cuánto se espera a que lleguen. */
+export const MAX_PENDING = 4;
+export const MAX_PENDING_CHARS = FRAME_SIZE * MAX_FRAMES;
+export const PENDING_LIFETIME_MS = 60_000;
+
+type Pending = { total: number; pieces: Map<number, string>; chars: number; touchedAt: number };
+
+/**
+ * Junta las tramas que van llegando y entrega cada mensaje cuando está completo. Lo que el otro lado deje
+ * a medias tiene tope de cantidad, de tamaño y de tiempo: no puede llenar la memoria.
+ */
 export class Assembler {
-  private parts = new Map<number, { total: number; pieces: string[]; count: number }>();
+  private parts = new Map<number, Pending>();
+  private chars = 0;
+
+  constructor(private now: () => number = Date.now) {}
+
+  private drop(id: number) {
+    this.chars -= this.parts.get(id)?.chars ?? 0;
+    this.parts.delete(id);
+  }
+
+  /** Olvida todo lo que quedó a medias (al cerrar la conexión). */
+  clear() {
+    this.parts.clear();
+    this.chars = 0;
+  }
+
+  /** Cuánto hay retenido a la espera de completarse. */
+  pending() {
+    return { messages: this.parts.size, chars: this.chars };
+  }
 
   /** Devuelve el mensaje si esta trama lo completó; null si falta o si la trama no sirve. */
   push(frame: string): LinkMessage | null {
     const first = frame.indexOf(":");
     const second = frame.indexOf(":", first + 1);
-    if (first < 1 || second < 0) return null;
+    if (first < 1 || second < 0 || frame.length - second - 1 > FRAME_SIZE) return null;
     const id = Number(frame.slice(0, first));
     const [index, total] = frame
       .slice(first + 1, second)
       .split("/")
       .map(Number);
     if (
-      !Number.isInteger(id) ||
+      !Number.isSafeInteger(id) ||
+      id < 0 ||
       !Number.isInteger(index) ||
       !Number.isInteger(total) ||
       total < 1 ||
@@ -78,15 +108,33 @@ export class Assembler {
       index >= total
     )
       return null;
-    const entry = this.parts.get(id) ?? { total, pieces: new Array<string>(total), count: 0 };
-    if (entry.total !== total) return null;
-    if (entry.pieces[index] === undefined) entry.count += 1;
-    entry.pieces[index] = frame.slice(second + 1);
-    this.parts.set(id, entry);
-    if (entry.count < total) return null;
-    this.parts.delete(id);
+    const now = this.now();
+    for (const [key, item] of this.parts) if (now - item.touchedAt > PENDING_LIFETIME_MS) this.drop(key);
+    const piece = frame.slice(second + 1);
+    let entry = this.parts.get(id);
+    if (entry && entry.total !== total) return null;
+    // Una trama repetida no reemplaza a la primera.
+    if (entry?.pieces.has(index)) return null;
+    if (!entry && this.parts.size >= MAX_PENDING) return null;
+    if (this.chars + piece.length > MAX_PENDING_CHARS) {
+      this.drop(id);
+      return null;
+    }
+    if (!entry) {
+      entry = { total, pieces: new Map(), chars: 0, touchedAt: now };
+      this.parts.set(id, entry);
+    }
+    entry.pieces.set(index, piece);
+    entry.chars += piece.length;
+    entry.touchedAt = now;
+    this.chars += piece.length;
+    if (entry.pieces.size < total) return null;
+    const { pieces } = entry;
+    this.drop(id);
     try {
-      const value: unknown = JSON.parse(entry.pieces.join(""));
+      const value: unknown = JSON.parse(
+        Array.from({ length: total }, (_, position) => pieces.get(position) ?? "").join(""),
+      );
       return isLinkMessage(value) ? value : null;
     } catch {
       return null;
@@ -97,7 +145,7 @@ export class Assembler {
   progress(): number {
     let best = 0;
     for (const entry of this.parts.values())
-      if (entry.total > 1) best = Math.max(best, entry.count / entry.total);
+      if (entry.total > 1) best = Math.max(best, entry.pieces.size / entry.total);
     return best;
   }
 }

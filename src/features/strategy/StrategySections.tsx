@@ -6,6 +6,7 @@ import { GrowBar, RevealX } from "@/src/components/motion";
 import { Text } from "@/src/components/Text";
 import type { GoalEta, GoalProgress } from "@/src/features/profile/profile";
 import { energyOf, signed, trajectoryX, type Trajectory } from "@/src/features/strategy/strategy";
+import { rangeText, type TdeeRange } from "@/src/features/tdee/tdee";
 import { longDate } from "@/src/lib/dates";
 import { convertWeight, formatWeight, weightValue, type WeightUnit } from "@/src/lib/units";
 import { AppTheme, RADIUS } from "@/src/theme";
@@ -180,12 +181,14 @@ export function EnergyCard({
   target,
   tdee,
   margin,
+  range,
   weeklyRateKg,
   unit,
 }: {
   target: number;
   tdee: number | null;
   margin: number | null;
+  range: TdeeRange | null;
   weeklyRateKg: number | null;
   unit: WeightUnit;
 }) {
@@ -223,6 +226,7 @@ export function EnergyCard({
           </View>
         </View>
       ))}
+      {range ? <Text style={AppTheme.hint}>{rangeText(range)}</Text> : null}
       <View
         style={{
           flexDirection: "row",

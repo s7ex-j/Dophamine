@@ -82,7 +82,7 @@ describe("cómo se calcula", () => {
     expect(steps[0].detail).toContain("Basal");
     expect(steps[3].value).toContain("2500");
     expect(steps[3].detail).toContain("motor de autoajuste");
-    expect(steps[4].value).toMatch(/^Activo · confianza/);
+    expect(steps[4].value).toMatch(/^Activo · certeza/);
     expect(steps[4].detail).toContain("Peso real estimado: 70.0 kg");
     expect(steps[4].detail).toContain("en 14 días");
     expect(steps[5].value).toBe("3/4 sesiones");
@@ -93,7 +93,7 @@ describe("cómo se calcula", () => {
   it("marca como pendientes los pasos sin datos suficientes", () => {
     const steps = explainAlgorithm(snapshot([record(0), record(1)]), "2026-11-02");
     expect(steps.find((step) => step.id === "observed")?.pending).toBe(true);
-    expect(steps.find((step) => step.id === "observed")?.detail).toContain("Llevas 2 días");
+    expect(steps.find((step) => step.id === "observed")?.detail).toContain("último pesaje: 1.");
     const engine = steps.find((step) => step.id === "engine");
     expect(engine?.pending).toBe(true);
     expect(engine?.value).toBe("2/15 días seguidos");

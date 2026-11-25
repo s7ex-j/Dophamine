@@ -71,9 +71,12 @@ En la app, Estrategia → "Cómo se calcula" muestra estos pasos con los número
    actividad + MET del entreno × peso × horas, promediado con la ecuación del IOM y, si se conoce, con lo que
    la persona come con el peso estable.
 2. **Tendencia** (`tdee/tdee.ts`): media móvil exponencial del peso (28 %; 10 % si un pesaje parece agua). El
-   ritmo es la pendiente de una recta ajustada a toda la tendencia.
-3. **Energía por kilo**: 7700 kcal/kg, o según la composición medida (grasa ~9400, masa magra ~1800).
-4. **Gasto real**: ingesta media − cambio de peso × energía por kilo, con margen. Se activa con 14 días de
+   ritmo es la pendiente de una recta ajustada a los pesajes (los que parecen agua pesan menos), con su error
+   ensanchado si los desvíos de días seguidos se parecen. Tras `d` días sin pesarse, el suavizado es `1 − (1 − α)^d`.
+3. **Energía por kilo**: 7700 kcal/kg, o según la composición medida (grasa ~9400, masa magra ~1800). La parte de
+   grasa sale de dos rectas con su error y se combina con el valor habitual; una lectura imposible se descarta.
+4. **Gasto real**: ingesta media − cambio de peso × energía por kilo, con margen, todo del primer al
+   último pesaje (42 días como mucho). "Al día" mira los últimos siete días del calendario. Se activa con 14 días de
    tendencia y 10 de comida. Los días incompletos no cuentan; los de ayuno sí, aunque sean 0.
 5. **Entreno** (`training/energy.ts`): hora de inicio y fin de cada sesión, minutos de cardio y MET de cada
    ejercicio. Ya está dentro del gasto real; mientras se construye, se compara con lo previsto.
@@ -111,6 +114,27 @@ como punto de partida).
 
 Límite: el error sistemático al anotar comida no se puede separar del gasto (comer 200 kcal más de lo
 anotado se ve igual que gastar 200 menos). El margen incluye un 3 % de la ingesta por eso.
+La revisión no lo suma: supone que el objetivo y el gasto están en la misma escala de registro (se anota igual
+antes y después). Es una hipótesis, no una propiedad: no vale si cambia la forma de anotar ni para un plan inicial
+que aún no se siguió anotando.
+
+Otro límite: el margen da por buena la energía por kilo (7700 o la medida). En las simulaciones cubre del 92 al 96 %
+cuando lo es; si todo lo que se pierde es grasa y no hay báscula, baja a 78 %, y con báscula ruidosa a 88 %. Por eso
+se muestra aparte `tdeeRange`, un análisis de sensibilidad: el gasto y su margen recalculados en varios escenarios de
+energía por kilo, del más bajo al más alto de todos.
+
+- **Escenarios de referencia:** 5900 kcal/kg (Hall 2008, caso modelado: 15 kg menos con 20 kg de grasa), 7700, el valor
+  usado y 9400 (la grasa sola, no el promedio de un kilo perdido). En las primeras seis semanas del plan se suma 4850
+  (Heymsfield 2012: 4858 ± 388 de error estándar en la semana 4, 23 personas). Mantenerlo seis semanas es una extrapolación
+  prudente: en la semana 6 el mismo estudio daba 6041 ± 376. Ninguno es un límite fisiológico ni
+  describe a toda la población: el gasto de una persona puede quedar fuera.
+- **La báscula de grasa no lo estrecha:** puede errar siempre igual y eso no se ve en sus lecturas.
+- **No es un intervalo del 95 %:** no hay distribución de la energía por kilo. La cobertura de las pruebas describe esas
+  simulaciones; no es una garantía.
+- **No cambia** el gasto ni la revisión. El objetivo sale de `ingesta + ρ (ritmo objetivo − ritmo observado)`: si los
+  ritmos coinciden ρ se cancela; si no, la propuesta sí depende de ρ.
+- **El motor** se vuelve a correr en cada escenario con sus mismos datos y la deriva que ya eligió.
+- 7700 sigue como valor central provisional: su acierto depende de la grasa inicial y de cuánto se pierde.
 
 ## Entreno
 

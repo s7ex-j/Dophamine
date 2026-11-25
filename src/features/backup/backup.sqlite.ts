@@ -245,6 +245,20 @@ export function storeFromTables(tables: Tables): Store {
   };
 }
 
+/** Uno por clave, en el orden en que llegaron: si se repite, gana el último. */
+const uniqueBy = <T>(items: T[], key: (item: T) => string) => [
+  ...new Map(items.map((item) => [key(item), item])).values(),
+];
+/** Con la clave repetida gana el primero (en la web, el más reciente va primero), en su lugar. */
+function firstBy<T>(items: T[], key: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => !seen.has(key(item)) && seen.add(key(item)));
+}
+
+/** La tabla solo admite RPE de 1 a 10. */
+const rpeOf = (rir: number | null | undefined) =>
+  rir === null || rir === undefined ? null : Math.min(10, Math.max(1, 10 - rir));
+
 export function tablesFromStore(store: Store): Tables {
   const settings: SettingRow[] = [];
   if (store.profile) settings.push({ key: PROFILE_KEY, value: JSON.stringify(store.profile) });
@@ -255,9 +269,12 @@ export function tablesFromStore(store: Store): Tables {
       settings.push({ key, value: JSON.stringify(value) });
   // Dos registros del mismo día no caben en el teléfono (la fecha es única): gana el último.
   const byDate = new Map(store.biometrics.map((record) => [record.date, record]));
-  const total = store.wellbeing.length;
+  // Lo mismo con el resto: una clave repetida no debe impedir restaurar.
+  const wellbeing = firstBy(store.wellbeing, (entry) => entry.id);
+  const workouts = firstBy(store.workouts, (workout) => workout.id);
+  const total = wellbeing.length;
   return {
-    biometrics: [...byDate.values()].map((record) => ({
+    biometrics: uniqueBy([...byDate.values()], (record) => record.id).map((record) => ({
       id: record.id,
       date: record.date,
       weight_kg: record.weightKg,
@@ -275,7 +292,7 @@ export function tablesFromStore(store: Store): Tables {
       steps: record.steps ?? null,
     })),
     // El respaldo no trae la hora del chequeo: se reconstruye una que conserve el orden.
-    wellbeing: store.wellbeing.map((entry, index) => ({
+    wellbeing: wellbeing.map((entry, index) => ({
       id: entry.id,
       date: entry.date,
       mood: entry.mood,
@@ -285,22 +302,22 @@ export function tablesFromStore(store: Store): Tables {
       note: entry.note ?? "",
       created_at: `${entry.date} 12:00:00.${String(total - index).padStart(6, "0")}`,
     })),
-    workouts: store.workouts.map((workout) => ({
+    workouts: workouts.map((workout) => ({
       id: workout.id,
       name: workout.name,
       started_at: workout.startedAt ?? workout.completedAt,
       completed_at: workout.completedAt,
     })),
-    sets: store.workouts.flatMap((workout) =>
+    sets: workouts.flatMap((workout) =>
       workout.sets
         ? workout.sets.map((set, index) => ({
             id: `${workout.id}-${index + 1}`,
             workout_id: workout.id,
             exercise_name: set.exerciseName,
             set_number: set.setNumber,
-            reps: set.reps,
-            load_kg: set.loadKg,
-            rpe: set.rir === null ? null : Math.min(10, Math.max(1, 10 - set.rir)),
+            reps: set.reps ?? null,
+            load_kg: set.loadKg ?? null,
+            rpe: rpeOf(set.rir),
             set_type: set.type,
             exercise_id: set.exerciseId ?? null,
             side: set.side ?? null,
@@ -310,33 +327,32 @@ export function tablesFromStore(store: Store): Tables {
             workout_id: workout.id,
             exercise_name: log.exerciseName,
             set_number: 1,
-            reps: log.reps,
-            load_kg: log.loadKg,
-            // La tabla solo admite RPE de 1 a 10.
-            rpe: log.rir === null || log.rir === undefined ? null : Math.min(10, Math.max(1, 10 - log.rir)),
+            reps: log.reps ?? null,
+            load_kg: log.loadKg ?? null,
+            rpe: rpeOf(log.rir),
           })),
     ),
-    habits: (store.habits ?? []).map((habit) => ({
+    habits: uniqueBy(store.habits ?? [], (habit) => `${habit.id}-${habit.date}`).map((habit) => ({
       id: `${habit.id}-${habit.date}`,
       habit_id: habit.id,
       date: habit.date,
       completed: habit.completed ? 1 : 0,
     })),
     settings,
-    reviews: (store.reviews ?? []).map((review) => ({
+    reviews: firstBy(store.reviews ?? [], (review) => review.id).map((review) => ({
       id: review.id,
       date: review.date,
       decision: review.decision,
       previous_calories: Math.round(review.previousCalories),
       suggested_calories: Math.round(review.suggestedCalories),
-      tdee: review.tdee === null ? null : Math.round(review.tdee),
+      tdee: typeof review.tdee === "number" ? Math.round(review.tdee) : null,
     })),
-    foods: (store.foods ?? []).map((food) => ({
+    foods: uniqueBy(store.foods ?? [], (food) => food.id).map((food) => ({
       id: food.id,
       data: JSON.stringify(food),
       barcode: food.barcode ?? null,
     })),
-    meals: (store.meals ?? []).map((entry) => ({
+    meals: uniqueBy(store.meals ?? [], (entry) => entry.id).map((entry) => ({
       id: entry.id,
       date: entry.date,
       slot: entry.slot,
@@ -349,7 +365,10 @@ export function tablesFromStore(store: Store): Tables {
       fats_g: entry.fatsG,
       alcohol_g: entry.alcoholG ?? 0,
     })),
-    sleep: (store.sleep ?? []).map((entry) => ({
+    sleep: uniqueBy(
+      uniqueBy(store.sleep ?? [], (entry) => entry.date),
+      (entry) => entry.id,
+    ).map((entry) => ({
       id: entry.id,
       date: entry.date,
       bedtime: entry.bedtime,

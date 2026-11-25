@@ -382,3 +382,72 @@ describe("pasos en el respaldo del teléfono", () => {
     expect(back.steps).toBeUndefined();
   });
 });
+
+describe("0.42.1: claves repetidas", () => {
+  it("no impiden restaurar: queda una fila por clave", () => {
+    const doubled: Store = {
+      ...store,
+      wellbeing: [...store.wellbeing, ...store.wellbeing],
+      workouts: [...store.workouts, ...store.workouts],
+      sleep: [
+        {
+          id: "s1",
+          date: "2026-11-10",
+          bedtime: "23:00",
+          wakeTime: "07:00",
+          quality: null,
+          source: "manual",
+        },
+        {
+          id: "s2",
+          date: "2026-11-10",
+          bedtime: "23:30",
+          wakeTime: "07:00",
+          quality: null,
+          source: "manual",
+        },
+      ],
+    };
+    const tables = tablesFromStore(doubled);
+    expect(tables.wellbeing).toHaveLength(store.wellbeing.length);
+    expect(tables.workouts).toHaveLength(store.workouts.length);
+    expect(tables.sleep).toHaveLength(1);
+    expect(new Set(tables.sets.map((row) => row.id)).size).toBe(tables.sets.length);
+  });
+
+  it("se queda el primero y los demás conservan su orden", () => {
+    const entry = (id: string, note: string) => ({ id, date: "2026-11-10", mood: 3, note });
+    const tables = tablesFromStore({
+      ...store,
+      wellbeing: [entry("A", "reciente"), entry("B", "B"), entry("A", "antiguo")],
+    });
+    expect(tables.wellbeing.map((row) => [row.id, row.note])).toEqual([
+      ["A", "reciente"],
+      ["B", "B"],
+    ]);
+    // Al volver a leerlo, A sigue siendo el más reciente.
+    expect(storeFromTables(tables).wellbeing.map((row) => row.id)).toEqual(["A", "B"]);
+  });
+
+  it("lo que falta en una serie o una revisión llega vacío, no como NaN", () => {
+    const bare = { exerciseName: "Press", setNumber: 1, type: "working" };
+    const tables = tablesFromStore({
+      ...store,
+      workouts: [
+        { id: "x", name: "A", completedAt: "2026-11-10T10:00:00Z", sets: [bare] },
+        { id: "y", name: "B", completedAt: "2026-11-10T10:00:00Z", sessionLogs: [{ exerciseName: "Remo" }] },
+      ],
+      reviews: [
+        {
+          id: "r",
+          date: "2026-11-10",
+          decision: "accepted",
+          previousCalories: 2000,
+          suggestedCalories: 1900,
+        },
+      ],
+    } as unknown as Store);
+    for (const row of tables.sets) expect([row.reps, row.load_kg, row.rpe]).toEqual([null, null, null]);
+    expect(tables.reviews[0].tdee).toBeNull();
+  });
+});

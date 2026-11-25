@@ -8,7 +8,7 @@ import { getBiometricsWindow, type DailyBiometrics } from "@/src/features/biomet
 import { PERIODS_KEY, readPeriods, type Period } from "@/src/features/period/period";
 import { getNutritionProfile } from "@/src/features/profile/profile.repository";
 import { getSetting } from "@/src/features/settings/settings.repository";
-import { analyzeMetabolism, weeklyRecommendation } from "@/src/features/tdee/tdee";
+import { analyzeMetabolism, rangeText, weeklyRecommendation } from "@/src/features/tdee/tdee";
 import { trendColumns } from "@/src/features/tdee/trendChart";
 import { goalLabels, weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { CompositionCard } from "@/src/features/dashboard/ProgressSections";
@@ -16,6 +16,8 @@ import { ReviewHistoryCard } from "@/src/features/reviews/CheckInSections";
 import type { WeeklyReview } from "@/src/features/reviews/reviews";
 import { getWeeklyReviews } from "@/src/features/reviews/reviews.repository";
 import { convertWeight, formatWeight } from "@/src/lib/units";
+import { localDateKey } from "@/src/lib/dates";
+import { VIEWER } from "@/src/lib/mode";
 import { AppTheme } from "@/src/theme";
 
 export default function AnalysisScreen() {
@@ -40,7 +42,12 @@ export default function AnalysisScreen() {
   }, []);
   useFocusEffect(load);
   const unit = weightUnitOf(profile);
-  const analysis = analyzeMetabolism(records, { periods, history });
+  const analysis = analyzeMetabolism(records, {
+    periods,
+    history,
+    asOf: VIEWER ? undefined : localDateKey(),
+    planStart: profile?.startDate,
+  });
   const points = analysis.points.slice(-14);
   const columns = trendColumns(points);
   const calorieTarget = profile?.calorieTarget ?? 1;
@@ -139,6 +146,7 @@ export default function AnalysisScreen() {
             detail={`Días de ingesta válidos: ${analysis.loggedDays}`}
             value={analysis.tdee ? `${analysis.tdee} kcal` : "En espera"}
           />
+          {analysis.tdeeRange ? <Text style={AppTheme.hint}>{rangeText(analysis.tdeeRange)}</Text> : null}
           <ListRow
             title="Cambio de tendencia"
             detail="Basado en peso suavizado"

@@ -59,6 +59,7 @@ export function StrategyHeader({
         target={profile.calorieTarget}
         tdee={analysis.tdee}
         margin={analysis.tdeeMargin}
+        range={analysis.tdeeRange}
         weeklyRateKg={analysis.weeklyRateKg}
         unit={unit}
       />

@@ -47,7 +47,8 @@ export function HealthConnectCard({ onImported }: { onImported: () => void }) {
       <Text style={AppTheme.body}>
         Trae tu peso, % de grasa, sueño, pasos y lo comido de los últimos {IMPORT_DAYS} días desde Samsung
         Health, Google Fit u otras apps; después, lo nuevo entra solo al abrir la app, una vez al día. Solo se
-        llenan los días vacíos: lo que anotaste aquí no cambia. Nada sale del teléfono.
+        llenan los días vacíos: lo que anotaste aquí no cambia. La comida de hoy entra mañana, cuando el día
+        está completo, y si varias apps la anotan se usa la de más calorías. Nada sale del teléfono.
       </Text>
       {status === "available" ? (
         <Button

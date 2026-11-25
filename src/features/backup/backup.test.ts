@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { normalizeRoutine } from "@/src/features/training/training.plans";
+
 import {
   autoBackupDue,
   BACKUP_FORMAT,
@@ -179,5 +181,155 @@ describe("autoBackupDue", () => {
   });
   it("si la fecha guardada es del futuro (reloj cambiado), vuelve a guardar", () => {
     expect(autoBackupDue("2026-12-01", "2026-11-18")).toBe(true);
+  });
+});
+
+describe("0.42.1: el respaldo se valida igual en el teléfono y en la web", () => {
+  const read = (data: object) => parseBackup(JSON.stringify({ app: "dophamine", format: 10, data }));
+  const day = { id: "1", date: "2026-11-20", weightKg: 78, caloriesIn: 2300, proteinG: 150 };
+  const base = { biometrics: [day], wellbeing: [], workouts: [] };
+  const cases: Array<[string, object]> = [
+    ["peso negativo", { ...base, biometrics: [{ ...day, weightKg: -5 }] }],
+    ["peso cero", { ...base, biometrics: [{ ...day, weightKg: 0 }] }],
+    ["calorías negativas", { ...base, biometrics: [{ ...day, caloriesIn: -500 }] }],
+    ["fecha que no existe", { ...base, biometrics: [{ ...day, date: "2026-99-99" }] }],
+    ["30 de febrero", { ...base, biometrics: [{ ...day, date: "2026-02-30" }] }],
+    ["sin proteína", { ...base, biometrics: [{ ...day, proteinG: undefined }] }],
+    ["grasa de 140 %", { ...base, biometrics: [{ ...day, bodyFatPct: 140 }] }],
+    ["ánimo 9", { ...base, wellbeing: [{ id: "w", date: "2026-11-20", mood: 9, note: "" }] }],
+    ["entrenos vacíos", { ...base, workouts: [null, 5] }],
+    ["entreno sin fecha", { ...base, workouts: [{ id: "e", name: "A", completedAt: "ayer" }] }],
+    [
+      "serie con carga negativa",
+      {
+        ...base,
+        workouts: [
+          {
+            id: "e",
+            name: "A",
+            completedAt: "2026-11-20T10:00:00",
+            sets: [{ exerciseName: "Press", setNumber: 1, type: "working", loadKg: -5, reps: 5, rir: 2 }],
+          },
+        ],
+      },
+    ],
+    ["hábito sin fecha", { ...base, habits: [{ id: "h", completed: true }] }],
+    ["rutina sin ejercicios ni entrenos", { ...base, routines: [{ name: "R", days: ["mon"] }] }],
+    ["plan solo con calorías", { ...base, profile: { calorieTarget: 2000 } }],
+    ["plan con sexo desconocido", { ...base, profile: { ...store.profile, sex: "x" } }],
+  ];
+  for (const [name, data] of cases) it(`rechaza: ${name}`, () => expect(() => read(data)).toThrow(/dañado/));
+
+  const workoutWith = (extra: object) => ({
+    ...base,
+    workouts: [{ id: "e", name: "A", completedAt: "2026-11-20T10:00:00.000Z", ...extra }],
+  });
+  const log = { exerciseName: "Press", loadKg: 60, reps: 8, rir: 2 };
+  const profileWith = (extra: object) => ({ ...base, profile: { ...store.profile, ...extra } });
+  const more: Array<[string, object]> = [
+    ["hora imposible", workoutWith({ completedAt: "2026-11-20T99:99:99Z" })],
+    ["texto tras la fecha", workoutWith({ completedAt: "2026-11-20 basura" })],
+    ["inicio con hora inválida", workoutWith({ startedAt: "2026-11-20T10:61" })],
+    ["rir de una línea que no es número", workoutWith({ sessionLogs: [{ ...log, rir: "dos" }] })],
+    ["rir de una línea fuera de rango", workoutWith({ sessionLogs: [{ ...log, rir: 400 }] })],
+    [
+      "bienestar con texto tras la fecha",
+      { ...base, wellbeing: [{ id: "w", date: "2026-11-20x", mood: 4 }] },
+    ],
+    ["grasa del plan imposible", profileWith({ bodyFatPct: 140 })],
+    ["fecha de inicio del plan que no existe", profileWith({ startDate: "2026-02-30" })],
+    ["experiencia desconocida", profileWith({ experience: "dios" })],
+    ["días de entreno imposibles", profileWith({ trainingDays: 9 })],
+    ["ingesta conocida como texto", profileWith({ knownIntake: "2000" })],
+    ["reparto semanal con texto", profileWith({ customDayOffsets: { mon: "mucho" } })],
+    [
+      "rutina con un ejercicio nulo",
+      { ...base, routines: [{ name: "R", days: ["mon"], exercises: [null] }] },
+    ],
+    [
+      "rutina con series negativas",
+      { ...base, routines: [{ name: "R", exercises: [{ name: "P", sets: -1 }] }] },
+    ],
+  ];
+  for (const [name, data] of more) it(`rechaza: ${name}`, () => expect(() => read(data)).toThrow(/dañado/));
+
+  for (const [name, routine] of [
+    ["ejercicios como texto", { name: "R", days: ["mon", "wed"], exercises: ["Press banca", "Remo"] }],
+    ["textos y objetos mezclados", { name: "R", days: ["mon"], exercises: ["Remo", { name: "Press" }] }],
+    ["sin días", { name: "R", exercises: ["Remo"] }],
+    ["solo con entrenos por día", { name: "R", schedule: [{ day: "mon", exercises: ["Remo"] }] }],
+    ["un día sin ejercicios", { name: "R", schedule: [{ day: "mon" }] }],
+  ] as const)
+    it(`acepta una rutina antigua: ${name}, y se puede leer`, () => {
+      const saved = read({ ...base, routines: [routine] }).data.routines?.[0];
+      expect(normalizeRoutine(saved).name).toBe("R");
+    });
+
+  it("una rutina anterior a la 0.14.0 conserva sus ejercicios en cada día", () => {
+    const saved = read({
+      ...base,
+      routines: [{ name: "Anterior", days: ["mon", "wed"], exercises: ["Press banca", "Remo"] }],
+    }).data.routines?.[0];
+    const routine = normalizeRoutine(saved);
+    expect(routine.days).toEqual(["mon", "wed"]);
+    for (const day of routine.schedule)
+      expect(day.exercises.map((item) => item.name)).toEqual(["Press banca", "Remo"]);
+  });
+
+  for (const moment of [
+    "2026-11-20",
+    "2026-11-20 10:00:00",
+    "2026-11-20T10:00",
+    "2026-11-20T10:00:00.123Z",
+    "2026-11-20T10:00:00-05:00",
+  ])
+    it(`acepta la hora ${moment}`, () =>
+      expect(read(workoutWith({ completedAt: moment })).data.workouts).toHaveLength(1));
+
+  it("acepta un plan con todos los datos de la evaluación", () => {
+    const full = {
+      startDate: "2026-01-01",
+      bodyFatPct: 18,
+      proteinLevel: "high",
+      trainingDays: 4,
+      sessionMinutes: 60,
+      trainingType: "mixed",
+      experience: "beginner",
+      knownIntake: 2200,
+      recentTrend: "stable",
+      initialExpenditure: 2600,
+      mealStyle: "numbered",
+      mealsPerDay: 5,
+      dietType: "keto",
+      calorieSchedule: "custom",
+      trainingDayExtra: 200,
+      customDayOffsets: { mon: -100, sat: 250 },
+    };
+    expect(read(profileWith(full)).data.profile).toMatchObject(full);
+  });
+
+  it("acepta lo que la app guarda de verdad, también lo opcional vacío", () => {
+    const data = {
+      ...base,
+      biometrics: [
+        { ...day, carbsG: 0, fatsG: 0, bodyFatPct: null, waterPct: null, steps: null, fasting: true },
+        { ...day, id: "2", date: "2026-11-21", weightKg: null, caloriesIn: 0, proteinG: 0 },
+      ],
+      wellbeing: [{ id: "w", date: "2026-11-20", mood: 4, sleepHours: 0, note: "" }],
+      workouts: [
+        {
+          id: "e",
+          name: "A",
+          completedAt: "2026-11-20T10:00:00.000Z",
+          sessionLogs: [{ exerciseName: "Press", loadKg: null, reps: null, rir: null }],
+          sets: [
+            { exerciseName: "Plancha", setNumber: 1, type: "working", loadKg: null, reps: 0, rir: null },
+          ],
+        },
+      ],
+      habits: [{ id: "checkin", date: "2026-11-20", completed: true }],
+      profile: store.profile,
+    };
+    expect(read(data).data.biometrics).toHaveLength(2);
   });
 });

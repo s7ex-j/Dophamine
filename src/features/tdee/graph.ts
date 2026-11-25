@@ -2,6 +2,7 @@ import type { DashboardSnapshot } from "@/src/features/dashboard/dashboard.repos
 import { averageIntake } from "@/src/features/tdee/checkin";
 import { ENGINE_DAYS } from "@/src/features/tdee/adaptive";
 import { explainAlgorithm, type AlgorithmStep } from "@/src/features/tdee/explain";
+import { rangeText } from "@/src/features/tdee/tdee";
 
 /**
  * "Cómo se calcula" como red: de dónde sale cada número y hacia dónde va.
@@ -173,7 +174,7 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
         : `Tu peso real cambia ${signed(analysis.weeklyRateKg, 2)} kg por semana.`,
       engine
         ? "suavizador RTS: (peso real hoy − hace 14 días) ÷ 2 semanas"
-        : "pendiente de una recta ajustada a la tendencia",
+        : "pendiente de una recta ajustada a tus pesajes",
     ),
     node(
       "adaptation",
@@ -195,7 +196,7 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       analysis.tdeeMargin ? `±${analysis.tdeeMargin}` : "—",
       Boolean(analysis.tdeeMargin),
       engine
-        ? `Margen del 95 % del gasto: ±${analysis.tdeeMargin} kcal (desviación ${Math.round(engine.tdeeSd)}).`
+        ? `Margen del 95 % del gasto: ±${analysis.tdeeMargin} kcal (desviación ${Math.round(engine.totalSd)}). Incluye un 3 % por errores que se repiten al anotar; la revisión no lo cuenta porque supone que anotas igual antes y después. Da por buena la energía de cada kilo.${analysis.tdeeRange ? ` ${rangeText(analysis.tdeeRange)}` : ""}`
         : "Margen aproximado del gasto según lo estable que es la tendencia.",
       "margen = 1.96 · √(σ²gasto + (3 % de la ingesta)²)",
     ),
@@ -207,7 +208,7 @@ export function algorithmGraph(snapshot: DashboardSnapshot, today: string): Algo
       snapshot.checkIn?.ready && snapshot.checkIn.delta !== null ? signed(snapshot.checkIn.delta) : "—",
       Boolean(snapshot.checkIn?.ready),
       step("review")?.detail ?? "",
-      "solo se mueve si el intervalo del 95 % (99 % para recortar en volumen) de (objetivo buscado − actual) no incluye el cero",
+      "solo se mueve si el intervalo del 95 % (99 % para recortar en volumen) de (objetivo buscado − actual) no incluye el cero; usa la desviación de los datos, sin el 3 % de registro",
     ),
     node(
       "target",

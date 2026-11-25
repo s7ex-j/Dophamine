@@ -158,6 +158,7 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
         source: record.metadata?.dataOrigin ?? "",
       })),
       daysWithFood,
+      today,
     );
     for (const day of toSave)
       await saveDayNutrition(

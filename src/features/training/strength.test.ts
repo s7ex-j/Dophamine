@@ -29,12 +29,13 @@ describe("días con comida y sin pesaje", () => {
     fatsG: 0,
   });
 
-  it("la tendencia usa solo los pesajes y la ingesta cuenta todos los días", () => {
+  it("la tendencia usa solo los pesajes y la ingesta cuenta los días hasta el último pesaje", () => {
     // 20 días de comida; pesaje un día sí y otro no.
     const records = Array.from({ length: 20 }, (_, index) => day(index, index % 2 === 0 ? 80 : null, 2400));
     const analysis = analyzeMetabolism(records);
     expect(analysis.points).toHaveLength(10);
-    expect(analysis.loggedDays).toBe(20);
+    // El último pesaje es el día 18: cuentan los 18 anteriores.
+    expect(analysis.loggedDays).toBe(18);
     expect(analysis.points.every((point) => point.weightKg === 80)).toBe(true);
     // Peso estable comiendo 2400 kcal: el gasto estimado es 2400.
     expect(analysis.tdee).toBeNull(); // 10 pesajes: aún faltan para los 14 que pide la tendencia

@@ -3,6 +3,7 @@ import { estimateExpenditure } from "@/src/features/profile/expenditure";
 import { checkInDaysOf } from "@/src/features/profile/profile";
 import { ENGINE_DAYS, forecastWeight } from "@/src/features/tdee/adaptive";
 import { adherenceGap, averageIntake } from "@/src/features/tdee/checkin";
+import { rangeText } from "@/src/features/tdee/tdee";
 import { addDays } from "@/src/lib/dates";
 
 /**
@@ -80,7 +81,7 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
       ? `${analysis.points.length} pesajes suavizados${damped ? `, ${damped} con poco peso por parecer agua` : ""}. Ritmo: ${analysis.weeklyRateKg === null ? "aún sin calcular" : `${signed(analysis.weeklyRateKg, 2)} kg por semana`}.`
       : "Anota tu peso para empezar la tendencia.",
     formula:
-      "Media móvil exponencial (cada pesaje mueve la tendencia un 28 %, o un 10 % si parece agua). El ritmo es la pendiente de una recta ajustada a toda la tendencia.",
+      "Media móvil exponencial (cada pesaje diario mueve la tendencia un 28 %, o un 10 % si parece agua; tras varios días sin pesarte, más). El ritmo es la pendiente de una recta ajustada a tus pesajes.",
     pending: !last,
   });
 
@@ -89,16 +90,18 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     id: "density",
     title: "Energía de cada kilo",
     value: `${analysis.energyPerKg} kcal/kg`,
-    detail:
+    detail: `${
       analysis.energyPerKg === 7700
         ? "Valor estándar. Si anotas tu % de grasa, se calcula cuánto del cambio es grasa y cuánto masa magra."
-        : "Calculado con tu composición: la grasa aporta ~9400 kcal/kg y la masa magra ~1800.",
-    formula: "proporción de grasa × 9400 + proporción de masa magra × 1800 (7700 si no hay composición).",
+        : "Calculado con tu composición: la grasa aporta ~9400 kcal/kg y la masa magra ~1800."
+    }${analysis.tdeeRange ? ` ${rangeText(analysis.tdeeRange)}` : ""}`,
+    formula:
+      "proporción de grasa × 9400 + proporción de masa magra × 1800. Cuanto más ruido traen las lecturas, más se acerca a 7700; si no son posibles, se usa 7700.",
     pending: false,
   });
 
   // 4. Gasto observado.
-  const intake = averageIntake(snapshot.records);
+  const intake = analysis.averageIntake;
   const engine = analysis.adaptive;
   steps.push({
     id: "observed",
@@ -108,10 +111,10 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
       ? engine?.active
         ? `Lo estima el motor de autoajuste con ${engine.days} días de datos: comiste en promedio ${intake ? kcal(intake) : "—"} y tu peso real cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana.`
         : `Comiste en promedio ${intake ? kcal(intake) : "—"} y tu tendencia cambió ${signed(analysis.weeklyRateKg ?? 0, 2)} kg/semana: eso equivale a ${kcal(analysis.tdee)} de gasto.`
-      : `Se activa con 14 días de tendencia y 10 de comida completos. Llevas ${analysis.loggedDays} días de comida.`,
+      : `Se activa con 14 días de tendencia y 10 de comida completos. Días de comida antes de tu último pesaje: ${analysis.loggedDays}.`,
     formula: engine?.active
       ? "El gasto es parte del estado del motor de autoajuste (paso siguiente): se corrige con cada pesaje."
-      : "ingesta media − (cambio de peso por día × energía por kilo). Los días marcados como incompletos no cuentan.",
+      : "ingesta media − (cambio de peso por día × energía por kilo), las dos del primer al último pesaje. Los días marcados como incompletos no cuentan.",
     pending: !analysis.tdee,
   });
 
@@ -148,10 +151,13 @@ export function explainAlgorithm(snapshot: DashboardSnapshot, today: string): Al
     notes.push(
       `Con tu objetivo actual, en 14 días: ${forecast.kg.toFixed(1)} ± ${(1.96 * forecast.sd).toFixed(1)} kg.`,
     );
+    notes.push(
+      "La certeza dice cuánto coinciden tus datos entre sí. Si anotas siempre de menos, el gasto sale más bajo en la misma medida, aunque la certeza sea alta.",
+    );
     steps.push({
       id: "engine",
       title: "Motor de autoajuste",
-      value: `Activo · confianza ${CONFIDENCE[engine.confidence]}`,
+      value: `Activo · certeza ${CONFIDENCE[engine.confidence]}`,
       detail: notes.join(" "),
       formula: ENGINE_FORMULA,
       pending: false,

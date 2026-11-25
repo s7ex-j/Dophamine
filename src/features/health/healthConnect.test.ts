@@ -9,6 +9,8 @@ import {
   weightsToImport,
 } from "./healthConnect";
 
+/** Un día posterior a todos los datos de prueba. */
+const TODAY = "2026-12-01";
 // Horas locales: así el día de cada dato no depende de la zona horaria de quien corre la prueba.
 const at = (date: string, time: string) => new Date(`${date}T${time}:00`).toISOString();
 
@@ -88,6 +90,7 @@ describe("foodToImport", () => {
           { ...meal, start: at("2026-11-11", "13:00") },
         ],
         new Set(["2026-11-11"]),
+        TODAY,
       ),
     ).toEqual([{ date: "2026-11-10", kcal: 1000, proteinG: 60.1, carbsG: 100, fatsG: 30 }]);
   });
@@ -100,6 +103,7 @@ describe("foodToImport", () => {
           { ...meal, start: at("2026-11-10", "13:05"), source: "app.b" },
         ],
         new Set(),
+        TODAY,
       ).map((day) => day.kcal),
     ).toEqual([1000]);
   });
@@ -114,14 +118,27 @@ describe("readAllPages", () => {
     };
     expect(await readAllPages(async (token) => pages[token ?? ""])).toEqual([1, 2, 3, 4]);
   });
-  it("se detiene si la página se repite o la última viene vacía", async () => {
-    let calls = 0;
-    await readAllPages(async () => {
-      calls += 1;
-      return { records: [1], pageToken: "igual" };
-    });
-    expect(calls).toBe(2);
+  it("una lectura que no llega al final falla en vez de parecer completa", async () => {
+    await expect(readAllPages(async () => ({ records: [1], pageToken: "igual" }))).rejects.toThrow(
+      /todos los datos/,
+    );
+    let page = 0;
+    const endless = async () => ({ records: [1], pageToken: `t${(page += 1)}` });
+    await expect(readAllPages(endless, 5)).rejects.toThrow(/todos los datos/);
+    expect(page).toBe(5);
     expect(await readAllPages(async () => ({ records: [], pageToken: "" }))).toEqual([]);
+  });
+});
+
+describe("la comida del día en curso", () => {
+  const meal = { kcal: 800, proteinG: 30, carbsG: 80, fatsG: 20, source: "app.a" };
+  it("no se importa a medias: entra completa al día siguiente", () => {
+    const morning = [{ ...meal, start: at("2026-11-10", "09:00") }];
+    const full = [...morning, { ...meal, kcal: 1400, start: at("2026-11-10", "20:00") }];
+    const first = foodToImport(morning, new Set(), "2026-11-10");
+    expect(first).toEqual([]);
+    const saved = new Set(first.map((day) => day.date));
+    expect(foodToImport(full, saved, "2026-11-11")).toMatchObject([{ date: "2026-11-10", kcal: 2200 }]);
   });
 });
 
@@ -135,14 +152,19 @@ describe("importar dos veces no cambia nada", () => {
   it("la segunda vez los días ya tienen dato", () => {
     expect(weightsToImport(weights, [], days(weightsToImport(weights, [], new Set())))).toEqual([]);
     expect(nightsToImport(sleeps, days(nightsToImport(sleeps, new Set())))).toEqual([]);
-    expect(foodToImport(meals, days(foodToImport(meals, new Set())))).toEqual([]);
+    expect(foodToImport(meals, days(foodToImport(meals, new Set(), TODAY)), TODAY)).toEqual([]);
   });
   it("los registros repetidos de peso y sueño cuentan una vez", () => {
     expect(weightsToImport([...weights, ...weights], [], new Set())).toHaveLength(1);
     expect(nightsToImport([...sleeps, ...sleeps], new Set())).toHaveLength(1);
   });
-  it("los pasos se reemplazan por el total: repetir da lo mismo", () => {
+  it("los pasos se reemplazan por el total del día, no se suman a lo guardado", () => {
     const totals = [{ date: "2026-11-10", total: 8000 }];
-    expect(stepsToImport(totals)).toEqual(stepsToImport(totals));
+    const saved = new Map<string, number>();
+    for (let time = 0; time < 2; time += 1)
+      for (const day of stepsToImport(totals)) saved.set(day.date, day.steps);
+    expect([...saved]).toEqual([["2026-11-10", 8000]]);
+    for (const day of stepsToImport([{ date: "2026-11-10", total: 9500 }])) saved.set(day.date, day.steps);
+    expect(saved.get("2026-11-10")).toBe(9500);
   });
 });

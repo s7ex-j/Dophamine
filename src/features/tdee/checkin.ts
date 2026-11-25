@@ -165,6 +165,11 @@ export function contextualCheckIn(
   }
   let delta = Math.max(-step, Math.min(step, Math.round(desired - profile.calorieTarget)));
 
+  // Se usa la desviación del filtro y no el margen que se muestra, que suma el error de registro. Hipótesis:
+  // la persona anota igual (mismo error) lo que el motor midió y lo que come al seguir el objetivo, y entonces
+  // el error se cancela en la diferencia. Si cambia su forma de anotar, o el objetivo viene de una fórmula que
+  // aún no se siguió anotando, puede no cumplirse. Tampoco suma la energía por kilo: se usa la misma para
+  // medir y para proponer, así que su error se cancela si ya se va al ritmo objetivo; lejos de él, no.
   // 5. Motor de autoajuste: no se persigue una diferencia menor que su incertidumbre.
   const engine = analysis.adaptive?.active ? analysis.adaptive : null;
   const difference = Math.round(desired - profile.calorieTarget);
@@ -197,7 +202,7 @@ export function contextualCheckIn(
   const parts: string[] = [];
   if (reasons.includes("withinMargin") && engine)
     parts.push(
-      `Tus datos apuntan a ${difference > 0 ? "subir" : "bajar"} ${Math.abs(difference)} kcal, pero con la incertidumbre de tu gasto (± ${Math.round(certainty * engine.tdeeSd)} kcal) el cambio podría ser cero. Mantengo el plan hasta tener más certeza${certainty > 2 ? ": en volumen, recortar exige más seguridad que sumar" : ""}.`,
+      `Tus datos apuntan a ${difference > 0 ? "subir" : "bajar"} ${Math.abs(difference)} kcal, pero con lo que varían tus datos (± ${Math.round(certainty * engine.tdeeSd)} kcal) el cambio podría ser cero. Mantengo el plan hasta tener más certeza${certainty > 2 ? ": en volumen, recortar exige más seguridad que sumar" : ""}.`,
     );
   else if (Math.abs(delta) < 25)
     parts.push(

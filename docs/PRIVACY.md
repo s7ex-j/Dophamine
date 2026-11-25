@@ -13,7 +13,10 @@ bienestar, medidas, ciclo menstrual, fotos de progreso y tus ajustes. Todo queda
 - **Búsqueda de alimentos en línea** (apagada por defecto): envía a Open Food Facts el texto que buscas o el
   código de barras, nada más.
 - **Conexión directa con la web**: va cifrada de un dispositivo al otro, por tu red, sin ningún servidor, y el
-  teléfono pregunta antes de enviar o guardar algo.
+  teléfono pregunta antes de enviar o guardar algo. Para conectarse, los dos intercambian un código. Si en vez de
+  leerlo con la cámara lo **envías por otra app** (WhatsApp, correo), ese código pasa por el servicio que elijas:
+  lleva direcciones de tu red local, credenciales temporales y la huella del cifrado, nunca tus datos de salud, y
+  caduca a los 10 minutos. Para que no salga nada, lee el QR con la cámara.
 
 El respaldo automático de Android a la cuenta de Google está **apagado**: tus datos solo salen del teléfono si
 exportas un respaldo a propósito. Cada semana la app guarda una copia en su propia carpeta del teléfono (no sale

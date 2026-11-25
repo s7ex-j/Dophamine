@@ -80,7 +80,7 @@ function weightInsight({ records, profile, today, periods }: InsightData, dates:
   const shown = present(trends);
   const analysis = analyzeMetabolism(
     records.filter((record) => record.date <= (today ?? localDateKey())),
-    { periods },
+    { periods, range: false },
   );
   const stats: Insight["stats"] = [];
   if (shown.length) {
@@ -136,8 +136,8 @@ function weightInsight({ records, profile, today, periods }: InsightData, dates:
   };
 }
 
-function expenditureInsight({ records, periods }: InsightData, dates: string[]): Insight {
-  const analysis = analyzeMetabolism(records, { periods });
+function expenditureInsight({ records, profile, periods }: InsightData, dates: string[]): Insight {
+  const analysis = analyzeMetabolism(records, { periods, planStart: profile.startDate });
   const series = new Map(
     expenditureSeries(records, dates.length, { analysis }).map((point) => [point.date, point.tdee]),
   );
@@ -154,6 +154,14 @@ function expenditureInsight({ records, periods }: InsightData, dates: string[]):
       ? [
           { label: "Gasto actual", value: `${shown.at(-1)} kcal` },
           { label: "Margen aproximado", value: `± ${analysis.tdeeMargin ?? "—"} kcal` },
+          ...(analysis.tdeeRange
+            ? [
+                {
+                  label: "Con otra energía por kg",
+                  value: `${analysis.tdeeRange.low}–${analysis.tdeeRange.high} kcal`,
+                },
+              ]
+            : []),
           { label: "Promedio del rango", value: `${Math.round(mean(shown))} kcal` },
           { label: "Energía por kg usada", value: `${analysis.energyPerKg} kcal` },
           {
@@ -171,7 +179,7 @@ function expenditureInsight({ records, periods }: InsightData, dates: string[]):
 }
 
 function balanceInsight({ records, periods }: InsightData, dates: string[]): Insight {
-  const tdee = analyzeMetabolism(records, { periods }).tdee;
+  const tdee = analyzeMetabolism(records, { periods, range: false }).tdee;
   const byDate = new Map(records.map((record) => [record.date, record]));
   const values = dates.map((date) => {
     const record = byDate.get(date);

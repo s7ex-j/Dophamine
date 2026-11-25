@@ -47,17 +47,15 @@ const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
 /** Espera a que el dispositivo termine de reunir sus direcciones locales. */
 async function gathered(connection: RTCPeerConnection): Promise<void> {
   if (connection.iceGatheringState === "complete") return;
-  await Promise.race([
-    new Promise<void>((done) => {
-      const check = () => {
-        if (connection.iceGatheringState !== "complete") return;
-        connection.removeEventListener("icegatheringstatechange", check);
-        done();
-      };
-      connection.addEventListener("icegatheringstatechange", check);
-    }),
-    wait(GATHER_TIMEOUT_MS),
-  ]);
+  let check = () => undefined as void;
+  const complete = new Promise<void>((done) => {
+    check = () => {
+      if (connection.iceGatheringState === "complete") done();
+    };
+    connection.addEventListener("icegatheringstatechange", check);
+  });
+  await Promise.race([complete, wait(GATHER_TIMEOUT_MS)]);
+  connection.removeEventListener("icegatheringstatechange", check);
 }
 
 function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
@@ -77,7 +75,10 @@ function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
   const attach = (next: RTCDataChannel) => {
     channel = next;
     next.addEventListener("open", () => setState("open"));
-    next.addEventListener("close", () => setState("closed"));
+    next.addEventListener("close", () => {
+      assembler.clear();
+      setState("closed");
+    });
     next.addEventListener("message", (event) => {
       if (typeof event.data !== "string") return;
       const message = assembler.push(event.data);

@@ -3,6 +3,7 @@ import {
   getBiometricsWindow,
   type DailyBiometrics,
 } from "@/src/features/biometrics/biometrics.repository";
+import { VIEWER } from "@/src/lib/mode";
 import { analyzeMetabolism, type MetabolicAnalysis, type WeeklyCheckIn } from "@/src/features/tdee/tdee";
 import { contextualCheckIn } from "@/src/features/tdee/checkin";
 import { sleepSummary } from "@/src/features/sleep/sleep";
@@ -82,7 +83,16 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     diet?.createdAt,
     reviews[0] && reviews[0].decision !== "dismissed" ? reviews[0].date : undefined,
   ].filter((date): date is string => Boolean(date));
-  const analysis = analyzeMetabolism(records, { periods, history, estimated, transitions });
+  // En el teléfono se mira desde hoy; el visor, desde el último dato del respaldo que muestra.
+  const asOf = VIEWER ? undefined : localDateKey();
+  const analysis = analyzeMetabolism(records, {
+    periods,
+    history,
+    estimated,
+    transitions,
+    asOf,
+    planStart: profile?.startDate,
+  });
   const sleepMinutes = nights.length ? sleepSummary(nights, period).averageMinutes : null;
   // Entreno del periodo: lo hecho (horario real y MET) frente a lo que dice la rutina.
   const today = localDateKey();

@@ -4,6 +4,24 @@
 
 Nada todavía.
 
+## 0.42.1 - 2026-11-25
+
+Correcciones de cálculo y de datos, cada una con una prueba que reproduce el fallo. La cobertura del margen queda medida en las pruebas.
+
+- **Gasto (cálculo simple):** la ingesta y el peso se miden en el mismo periodo, del primer al último pesaje. Antes, días viejos de comida sin pesajes podían correr el gasto cientos de kcal.
+- **"Últimos 7 días"** son días del calendario desde hoy, no los últimos siete registros: con datos viejos la estimación queda en pausa.
+- **Ritmo y margen:** la recta se ajusta a los pesajes y su error es el real (salía hasta 4.7 veces menor). El margen cubre del 92 al 96 % en las simulaciones si la energía por kilo es la supuesta (menos si no lo es) y cuenta los días sin anotar. Hacen falta diez días de comida antes del último pesaje, y son los que se muestran. Es más ancho que antes.
+- **Sensibilidad:** debajo del margen se ve entre qué valores saldría tu gasto con otros supuestos de energía por kilo (5900 a 9400 kcal/kg, y 4850 kcal/kg en las primeras seis semanas de un plan). Son escenarios de estudios, no límites ni una probabilidad, y no cambian tu plan.
+- **Pesajes salteados:** la tendencia tiene en cuenta cuántos días pasaron.
+- **Composición:** la energía por kilo pondera el ruido de la báscula y descarta lecturas que no son posibles.
+- **Revisión:** sigue usando la variación de tus datos, y ahora explica por qué no suma el 3 % de registro que sí lleva el margen. "Confianza" pasa a "certeza", con lo que no cubre.
+- **Motor:** validar y reparar covarianzas es correcto también en los casos singulares.
+- **Respaldos:** se validan igual en el teléfono y en la web (fechas y horas que existen, rangos, entrenos, hábitos, rutina y plan). Las rutinas de versiones antiguas se aceptan. Una clave repetida ya no impide restaurar ni cambia el orden.
+- **Health Connect:** la comida del día en curso entra al día siguiente, completa. Una lectura que no llega al final falla en vez de darse por buena.
+- **Base de datos:** migraciones con versión que miran el esquema; un error real se muestra en lugar de ocultarse. Probadas en SQLite real con bases de la 0.5.0 y la 0.42.0. Una sola conexión aunque se pida a la vez.
+- **Conexión directa:** tope de mensajes, tamaño y tiempo para lo que llega a medias. `PRIVACY.md` explica qué lleva el código si se envía por otra app.
+- No probado en un teléfono.
+
 ## 0.42.0 - 2026-11-24
 
 - **Web instalable (PWA), para iPhone:** la app completa en `/Dophamine/pwa/`, aparte del visor. Se instala desde Safari con "Agregar a pantalla de inicio" y abre sin conexión. Los datos van en IndexedDB (probado con más de 5 MB) y el respaldo sale por la hoja de compartir. En Safari sin instalar, primero explica cómo instalarla y qué no trae.

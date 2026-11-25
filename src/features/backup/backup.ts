@@ -1,9 +1,6 @@
 import { localDateKey } from "@/src/lib/dates";
 import type { Store } from "@/src/db/web-storage";
-import { isFood } from "@/src/features/nutrition/foods";
-import { isMealEntry } from "@/src/features/nutrition/meals";
-import { isWeeklyReview } from "@/src/features/reviews/reviews";
-import { isSleepEntry } from "@/src/features/sleep/sleep";
+import { backupProblem } from "@/src/features/backup/validate";
 
 /**
  * Respaldo de los datos en un archivo JSON.
@@ -46,7 +43,6 @@ export const backupFileName = (now = new Date()) => `dophamine-respaldo-${localD
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
-const isDate = (value: unknown) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value);
 const isNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value);
 
 /** Lee el texto de un respaldo. Lanza BackupError con un mensaje para mostrar si no es válido. */
@@ -70,28 +66,10 @@ export function parseBackup(text: string): Backup {
     if (data[key] !== undefined && !Array.isArray(data[key]))
       throw new BackupError(`El respaldo está dañado: "${key}" no tiene el formato esperado.`);
   }
-  const biometricsOk = (data.biometrics as unknown[]).every(
-    (entry) =>
-      isRecord(entry) &&
-      isDate(entry.date) &&
-      (entry.weightKg === null || isNumber(entry.weightKg)) &&
-      isNumber(entry.caloriesIn),
-  );
-  const wellbeingOk = (data.wellbeing as unknown[]).every((entry) => isRecord(entry) && isDate(entry.date));
-  if (!biometricsOk || !wellbeingOk)
-    throw new BackupError("El respaldo está dañado: hay registros sin fecha o con valores inválidos.");
-  if (!((data.reviews as unknown[] | undefined) ?? []).every(isWeeklyReview))
-    throw new BackupError("El respaldo está dañado: el historial de revisiones no es válido.");
   if (data.settings !== undefined && !isRecord(data.settings))
     throw new BackupError("El respaldo está dañado: los ajustes no tienen el formato esperado.");
-  if (!((data.sleep as unknown[] | undefined) ?? []).every(isSleepEntry))
-    throw new BackupError("El respaldo está dañado: hay noches de sueño con datos inválidos.");
-  if (!((data.foods as unknown[] | undefined) ?? []).every(isFood))
-    throw new BackupError("El respaldo está dañado: hay alimentos con datos inválidos.");
-  if (!((data.meals as unknown[] | undefined) ?? []).every(isMealEntry))
-    throw new BackupError("El respaldo está dañado: hay comidas con datos inválidos.");
-  if (data.profile !== undefined && !(isRecord(data.profile) && isNumber(data.profile.calorieTarget)))
-    throw new BackupError("El respaldo está dañado: el plan nutricional no es válido.");
+  const problem = backupProblem(data);
+  if (problem) throw new BackupError(`El respaldo está dañado: ${problem}.`);
 
   return {
     app: "dophamine",

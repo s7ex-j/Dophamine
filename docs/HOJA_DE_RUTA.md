@@ -2,7 +2,7 @@
 
 Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-## Estado al 24 de noviembre de 2026 (versión 0.42.0, Expo SDK 58)
+## Estado al 25 de noviembre de 2026 (versión 0.42.1, Expo SDK 58)
 
 **Decisiones que mandan:**
 
@@ -90,6 +90,22 @@ Hechas y probadas fuera del teléfono; falta confirmarlas con Health Connect rea
 - `versionCode` calculado de la versión, con prueba.
 - Al restaurar: recordatorios reprogramados, fotos sin imagen fuera y copia semanal si no existe.
 - Pruebas contra duplicados y reimportaciones.
+
+## 0.42.1 — Correcciones de cálculo y datos
+
+Hechas, con prueba de regresión: periodos del cálculo simple, error de la pendiente, composición, validación de
+respaldos, comida del día en curso, migraciones, covarianzas, topes de la conexión directa y rango de sensibilidad por
+energía por kilo. Falta medir en Android lo que cuesta correr el motor en cada escenario, y probar en el
+teléfono la actualización desde la 0.42.0 (migración con versión) y Health Connect.
+
+**Después, por separado:**
+
+- Respaldo cifrado con contraseña (el actual sin cifrar se conserva).
+- Compilar Android en CI.
+- Menú del sitio en el celular.
+- Suavizar los umbrales de actividad del gasto inicial (hoy saltan 155 y 254 kcal en 2.5 y 6 horas).
+- Origen de cada dato importado, para poder actualizar un día ya traído.
+- SQLCipher: proyecto propio, con migración reversible, pruebas sobre bases existentes y plan de recuperación.
 
 ## 1.0.0 — Primera versión estable
 
