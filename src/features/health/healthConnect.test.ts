@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   dayRange,
   foodToImport,
-  isLeftoverImport,
+  LEGACY_ENTRY_NAME,
   nightsToImport,
+  partialImports,
+  storedFoodOf,
   readAllPages,
   stepsToImport,
   weightsToImport,
@@ -110,17 +112,89 @@ describe("foodToImport", () => {
   });
 });
 
-describe("isLeftoverImport", () => {
-  const day = { caloriesIn: 600 };
-  it("reconoce el total de hoy que dejó una importación a medias", () => {
-    expect(isLeftoverImport(day, 0, true)).toBe(true);
+describe("0.42.3: lo que una versión anterior importó a medias", () => {
+  const meals = [
+    {
+      start: at("2026-11-10", "08:00"),
+      kcal: 512.4,
+      proteinG: 30.04,
+      carbsG: 50.2,
+      fatsG: 15.06,
+      source: "app.a",
+    },
+    { start: at("2026-11-10", "13:00"), kcal: 700, proteinG: 40, carbsG: 80, fatsG: 20, source: "app.a" },
+    { start: at("2026-11-10", "20:00"), kcal: 600, proteinG: 35, carbsG: 60, fatsG: 18, source: "app.a" },
+  ];
+  // Lo que guardaba la 0.42.0 si importaba a las 14:00: las dos primeras comidas, redondeadas.
+  const partial = { kcal: 1212, proteinG: 70, carbsG: 130.2, fatsG: 35.1 };
+  const full = { date: "2026-11-10", kcal: 1812, proteinG: 105, carbsG: 190.2, fatsG: 53.1 };
+
+  it("se reconoce por coincidir con la suma de las primeras comidas de una app y se completa", () => {
+    expect(partialImports(meals, [{ date: "2026-11-10", totals: partial }], TODAY)).toEqual([
+      { date: "2026-11-10", full, entryId: undefined },
+    ]);
   });
-  it("no toca lo anotado aquí, los ayunos, los días vacíos ni a quien nunca importó", () => {
-    expect(isLeftoverImport(day, 1, true)).toBe(false);
-    expect(isLeftoverImport({ ...day, fasting: true }, 0, true)).toBe(false);
-    expect(isLeftoverImport({ caloriesIn: 0 }, 0, true)).toBe(false);
-    expect(isLeftoverImport(null, 0, true)).toBe(false);
-    expect(isLeftoverImport(day, 0, false)).toBe(false);
+
+  it("también si al agregar una comida el total ya pasó a ser una entrada", () => {
+    const stored = [{ date: "2026-11-10", totals: partial, entryId: "e1" }];
+    expect(partialImports(meals, stored, TODAY)).toEqual([{ date: "2026-11-10", full, entryId: "e1" }]);
+    expect(LEGACY_ENTRY_NAME).toBe("Total registrado antes");
+  });
+
+  it("no toca un total escrito a mano, uno completo, el día en curso ni días sin comidas importadas", () => {
+    const day = (totals: typeof partial, date = "2026-11-10") => [{ date, totals }];
+    // A mano: mismas calorías que la importación parcial, otros macros.
+    expect(partialImports(meals, day({ ...partial, proteinG: 90 }), TODAY)).toEqual([]);
+    expect(
+      partialImports(meals, day({ kcal: 1500, proteinG: 70, carbsG: 130.2, fatsG: 35.1 }), TODAY),
+    ).toEqual([]);
+    // Ya completo, o el día de hoy (todavía puede crecer).
+    expect(
+      partialImports(meals, day({ kcal: 1812, proteinG: 105, carbsG: 190.2, fatsG: 53.1 }), TODAY),
+    ).toEqual([]);
+    expect(partialImports(meals, day(partial), "2026-11-10")).toEqual([]);
+    expect(partialImports(meals, day(partial, "2026-11-09"), TODAY)).toEqual([]);
+    expect(partialImports([], day(partial), TODAY)).toEqual([]);
+  });
+
+  it("dos comidas a la misma hora entran juntas: la primera sola no es un corte posible", () => {
+    const together = [meals[0], { ...meals[1], start: meals[0].start }, meals[2]];
+    const first = { kcal: 512, proteinG: 30, carbsG: 50.2, fatsG: 15.1 };
+    expect(partialImports(together, [{ date: "2026-11-10", totals: first }], TODAY)).toEqual([]);
+    expect(partialImports(together, [{ date: "2026-11-10", totals: partial }], TODAY)).toHaveLength(1);
+  });
+
+  it("solo se revisa un día sin comidas o con la entrada heredada como única comida", () => {
+    const day = { caloriesIn: 1212, proteinG: 70, carbsG: 130.2, fatsG: 35.1 };
+    const legacy = {
+      id: "e1",
+      name: LEGACY_ENTRY_NAME,
+      kcal: 1212,
+      proteinG: 70,
+      carbsG: 130.2,
+      fatsG: 35.1,
+    };
+    const other = { id: "e2", name: "Arroz", kcal: 300, proteinG: 6, carbsG: 60, fatsG: 1 };
+    expect(storedFoodOf("2026-11-10", day, [])).toEqual({ date: "2026-11-10", totals: partial });
+    expect(storedFoodOf("2026-11-10", day, [legacy])).toMatchObject({
+      entryId: "e1",
+      totals: { kcal: 1212 },
+    });
+    // Con otras comidas no se toca: podrían estar también en la otra app y se contarían dos veces.
+    expect(storedFoodOf("2026-11-10", day, [legacy, other])).toBeNull();
+    expect(storedFoodOf("2026-11-10", day, [other])).toBeNull();
+    expect(storedFoodOf("2026-11-10", { ...day, fasting: true }, [])).toBeNull();
+    expect(storedFoodOf("2026-11-10", { ...day, caloriesIn: 0 }, [])).toBeNull();
+  });
+
+  it("usa la app de la que salió lo guardado, aunque otra tenga más calorías ese día", () => {
+    const other = [
+      { ...meals[0], kcal: 3000, source: "app.b" },
+      { ...meals[2], kcal: 100, source: "app.b" },
+    ];
+    expect(partialImports([...meals, ...other], [{ date: "2026-11-10", totals: partial }], TODAY)).toEqual([
+      { date: "2026-11-10", full, entryId: undefined },
+    ]);
   });
 });
 

@@ -3,7 +3,13 @@ import { readGoalDate, type GoalDate } from "@/src/features/goals/goalDate";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 import type { RecentTrend, TrainingType } from "@/src/features/profile/expenditure";
 import type { Allergen } from "@/src/features/health/foodTags";
-import { isValidPlanInput } from "@/src/features/profile/planInput";
+import {
+  isValidWeightKg,
+  PLAN_LIMITS,
+  planInputProblem,
+  weightRange,
+  weightRangeText,
+} from "@/src/features/profile/planInput";
 import type { DietType } from "@/src/features/profile/targets";
 import type { ThemeId } from "@/src/theming/palettes";
 import {
@@ -195,6 +201,25 @@ export function goalDateFrom(answers: Answers): GoalDate | null {
   });
 }
 
+/**
+ * Aviso mientras se escribe: solo si un número ya pasó del máximo (uno bajo puede estar a medio escribir;
+ * eso se avisa al continuar con `stepError`).
+ */
+export function tooHigh(step: OnboardingStep, answers: Answers): string | null {
+  const over = (text: string, max: number) => Number(text.replace(",", ".")) > max;
+  const maxWeight = Number(weightRange(answers.unit).max);
+  if (step === "body") {
+    if (over(answers.age, PLAN_LIMITS.age.max))
+      return `La edad no puede pasar de ${PLAN_LIMITS.age.max} años.`;
+    if (over(answers.height, PLAN_LIMITS.heightCm.max))
+      return `La altura no puede pasar de ${PLAN_LIMITS.heightCm.max} cm.`;
+    if (over(answers.weight, maxWeight)) return `El peso no puede pasar de ${maxWeight} ${answers.unit}.`;
+  }
+  if (step === "target" && over(answers.goalWeight, maxWeight))
+    return `El peso meta no puede pasar de ${maxWeight} ${answers.unit}.`;
+  return null;
+}
+
 /** Mensaje a mostrar si el paso no se puede dar por bueno, o null si está completo. */
 export function stepError(step: OnboardingStep, answers: Answers, today = localDateKey()): string | null {
   if (step === "body") {
@@ -203,7 +228,7 @@ export function stepError(step: OnboardingStep, answers: Answers, today = localD
       heightCm: Number(answers.height),
       weightKg: weightKgOf(answers),
     };
-    return isValidPlanInput(input) ? null : "Revisa edad, altura y peso: alguno falta o está fuera de rango.";
+    return planInputProblem(input, answers.unit);
   }
   if (step === "composition") {
     if (!answers.bodyFat.trim()) return null;
@@ -222,7 +247,7 @@ export function stepError(step: OnboardingStep, answers: Answers, today = localD
   if (step === "target") {
     const current = weightKgOf(answers);
     const target = goalWeightKgOf(answers);
-    if (!(target > 30 && target <= 300)) return "Escribe tu peso meta.";
+    if (!isValidWeightKg(target)) return `Escribe tu peso meta: entre ${weightRangeText(answers.unit)}.`;
     if (answers.goal === "lose" && target >= current)
       return "Para definición, el peso meta debe ser menor al actual.";
     if (answers.goal === "gain" && target <= current)

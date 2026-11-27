@@ -1,4 +1,5 @@
 import { invalidCompositionField } from "@/src/features/composition/composition";
+import { isValidWeightKg, weightRangeText } from "@/src/features/profile/planInput";
 import type { BodyInput, DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
 import { toKg, weightValue, type WeightUnit } from "@/src/lib/units";
 
@@ -34,8 +35,8 @@ export function buildBodyInput(form: BodyForm, unit: WeightUnit): BodyInputResul
   const weightKg = toKg(Number(form.weight), unit);
   if (!Number.isFinite(weightKg) || weightKg <= 0)
     return { input: null, error: `Escribe tu peso del día en ${unit}.` };
-  if (weightKg < 30 || weightKg > 300)
-    return { input: null, error: "El peso está fuera de un rango razonable." };
+  if (!isValidWeightKg(weightKg))
+    return { input: null, error: `El peso debe estar entre ${weightRangeText(unit)}.` };
   const muscle = optional(form.muscle);
   const bone = optional(form.bone);
   const composition = {

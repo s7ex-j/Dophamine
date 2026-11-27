@@ -42,7 +42,19 @@ writeFileSync(
   }),
 );
 
-const HEAD = `<link rel="manifest" href="${BASE}manifest.webmanifest"/><link rel="apple-touch-icon" href="${BASE}pwa/apple-touch-icon.png"/><meta name="theme-color" content="#0E1311"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Dophamine"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><style>html,body{background:#0E1311;overscroll-behavior:none}</style><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("${BASE}sw.js",{scope:"${BASE}"}))</script>`;
+// Que se sienta como una app y no como una página: sin acercar la pantalla con dos dedos ni con doble toque, y
+// sin seleccionar ni copiar los textos de la interfaz al mantener presionado. Lo que se escribe sí se selecciona.
+const APP_FEEL = [
+  "html,body{background:#0E1311;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}",
+  "*:not(input):not(textarea){-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}",
+  "input,textarea{-webkit-user-select:text!important;user-select:text!important}",
+].join("");
+// Safari en iPhone no respeta `user-scalable=no`: el gesto de pellizcar se cancela aquí.
+const NO_ZOOM = [
+  'for(const name of ["gesturestart","gesturechange"])document.addEventListener(name,(event)=>event.preventDefault());',
+  'document.addEventListener("touchmove",(event)=>{if(event.touches.length>1)event.preventDefault()},{passive:false});',
+].join("");
+const HEAD = `<link rel="manifest" href="${BASE}manifest.webmanifest"/><link rel="apple-touch-icon" href="${BASE}pwa/apple-touch-icon.png"/><meta name="theme-color" content="#0E1311"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="Dophamine"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><style>${APP_FEEL}</style><script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("${BASE}sw.js",{scope:"${BASE}"}));${NO_ZOOM}</script>`;
 for (const path of walk(DIST).filter((file) => file.endsWith(".html"))) {
   const html = readFileSync(path, "utf8");
   if (!html.includes("</head>")) throw new Error(`Página sin <head>: ${published(path)}`);
@@ -50,12 +62,18 @@ for (const path of walk(DIST).filter((file) => file.endsWith(".html"))) {
     path,
     html
       .replace('<html lang="en">', '<html lang="es">')
-      .replace("initial-scale=1, shrink-to-fit=no", "initial-scale=1, viewport-fit=cover")
+      // `maximum-scale=1` también evita que Safari acerque la pantalla al tocar un campo de texto.
+      .replace(
+        "initial-scale=1, shrink-to-fit=no",
+        "initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
+      )
       .replace("</head>", `${HEAD}</head>`),
   );
 }
 
-const files = walk(DIST).map(published).filter((name) => name !== "sw.js" && !name.endsWith(".map"));
+const files = walk(DIST)
+  .map(published)
+  .filter((name) => name !== "sw.js" && !name.endsWith(".map"));
 const heavy = (name) => name.includes("assets/exercises/");
 const precache = files.filter((name) => !heavy(name));
 const hash = createHash("sha256");
@@ -139,4 +157,6 @@ self.addEventListener("fetch", (event) => {
 `,
 );
 const size = precache.reduce((sum, name) => sum + statSync(join(DIST, name)).size, 0);
-console.log(`PWA ${version}: ${precache.length} archivos sin conexión (${(size / 1e6).toFixed(1)} MB), ${files.length - precache.length} imágenes a pedido.`);
+console.log(
+  `PWA ${version}: ${precache.length} archivos sin conexión (${(size / 1e6).toFixed(1)} MB), ${files.length - precache.length} imágenes a pedido.`,
+);

@@ -38,7 +38,9 @@ export default function AlgorithmScreen() {
   const [width, setWidth] = useState(358);
   useFocusEffect(
     useCallback(() => {
+      let active = true;
       getDashboardSnapshot().then((snapshot) => {
+        if (!active) return;
         const today = localDateKey();
         setGraph(algorithmGraph(snapshot, today));
         setSteps(explainAlgorithm(snapshot, today));
@@ -47,12 +49,15 @@ export default function AlgorithmScreen() {
         // Después de dibujar lo demás: corre el motor varias veces.
         setTimeout(
           () =>
-            getForecastAccuracy()
-              .then(setAccuracy)
+            getForecastAccuracy(() => active)
+              .then((value) => active && setAccuracy(value))
               .catch(() => undefined),
           50,
         );
       });
+      return () => {
+        active = false;
+      };
     }, []),
   );
   if (!graph) return <Screen />;

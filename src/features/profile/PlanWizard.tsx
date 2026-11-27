@@ -40,6 +40,7 @@ import {
   goalDateFrom,
   planInputFrom,
   stepError,
+  tooHigh,
   stepsFor,
   type Answers,
   type OnboardingStep,
@@ -237,6 +238,7 @@ export function Onboarding({
                 value={answers.age}
                 onChangeText={(age) => set("age", age)}
                 keyboardType="number-pad"
+                maxLength={3}
               />
               <BigInput
                 label="Altura"
@@ -244,6 +246,7 @@ export function Onboarding({
                 value={answers.height}
                 onChangeText={(height) => set("height", height)}
                 keyboardType="number-pad"
+                maxLength={3}
               />
             </View>
             <View style={AppTheme.fieldRow}>
@@ -252,6 +255,7 @@ export function Onboarding({
                 unit={answers.unit}
                 value={answers.weight}
                 onChangeText={(weight) => set("weight", weight)}
+                maxLength={5}
               />
             </View>
             <ChoiceControl value={answers.unit} onChange={changeUnit} options={WEIGHT_UNIT_OPTIONS} />
@@ -423,6 +427,7 @@ export function Onboarding({
                 unit={answers.unit}
                 value={answers.goalWeight}
                 onChangeText={(goalWeight) => set("goalWeight", goalWeight)}
+                maxLength={5}
               />
             </View>
             <OptionList
@@ -625,7 +630,9 @@ export function Onboarding({
         {step === "summary" ? <PlanSummary answers={answers} existing={profile} /> : null}
 
         <TermTip step={step} />
-        {error ? <Text style={AppTheme.errorText}>{error}</Text> : null}
+        {error || tooHigh(step, answers) ? (
+          <Text style={AppTheme.errorText}>{error || tooHigh(step, answers)}</Text>
+        ) : null}
         <View style={AppTheme.wizardFooter}>
           {index > 0 || onCancel ? (
             <View style={AppTheme.wizardFooterButton}>

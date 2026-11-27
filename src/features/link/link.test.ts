@@ -12,6 +12,7 @@ import {
   toFrames,
   type LinkMessage,
 } from "@/src/features/link/protocol";
+import { MAX_QUEUED_SENDS, sendFrames, sendQueue, SEND_STALL_MS } from "@/src/features/link/peer";
 import { qrMatrix, qrPath } from "@/src/features/link/qr";
 import { sha256Hex, verificationCode } from "@/src/features/link/sha256";
 import { buildSdp, LinkError, packSignal, readSdp, unpackSignal } from "@/src/features/link/signal";
@@ -53,11 +54,10 @@ describe("señal para el código QR", () => {
   it("saca del SDP solo lo necesario y ordena las direcciones locales", () => {
     expect(signal).toMatchObject({ type: "offer", ufrag: "Ab+/", setup: "actpass" });
     expect(signal.fingerprint).toBe(FINGERPRINT.join(""));
-    // Fuera: TCP, enlace local (fe80) y la dirección pública (sin STUN no se usa).
+    // Fuera: TCP, enlace local (fe80) y las direcciones públicas (IPv6 global y la de STUN).
     expect(signal.candidates).toEqual([
       { host: "192.168.1.20", port: 54321 },
       { host: "0f3a9c1e-77aa-4c1d-9a10-aabbccddeeff.local", port: 50001 },
-      { host: "2800:200:abcd::1", port: 54322 },
     ]);
   });
 
@@ -101,7 +101,7 @@ describe("señal para el código QR", () => {
       Array.from({ length: count }, (_, index) => `5000${index}@192.168.1.${index + 1}`).join(",");
     expect(unpackSignal(withList(many(6))).candidates).toHaveLength(6);
     expect(() => unpackSignal(withList(many(7)))).toThrow("demasiadas direcciones");
-    for (const good of ["1@10.0.0.1", "65535@fd00::1", "80@::ffff", "80@1:2:3:4:5:6:7:8", "80@a-b.local"])
+    for (const good of ["1@10.0.0.1", "65535@fd00::1", "80@FC12:3:4:5:6:7:8:9", "80@a-b.local"])
       expect(unpackSignal(withList(good)).candidates).toHaveLength(1);
     for (const bad of [
       "80@256.1.1.1",
@@ -119,6 +119,26 @@ describe("señal para el código QR", () => {
       "10.0.0.1",
     ])
       expect(() => unpackSignal(withList(bad)), bad).toThrow("incompleto");
+  });
+
+  it("0.42.3: solo direcciones de la red local, al crear el código y al leerlo", () => {
+    const withList = (list: string) => packSignal(signal).replace(/[^|]*$/, list);
+    for (const outside of [
+      "80@2800:200:abcd::1",
+      "80@8.8.8.8",
+      "80@172.32.0.1",
+      "80@::ffff",
+      "80@fd0::1",
+      "80@1:2:3:4:5:6:7:8",
+    ])
+      expect(() => unpackSignal(withList(outside)), outside).toThrow("fuera de tu red local");
+    for (const inside of ["80@172.16.0.1", "80@172.31.255.1", "80@192.168.0.9", "80@fdab::2"])
+      expect(unpackSignal(withList(inside)).candidates).toHaveLength(1);
+    const global = SDP.replaceAll("192.168.1.20", "190.1.2.4")
+      .split("\r\n")
+      .filter((line) => !line.includes(".local"))
+      .join("\r\n");
+    expect(readSdp(global, "offer").candidates).toEqual([]);
   });
 
   it("no pone en el código lo que el otro lado rechazaría", () => {
@@ -269,5 +289,83 @@ describe("0.42.1: lo que llega a medias tiene tope", () => {
     const results = toFrames({ t: "backup", backup }, 1).map((frame) => assembler.push(frame));
     expect(results.at(-1)).toEqual({ t: "backup", backup });
     expect(assembler.pending()).toEqual({ messages: 0, chars: 0 });
+  });
+});
+
+describe("0.42.3: un envío no se queda esperando para siempre", () => {
+  const channel = (buffered: number) => {
+    const sent: string[] = [];
+    return {
+      readyState: "open",
+      bufferedAmount: buffered,
+      send: (f: string) => sent.push(f),
+      sent,
+    };
+  };
+  it("manda todo si el canal tiene sitio", async () => {
+    const open = channel(0);
+    await sendFrames(open, ["a", "b"]);
+    expect(open.sent).toEqual(["a", "b"]);
+  });
+
+  it("falla si el canal se cierra mientras espera, aunque el búfer siga lleno", async () => {
+    const open = channel(2_000_000);
+    const pause = async () => {
+      open.readyState = "closed";
+    };
+    await expect(sendFrames(open, ["a"], { pause })).rejects.toThrow("se cerró");
+    expect(open.sent).toEqual([]);
+  });
+
+  it("falla si el otro lado deja de recibir, y espera mientras el búfer baja", async () => {
+    const stuck = channel(2_000_000);
+    let calls = 0;
+    const count = async () => {
+      calls += 1;
+    };
+    await expect(sendFrames(stuck, ["a"], { pause: count })).rejects.toThrow("dejó de recibir");
+    expect(calls).toBe(Math.ceil(SEND_STALL_MS / 40));
+
+    const draining = channel(1_000_000 + 40 * 1000);
+    const drain = async () => {
+      draining.bufferedAmount -= 1000;
+    };
+    await sendFrames(draining, ["a"], { pause: drain, stallMs: 100 });
+    expect(draining.sent).toEqual(["a"]);
+  });
+});
+
+describe("0.42.3: envíos en cola", () => {
+  it("van de a uno, en orden, y uno más de los permitidos se rechaza sin cortar a los demás", async () => {
+    const enqueue = sendQueue();
+    const sent: string[] = [];
+    const gates: Array<() => void> = [];
+    const task = (name: string) => () =>
+      new Promise<void>((done) => {
+        gates.push(() => {
+          sent.push(`${name}-1`, `${name}-2`);
+          done();
+        });
+      });
+    const running = ["a", "b", "c"].map((name) => enqueue(task(name)));
+    expect(MAX_QUEUED_SENDS).toBe(3);
+    await expect(enqueue(task("d"))).rejects.toThrow("envíos esperando");
+    for (let index = 0; index < 3; index += 1) {
+      await new Promise((done) => setTimeout(done, 0));
+      gates.shift()?.();
+      await running[index];
+    }
+    expect(sent).toEqual(["a-1", "a-2", "b-1", "b-2", "c-1", "c-2"]);
+    await expect(enqueue(async () => undefined)).resolves.toBeUndefined();
+  });
+
+  it("un envío que falla no detiene a los siguientes", async () => {
+    const enqueue = sendQueue();
+    const failing = enqueue(async () => {
+      throw new LinkError("La conexión se cerró.");
+    });
+    const next = enqueue(async () => undefined);
+    await expect(failing).rejects.toThrow("se cerró");
+    await expect(next).resolves.toBeUndefined();
   });
 });

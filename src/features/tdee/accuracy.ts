@@ -104,11 +104,14 @@ function checkFrom(
   };
 }
 
-/** Las comparaciones posibles, de la más reciente a la más antigua y sin repetir días; null si aún no hay. */
-export function forecastAccuracy(
+/**
+ * Arma las comparaciones y se detiene (yield) después de cada vuelta al motor, para que quien llama pueda
+ * dejar respirar la pantalla: con 200 días son varias decenas de corridas del filtro.
+ */
+function* accuracySteps(
   records: DailyBiometrics[],
-  options: AnalysisOptions = {},
-): ForecastAccuracy | null {
+  options: AnalysisOptions,
+): Generator<void, ForecastAccuracy | null> {
   const ordered = [...records].sort((a, b) => a.date.localeCompare(b.date));
   const first = ordered[0]?.date;
   const lastWeighIn = ordered.filter((record) => (record.weightKg ?? 0) > 0).at(-1)?.date;
@@ -118,8 +121,10 @@ export function forecastAccuracy(
   let end = lastWeighIn;
   while (checks.length < MAX_CHECKS && addDays(end, -HORIZON_DAYS) >= first) {
     let found: ForecastCheck | null = null;
-    for (let shift = 0; shift <= MAX_SHIFT && !found; shift += 1)
+    for (let shift = 0; shift <= MAX_SHIFT && !found; shift += 1) {
       found = checkFrom(addDays(end, -HORIZON_DAYS - shift), ordered, byDate, options);
+      yield;
+    }
     if (found) checks.push(found);
     end = found ? found.from : addDays(end, -HORIZON_DAYS);
   }
@@ -131,6 +136,32 @@ export function forecastAccuracy(
     biasKg: mean(checks.map((check) => check.errorKg)),
     inside: checks.filter((check) => check.inside).length,
   };
+}
+
+/** Las comparaciones posibles, de la más reciente a la más antigua y sin repetir días; null si aún no hay. */
+export function forecastAccuracy(
+  records: DailyBiometrics[],
+  options: AnalysisOptions = {},
+): ForecastAccuracy | null {
+  const steps = accuracySteps(records, options);
+  for (;;) {
+    const step = steps.next();
+    if (step.done) return step.value;
+  }
+}
+
+/** Lo mismo, cediendo el turno entre una vuelta al motor y la siguiente (`pause`) para no congelar la pantalla. */
+export async function forecastAccuracyGently(
+  records: DailyBiometrics[],
+  options: AnalysisOptions = {},
+  pause: () => Promise<void> = () => new Promise((done) => setTimeout(done, 0)),
+): Promise<ForecastAccuracy | null> {
+  const steps = accuracySteps(records, options);
+  for (;;) {
+    const step = steps.next();
+    if (step.done) return step.value;
+    await pause();
+  }
 }
 
 /** Lo que dicen las comparaciones, sin juzgar con pocas. */

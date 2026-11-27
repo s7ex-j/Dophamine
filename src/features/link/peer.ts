@@ -12,15 +12,15 @@ import {
 /**
  * El canal directo entre los dos dispositivos (WebRTC, canal de datos).
  *
- * - Sin servidor: no se configura ningún servidor ICE (ni STUN ni TURN), así que
- *   solo conecta dentro de la misma red local. La señalización viaja en dos
- *   códigos QR (`signal.ts`).
+ * - Sin servidor: no se configura ningún servidor ICE (ni STUN ni TURN) y los
+ *   códigos QR (`signal.ts`) solo llevan direcciones de la red local, así que
+ *   solo conecta dentro de ella.
  * - Cifrado: todo canal de datos WebRTC va cifrado con DTLS de extremo a
  *   extremo. La huella del certificado de cada lado viaja en su QR, así que el
  *   canal solo se abre con el dispositivo que mostró ese código.
  *
  * En la web usa el WebRTC del navegador. En el teléfono hace falta que la app
- * instalada registre `RTCPeerConnection` (react-native-webrtc, etapa del APK):
+ * instalada registre `RTCPeerConnection` (react-native-webrtc):
  * en Expo Go no existe y `rtcAvailable()` devuelve false.
  */
 export type LinkState = "connecting" | "open" | "closed";
@@ -39,10 +39,63 @@ export type Link = {
 
 const GATHER_TIMEOUT_MS = 3000;
 const BUFFER_LIMIT = 1_000_000;
+/** Si el otro lado deja de recibir este tiempo, el envío falla en lugar de esperar para siempre. */
+export const SEND_STALL_MS = 15_000;
+/** Envíos esperando su turno: más que esto es un error, no un uso normal. */
+export const MAX_QUEUED_SENDS = 3;
+const POLL_MS = 40;
 
 export const rtcAvailable = () => typeof globalThis.RTCPeerConnection === "function";
 
 const wait = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+
+type SendChannel = { readyState: string; bufferedAmount: number; send: (frame: string) => void };
+
+/**
+ * Manda las tramas sin llenar el búfer del canal. Falla si el canal se cierra mientras espera (el navegador
+ * no vacía `bufferedAmount` al cerrar) o si el otro lado deja de recibir durante `SEND_STALL_MS`.
+ */
+export async function sendFrames(
+  channel: SendChannel,
+  frames: string[],
+  { stallMs = SEND_STALL_MS, pause = wait }: { stallMs?: number; pause?: (ms: number) => Promise<void> } = {},
+): Promise<void> {
+  for (const frame of frames) {
+    let waited = 0;
+    let last = channel.bufferedAmount;
+    while (channel.bufferedAmount > BUFFER_LIMIT) {
+      if (channel.readyState !== "open") throw new LinkError("La conexión se cerró.");
+      if (waited >= stallMs) throw new LinkError("El otro dispositivo dejó de recibir. Vuelve a conectar.");
+      await pause(POLL_MS);
+      const now = channel.bufferedAmount;
+      waited = now < last ? 0 : waited + POLL_MS;
+      last = now;
+    }
+    if (channel.readyState !== "open") throw new LinkError("La conexión se cerró.");
+    channel.send(frame);
+  }
+}
+
+/**
+ * De a un envío por vez, para que las tramas de dos mensajes no se intercalen, y como mucho `max` esperando:
+ * uno más se rechaza al momento.
+ */
+export function sendQueue(max = MAX_QUEUED_SENDS) {
+  let queue: Promise<void> = Promise.resolve();
+  let queued = 0;
+  return (task: () => Promise<void>): Promise<void> => {
+    if (queued >= max) return Promise.reject(new LinkError("Hay envíos esperando. Espera a que terminen."));
+    queued += 1;
+    const run = queue
+      .catch(() => undefined)
+      .then(task)
+      .finally(() => {
+        queued -= 1;
+      });
+    queue = run;
+    return run;
+  };
+}
 
 /** Espera a que el dispositivo termine de reunir sus direcciones locales. */
 async function gathered(connection: RTCPeerConnection): Promise<void> {
@@ -65,7 +118,7 @@ function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
   let nextId = 1;
   let local: Signal | null = null;
   let remote: Signal | null = null;
-  let queue: Promise<void> = Promise.resolve();
+  const enqueue = sendQueue();
 
   const setState = (next: LinkState) => {
     if (state === next || state === "closed") return;
@@ -92,21 +145,12 @@ function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
   });
 
   const link: Link = {
-    send: (message) => {
-      // De a un mensaje por vez, para que sus tramas no se intercalen con las de otro.
-      queue = queue
-        .catch(() => undefined)
-        .then(async () => {
-          const open = channel;
-          if (!open || open.readyState !== "open") throw new LinkError("La conexión se cerró.");
-          for (const frame of toFrames(message, nextId++)) {
-            while (open.bufferedAmount > BUFFER_LIMIT) await wait(40);
-            if (open.readyState !== "open") throw new LinkError("La conexión se cerró.");
-            open.send(frame);
-          }
-        });
-      return queue;
-    },
+    send: (message) =>
+      enqueue(async () => {
+        const open = channel;
+        if (!open || open.readyState !== "open") throw new LinkError("La conexión se cerró.");
+        await sendFrames(open, toFrames(message, nextId++));
+      }),
     close: () => {
       try {
         if (channel?.readyState === "open") channel.send(toFrames({ t: "bye" }, nextId++)[0]);

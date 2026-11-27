@@ -193,6 +193,29 @@ try {
   );
   console.log("  ok  guarda más de 5 MB en IndexedDB, aparte del visor");
 
+  // Se siente como una app: sin zoom y sin seleccionar los textos de la interfaz; lo escrito sí.
+  const feel = await page.evaluate(() => {
+    const input = document.createElement("input");
+    document.body.append(input);
+    const label = [...document.querySelectorAll("div")].find((node) => node.innerText === "Registrar comida");
+    const result = {
+      viewport: document.querySelector('meta[name="viewport"]').content,
+      label: label ? getComputedStyle(label).userSelect : null,
+      input: getComputedStyle(input).userSelect,
+      touch: getComputedStyle(document.documentElement).touchAction,
+    };
+    input.remove();
+    return result;
+  });
+  assert(
+    feel.viewport.includes("maximum-scale=1") && feel.viewport.includes("user-scalable=no"),
+    "Se puede acercar.",
+  );
+  assert(feel.label === "none", `El texto de la interfaz se puede seleccionar (${feel.label}).`);
+  assert(feel.input !== "none", "No se puede seleccionar lo escrito.");
+  assert(feel.touch === "manipulation", "El doble toque acerca la pantalla.");
+  console.log("  ok  sin zoom ni selección de los textos de la interfaz; lo escrito sí se selecciona");
+
   // 3. Sin conexión de verdad: el servidor apagado, en la portada y en una pantalla con parámetros.
   server.closeAllConnections();
   await new Promise((done) => server.close(done));

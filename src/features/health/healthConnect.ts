@@ -76,17 +76,86 @@ export type HealthMeal = {
 };
 export type DaySteps = { date: string; steps: number };
 export type DayFood = { date: string; kcal: number; proteinG: number; carbsG: number; fatsG: number };
+/** El nombre de la entrada que guarda un total de antes de las comidas (`legacyDraft`). */
+export const LEGACY_ENTRY_NAME = "Total registrado antes";
+
+type Totals = { kcal: number; proteinG: number; carbsG: number; fatsG: number };
+/** Lo guardado en un día que pudo dejar una importación a medias. */
+export type StoredFood = {
+  date: string;
+  /** El total del día si no tiene comidas, o la entrada "Total registrado antes" si es la única comida del día. */
+  totals: Totals;
+  /** La entrada que guarda ese total, si existe (al agregar una comida, el total pasa a ser una entrada). */
+  entryId?: string;
+};
+/**
+ * Lo que de un día se puede revisar: el total si no tiene comidas, o la entrada "Total registrado antes" si es la
+ * única comida. Si hay otras, null: lo agregado aquí podría ser parte de lo que trae la otra app y sumarlo de nuevo
+ * contaría dos veces. Un ayuno tampoco se toca.
+ */
+export function storedFoodOf(
+  date: string,
+  day: DayTotals & { fasting?: boolean },
+  entries: Array<{ id: string; name: string } & Totals>,
+): StoredFood | null {
+  if (day.fasting || !(day.caloriesIn > 0)) return null;
+  if (!entries.length)
+    return {
+      date,
+      totals: { kcal: day.caloriesIn, proteinG: day.proteinG, carbsG: day.carbsG, fatsG: day.fatsG },
+    };
+  const [only] = entries;
+  return entries.length === 1 && only.name === LEGACY_ENTRY_NAME
+    ? { date, totals: only, entryId: only.id }
+    : null;
+}
+type DayTotals = { caloriesIn: number; proteinG: number; carbsG: number; fatsG: number };
+
+export type FoodRepair = { date: string; full: DayFood; entryId?: string };
+
+const sameTotals = (stored: Totals, imported: Totals) =>
+  stored.kcal === Math.round(imported.kcal) &&
+  [
+    [stored.proteinG, imported.proteinG],
+    [stored.carbsG, imported.carbsG],
+    [stored.fatsG, imported.fatsG],
+  ].every(([a, b]) => Math.abs(a - round1(b)) < 0.06);
 
 /**
- * Hasta la 0.42.0 la comida de hoy se importaba a medias y ya no se completaba. Se reconoce porque el día
- * tiene total pero ninguna comida (todo lo anotado aquí tiene la suya) y ya se había importado alguna vez.
+ * Hasta la 0.42.0 la comida del día en curso se importaba a medias y ya no se completaba. Lo que quedó
+ * guardado es exactamente la suma de las primeras comidas de una app en Health Connect (hasta la hora de
+ * esa importación), pero no de todas. Eso identifica el dato: un total escrito a mano no coincide en
+ * calorías y en los tres macros con la suma de una parte de las comidas de otra app. Devuelve el total
+ * completo de ese día, de la misma app, para reemplazarlo.
  */
-export function isLeftoverImport(
-  day: { caloriesIn: number; fasting?: boolean } | null,
-  entries: number,
-  importedBefore: boolean,
-): boolean {
-  return importedBefore && entries === 0 && day !== null && day.caloriesIn > 0 && !day.fasting;
+export function partialImports(meals: HealthMeal[], stored: StoredFood[], today: string): FoodRepair[] {
+  const repairs: FoodRepair[] = [];
+  for (const day of stored) {
+    if (day.date >= today || day.totals.kcal <= 0) continue;
+    const bySource = new Map<string, HealthMeal[]>();
+    for (const meal of meals) {
+      if (localDateKey(new Date(meal.start)) !== day.date) continue;
+      bySource.set(meal.source, [...(bySource.get(meal.source) ?? []), meal]);
+    }
+    for (const list of bySource.values()) {
+      const sorted = [...list].sort((a, b) => a.start.localeCompare(b.start));
+      const sum = { kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 };
+      let partial = false;
+      sorted.slice(0, -1).forEach((meal, index) => {
+        sum.kcal += meal.kcal;
+        sum.proteinG += meal.proteinG;
+        sum.carbsG += meal.carbsG;
+        sum.fatsG += meal.fatsG;
+        // Una comida a la misma hora que la siguiente entró junto con ella.
+        if (sorted[index + 1].start !== meal.start && sameTotals(day.totals, sum)) partial = true;
+      });
+      if (!partial) continue;
+      const [full] = foodToImport(sorted, new Set(), today);
+      if (full && full.kcal > day.totals.kcal) repairs.push({ date: day.date, full, entryId: day.entryId });
+      break;
+    }
+  }
+  return repairs;
 }
 
 type Page<T> = { records: T[]; pageToken?: string };

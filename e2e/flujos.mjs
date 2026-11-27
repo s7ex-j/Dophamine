@@ -249,8 +249,11 @@ async function main() {
     await press("Definición");
     await press("Continuar");
     await press("Continuar"); // sin datos: debe quedarse en el paso y avisar
-    await waitText("Revisa edad, altura y peso");
+    await waitText("Escribe tu edad: entre 13 y 100 años");
     await shot("evaluacion");
+    await fill("Edad", 250);
+    await waitText("La edad no puede pasar de 100 años.");
+    await shot("evaluacion-limite");
     await fill("Edad", 25);
     await fill("Altura", 180);
     await fill("Peso actual", 80);

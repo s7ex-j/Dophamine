@@ -14,7 +14,8 @@ cuando se cierra la anterior.
 Lo que solo existe en el APK de Android, cada pieza con su variante web vacía (`.web.ts`) para que la web compile:
 
 - **Health Connect:** `src/features/health/healthConnect.ts` (reglas, con prueba) y `healthConnect.repository.ts`
-  (lectura; la librería nativa se carga solo al usarla).
+  (lectura; la librería nativa se carga solo al usarla). `partialImports` reconoce y completa la comida que las
+  versiones anteriores a la 0.42.1 importaron a medias.
 - **Sueño por uso del teléfono:** `modules/phone-usage` (módulo propio en Kotlin, se enlaza solo) y
   `src/features/sleep/screenSleep.ts`.
 - **Widget de inicio:** `src/features/widget/`; se registra en `index.js`, el punto de entrada.
@@ -135,7 +136,8 @@ energía por kilo, del más bajo al más alto de todos.
 - **El motor** se vuelve a correr en cada escenario con sus mismos datos y la deriva que ya eligió.
 - **Acierto del motor** (`tdee/accuracy.ts`): vuelve a fechas pasadas con solo los datos de entonces y compara el peso
   esperado a 14 días, con lo que de verdad se comió, con la media de los pesajes finales. No sirve para elegir la energía
-  por kilo: comiendo parejo, el error de ρ y el del gasto se compensan.
+  por kilo: comiendo parejo, el error de ρ y el del gasto se compensan. En la app corre cediendo el turno entre cada
+  vuelta al motor (`forecastAccuracyGently`) y se guarda en memoria mientras los datos no cambien.
 - **Punto de partida de la energía por kilo** (`priorFatShare`): 7700, o la parte de grasa de Forbes
   (`grasa ÷ (grasa + 10.4 kg)`, Hall 2007, Br J Nutr 97:1059) si el plan dice que no se entrena fuerza dos o más días, hay
   % de grasa y se baja de peso; entra de a poco entre 0 y 0.25 kg por semana. Forbes describe adultos que adelgazan sin
@@ -175,15 +177,18 @@ energía por kilo, del más bajo al más alto de todos.
 `src/features/link/`. Un canal de datos WebRTC entre los dos dispositivos, sin ningún servidor.
 
 - **Señalización por QR** (`signal.ts`): la web crea la oferta, y de su SDP se guarda solo lo necesario
-  (credenciales ICE, huella SHA-256 del certificado, rol DTLS y direcciones locales) en un texto de unos
+  (credenciales ICE, huella SHA-256 del certificado, rol DTLS y direcciones locales: IPv4 privadas, IPv6
+  `fc00::/7` y nombres `.local`; una pública no entra y un código que la trae se rechaza) en un texto de unos
   150 caracteres que cabe en un QR. El teléfono lo lee, reconstruye un SDP mínimo, responde y muestra su
   propio código, que la web lee con la cámara (`QrScanner.web.tsx`, jsQR) o recibe pegado.
-- **Sin servidores ICE** (`peer.ts`): `iceServers: []`. Solo hay direcciones de la red local, así que
+- **Sin servidores ICE** (`peer.ts`): `iceServers: []` y solo direcciones de la red local, así que
   conecta dentro del mismo Wi-Fi. Chrome oculta su IP tras un nombre `.local`; no importa, porque basta con
   que uno de los dos lados alcance al otro.
 - **Cifrado**: DTLS de extremo a extremo, propio de WebRTC. La huella de cada certificado viaja en su QR,
   así que el canal solo se establece con quien mostró ese código. `sha256.ts` deriva de las dos huellas un
   número de seis cifras que ambos lados muestran.
+- **Envíos** (`sendFrames`): sin pasar de 1 MB en el búfer del canal; fallan si el canal se cierra o el otro lado
+  deja de recibir 15 segundos, y como mucho tres esperan su turno.
 - **Protocolo** (`protocol.ts`): mensajes JSON (`hello`, `get`, `backup`, `diet`, `ack`, `bye`) partidos
   en tramas de 12 000 caracteres y armados al llegar; lo que no es del protocolo se ignora.
 - **Quién decide**: la web solo pide. El teléfono envía su copia cuando la persona pulsa "Enviar mis
