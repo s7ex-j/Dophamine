@@ -81,7 +81,10 @@ function engineInputs(
 const ACCURACY_DAYS = 200;
 
 /** Cuánto acertó el motor en el pasado. Se calcula aparte: lo corre varias veces y solo se ve en un lugar. */
-export async function getForecastAccuracy(): Promise<ForecastAccuracy | null> {
+/** `stillWanted` se consulta entre cada vuelta al motor: si ya no hace falta (se salió de la pantalla), se deja. */
+export async function getForecastAccuracy(
+  stillWanted: () => boolean = () => true,
+): Promise<ForecastAccuracy | null> {
   const [history, profile, reviews, savedPeriods, meals, diet] = await Promise.all([
     getBiometricsWindow(ACCURACY_DAYS),
     getNutritionProfile(),
@@ -98,7 +101,10 @@ export async function getForecastAccuracy(): Promise<ForecastAccuracy | null> {
   // Con los mismos datos el resultado es el mismo: volver a la pantalla no repite el cálculo.
   const key = JSON.stringify([history, options]);
   if (lastAccuracy?.key === key) return lastAccuracy.value;
-  const value = await forecastAccuracyGently(history, options);
+  const value = await forecastAccuracyGently(history, options, async () => {
+    await new Promise((done) => setTimeout(done, 0));
+    if (!stillWanted()) throw new Error("Cancelado");
+  });
   lastAccuracy = { key, value };
   return value;
 }

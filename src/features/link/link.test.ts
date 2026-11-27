@@ -12,7 +12,7 @@ import {
   toFrames,
   type LinkMessage,
 } from "@/src/features/link/protocol";
-import { sendFrames, SEND_STALL_MS } from "@/src/features/link/peer";
+import { MAX_QUEUED_SENDS, sendFrames, sendQueue, SEND_STALL_MS } from "@/src/features/link/peer";
 import { qrMatrix, qrPath } from "@/src/features/link/qr";
 import { sha256Hex, verificationCode } from "@/src/features/link/sha256";
 import { buildSdp, LinkError, packSignal, readSdp, unpackSignal } from "@/src/features/link/signal";
@@ -332,5 +332,40 @@ describe("0.42.3: un envío no se queda esperando para siempre", () => {
     };
     await sendFrames(draining, ["a"], { pause: drain, stallMs: 100 });
     expect(draining.sent).toEqual(["a"]);
+  });
+});
+
+describe("0.42.3: envíos en cola", () => {
+  it("van de a uno, en orden, y uno más de los permitidos se rechaza sin cortar a los demás", async () => {
+    const enqueue = sendQueue();
+    const sent: string[] = [];
+    const gates: Array<() => void> = [];
+    const task = (name: string) => () =>
+      new Promise<void>((done) => {
+        gates.push(() => {
+          sent.push(`${name}-1`, `${name}-2`);
+          done();
+        });
+      });
+    const running = ["a", "b", "c"].map((name) => enqueue(task(name)));
+    expect(MAX_QUEUED_SENDS).toBe(3);
+    await expect(enqueue(task("d"))).rejects.toThrow("envíos esperando");
+    for (let index = 0; index < 3; index += 1) {
+      await new Promise((done) => setTimeout(done, 0));
+      gates.shift()?.();
+      await running[index];
+    }
+    expect(sent).toEqual(["a-1", "a-2", "b-1", "b-2", "c-1", "c-2"]);
+    await expect(enqueue(async () => undefined)).resolves.toBeUndefined();
+  });
+
+  it("un envío que falla no detiene a los siguientes", async () => {
+    const enqueue = sendQueue();
+    const failing = enqueue(async () => {
+      throw new LinkError("La conexión se cerró.");
+    });
+    const next = enqueue(async () => undefined);
+    await expect(failing).rejects.toThrow("se cerró");
+    await expect(next).resolves.toBeUndefined();
   });
 });

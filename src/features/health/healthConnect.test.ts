@@ -6,6 +6,7 @@ import {
   LEGACY_ENTRY_NAME,
   nightsToImport,
   partialImports,
+  storedFoodOf,
   readAllPages,
   stepsToImport,
   weightsToImport,
@@ -161,6 +162,29 @@ describe("0.42.3: lo que una versión anterior importó a medias", () => {
     const first = { kcal: 512, proteinG: 30, carbsG: 50.2, fatsG: 15.1 };
     expect(partialImports(together, [{ date: "2026-11-10", totals: first }], TODAY)).toEqual([]);
     expect(partialImports(together, [{ date: "2026-11-10", totals: partial }], TODAY)).toHaveLength(1);
+  });
+
+  it("solo se revisa un día sin comidas o con la entrada heredada como única comida", () => {
+    const day = { caloriesIn: 1212, proteinG: 70, carbsG: 130.2, fatsG: 35.1 };
+    const legacy = {
+      id: "e1",
+      name: LEGACY_ENTRY_NAME,
+      kcal: 1212,
+      proteinG: 70,
+      carbsG: 130.2,
+      fatsG: 35.1,
+    };
+    const other = { id: "e2", name: "Arroz", kcal: 300, proteinG: 6, carbsG: 60, fatsG: 1 };
+    expect(storedFoodOf("2026-11-10", day, [])).toEqual({ date: "2026-11-10", totals: partial });
+    expect(storedFoodOf("2026-11-10", day, [legacy])).toMatchObject({
+      entryId: "e1",
+      totals: { kcal: 1212 },
+    });
+    // Con otras comidas no se toca: podrían estar también en la otra app y se contarían dos veces.
+    expect(storedFoodOf("2026-11-10", day, [legacy, other])).toBeNull();
+    expect(storedFoodOf("2026-11-10", day, [other])).toBeNull();
+    expect(storedFoodOf("2026-11-10", { ...day, fasting: true }, [])).toBeNull();
+    expect(storedFoodOf("2026-11-10", { ...day, caloriesIn: 0 }, [])).toBeNull();
   });
 
   it("usa la app de la que salió lo guardado, aunque otra tenga más calorías ese día", () => {

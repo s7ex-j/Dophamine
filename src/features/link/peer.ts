@@ -76,6 +76,27 @@ export async function sendFrames(
   }
 }
 
+/**
+ * De a un envío por vez, para que las tramas de dos mensajes no se intercalen, y como mucho `max` esperando:
+ * uno más se rechaza al momento.
+ */
+export function sendQueue(max = MAX_QUEUED_SENDS) {
+  let queue: Promise<void> = Promise.resolve();
+  let queued = 0;
+  return (task: () => Promise<void>): Promise<void> => {
+    if (queued >= max) return Promise.reject(new LinkError("Hay envíos esperando. Espera a que terminen."));
+    queued += 1;
+    const run = queue
+      .catch(() => undefined)
+      .then(task)
+      .finally(() => {
+        queued -= 1;
+      });
+    queue = run;
+    return run;
+  };
+}
+
 /** Espera a que el dispositivo termine de reunir sus direcciones locales. */
 async function gathered(connection: RTCPeerConnection): Promise<void> {
   if (connection.iceGatheringState === "complete") return;
@@ -97,8 +118,7 @@ function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
   let nextId = 1;
   let local: Signal | null = null;
   let remote: Signal | null = null;
-  let queue: Promise<void> = Promise.resolve();
-  let queued = 0;
+  const enqueue = sendQueue();
 
   const setState = (next: LinkState) => {
     if (state === next || state === "closed") return;
@@ -125,24 +145,12 @@ function createLink(connection: RTCPeerConnection, handlers: LinkHandlers) {
   });
 
   const link: Link = {
-    send: (message) => {
-      if (queued >= MAX_QUEUED_SENDS)
-        return Promise.reject(new LinkError("Hay envíos esperando. Espera a que terminen."));
-      queued += 1;
-      // De a un mensaje por vez, para que sus tramas no se intercalen con las de otro.
-      const sending = queue
-        .catch(() => undefined)
-        .then(async () => {
-          const open = channel;
-          if (!open || open.readyState !== "open") throw new LinkError("La conexión se cerró.");
-          await sendFrames(open, toFrames(message, nextId++));
-        })
-        .finally(() => {
-          queued -= 1;
-        });
-      queue = sending;
-      return sending;
-    },
+    send: (message) =>
+      enqueue(async () => {
+        const open = channel;
+        if (!open || open.readyState !== "open") throw new LinkError("La conexión se cerró.");
+        await sendFrames(open, toFrames(message, nextId++));
+      }),
     close: () => {
       try {
         if (channel?.readyState === "open") channel.send(toFrames({ t: "bye" }, nextId++)[0]);
