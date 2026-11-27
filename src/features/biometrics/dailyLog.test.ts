@@ -20,7 +20,7 @@ const record = {
 describe("peso y composición del diario", () => {
   it("pide el peso y rechaza valores imposibles", () => {
     expect(buildBodyInput(emptyForm(), "kg").error).toContain("peso");
-    expect(buildBodyInput({ ...emptyForm(), weight: "500" }, "kg").error).toContain("rango");
+    expect(buildBodyInput({ ...emptyForm(), weight: "500" }, "kg").error).toContain("entre 30 y 300 kg");
   });
 
   it("guarda solo el peso si no se llenó nada más", () => {

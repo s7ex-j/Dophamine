@@ -15,6 +15,7 @@ import {
   goalDateFrom,
   planInputFrom,
   stepError,
+  tooHigh,
   stepsFor,
   type Answers,
 } from "./onboarding";
@@ -345,5 +346,28 @@ describe("meta con fecha en la evaluación", () => {
       hasDeadline: false,
       deadlineDate: "2027-02-09",
     });
+  });
+});
+
+describe("0.42.3: avisos de límites al escribir", () => {
+  it("avisa en cuanto un número pasa del máximo, no mientras se escribe uno bajo", () => {
+    expect(tooHigh("body", { ...answers, age: "1" })).toBeNull();
+    expect(tooHigh("body", { ...answers, age: "101" })).toBe("La edad no puede pasar de 100 años.");
+    expect(tooHigh("body", { ...answers, height: "231" })).toBe("La altura no puede pasar de 230 cm.");
+    expect(tooHigh("body", { ...answers, unit: "kg", weight: "301" })).toBe(
+      "El peso no puede pasar de 300 kg.",
+    );
+    expect(tooHigh("body", { ...answers, unit: "lb", weight: "600" })).toBeNull();
+    expect(tooHigh("body", { ...answers, unit: "lb", weight: "700" })).toBe(
+      "El peso no puede pasar de 661 lb.",
+    );
+    expect(tooHigh("target", { ...answers, unit: "kg", goalWeight: "350" })).toContain("peso meta");
+    expect(tooHigh("body", answers)).toBeNull();
+  });
+  it("al continuar dice qué dato falta o no sirve, con su rango", () => {
+    expect(stepError("body", { ...answers, age: "" })).toBe(
+      "Escribe tu edad: entre 13 y 100 años, sin decimales.",
+    );
+    expect(stepError("body", { ...answers, height: "90" })).toContain("entre 120 y 230 cm");
   });
 });
