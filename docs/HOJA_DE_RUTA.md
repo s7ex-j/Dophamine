@@ -2,7 +2,7 @@
 
 Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 
-## Estado al 25 de noviembre de 2026 (versión 0.42.2, Expo SDK 58)
+## Estado al 25 de noviembre de 2026 (versión 0.42.3, Expo SDK 58)
 
 **Decisiones que mandan:**
 
@@ -40,20 +40,21 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
 - Health Connect, sueño estimado por uso del teléfono, widget de inicio y análisis de fotos de progreso.
 
 **Comprobado en teléfono:** la 0.42.2 se usó en un teléfono Android y funcionó bien, en uso general (no cada función por
-separado). La web instalable se está probando en iPhone. Lo que falta está abajo.
+separado). La web instalable se está probando en iPhone. La 0.42.3 (correcciones de una auditoría) falta probarla en el
+teléfono. Lo que falta está abajo.
 
 ## Por probar
 
 | Qué | Falta |
 |---|---|
-| Health Connect | Con Samsung Health o Google Fit y datos reales; que la comida de un día entre completa al día siguiente |
-| Conexión directa con la web | Redes que aíslan dispositivos |
+| Health Connect | Con Samsung Health o Google Fit y datos reales; que la comida de un día entre completa al día siguiente y que se completen los días que dejó a medias la 0.42.0 |
+| Conexión directa con la web | Redes que aíslan dispositivos; redes con solo IPv6 global (desde la 0.42.3 no se usa); respaldos grandes y cortes a mitad del envío |
 | Sueño por uso del teléfono | El permiso de "Acceso al uso" en varias marcas |
 | Widget de inicio | Varios lanzadores; pantalla de bloqueo, después |
 | Dictado | Teléfonos sin modelo de voz sin conexión |
 | Etiquetas con la cámara | Etiquetas reales |
 | Análisis de fotos | Fotos reales; ajustar umbrales si la silueta sale mal |
-| Motor | Contrastarlo con varias semanas de datos reales ("Cuánto acierta") y medir en Android lo que tarda cada escenario |
+| Motor | Contrastarlo con varias semanas de datos reales ("Cuánto acierta") y medir en un Android de gama baja lo que tarda (en una computadora: Panel con 120 días ~85 ms, "Cuánto acierta" con 200 días ~300 ms) |
 | Web instalable | La 0.42.2 en un iPhone: en curso |
 
 ## Pendiente, por separado
@@ -62,7 +63,8 @@ separado). La web instalable se está probando en iPhone. Lo que falta está aba
 - Compilar Android en CI.
 - Menú del sitio en el celular.
 - Suavizar los umbrales de actividad del gasto inicial (hoy saltan 155 y 254 kcal en 2.5 y 6 horas).
-- Origen de cada dato importado, para poder actualizar un día ya traído.
+- Origen de cada dato importado (columna y respaldo formato 11), para actualizar un día ya traído si la otra app
+  agrega comidas tarde. Lo que dejaron a medias las versiones anteriores ya se completa sin eso (0.42.3).
 - SQLCipher: proyecto propio, con migración reversible, pruebas sobre bases existentes y plan de recuperación.
 
 ## 1.0.0 — Primera versión estable

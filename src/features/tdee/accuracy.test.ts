@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { DailyBiometrics } from "@/src/features/biometrics/biometrics.repository";
-import { accuracyText, forecastAccuracy, type ForecastCheck } from "@/src/features/tdee/accuracy";
+import {
+  accuracyText,
+  forecastAccuracy,
+  forecastAccuracyGently,
+  type ForecastCheck,
+} from "@/src/features/tdee/accuracy";
 import { addDays } from "@/src/lib/dates";
 
 function noise(seed: number) {
@@ -137,5 +142,17 @@ describe("medir el acierto", () => {
     expect(accuracyText(of([0.4, -0.5, 0.4]))).not.toContain("Sueles");
     expect(accuracyText(of([1.5, -1.5, 1.4]))).toContain("con cautela");
     expect(accuracyText(of([1, -1, 1]))).toContain("más o menos lo mismo");
+  });
+});
+
+describe("0.42.3: sin congelar la pantalla", () => {
+  it("da lo mismo cediendo el turno entre cada vuelta al motor", async () => {
+    const records = person({ days: 90, eat: (day) => 2000 + (day % 7) * 40 });
+    let pauses = 0;
+    const gentle = await forecastAccuracyGently(records, {}, async () => {
+      pauses += 1;
+    });
+    expect(gentle).toEqual(forecastAccuracy(records));
+    expect(pauses).toBeGreaterThanOrEqual(gentle?.checks.length ?? 99);
   });
 });

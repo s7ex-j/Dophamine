@@ -2,8 +2,19 @@
 
 ## Próxima versión
 
+Nada todavía.
+
+## 0.42.3 - 2026-11-27
+
+Correcciones de una auditoría externa de la 0.42.2, cada una con su prueba.
+
+- **Conexión directa, solo red local:** el código QR lleva únicamente direcciones de la red local (IPv4 privadas, IPv6 locales `fc00::/7` y nombres `.local`). Antes también podía llevar una IPv6 o IPv4 pública: hacía alcanzable el dispositivo fuera de la red y, si el código se enviaba por otra app, la mostraba. Un código con una dirección pública se rechaza.
+- **Conexión directa, envíos:** un envío falla con un aviso si la conexión se cierra mientras espera o si el otro lado deja de recibir 15 segundos. Antes podía quedarse esperando para siempre. Como mucho tres envíos esperan su turno.
+- **Health Connect:** se quita la limpieza de la 0.42.2, que borraba el total de hoy si no tenía comidas y alguna vez se había importado algo; podía borrar un total restaurado de un respaldo antiguo. En su lugar, al importar se completan los días que una versión anterior dejó a medias: se reconocen porque lo guardado coincide en calorías y en los tres macros con la suma de las primeras comidas de una app, y no con todas. También si ese total ya pasó a ser la entrada "Total registrado antes" al agregar una comida. Alcanza a los últimos 30 días.
+- **Cuánto acierta:** el cálculo cede el turno entre cada vuelta al motor, para no congelar la pantalla, y no se repite al volver con los mismos datos. Con 200 días tarda unos 300 ms en una computadora; en un teléfono, más.
 - **Documentación:** la hoja de ruta queda solo con decisiones y pendientes (lo hecho está aquí); guía de contribución y arquitectura al día.
 - **iPhone:** el sitio y el README dicen que la web instalable se está probando y que la app nativa firmada queda para más adelante.
+- No probado en un teléfono.
 
 ## 0.42.2 - 2026-11-25
 

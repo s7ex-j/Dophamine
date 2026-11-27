@@ -10,13 +10,15 @@ import {
   dayRange,
   foodToImport,
   IMPORT_DAYS,
-  isLeftoverImport,
+  LEGACY_ENTRY_NAME,
   nightsToImport,
+  partialImports,
   readAllPages,
+  type StoredFood,
   stepsToImport,
   weightsToImport,
 } from "@/src/features/health/healthConnect";
-import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
+import { getMealEntries, updateMealEntry } from "@/src/features/nutrition/nutrition.repository";
 import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import { addDays, localDateKey } from "@/src/lib/dates";
@@ -86,10 +88,27 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
   const days = Array.from({ length: IMPORT_DAYS + 1 }, (_, index) => addDays(from, index));
   const daysWithWeight = new Set<string>();
   const daysWithFood = new Set<string>();
+  // Días que pudo dejar a medias una versión anterior: un total sin comidas, o ese total ya pasado a entrada.
+  const stored: StoredFood[] = [];
   for (const day of days) {
     const record = await getBiometricsByDate(day);
     if (record?.weightKg) daysWithWeight.add(day);
-    if (record && (record.caloriesIn > 0 || record.fasting)) daysWithFood.add(day);
+    if (!record || !(record.caloriesIn > 0 || record.fasting)) continue;
+    daysWithFood.add(day);
+    if (record.fasting) continue;
+    const entries = await getMealEntries(day);
+    const legacy = entries.filter((entry) => entry.name === LEGACY_ENTRY_NAME);
+    if (!entries.length)
+      stored.push({
+        date: day,
+        totals: {
+          kcal: record.caloriesIn,
+          proteinG: record.proteinG,
+          carbsG: record.carbsG,
+          fatsG: record.fatsG,
+        },
+      });
+    else if (legacy.length === 1) stored.push({ date: day, totals: legacy[0], entryId: legacy[0].id });
   }
   const daysWithSleep = new Set((await getSleepSince(from)).map((entry) => entry.date));
 
@@ -150,42 +169,34 @@ export async function importFromHealthConnect({ ask = true }: { ask?: boolean } 
     const mealRecords = await readAllPages((pageToken) =>
       readRecords("Nutrition", { timeRangeFilter, pageToken }),
     );
-    const toSave = foodToImport(
-      mealRecords.map((record) => ({
-        start: record.startTime,
-        kcal: record.energy?.inKilocalories ?? 0,
-        proteinG: record.protein?.inGrams ?? 0,
-        carbsG: record.totalCarbohydrate?.inGrams ?? 0,
-        fatsG: record.totalFat?.inGrams ?? 0,
-        source: record.metadata?.dataOrigin ?? "",
-      })),
-      daysWithFood,
-      today,
-    );
+    const meals = mealRecords.map((record) => ({
+      start: record.startTime,
+      kcal: record.energy?.inKilocalories ?? 0,
+      proteinG: record.protein?.inGrams ?? 0,
+      carbsG: record.totalCarbohydrate?.inGrams ?? 0,
+      fatsG: record.totalFat?.inGrams ?? 0,
+      source: record.metadata?.dataOrigin ?? "",
+    }));
+    const toSave = foodToImport(meals, daysWithFood, today);
     for (const day of toSave)
       await saveDayNutrition(
         { kcal: day.kcal, proteinG: day.proteinG, carbsG: day.carbsG, fatsG: day.fatsG },
         day.date,
       );
-    foodDays = toSave.length;
+    // Lo que una versión anterior dejó a medias se completa con el total de la misma app.
+    const repairs = partialImports(meals, stored, today);
+    for (const { date, full, entryId } of repairs) {
+      const totals = { kcal: full.kcal, proteinG: full.proteinG, carbsG: full.carbsG, fatsG: full.fatsG };
+      const entry = entryId ? (await getMealEntries(date)).find((item) => item.id === entryId) : undefined;
+      if (entry) await updateMealEntry({ ...entry, ...totals });
+      else await saveDayNutrition(totals, date);
+    }
+    foodDays = toSave.length + repairs.length;
   }
   return { weights, nights, stepDays, foodDays };
 }
 
 const SYNC_KEY = "health_connect_synced";
-
-/** Quita la comida de hoy que dejó a medias una versión anterior; mañana entra completa. Dice si quitó algo. */
-export async function dropTodayImport(): Promise<boolean> {
-  const today = localDateKey();
-  const [day, entries, synced] = await Promise.all([
-    getBiometricsByDate(today),
-    getMealEntries(today),
-    getSetting(SYNC_KEY),
-  ]);
-  if (!isLeftoverImport(day, entries.length, synced !== null)) return false;
-  await saveDayNutrition({ kcal: 0, proteinG: 0, carbsG: 0, fatsG: 0 }, today);
-  return true;
-}
 
 /**
  * Al abrir la app, una vez al día: si la persona ya dio permiso a Health Connect, trae lo nuevo sin

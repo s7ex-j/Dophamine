@@ -77,9 +77,18 @@ const isHost = (host: string) =>
       ? /^[0-9A-Za-z-]{1,63}\.local$/.test(host)
       : isIpv6(host);
 const isPort = (port: string) => /^\d{1,5}$/.test(port) && Number(port) > 0 && Number(port) < 65536;
-const isPrivate = (host: string) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
-// Orden de preferencia: red local IPv4, otras IPv4, nombres .local y al final IPv6.
-const rank = (host: string) => (isPrivate(host) ? 0 : isIpv4(host) ? 1 : host.endsWith(".local") ? 2 : 3);
+const isPrivateIpv4 = (host: string) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+// IPv6 local única (fc00::/7): el primer grupo va de fc00 a fdff.
+const isUniqueLocal = (host: string) => /^f[cd][0-9a-f]{2}:/i.test(host);
+/**
+ * Solo direcciones de la red local: IPv4 privadas, IPv6 locales únicas y nombres `.local`. Una dirección
+ * pública (IPv4 o IPv6 global) no entra en el código: lo haría alcanzable fuera de la red y, si el código
+ * se envía por otra app, la mostraría.
+ */
+export const isLocalHost = (host: string) =>
+  isHost(host) && (isPrivateIpv4(host) || host.endsWith(".local") || isUniqueLocal(host));
+// Orden de preferencia: IPv4 privada, nombres .local y al final IPv6 local.
+const rank = (host: string) => (isPrivateIpv4(host) ? 0 : host.endsWith(".local") ? 1 : 2);
 
 /** Saca de un SDP lo que el otro lado necesita. */
 export function readSdp(sdp: string, type: SignalType): Signal {
@@ -98,7 +107,7 @@ export function readSdp(sdp: string, type: SignalType): Signal {
       const [, component, protocol, , host, port, , kind] = line.split(" ");
       if (component !== "1" || protocol.toLowerCase() !== "udp" || kind !== "host") return [];
       if (host.startsWith("fe80") || host === "127.0.0.1" || host === "::1") return [];
-      if (!isHost(host) || !isPort(port)) return [];
+      if (!isLocalHost(host) || !isPort(port)) return [];
       const key = `${host}:${port}`;
       if (seen.has(key)) return [];
       seen.add(key);
@@ -199,6 +208,10 @@ export function unpackSignal(code: string, expected?: SignalType, now = Date.now
     !/^[0-9A-Za-z+/]+$/.test(pwd)
   )
     throw new LinkError("El código está incompleto. Vuelve a leerlo.");
+  if (addresses.some(({ host }) => !isLocalHost(host)))
+    throw new LinkError(
+      "Ese código trae una dirección fuera de tu red local. Pide uno nuevo en la otra pantalla.",
+    );
   const candidates = addresses.map(({ host, port }) => ({ host, port: Number(port) }));
   if (!candidates.length)
     throw new LinkError("El otro dispositivo no informó ninguna dirección de red. Revisa que tenga Wi-Fi.");
