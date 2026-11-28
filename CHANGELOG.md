@@ -4,6 +4,18 @@
 
 Nada todavía.
 
+## 0.43.0 - 2026-11-28
+
+- **Sueño con un reloj:** la noche se marca en un reloj de 24 horas: la luna (al acostarte) y el sol (al despertar) se arrastran, y el centro dice cuánto dormiste. Debajo, botones de 5 minutos y de 1 hora para afinar. Antes eran dos campos de texto sin formato.
+- **Todas las horas igual:** en Recordatorios, la hora del pesaje, de cada comida y del gimnasio se eligen con el mismo reloj, en una hoja desde abajo. El gimnasio puede quedar "Sin hora".
+- **Sueño con el uso del teléfono, solo:** con el permiso dado, al abrir el Panel la noche de hoy se calcula y se guarda sola, una vez al día, y la tarjeta Sueño dice "Del teléfono". Se puede cambiar a "Preguntarme" (aparece la noche para aceptarla) o "No usar". Si se quita esa noche, no vuelve a guardarse.
+- **Uso del teléfono, la causa del "No encontré una noche clara":** se buscaban 3 horas seguidas con la pantalla apagada, y mirar la hora a medianoche partía la noche en dos tramos cortos. Ahora un encendido de hasta 10 minutos no la corta.
+- **Micronutrientes:** 233 de los 243 alimentos incluidos traen fibra, azúcar, grasa saturada, sodio, potasio, calcio, hierro, magnesio, zinc y vitaminas A, C, D, B12 y folato, de la tabla del USDA (FoodData Central, dominio público). Los que no tienen una ficha parecida (lúcuma, ají amarillo, chicha morada, chorizo, barras, creatina y algunos cocidos) quedan sin micros. Los de Open Food Facts traen los que tenga su ficha. Cada comida guarda los suyos.
+- **Nutrientes, ahora en Comida:** la pantalla de comidas tiene dos pestañas, Comidas y Nutrientes. Calorías y macros van en un solo anillo con capas, como el del Panel; cada micro, en una línea con escala que se llena hasta la raya de su valor de referencia (general, de la FDA). Azúcar, grasa saturada y sodio son topes y se ponen rojos al pasarlos. Al tocar una fila: qué alimentos y qué comidas te dieron más de ese nutriente. Este día, 7, 30 o 90 días. Sale de Más.
+- **iPhone (web instalable):** al tocar Peso o Sueño, la tarjeta ya no queda marcada: Safari dejaba el foco y su contorno en lo último que se tocó.
+- **Respaldo formato 11:** micros por comida y noches del teléfono. Los respaldos anteriores se leen igual, sin micros.
+- No probado en un teléfono.
+
 ## 0.42.3 - 2026-11-27
 
 Correcciones de una auditoría externa de la 0.42.2, cada una con su prueba.

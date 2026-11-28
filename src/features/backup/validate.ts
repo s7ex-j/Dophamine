@@ -1,5 +1,6 @@
 import { isFood } from "@/src/features/nutrition/foods";
 import { isMealEntry } from "@/src/features/nutrition/meals";
+import { microsFrom } from "@/src/features/nutrition/micros";
 import { isWeeklyReview } from "@/src/features/reviews/reviews";
 import { isSleepEntry } from "@/src/features/sleep/sleep";
 
@@ -161,7 +162,8 @@ const meal = (item: unknown) =>
   isDay(item.date) &&
   [item.kcal, item.proteinG, item.carbsG, item.fatsG].every((value) => between(value, 0)) &&
   maybe(item.grams, 0) &&
-  maybe(item.alcoholG, 0);
+  maybe(item.alcoholG, 0) &&
+  (absent(item.micros) || microsFrom(item.micros) !== undefined);
 
 /** El primer problema que encuentra, en palabras, o null si todo sirve. */
 export function backupProblem(data: Data): string | null {

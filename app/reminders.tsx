@@ -1,3 +1,4 @@
+import { TimeChip } from "@/src/components/TimeDial";
 import { getDiet } from "@/src/features/diet/diet.repository";
 import { useCallback, useState } from "react";
 import { ScrollView, Switch, View } from "react-native";
@@ -140,14 +141,15 @@ function RemindersContent() {
             />
           </View>
           {config.weighIn?.enabled ? (
-            <TextInput
-              accessibilityLabel="Hora del pesaje"
-              value={config.weighIn.time}
-              onChangeText={(time) => update({ ...config, weighIn: { enabled: true, time } })}
-              placeholder="07:00"
-              placeholderTextColor={AppTheme.colors.muted}
-              style={[AppTheme.input, { width: 100 }]}
-            />
+            <View style={AppTheme.sectionHeader}>
+              <Text style={[AppTheme.body, { flex: 1 }]}>Hora del aviso</Text>
+              <TimeChip
+                label="Hora del pesaje"
+                value={config.weighIn.time}
+                fallback="07:00"
+                onChange={(time) => update({ ...config, weighIn: { enabled: true, time } })}
+              />
+            </View>
           ) : null}
           <Text style={AppTheme.hint}>
             Pesarte cada día a la misma hora, antes de comer, hace el cálculo más preciso; no importa el
@@ -171,15 +173,10 @@ function RemindersContent() {
           />
           {meals.map((meal) => (
             <View key={meal.id} style={AppTheme.entryRow}>
-              <TextInput
-                accessibilityLabel="Hora"
+              <TimeChip
+                label={`Hora de ${meal.label || "la comida"}`}
                 value={meal.time}
-                onChangeText={(time) => setMeal(meal.id, "time", time)}
-                onBlur={() => setMeal(meal.id, "time", normalizeTime(meal.time) ?? meal.time)}
-                keyboardType="numbers-and-punctuation"
-                style={[AppTheme.input, { width: 78, textAlign: "center" }]}
-                placeholder="07:30"
-                placeholderTextColor={AppTheme.colors.muted}
+                onChange={(time) => setMeal(meal.id, "time", time)}
               />
               <TextInput
                 accessibilityLabel="Nombre de la comida"
@@ -273,14 +270,12 @@ function PreWorkoutCard({
                     {pre.meals?.[weekday.id] ?? "Sin comida de la dieta"}
                   </Text>
                 </View>
-                <TextInput
-                  accessibilityLabel={`Hora del gimnasio el ${weekday.label.toLowerCase()}`}
+                <TimeChip
+                  label={`Hora del gimnasio el ${weekday.label.toLowerCase()}`}
                   value={pre.times[weekday.id] ?? ""}
-                  onChangeText={(time) => set({ times: { ...pre.times, [weekday.id]: time } })}
-                  placeholder="—"
-                  placeholderTextColor={AppTheme.colors.muted}
-                  keyboardType="numbers-and-punctuation"
-                  style={[AppTheme.input, { width: 80, textAlign: "center", paddingVertical: 6 }]}
+                  fallback="18:00"
+                  optional
+                  onChange={(time) => set({ times: { ...pre.times, [weekday.id]: time } })}
                 />
               </View>
             ))}
@@ -289,7 +284,7 @@ function PreWorkoutCard({
         </>
       ) : null}
       <Text style={AppTheme.hint}>
-        Deja vacío el día que no entrenas. Si tu dieta marca la comida de antes de entrenar, el aviso dice
+        Deja sin hora el día que no entrenas. Si tu dieta marca la comida de antes de entrenar, el aviso dice
         cuál es.
       </Text>
     </Card>

@@ -14,7 +14,7 @@ export type SleepEntry = {
   wakeTime: string;
   /** 1 (muy mal) a 5 (muy bien). Opcional. */
   quality: number | null;
-  source: "manual" | "health";
+  source: "manual" | "health" | "phone";
 };
 export type SleepInput = Pick<SleepEntry, "bedtime" | "wakeTime" | "quality">;
 
@@ -96,6 +96,6 @@ export function isSleepEntry(value: unknown): value is SleepEntry {
     sleepMinutes(value.bedtime, value.wakeTime) !== null &&
     (value.quality === null ||
       (typeof value.quality === "number" && value.quality >= 1 && value.quality <= 5)) &&
-    (value.source === "manual" || value.source === "health")
+    (value.source === "manual" || value.source === "health" || value.source === "phone")
   );
 }

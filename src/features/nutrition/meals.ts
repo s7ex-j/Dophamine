@@ -1,3 +1,4 @@
+import { scaleMicros } from "@/src/features/nutrition/micros";
 import {
   caloriesFromMacros,
   nutrientsFor,
@@ -268,6 +269,7 @@ export function rescaleEntry(entry: MealEntry, grams: number, food: Food | null)
     proteinG: round1(entry.proteinG),
     carbsG: round1(entry.carbsG),
     fatsG: round1(entry.fatsG),
+    micros: scaleMicros(entry.micros, factor),
   };
 }
 

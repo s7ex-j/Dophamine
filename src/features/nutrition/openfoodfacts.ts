@@ -1,3 +1,4 @@
+import { microsFrom, type MicroKey } from "@/src/features/nutrition/micros";
 import type { Food } from "@/src/features/nutrition/foods";
 
 /**
@@ -31,6 +32,24 @@ export const cleanBarcode = (text: string) => {
   return digits.length >= 8 && digits.length <= 14 ? digits : null;
 };
 
+/** De qué campo de Open Food Facts sale cada micro y por cuánto se multiplica (de gramos a su unidad). */
+const OFF_MICROS: Array<[MicroKey, string, number]> = [
+  ["fiberG", "fiber_100g", 1],
+  ["sugarG", "sugars_100g", 1],
+  ["satFatG", "saturated-fat_100g", 1],
+  ["sodiumMg", "sodium_100g", 1000],
+  ["potassiumMg", "potassium_100g", 1000],
+  ["calciumMg", "calcium_100g", 1000],
+  ["ironMg", "iron_100g", 1000],
+  ["magnesiumMg", "magnesium_100g", 1000],
+  ["zincMg", "zinc_100g", 1000],
+  ["vitaminAUg", "vitamin-a_100g", 1e6],
+  ["vitaminCMg", "vitamin-c_100g", 1000],
+  ["vitaminDUg", "vitamin-d_100g", 1e6],
+  ["vitaminB12Ug", "vitamin-b12_100g", 1e6],
+  ["folateUg", "folates_100g", 1e6],
+];
+
 /** Convierte un producto de Open Food Facts en un alimento. Sin nombre o sin datos nutricionales no sirve. */
 export function foodFromOffProduct(product: OffProduct | null | undefined): Food | null {
   if (!product) return null;
@@ -51,6 +70,15 @@ export function foodFromOffProduct(product: OffProduct | null | undefined): Food
       ? null
       : (proteinG ?? 0) * 4 + (carbsG ?? 0) * 4 + (fatsG ?? 0) * 9);
   if (!name || kcal === null || !product.code) return null;
+  // Open Food Facts da todo en gramos por 100 g; aquí cada uno va en su unidad.
+  const micros = microsFrom(
+    Object.fromEntries(
+      OFF_MICROS.flatMap(([key, field, factor]) => {
+        const amount = value(field);
+        return amount === null ? [] : [[key, Math.round(amount * factor * 1000) / 1000]];
+      }),
+    ),
+  );
   if ((proteinG ?? 0) + (carbsG ?? 0) + (fatsG ?? 0) > 101 || kcal > 950) return null;
   const serving = Number(product.serving_quantity);
   const brands = Array.isArray(product.brands) ? product.brands : (product.brands ?? "").split(",");
@@ -67,6 +95,7 @@ export function foodFromOffProduct(product: OffProduct | null | undefined): Food
       proteinG: round1(proteinG ?? 0),
       carbsG: round1(carbsG ?? 0),
       fatsG: round1(fatsG ?? 0),
+      ...(micros ? { micros } : {}),
     },
   };
 }

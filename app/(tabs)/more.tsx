@@ -154,7 +154,6 @@ export default function MoreScreen() {
             onPress={() => router.push("/diet")}
           />
           <MoreRow icon="book-outline" title="Biblioteca" onPress={() => router.push("/library")} />
-          <MoreRow icon="pie-chart-outline" title="Nutrientes" onPress={() => router.push("/nutrients")} />
           <MoreRow
             icon="medkit-outline"
             title="Salud y restricciones"

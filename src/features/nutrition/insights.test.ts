@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { proteinPerMeal, slotDistribution, topContributors } from "@/src/features/nutrition/insights";
+import {
+  microsCoverage,
+  nutrientRings,
+  proteinPerMeal,
+  slotDistribution,
+  topContributors,
+  topMeals,
+} from "@/src/features/nutrition/insights";
 import type { MealEntry } from "@/src/features/nutrition/meals";
 
 const entry = (
@@ -56,5 +63,45 @@ describe("reparto en el día", () => {
 
   it("cuenta las comidas que llegan a 20 g de proteína", () => {
     expect(proteinPerMeal(entries)).toEqual({ meals: 4, withTwenty: 2, average: 39 });
+  });
+});
+
+describe("0.43.0: resumen de nutrientes", () => {
+  const withMicros = [
+    entry("2026-11-01", "breakfast", "Avena", 380, 13, { micros: { fiberG: 10, ironMg: 4 } }),
+    entry("2026-11-01", "lunch", "Lentejas", 230, 18, { micros: { fiberG: 16, ironMg: 6.6 } }),
+    entry("2026-11-01", "lunch", "Arroz", 260, 5, { micros: { fiberG: 0.6 } }),
+    entry("2026-11-02", "dinner", "Pollo", 330, 62, { micros: { ironMg: 2 } }),
+    entry("2026-11-02", "dinner", "Pan", 270, 9),
+  ];
+
+  it("los principales aportes también sirven para un micro", () => {
+    expect(topContributors(withMicros, "fiberG").map((item) => [item.name, item.amount])).toEqual([
+      ["Lentejas", 16],
+      ["Avena", 10],
+      ["Arroz", 0.6],
+    ]);
+  });
+
+  it("la comida que más aportó, con sus alimentos", () => {
+    const [best] = topMeals(withMicros, "ironMg");
+    expect(best).toMatchObject({ date: "2026-11-01", slot: "lunch", label: "Almuerzo", amount: 6.6 });
+    expect(best.foods).toEqual(["Lentejas"]);
+    expect(topMeals(withMicros, "proteinG")[0]).toMatchObject({ slot: "dinner", amount: 71 });
+  });
+
+  it("los anillos son por día y comparan con el plan o la referencia", () => {
+    const rings = nutrientRings(withMicros, { calories: 2000, protein: 140, carbs: 200, fats: 70 });
+    expect(rings.find((ring) => ring.key === "kcal")).toMatchObject({ amount: 735, target: 2000 });
+    const fiber = rings.find((ring) => ring.key === "fiberG");
+    expect(fiber?.amount).toBeCloseTo(13.3, 1);
+    expect(fiber?.progress).toBeCloseTo(13.3 / 28, 2);
+    expect(rings.find((ring) => ring.key === "sodiumMg")?.limit).toBe(true);
+    expect(rings).toHaveLength(4 + 14);
+  });
+
+  it("dice qué parte de lo comido trae micros", () => {
+    expect(microsCoverage(withMicros)).toBe(82);
+    expect(microsCoverage([])).toBe(0);
   });
 });

@@ -48,6 +48,9 @@ const APP_FEEL = [
   "html,body{background:#0E1311;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}",
   "*:not(input):not(textarea){-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}",
   "input,textarea{-webkit-user-select:text!important;user-select:text!important}",
+  // Safari deja el foco (y su contorno) en lo último que se tocó: la tarjeta parecía seguir elegida.
+  "*{-webkit-tap-highlight-color:transparent}",
+  "[tabindex]:focus:not(:focus-visible){outline:none!important;box-shadow:none}",
 ].join("");
 // Safari en iPhone no respeta `user-scalable=no`: el gesto de pellizcar se cancela aquí.
 const NO_ZOOM = [

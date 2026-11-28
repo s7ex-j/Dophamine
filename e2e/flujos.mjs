@@ -539,10 +539,25 @@ async function main() {
       dateKey(),
     );
     await pressLabel("Anotar sueño");
-    await fill("Me acosté", "23:30");
-    await fill("Desperté", "07:00");
+    // El reloj empieza en 23:00 → 07:00: la luna se mueve con los botones y el sol se arrastra.
+    await waitText("Arrastra la luna y el sol");
+    for (let index = 0; index < 6; index += 1) await pressLabel("Me acosté: cinco minutos más");
+    await waitText("23:30 → 07:00");
+    const dial = await page.$('[data-testid="time-dial"]');
+    const box = await dial.boundingBox();
+    const at = (minutes) => {
+      const angle = (minutes / 1440) * Math.PI * 2 - Math.PI / 2;
+      return [box.x + 132 + 113 * Math.cos(angle), box.y + 132 + 113 * Math.sin(angle)];
+    };
+    await page.mouse.move(...at(7 * 60));
+    await page.mouse.down();
+    for (const minutes of [410, 390, 370, 360]) await page.mouse.move(...at(minutes), { steps: 3 });
+    await page.mouse.up();
+    await waitText("23:30 → 06:00");
+    await pressLabel("Desperté: una hora más");
+    await waitText("23:30 → 07:00");
+    await shot("sueno-reloj");
     await press("4");
-    await waitText("7 h 30 min de sueño");
     await press("Guardar sueño");
     await waitText("Sueño guardado.");
     const night = (await store()).sleep[0];
@@ -826,12 +841,25 @@ async function main() {
       await waitText("Comida y salud");
       await shot("mas", true);
     }
-    await open("/nutrients");
-    await waitText("Principales aportes");
-    await waitText("Cómo repartes el día");
+    // El resumen de nutrientes está en Comida: anillos de macros y micros, y de dónde salió cada uno.
     await open("/meals");
     await waitText("Día de ayuno");
     await shot("comidas");
+    await press("Nutrientes");
+    await waitText("Micronutrientes de este día");
+    await shot("nutrientes-macros");
+    await pressLabel(
+      await page.evaluate(() =>
+        [...document.querySelectorAll('[aria-label^="Hierro: "]')][0]?.getAttribute("aria-label"),
+      ),
+    );
+    await waitText("Lo que más te dio hierro");
+    await shot("nutrientes");
+    await press("30 días");
+    await waitText("Cómo repartes el día");
+    await waitText("Las comidas con más hierro");
+    await press("Comidas");
+    await waitText("Día de ayuno");
     await pressLabel("Día de ayuno");
     await page.waitForFunction(
       (key, date) =>
@@ -1074,7 +1102,7 @@ async function main() {
     const file = readdirSync(downloads).find((name) => name.endsWith(".json"));
     assert(file, "No se descargó el archivo de respaldo.");
     const backup = JSON.parse(readFileSync(join(downloads, file), "utf8"));
-    assert(backup.app === "dophamine" && backup.format === 10, "El respaldo no tiene el formato esperado.");
+    assert(backup.app === "dophamine" && backup.format === 11, "El respaldo no tiene el formato esperado.");
     await page.evaluate((key) => localStorage.removeItem(key), STORE_KEY);
     await open("/data");
     const [chooser] = await Promise.all([page.waitForFileChooser(), press("Restaurar desde un archivo")]);
@@ -1433,7 +1461,9 @@ async function main() {
     await open("/reminders");
     await waitText("Antes de entrenar");
     await pressLabel("Aviso antes de entrenar");
-    await fillLabel("Hora del gimnasio el lunes", "18:00");
+    // La hora se elige en el reloj: sin hora, empieza en las 18:00.
+    await pressLabel("Hora del gimnasio el lunes: sin hora. Cambiar");
+    await press("Listo");
     await press("Guardar recordatorios");
     await page.waitForFunction(
       (key) =>

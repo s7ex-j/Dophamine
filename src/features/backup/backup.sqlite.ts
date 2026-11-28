@@ -1,6 +1,7 @@
 import type { Store } from "@/src/db/web-storage";
 import type { Food } from "@/src/features/nutrition/foods";
 import type { MealSlot } from "@/src/features/nutrition/meals";
+import { microsColumn } from "@/src/features/nutrition/micros";
 
 /**
  * Conversión entre las filas de SQLite (teléfono) y el `Store` del respaldo.
@@ -72,6 +73,7 @@ export type MealRow = {
   carbs_g: number;
   fats_g: number;
   alcohol_g?: number | null;
+  micros?: string | null;
 };
 export type SleepRow = {
   id: string;
@@ -222,6 +224,7 @@ export function storeFromTables(tables: Tables): Store {
       carbsG: row.carbs_g,
       fatsG: row.fats_g,
       ...(row.alcohol_g ? { alcoholG: row.alcohol_g } : {}),
+      ...microsColumn(row.micros),
     })),
     sleep: (tables.sleep ?? []).map((row) => ({
       id: row.id,
@@ -229,7 +232,7 @@ export function storeFromTables(tables: Tables): Store {
       bedtime: row.bedtime,
       wakeTime: row.wake_time,
       quality: row.quality,
-      source: row.source === "health" ? "health" : "manual",
+      source: row.source === "health" || row.source === "phone" ? row.source : "manual",
     })),
     settings: {
       onlineLookup: tables.settings.find((row) => row.key === ONLINE_KEY)?.value === "on",
@@ -364,6 +367,7 @@ export function tablesFromStore(store: Store): Tables {
       carbs_g: entry.carbsG,
       fats_g: entry.fatsG,
       alcohol_g: entry.alcoholG ?? 0,
+      micros: entry.micros ? JSON.stringify(entry.micros) : null,
     })),
     sleep: uniqueBy(
       uniqueBy(store.sleep ?? [], (entry) => entry.date),

@@ -5,6 +5,8 @@
  * Todos los valores nutricionales se guardan por 100 g, que es como vienen en
  * las etiquetas y en las tablas de composición.
  */
+import { scaleMicros, sumMicros, type Micros } from "@/src/features/nutrition/micros";
+
 export type FoodSource =
   /** Incluido en la app. */
   | "builtin"
@@ -26,6 +28,8 @@ export type Nutrients = {
   fatsG: number;
   /** Gramos de alcohol (7 kcal/g). Va aparte: no es un macronutriente. Solo se guarda si hay. */
   alcoholG?: number;
+  /** Fibra, azúcar, minerales y vitaminas, si el alimento los trae (ver `micros.ts`). */
+  micros?: Micros;
 };
 export type RecipeIngredient = { foodId: string; name: string; grams: number } & Nutrients;
 
@@ -56,8 +60,11 @@ export function nutrientsFor(food: Pick<Food, "per100">, grams: number): Nutrien
     carbsG: round1(food.per100.carbsG * factor),
     fatsG: round1(food.per100.fatsG * factor),
     ...(food.per100.alcoholG ? { alcoholG: round1(food.per100.alcoholG * factor) } : {}),
+    ...withMicros(scaleMicros(food.per100.micros, factor)),
   };
 }
+
+const withMicros = (micros: Micros | undefined) => (micros ? { micros } : {});
 
 export function sumNutrients(items: Nutrients[]): Nutrients {
   const alcoholG = round1(items.reduce((total, item) => total + (item.alcoholG ?? 0), 0));
@@ -67,6 +74,7 @@ export function sumNutrients(items: Nutrients[]): Nutrients {
     carbsG: round1(items.reduce((total, item) => total + item.carbsG, 0)),
     fatsG: round1(items.reduce((total, item) => total + item.fatsG, 0)),
     ...(alcoholG > 0 ? { alcoholG } : {}),
+    ...withMicros(sumMicros(items.map((item) => item.micros))),
   };
 }
 

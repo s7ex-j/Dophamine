@@ -203,6 +203,7 @@ try {
       label: label ? getComputedStyle(label).userSelect : null,
       input: getComputedStyle(input).userSelect,
       touch: getComputedStyle(document.documentElement).touchAction,
+      tap: label ? getComputedStyle(label).webkitTapHighlightColor : null,
     };
     input.remove();
     return result;
@@ -214,6 +215,7 @@ try {
   assert(feel.label === "none", `El texto de la interfaz se puede seleccionar (${feel.label}).`);
   assert(feel.input !== "none", "No se puede seleccionar lo escrito.");
   assert(feel.touch === "manipulation", "El doble toque acerca la pantalla.");
+  assert(feel.tap === "rgba(0, 0, 0, 0)", `Lo tocado queda marcado (${feel.tap}).`);
   console.log("  ok  sin zoom ni selección de los textos de la interfaz; lo escrito sí se selecciona");
 
   // 3. Sin conexión de verdad: el servidor apagado, en la portada y en una pantalla con parámetros.

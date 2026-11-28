@@ -91,7 +91,7 @@ describe("alimentos básicos incluidos", () => {
 
 describe("porciones y búsqueda", () => {
   it("calcula los nutrientes de una cantidad en gramos", () => {
-    expect(nutrientsFor(chicken, 200)).toEqual({ kcal: 330, proteinG: 62, carbsG: 0, fatsG: 7.2 });
+    expect(nutrientsFor(chicken, 200)).toMatchObject({ kcal: 330, proteinG: 62, carbsG: 0, fatsG: 7.2 });
     expect(nutrientsFor(chicken, 0).kcal).toBe(0);
     expect(nutrientsFor(chicken, -50).kcal).toBe(0);
   });
@@ -182,7 +182,7 @@ describe("registro rápido y comidas del día", () => {
       entry("2", "lunch", rice, 200),
       entry("3", "dinner", rice, 100),
     ];
-    expect(totalsOf(entries)).toEqual({ kcal: 638, proteinG: 54.6, carbsG: 84.6, fatsG: 6.3 });
+    expect(totalsOf(entries)).toMatchObject({ kcal: 638, proteinG: 54.6, carbsG: 84.6, fatsG: 6.3 });
     const groups = groupBySlot(entries);
     expect(groups.map((group) => group.entries.length)).toEqual([0, 2, 0, 1]);
     expect(groups[1].totals.kcal).toBe(508);

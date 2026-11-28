@@ -1,18 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
-import {
-  hasUsageAccess,
-  openUsageAccessSettings,
-  phoneUsageAvailable,
-  screenEvents,
-} from "@/modules/phone-usage";
+import { hasUsageAccess, phoneUsageAvailable, screenEvents } from "@/modules/phone-usage";
 import { haptic } from "@/src/lib/haptics";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Text } from "@/src/components/Text";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { BigInput, Button, Chips, Input, LinkButton, type IconName } from "@/src/components/ui";
-import { nightWindow, sleepFromScreen } from "@/src/features/sleep/screenSleep";
+import { BigInput, Button, Input, LinkButton, type IconName } from "@/src/components/ui";
+import {
+  AUTO_SLEEP_KEY,
+  autoSleepSettingOf,
+  nightWindow,
+  shouldCheckSleep,
+  sleepFromScreen,
+} from "@/src/features/sleep/screenSleep";
+import { SleepEditor } from "@/src/features/sleep/SleepEditor";
 import {
   addWater,
   getBiometricsByDate,
@@ -30,15 +32,15 @@ import { getMealEntries } from "@/src/features/nutrition/nutrition.repository";
 import { weightUnitOf, type NutritionProfile } from "@/src/features/profile/profile";
 import { normalizeConfig, REMINDERS_KEY, weekdayOf } from "@/src/features/reminders/reminders";
 import { remindersAvailable } from "@/src/features/reminders/scheduler";
-import { getSetting } from "@/src/features/settings/settings.repository";
+import { getSetting, setSetting } from "@/src/features/settings/settings.repository";
 import { targetsForWeekday } from "@/src/features/profile/targets";
-import { sleepError, sleepMinutes, type SleepEntry } from "@/src/features/sleep/sleep";
-import { deleteSleep, getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
+import { sleepMinutes, type SleepEntry, type SleepInput } from "@/src/features/sleep/sleep";
+import { getSleepSince, saveSleep } from "@/src/features/sleep/sleep.repository";
 import type { Routine } from "@/src/features/training/training.plans";
 import { getRoutine } from "@/src/features/training/training.repository";
 import { formatWater, waterTargetMl } from "@/src/features/water/water";
 import { localDateKey } from "@/src/lib/dates";
-import { formatDuration, normalizeTime } from "@/src/lib/time";
+import { formatDuration } from "@/src/lib/time";
 import { formatWeight, toKg } from "@/src/lib/units";
 import { AppTheme } from "@/src/theme";
 
@@ -76,11 +78,34 @@ export function TodaySection({
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [editor, setEditor] = useState<Editor>(null);
   const [form, setForm] = useState<BodyForm>(emptyForm);
-  const [sleepForm, setSleepForm] = useState({ bedtime: "", wakeTime: "", quality: 0 });
+  /** Con "Preguntarme": la noche que calculó el teléfono, a la espera de que la persona la acepte. */
+  const [phoneNight, setPhoneNight] = useState<SleepInput | null>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const [weighTime, setWeighTime] = useState<string | null>(null);
   const unit = weightUnitOf(profile);
   const today = localDateKey();
+
+  // Al abrir el Panel (hoy, sin noche anotada y con permiso), la noche sale del uso del teléfono.
+  const checkPhoneNight = useCallback(async (current: string, hasNight: boolean) => {
+    const setting = autoSleepSettingOf(await getSetting(AUTO_SLEEP_KEY));
+    const today = localDateKey();
+    if (!shouldCheckSleep({ setting, date: current, today, hasAccess: hasUsageAccess(), hasNight })) return;
+    const window = nightWindow(current);
+    const found = sleepFromScreen(await screenEvents(window.start, window.end), current);
+    if (!found) return;
+    await setSetting(AUTO_SLEEP_KEY, { ...setting, checked: today });
+    if (setting.mode === "ask") return setPhoneNight(found);
+    await saveSleep(found, current, "phone");
+    const length = sleepMinutes(found.bedtime, found.wakeTime);
+    setSleep({ id: "", date: current, ...found, source: "phone" });
+    setMessage({
+      text: `Noche calculada con el teléfono: ${found.bedtime} a ${found.wakeTime}${length ? ` (${formatDuration(length)})` : ""}. Toca Sueño para corregirla.`,
+      error: false,
+    });
+    onChangedRef.current();
+  }, []);
+  const onChangedRef = useRef(onChanged);
+  onChangedRef.current = onChanged;
 
   const load = useCallback(
     (current: string) => {
@@ -101,14 +126,10 @@ export function TodaySection({
         setSleep(night);
         setRoutine(nextRoutine);
         setForm(formFromRecord(record, unit));
-        setSleepForm({
-          bedtime: night?.bedtime ?? "",
-          wakeTime: night?.wakeTime ?? "",
-          quality: night?.quality ?? 0,
-        });
+        if (phoneUsageAvailable) checkPhoneNight(current, Boolean(night));
       });
     },
-    [unit],
+    [unit, checkPhoneNight],
   );
   useFocusEffect(useCallback(() => load(date), [load, date]));
   useEffect(() => {
@@ -128,18 +149,6 @@ export function TodaySection({
     haptic.success();
     setEditor(null);
     changed("Peso guardado.");
-  };
-  const saveNight = async () => {
-    const input = {
-      bedtime: normalizeTime(sleepForm.bedtime) ?? sleepForm.bedtime,
-      wakeTime: normalizeTime(sleepForm.wakeTime) ?? sleepForm.wakeTime,
-      quality: sleepForm.quality || null,
-    };
-    const problem = sleepError(input);
-    if (problem) return setMessage({ text: problem, error: true });
-    await saveSleep(input, date);
-    setEditor(null);
-    changed("Sueño guardado.");
   };
   const water = async (delta: number) => {
     await addWater(date, delta);
@@ -165,10 +174,6 @@ export function TodaySection({
   );
   const waterMl = day?.waterMl ?? 0;
   const nightMinutes = sleep ? sleepMinutes(sleep.bedtime, sleep.wakeTime) : null;
-  const draftMinutes = sleepMinutes(
-    normalizeTime(sleepForm.bedtime) ?? "",
-    normalizeTime(sleepForm.wakeTime) ?? "",
-  );
   const weightKg = toKg(Number(form.weight), unit);
   const bodyFat = Number(form.bodyFat);
   const toggle = (next: Editor) => {
@@ -229,6 +234,7 @@ export function TodaySection({
           value={nightMinutes ? formatDuration(nightMinutes).replace(/(h \d+) min$/, "$1") : "Anotar"}
           active={editor === "sleep"}
           done={Boolean(nightMinutes)}
+          hint={sleep?.source === "phone" ? "Del teléfono" : undefined}
           onPress={() => toggle("sleep")}
         />
         <View style={[AppTheme.quickTile, waterMl >= waterTarget && AppTheme.quickTileDone]}>
@@ -347,73 +353,42 @@ export function TodaySection({
         </View>
       ) : null}
 
-      {editor === "sleep" ? (
+      {phoneNight ? (
         <View style={AppTheme.card}>
-          <View style={AppTheme.fieldRow}>
-            <View style={AppTheme.fieldRowItem}>
-              <Input
-                label="Me acosté"
-                value={sleepForm.bedtime}
-                onChangeText={(bedtime) => setSleepForm({ ...sleepForm, bedtime })}
-                keyboardType="numbers-and-punctuation"
-                placeholder="23:30"
-              />
-            </View>
-            <View style={AppTheme.fieldRowItem}>
-              <Input
-                label="Desperté"
-                value={sleepForm.wakeTime}
-                onChangeText={(wakeTime) => setSleepForm({ ...sleepForm, wakeTime })}
-                keyboardType="numbers-and-punctuation"
-                placeholder="07:00"
-              />
-            </View>
+          <View style={AppTheme.legendRow}>
+            <Ionicons name="phone-portrait-outline" size={16} color={AppTheme.colors.blue} />
+            <Text style={[AppTheme.legendLabel, { flex: 1 }]}>Tu noche, según el teléfono</Text>
           </View>
-          <Text style={AppTheme.label}>¿Cómo dormiste?</Text>
-          <Chips
-            value={sleepForm.quality}
-            onChange={(quality) => setSleepForm({ ...sleepForm, quality })}
-            options={[1, 2, 3, 4, 5].map((value) => ({ value, label: String(value) }))}
+          <Text style={AppTheme.body}>
+            {phoneNight.bedtime} a {phoneNight.wakeTime}
+            {sleepMinutes(phoneNight.bedtime, phoneNight.wakeTime)
+              ? ` · ${formatDuration(sleepMinutes(phoneNight.bedtime, phoneNight.wakeTime) ?? 0)}`
+              : ""}
+          </Text>
+          <Button
+            title="Guardar esta noche"
+            onPress={async () => {
+              await saveSleep(phoneNight, date, "phone");
+              setPhoneNight(null);
+              changed("Sueño guardado.");
+            }}
           />
-          {draftMinutes ? <Text style={AppTheme.hint}>{formatDuration(draftMinutes)} de sueño</Text> : null}
-          {phoneUsageAvailable ? (
-            <LinkButton
-              title="Calcular con el uso del teléfono"
-              onPress={async () => {
-                if (!hasUsageAccess()) {
-                  setMessage({
-                    text: 'Activa Dophamine en "Acceso al uso" y vuelve a tocar aquí.',
-                    error: false,
-                  });
-                  return openUsageAccessSettings();
-                }
-                const window = nightWindow(date);
-                const night = sleepFromScreen(await screenEvents(window.start, window.end), date);
-                if (!night)
-                  return setMessage({
-                    text: "No encontré una noche clara en el uso del teléfono.",
-                    error: true,
-                  });
-                setSleepForm({ ...sleepForm, bedtime: night.bedtime, wakeTime: night.wakeTime });
-                setMessage({ text: "Calculado con el teléfono: revísalo y guarda.", error: false });
-              }}
-            />
-          ) : null}
-          <Button title={sleep ? "Guardar cambios de sueño" : "Guardar sueño"} onPress={saveNight} />
-          {sleep ? (
-            <View style={AppTheme.rowActions}>
-              <LinkButton
-                title="Quitar esta noche"
-                danger
-                onPress={async () => {
-                  await deleteSleep(date);
-                  setEditor(null);
-                  changed();
-                }}
-              />
-            </View>
-          ) : null}
+          <LinkButton title="No es correcta" onPress={() => setPhoneNight(null)} />
         </View>
+      ) : null}
+
+      {editor === "sleep" ? (
+        <SleepEditor
+          key={`${date}-${sleep?.bedtime ?? ""}-${sleep?.wakeTime ?? ""}`}
+          date={date}
+          sleep={sleep}
+          onMessage={setMessage}
+          onDone={(text) => {
+            setEditor(null);
+            setPhoneNight(null);
+            changed(text);
+          }}
+        />
       ) : null}
 
       {message ? (
@@ -430,6 +405,7 @@ function QuickTile({
   value,
   active,
   done,
+  hint,
   onPress,
 }: {
   icon: IconName;
@@ -438,6 +414,8 @@ function QuickTile({
   value: string;
   active: boolean;
   done: boolean;
+  /** Reemplaza "Editar" cuando el dato tiene algo que contar (de dónde salió). */
+  hint?: string;
   onPress: () => void;
 }) {
   return (
@@ -454,7 +432,7 @@ function QuickTile({
       <Text style={AppTheme.quickValue} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
-      <Text style={AppTheme.quickHint}>{active ? "Cerrar" : done ? "Editar" : "Sin dato"}</Text>
+      <Text style={AppTheme.quickHint}>{active ? "Cerrar" : done ? (hint ?? "Editar") : "Sin dato"}</Text>
     </Pressable>
   );
 }

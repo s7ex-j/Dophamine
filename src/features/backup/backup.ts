@@ -29,7 +29,9 @@ import { backupProblem } from "@/src/features/backup/validate";
 // (`mealStyle`, `mealsPerDay`). Los formatos 1 a 7 se leen igual.
 // Formato 10: pasos del día (`biometrics[].steps`, de Health Connect). Los formatos 1 a 9 se leen
 // igual: sus días quedan sin pasos.
-export const BACKUP_FORMAT = 10;
+// Formato 11: micronutrientes por comida (`meals[].micros`) y noches calculadas con el uso del teléfono
+// (`sleep[].source` = "phone"). Los formatos 1 a 10 se leen igual: sus comidas quedan sin micros.
+export const BACKUP_FORMAT = 11;
 
 export type Backup = { app: "dophamine"; format: number; exportedAt: string; data: Store };
 

@@ -8,7 +8,7 @@ type Row = {
   bedtime: string;
   wake_time: string;
   quality: number | null;
-  source: "manual" | "health";
+  source: "manual" | "health" | "phone";
 };
 const id = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const fromRow = (row: Row): SleepEntry => ({

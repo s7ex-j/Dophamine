@@ -1,3 +1,4 @@
+import { scaleMicros } from "@/src/features/nutrition/micros";
 import {
   counterpart,
   normalizeText,
@@ -97,6 +98,7 @@ export function scaleItem(item: DietItem, factor: number): DietItem {
     proteinG: round1(item.proteinG * real),
     carbsG: round1(item.carbsG * real),
     fatsG: round1(item.fatsG * real),
+    micros: scaleMicros(item.micros, real),
   };
 }
 

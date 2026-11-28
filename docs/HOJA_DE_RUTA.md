@@ -29,7 +29,7 @@ Lo que falta, en orden. Si algo cambia, primero cambio este archivo.
   por número) y gasto inicial con varias fórmulas.
 - Panel como único lugar de registro: peso y composición, comida, sueño, agua, pasos, día incompleto, comidas
   guardadas, racha con Term, chequeo breve de bienestar al cerrar el día, calendario de objetivos y resumen semanal.
-- Comida: 230 alimentos incluidos (crudo y cocido), alimentos propios, recetas, registro rápido, favoritos,
+- Comida: 243 alimentos incluidos (crudo y cocido, con micronutrientes del USDA), alimentos propios, recetas, registro rápido, favoritos,
   código de barras, etiqueta con la cámara, dictado y búsqueda opcional en Open Food Facts.
 - Gasto real adaptativo y revisión cada 3 o 7 días; "Cómo se calcula" lo muestra paso a paso. Con 15 días
   seguidos completos entra el motor de autoajuste (filtro de Kalman).
@@ -77,7 +77,7 @@ pesa 113 MB y es la referencia).
 
 | Qué | Cómo | Dificultad |
 |---|---|---|
-| Centro de Health Connect (en Más) | Última sincronización, qué se importó por categoría, permisos dados y faltantes, errores y "Sincronizar ahora". Para marcar qué dato viene de Health Connect y cuál se anotó a mano hace falta guardar el origen en peso, pasos y comida (el sueño ya lo tiene): columna nueva y respaldo formato 11 | Media |
+| Centro de Health Connect (en Más) | Última sincronización, qué se importó por categoría, permisos dados y faltantes, errores y "Sincronizar ahora". Para marcar qué dato viene de Health Connect y cuál se anotó a mano hace falta guardar el origen en peso, pasos y comida (el sueño ya lo tiene): columna nueva y respaldo formato 12 | Media |
 | Temporizador de descanso entre series | Dentro de cada entrenamiento en curso: al marcar una serie como hecha arranca la cuenta regresiva con el descanso del ejercicio (`restSeconds` ya existe en el modelo), con +15 s, saltar, pausar y vibración al terminar. Se puede apagar en la sesión | Media |
 | Widget discreto | Ajuste con tres modos: normal (kcal, agua, pasos), discreto (sin cifras) y mínimo (solo el nombre) | Baja |
 

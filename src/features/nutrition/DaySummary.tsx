@@ -9,7 +9,7 @@ import { getSetting, setSetting } from "@/src/features/settings/settings.reposit
 import { AppTheme } from "@/src/theme";
 
 type Targets = { calories: number; protein: number; carbs: number; fats: number } | null;
-type Ring = { label: string; value: number; target?: number; color: string };
+export type Ring = { label: string; value: number; target?: number; color: string };
 
 const VIEW_KEY = "day_view";
 const VIEWS = ["Vista de anillos", "Vista de arco"];
@@ -193,7 +193,7 @@ function Grams({ ring }: { ring: Ring }) {
 }
 
 /** Un anillo dentro de otro: calorías afuera y los macros adentro. */
-function Rings({ rings }: { rings: Ring[] }) {
+export function Rings({ rings }: { rings: Ring[] }) {
   const size = 112;
   return (
     <Svg

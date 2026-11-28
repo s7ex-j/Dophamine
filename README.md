@@ -47,7 +47,7 @@ La báscula sube y baja por agua, sal y glucógeno. Contar calorías con una fó
 ## Qué puedes hacer
 
 **Comida**
-230 alimentos incluidos (crudo y cocido), alimentos y recetas propias, código de barras, búsqueda opcional en Open Food Facts, comidas guardadas, copiar y pegar días, alcohol aparte y tipos de plan. O carga tu dieta y síguela con un toque, con alternativas según tu entreno, tus alergias y lo que indicó tu médico.
+243 alimentos incluidos (crudo y cocido) con fibra, minerales y vitaminas, un resumen de nutrientes con anillos, alimentos y recetas propias, código de barras, búsqueda opcional en Open Food Facts, comidas guardadas, copiar y pegar días, alcohol aparte y tipos de plan. O carga tu dieta y síguela con un toque, con alternativas según tu entreno, tus alergias y lo que indicó tu médico.
 
 **Peso y gasto real**
 Tendencia suavizada, gasto observado con su margen y una revisión cada 3 o 7 días. Con 15 días seguidos de datos entra un motor de autoajuste (filtro de Kalman) que aprende cómo te cambian el agua, la comida y el entreno.
@@ -65,7 +65,7 @@ Conecta el teléfono con la web por código QR: la conexión va cifrada de un di
 Trae peso, % de grasa, sueño, pasos y comida desde Samsung Health, Google Fit y otras apps (Android), sin pisar lo que anotaste a mano. Después, lo nuevo entra solo una vez al día.
 
 **Hecho para el teléfono**
-Lee una etiqueta nutricional con la cámara, dicta el alimento que buscas, estima tu hora de dormir con el uso del teléfono, mide tu silueta en las fotos de progreso y mira lo que te queda del día en un widget. Todo se procesa dentro del teléfono.
+Lee una etiqueta nutricional con la cámara, dicta el alimento que buscas, anota tu noche sola con el uso del teléfono, mide tu silueta en las fotos de progreso y mira lo que te queda del día en un widget. Todo se procesa dentro del teléfono.
 
 ## Term
 

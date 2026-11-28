@@ -17,7 +17,13 @@ Lo que solo existe en el APK de Android, cada pieza con su variante web vacía (
   (lectura; la librería nativa se carga solo al usarla). `partialImports` reconoce y completa la comida que las
   versiones anteriores a la 0.42.1 importaron a medias.
 - **Sueño por uso del teléfono:** `modules/phone-usage` (módulo propio en Kotlin, se enlaza solo) y
-  `src/features/sleep/screenSleep.ts`.
+  `src/features/sleep/screenSleep.ts` (une los encendidos cortos de la noche y decide cuándo calcularla sola al
+  abrir el Panel). La noche se anota en `SleepEditor.tsx`, con el reloj de 24 horas de `src/components/TimeDial.tsx`
+  (geometría en `src/lib/dial.ts`, con prueba); el mismo reloj elige las horas de los recordatorios.
+- **Micronutrientes:** `src/features/nutrition/micros.ts` (claves, referencias de la FDA, escalar y sumar).
+  Los de los alimentos incluidos están en `builtin.micros.ts`, generado con `scripts/usda-micros.py` a partir de
+  la tabla SR Legacy del USDA y de `scripts/usda-map.json` (qué ficha corresponde a cada alimento). Cada comida
+  guarda los suyos (columna `micros`, JSON). El resumen (`insights.ts`, `NutrientSummary.tsx`) está en Comida.
 - **Widget de inicio:** `src/features/widget/`; se registra en `index.js`, el punto de entrada.
 - **Dictado y etiquetas con la cámara:** `src/features/nutrition/dictation.ts` y `labelCamera.ts`.
 - **Análisis de fotos:** modelos en `assets/models/`, preparación de la imagen en
@@ -218,4 +224,4 @@ energía por kilo, del más bajo al más alto de todos.
 
 - Lo nativo se probó de forma general en un teléfono Android; lo que falta recorrer está en la hoja de ruta.
 - Sin sincronización ni cuentas. El respaldo es un archivo que la persona guarda donde quiera.
-- Los alimentos incluidos tienen calorías y macros, no micronutrientes.
+- Los micros de los alimentos incluidos son promedios del USDA; los registros rápidos no los tienen.

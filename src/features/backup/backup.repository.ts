@@ -162,7 +162,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
       );
     for (const row of tables.meals)
       await db.runAsync(
-        "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g, micros) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         row.id,
         row.date,
         row.slot,
@@ -174,6 +174,7 @@ export async function restoreBackup(backup: Backup): Promise<void> {
         row.carbs_g,
         row.fats_g,
         row.alcohol_g ?? 0,
+        row.micros ?? null,
       );
     for (const row of tables.sleep ?? [])
       await db.runAsync(

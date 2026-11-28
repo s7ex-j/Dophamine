@@ -1,4 +1,6 @@
+import { BUILTIN_MICROS } from "@/src/features/nutrition/builtin.micros";
 import type { Food, FoodState } from "@/src/features/nutrition/foods";
+import { microsFromRow } from "@/src/features/nutrition/micros";
 
 /**
  * Alimentos básicos incluidos en la app, para registrar sin red.
@@ -317,6 +319,13 @@ export const BUILTIN_FOODS: Food[] = ROWS.map(
     ...(servingLabel ? { servingLabel } : {}),
     ...(state ? { state } : {}),
     ...(pair ? { pair } : {}),
-    per100: { kcal, proteinG, carbsG, fatsG, ...(ALCOHOL[name] ? { alcoholG: ALCOHOL[name] } : {}) },
+    per100: {
+      kcal,
+      proteinG,
+      carbsG,
+      fatsG,
+      ...(ALCOHOL[name] ? { alcoholG: ALCOHOL[name] } : {}),
+      ...(BUILTIN_MICROS[name] ? { micros: microsFromRow(BUILTIN_MICROS[name]) } : {}),
+    },
   }),
 );

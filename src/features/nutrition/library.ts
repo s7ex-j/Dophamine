@@ -1,3 +1,4 @@
+import { scaleMicros } from "@/src/features/nutrition/micros";
 import {
   buildRecipe,
   type CustomFoodResult,
@@ -30,6 +31,7 @@ export function scaleIngredient(ingredient: RecipeIngredient, grams: number): Re
     carbsG: round1(ingredient.carbsG * factor),
     fatsG: round1(ingredient.fatsG * factor),
     ...(ingredient.alcoholG ? { alcoholG: round1(ingredient.alcoholG * factor) } : {}),
+    micros: scaleMicros(ingredient.micros, factor),
   };
 }
 

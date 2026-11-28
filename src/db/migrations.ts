@@ -27,6 +27,8 @@ export const ADDED_COLUMNS: Array<{ table: string; column: string; definition: s
     definition: "REAL CHECK(sleep_hours BETWEEN 0 AND 24)",
   },
   { table: "wellbeing_entries", column: "stress", definition: "INTEGER CHECK(stress BETWEEN 1 AND 5)" },
+  // 0.43.0: micronutrientes por entrada, como JSON.
+  { table: "meal_entries", column: "micros", definition: "TEXT" },
 ];
 
 /**

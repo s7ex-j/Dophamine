@@ -1,3 +1,4 @@
+import { microsColumn } from "@/src/features/nutrition/micros";
 import { getDatabase } from "@/src/db/database";
 import { getBiometricsByDate, saveDayNutrition } from "@/src/features/biometrics/biometrics.repository";
 import type { Food } from "@/src/features/nutrition/foods";
@@ -26,6 +27,7 @@ type EntryRow = {
   carbs_g: number;
   fats_g: number;
   alcohol_g?: number | null;
+  micros?: string | null;
 };
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -42,6 +44,7 @@ const fromRow = (row: EntryRow): MealEntry => ({
   carbsG: row.carbs_g,
   fatsG: row.fats_g,
   ...(row.alcohol_g ? { alcoholG: row.alcohol_g } : {}),
+  ...microsColumn(row.micros),
 });
 
 export const newFoodId = (prefix: "c" | "r") => `${prefix}:${newId()}`;
@@ -96,7 +99,7 @@ async function insertEntries(entries: MealEntry[]) {
   const db = await getDatabase();
   for (const entry of entries)
     await db.runAsync(
-      "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO meal_entries (id, date, slot, food_id, name, grams, kcal, protein_g, carbs_g, fats_g, alcohol_g, micros) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       entry.id,
       entry.date,
       entry.slot,
@@ -108,6 +111,7 @@ async function insertEntries(entries: MealEntry[]) {
       entry.carbsG,
       entry.fatsG,
       entry.alcoholG ?? 0,
+      entry.micros ? JSON.stringify(entry.micros) : null,
     );
 }
 
@@ -177,7 +181,7 @@ export async function setOnlineLookup(enabled: boolean) {
 export async function updateMealEntry(entry: MealEntry) {
   const db = await getDatabase();
   await db.runAsync(
-    "UPDATE meal_entries SET slot = ?, food_id = ?, name = ?, grams = ?, kcal = ?, protein_g = ?, carbs_g = ?, fats_g = ?, alcohol_g = ? WHERE id = ?",
+    "UPDATE meal_entries SET slot = ?, food_id = ?, name = ?, grams = ?, kcal = ?, protein_g = ?, carbs_g = ?, fats_g = ?, alcohol_g = ?, micros = ? WHERE id = ?",
     entry.slot,
     entry.foodId ?? null,
     entry.name,
@@ -187,6 +191,7 @@ export async function updateMealEntry(entry: MealEntry) {
     entry.carbsG,
     entry.fatsG,
     entry.alcoholG ?? 0,
+    entry.micros ? JSON.stringify(entry.micros) : null,
     entry.id,
   );
   await syncTotals(entry.date);
